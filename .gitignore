@@ -2,4 +2,5 @@ frontend/node_modules/
 frontend/dist/
 *.log
 backend/*.db
+backend/tmp/
 .idea/

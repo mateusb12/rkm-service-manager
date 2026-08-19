@@ -1,0 +1,32 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8787:8787"
+    environment:
+      APP_ENV: development
+      PORT: 8787
+      DB_PATH: /data/rkm.db
+      ACCESS_TTL: 15m
+      SESSION_TTL: 8h
+      SESSION_ABSOLUTE_TTL: 168h
+      COOKIE_SECURE: "false"
+    volumes:
+      - ./backend:/app
+      - rkm_data:/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4173:4173"
+    environment:
+      BACKEND_URL: http://backend:8787
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  frontend_node_modules:
+  rkm_data:
