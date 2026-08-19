@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useAuth } from './auth';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -340,7 +341,7 @@ const Sidebar = ({ view, setView, alertCount, activeIT, activeRole }) => {
                 "Perfil: ",
                 React.createElement("b", { className: "text-violet-200" }, (ROLES.find(r => r.key === activeRole) || {}).label)))));
 };
-const TopBar = ({ alerts, onJumpAlerts, activeUser, setActiveUser, activeRole, setActiveRole, darkMode, onToggleDarkMode }) => {
+const TopBar = ({ alerts, onJumpAlerts, activeUser, activeRole, darkMode, onToggleDarkMode, onLogout }) => {
     const user = mockUsers.find(u => u.id === activeUser) || mockUsers[0];
     const role = ROLES.find(r => r.key === activeRole) || ROLES[0];
     return (React.createElement("header", { className: "bg-rkmcard/80 backdrop-blur border-b border-rkmborder px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20 flex-wrap" },
@@ -349,20 +350,16 @@ const TopBar = ({ alerts, onJumpAlerts, activeUser, setActiveUser, activeRole, s
             React.createElement("div", { className: "text-[15px] font-semibold" }, "RKM \u2014 Registro de Servi\u00E7os Hidr\u00E1ulicos")),
         React.createElement("div", { className: "flex items-center gap-2" },
             React.createElement("span", { className: "text-[11px] uppercase tracking-wider text-slate-500 hidden md:inline" }, "Usu\u00E1rio:"),
-            React.createElement("select", { className: "rkm-input !py-1.5 !px-2.5 !text-[12.5px] !w-auto", value: user.id, onChange: e => setActiveUser(e.target.value) }, mockUsers.map(u => React.createElement("option", { key: u.id, value: u.id },
-                u.name,
-                " (",
-                (ROLES.find(r => r.key === u.role) || {}).label,
-                ")")))),
+            React.createElement("span", { className: "text-sm font-medium" }, user.name)),
         React.createElement("div", { className: "flex items-center gap-2" },
             React.createElement("span", { className: "text-[11px] uppercase tracking-wider text-slate-500 hidden md:inline" }, "Perfil:"),
-            React.createElement("select", { className: "rkm-input !py-1.5 !px-2.5 !text-[12.5px] !w-auto", value: role.key, onChange: e => setActiveRole(e.target.value) }, ROLES.map(r => React.createElement("option", { key: r.key, value: r.key }, r.label))),
             React.createElement("span", { className: 'tag ' + role.tagClass }, role.label)),
         React.createElement("button", { onClick: onJumpAlerts, className: 'btn ' + (alerts.length ? 'btn-danger' : 'btn-ghost') },
             React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
                 React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" })),
             alerts.length ? `${alerts.length} alerta${alerts.length > 1 ? 's' : ''}` : 'Sem alertas'),
         React.createElement("button", { onClick: onToggleDarkMode, className: "btn btn-ghost", title: darkMode ? "Ativar modo claro" : "Ativar modo escuro", "aria-label": darkMode ? "Ativar modo claro" : "Ativar modo escuro" }, darkMode ? "☀️" : "🌙"),
+        React.createElement("button", { onClick: onLogout, className: "btn btn-ghost" }, "Sair"),
         React.createElement("div", { className: "hidden lg:flex items-center gap-2 pl-3 border-l border-rkmborder" },
             React.createElement("div", { className: "w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-[12px] font-bold" }, user.short),
             React.createElement("div", { className: "text-[12px] leading-tight" },
@@ -2638,10 +2635,11 @@ const PCPView = ({ services, rec001, rec002, activeRole, onDecisionClick }) => {
    APP RAIZ — dual IT + perfis + Bloco 2A (autorizações)
    ============================================================ */
 const App = () => {
+    const { user: authenticatedUser, logout } = useAuth();
     const [view, setView] = useState('dashboard');
     const [activeIT, setActiveIT] = useState('IT001');
-    const [activeUser, setActiveUserState] = useState('u5');
-    const [activeRole, setActiveRoleState] = useState('admin');
+    const [activeUser, setActiveUserState] = useState(() => authenticatedUser?.id || 'u5');
+    const [activeRole, setActiveRoleState] = useState(() => authenticatedUser?.role || 'admin');
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem('rkm-theme') !== 'light');
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
@@ -2905,7 +2903,7 @@ const App = () => {
     return (React.createElement("div", { className: "min-h-screen flex bg-rkmbg text-slate-200" },
         React.createElement(Sidebar, { view: view, setView: handleSetView, alertCount: totalAlerts, activeIT: activeIT, activeRole: activeRole }),
         React.createElement("main", { className: "flex-1 min-w-0" },
-            React.createElement(TopBar, { alerts: ctx.alerts, onJumpAlerts: goToPendencies, activeUser: activeUser, setActiveUser: setActiveUser, activeRole: activeRole, setActiveRole: setActiveRole, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value) }),
+            React.createElement(TopBar, { alerts: ctx.alerts, onJumpAlerts: goToPendencies, activeUser: activeUser, activeRole: activeRole, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value), onLogout: logout }),
             activeRole === 'admin' && view === 'dashboard' && (React.createElement("div", { className: "px-4 md:px-6 pt-4" },
                 React.createElement(AdminAuthQueueAll, { rec001: rec001, rec002: rec002, activeRole: activeRole, onDecisionClick: handleDecisionClick }),
                 React.createElement("div", { className: "mt-4" },

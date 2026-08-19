@@ -1,4 +1,9 @@
 # Backend
 
-Área reservada para a API do RKM SGI. O protótipo atual mantém os dados no navegador;
-a API pode ser adicionada quando houver contrato de persistência definido.
+API Go da autenticação do RKM SGI. Em desenvolvimento, o primeiro start cria o SQLite e faz o seed idempotente dos cinco usuários dummy.
+
+```bash
+go run .
+```
+
+Variáveis principais estão em [.env.example](.env.example). O backend usa `8787` por padrão.

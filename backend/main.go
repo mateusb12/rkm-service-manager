@@ -1,17 +1,27 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"log"
+	"os"
 )
 
 func main() {
-	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"status":"ok"}`)
-	})
+	server, err := NewAuthServer()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer server.db.Close()
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	port := env("PORT", "8787")
+	log.Printf("RKM backend listening on :%s", port)
+	if err := server.httpServer().ListenAndServe(); err != nil && err.Error() != "http: Server closed" {
 		panic(err)
 	}
+}
+
+func env(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }
