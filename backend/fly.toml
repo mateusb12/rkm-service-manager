@@ -7,7 +7,7 @@ app = 'rkm-service-manager'
 primary_region = 'gru'
 
 [build]
-  dockerfile = 'Dockerfile'
+  dockerfile = 'backend/Dockerfile'
 
 [http_service]
   internal_port = 8787

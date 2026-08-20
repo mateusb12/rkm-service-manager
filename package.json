@@ -1,0 +1,7 @@
+{
+  "name": "rkm-service-manager",
+  "private": true,
+  "scripts": {
+    "deploy": "fly deploy --config backend/fly.toml"
+  }
+}
