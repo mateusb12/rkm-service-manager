@@ -1,0 +1,5 @@
+.git
+backend/tmp
+backend/*.db
+frontend/node_modules
+frontend/dist

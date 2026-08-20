@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -154,7 +156,23 @@ func (s *AuthServer) httpServer() *http.Server {
 	mux.HandleFunc("/api/auth/logout", s.handleLogout)
 	mux.HandleFunc("/api/auth/me", s.handleMe)
 	mux.HandleFunc("/api/auth/dev-credentials", s.handleDevCredentials)
+	mux.Handle("/", frontendHandler(env("WEB_DIR", "public")))
 	return &http.Server{Addr: ":" + env("PORT", "8787"), Handler: s.withCORS(mux)}
+}
+
+func frontendHandler(root string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			http.NotFound(w, r)
+			return
+		}
+		file := filepath.Join(root, strings.TrimPrefix(path.Clean(r.URL.Path), "/"))
+		if info, err := os.Stat(file); err == nil && !info.IsDir() {
+			http.ServeFile(w, r, file)
+			return
+		}
+		http.ServeFile(w, r, filepath.Join(root, "index.html"))
+	})
 }
 
 func (s *AuthServer) handleHealth(w http.ResponseWriter, _ *http.Request) {
