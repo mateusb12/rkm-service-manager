@@ -70,6 +70,15 @@ type session struct {
 
 func NewAuthServer() (*AuthServer, error) {
 	dbPath := env("DB_PATH", "rkm.db")
+	if importPath := os.Getenv("DB_IMPORT_PATH"); importPath != "" {
+		if _, err := os.Stat(importPath); err == nil {
+			if err := os.Rename(importPath, dbPath); err != nil {
+				return nil, err
+			}
+		} else if !os.IsNotExist(err) {
+			return nil, err
+		}
+	}
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return nil, err
@@ -119,6 +128,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_access ON sessions(access_hash);
 CREATE INDEX IF NOT EXISTS idx_sessions_refresh ON sessions(refresh_hash);
+UPDATE users SET name='Osmar Lamarck' WHERE email='admin@rkm.com.br' AND role='admin';
 `)
 	return err
 }
@@ -128,7 +138,7 @@ func (s *AuthServer) seedUsers() error {
 		return nil
 	}
 	users := []struct{ id, email, name, role, password string }{
-		{"u5", "admin@rkm.com.br", "Tiago Guedes", "admin", env("DUMMY_PASSWORD_ADMIN", "Rkm@123456")},
+		{"u5", "admin@rkm.com.br", "Osmar Lamarck", "admin", env("DUMMY_PASSWORD_ADMIN", "Rkm@123456")},
 		{"u1", "operador@rkm.com.br", "Carlos M.", "operator", env("DUMMY_PASSWORD_OPERATOR", "Rkm@123456")},
 		{"u2", "supervisor@rkm.com.br", "Jeferson N.", "supervisor", env("DUMMY_PASSWORD_SUPERVISOR", "Rkm@123456")},
 		{"u3", "qualidade@rkm.com.br", "Qualidade RKM", "quality", env("DUMMY_PASSWORD_QUALITY", "Rkm@123456")},

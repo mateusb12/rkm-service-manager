@@ -7,7 +7,15 @@ app = 'rkm-service-manager'
 primary_region = 'gru'
 
 [build]
-  dockerfile = 'backend/Dockerfile'
+  dockerfile = 'Dockerfile'
+
+[env]
+  DB_PATH = '/data/rkm.db'
+  DB_IMPORT_PATH = '/data/rkm-import.sqlite'
+
+[mounts]
+  source = 'rkm_data'
+  destination = '/data'
 
 [http_service]
   internal_port = 8787
