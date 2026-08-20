@@ -297,9 +297,9 @@ const Field = ({ label, hint, children, required, error, className = '' }) => (R
     children,
     hint && React.createElement("span", { className: "text-[11px] text-slate-500" }, hint),
     error && React.createElement("span", { className: "text-[11px] text-rose-400" }, error)));
-const TextInput = ({ value, onChange, placeholder, type = 'text' }) => (React.createElement("input", { className: "rkm-input", type: type, value: value || '', placeholder: placeholder || '', onChange: e => onChange(e.target.value) }));
-const TextArea = ({ value, onChange, placeholder, rows = 3 }) => (React.createElement("textarea", { className: "rkm-input", rows: rows, value: value || '', placeholder: placeholder || '', onChange: e => onChange(e.target.value) }));
-const Select = ({ value, onChange, options, placeholder = 'Selecione...' }) => (React.createElement("select", { className: "rkm-input", value: value || '', onChange: e => onChange(e.target.value) },
+const TextInput = ({ value, onChange, placeholder, type = 'text' }) => (React.createElement("input", { className: "rkm-input zenit-field", type: type, value: value || '', placeholder: placeholder || '', onChange: e => onChange(e.target.value) }));
+const TextArea = ({ value, onChange, placeholder, rows = 3 }) => (React.createElement("textarea", { className: "rkm-input zenit-field", rows: rows, value: value || '', placeholder: placeholder || '', onChange: e => onChange(e.target.value) }));
+const Select = ({ value, onChange, options, placeholder = 'Selecione...' }) => (React.createElement("select", { className: "rkm-input zenit-field", value: value || '', onChange: e => onChange(e.target.value) },
     React.createElement("option", { value: "" }, placeholder),
     options.map(o => React.createElement("option", { key: o, value: o }, o))));
 const Toggle = ({ checked, onChange, label }) => (React.createElement("label", { className: 'rkm-check ' + (checked ? 'checked' : '') },
@@ -542,7 +542,7 @@ const Stepper = ({ currentStep, setStep, alertsByStep, steps, itLabel, onStepCli
             stepAlerts > 0 && React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded" }, stepAlerts),
             forwardBlocked && React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded" }, "bloq.")));
     }))));
-const SectionCard = ({ title, subtitle, critical, children, headerRight }) => (React.createElement("div", { className: "rkm-card overflow-hidden" },
+const SectionCard = ({ title, subtitle, critical, children, headerRight }) => (React.createElement("div", { className: "rkm-card zenit-surface overflow-hidden" },
     React.createElement("div", { className: "px-5 py-4 border-b border-rkmborder flex items-center gap-3" },
         React.createElement("span", { className: 'w-2 h-2 rounded-full ' + (critical ? 'bg-rose-400' : 'bg-blue-400') }),
         React.createElement("div", { className: "flex-1 min-w-0" },

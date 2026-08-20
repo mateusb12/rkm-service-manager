@@ -2,12 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 /* Zenit design tokens + reusable primitives */
-:root { --zenit-color-brand: #1682ff; --zenit-color-brand-strong: #006eff; --zenit-color-text: #061744; --zenit-color-muted: #657391; --zenit-color-page: #f7f9fc; --zenit-color-surface: #fff; --zenit-color-border: #cbd8e8; --zenit-radius-sm: 10px; --zenit-radius-md: 18px; --zenit-shadow: 0 26px 70px rgba(10,27,68,.14); }
+:root { --zenit-color-brand: #1682ff; --zenit-color-brand-strong: #006eff; --zenit-color-text: #e2e8f0; --zenit-color-muted: #94a3b8; --zenit-color-page: #0a1729; --zenit-color-surface: #0f2138; --zenit-color-border: #1e3550; --zenit-radius-sm: 10px; --zenit-radius-md: 18px; --zenit-shadow: 0 18px 40px rgba(0,0,0,.18); }
 .zenit-surface { border: 1px solid var(--zenit-color-border); border-radius: var(--zenit-radius-md); background: var(--zenit-color-surface); box-shadow: var(--zenit-shadow); }
-.zenit-field { width: 100%; padding: 8px 12px; border: 1px solid #d9e2ef; border-radius: var(--zenit-radius-sm); background: var(--zenit-color-surface); color: var(--zenit-color-text); outline: none; transition: border-color .15s, box-shadow .15s; }
+.zenit-field { width: 100%; padding: 8px 12px; border: 1px solid var(--zenit-color-border); border-radius: var(--zenit-radius-sm); background: var(--zenit-color-page); color: var(--zenit-color-text); outline: none; transition: border-color .15s, box-shadow .15s; }
 .zenit-field:focus { border-color: var(--zenit-color-brand); box-shadow: 0 0 0 3px rgba(22,130,255,.12); }
 .zenit-button-primary { border: 1px solid var(--zenit-color-brand-strong); border-radius: var(--zenit-radius-sm); background: linear-gradient(135deg, var(--zenit-color-brand-strong), var(--zenit-color-brand)); color: #fff; cursor: pointer; }
 .zenit-pill { display: inline-flex; align-items: center; border: 1px solid currentColor; border-radius: 999px; padding: 3px 10px; font-size: 12px; }
+.zenit-login:not(.zenit-dark) .zenit-surface { border-color: #cbd8e8; background: #fff; box-shadow: 0 26px 70px rgba(10,27,68,.14); }
+.zenit-login:not(.zenit-dark) .zenit-field { border-color: #d9e2ef; background: #fff; color: #061744; }
 .zenit-dark .zenit-surface { border-color: #263852; background: #10213a; box-shadow: 0 26px 70px rgba(0,0,0,.28); }
 .zenit-dark .zenit-field { border-color: #304766; background: #0b192d; color: #f4f8fd; }
      html, body { background: #0a1729; color: #e2e8f0; font-family: 'Inter', system-ui, sans-serif; }
@@ -18,10 +20,10 @@
      ::-webkit-scrollbar-thumb:hover { background: #274a6e; }
      /* Inputs base */
      .rkm-input {
-       background: #0a1729;
-       border: 1px solid #1e3550;
-       color: #e2e8f0;
-       border-radius: 8px;
+       background: var(--zenit-color-page);
+       border: 1px solid var(--zenit-color-border);
+       color: var(--zenit-color-text);
+       border-radius: var(--zenit-radius-sm);
        padding: 8px 12px;
        font-size: 14px;
        width: 100%;
@@ -31,8 +33,8 @@
      .rkm-input:focus { border-color: #3b82f6; background: #0c1f37; }
      .rkm-input::placeholder { color: #475569; }
      select.rkm-input { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3e%3cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right .6rem center; background-size: 1.1em 1.1em; padding-right: 2rem; appearance: none; }
-     .rkm-card { background: #0f2138; border: 1px solid #1e3550; border-radius: 12px; }
-     .rkm-card-2 { background: #132a45; border: 1px solid #274a6e; border-radius: 12px; }
+     .rkm-card { background: var(--zenit-color-surface); border: 1px solid var(--zenit-color-border); border-radius: var(--zenit-radius-md); }
+     .rkm-card-2 { background: #132a45; border: 1px solid #274a6e; border-radius: var(--zenit-radius-md); }
      /* Tag styles */
      .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 999px; border: 1px solid; line-height: 1.2; }
      .tag-emerald { background: rgba(16,185,129,.12); color: #6ee7b7; border-color: rgba(16,185,129,.3); }
@@ -55,7 +57,7 @@
      label.rkm-check.checked { background: rgba(59,130,246,.08); border-color: #3b82f6; }
      label.rkm-check input { margin-top: 3px; accent-color: #3b82f6; }
      .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-weight: 500; font-size: 14px; transition: all .15s; cursor: pointer; }
-     .btn-primary { background: #2563eb; color: #fff; border: 1px solid #1d4ed8; }
+     .btn-primary { background: var(--zenit-color-brand-strong); color: #fff; border: 1px solid #1d4ed8; }
      .sidebar-shell { background: #0d1d32; }
      .sidebar-section { margin-bottom: 1.35rem; }
      .sidebar-section-label { padding: 0 10px 7px; color: #64748b; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
