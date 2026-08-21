@@ -160,6 +160,7 @@ func (s *AuthServer) seedUsers() error {
 func (s *AuthServer) httpServer() *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", s.handleHealth)
+	mux.HandleFunc("/api", s.handleAPI)
 	mux.HandleFunc("/api/health", s.handleHealth)
 	mux.HandleFunc("/api/auth/login", s.handleLogin)
 	mux.HandleFunc("/api/auth/refresh", s.handleRefresh)
@@ -187,6 +188,10 @@ func frontendHandler(root string) http.Handler {
 
 func (s *AuthServer) handleHealth(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+}
+
+func (s *AuthServer) handleAPI(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{"service": "rkm-service-manager", "status": "ok"})
 }
 
 func (s *AuthServer) handleLogin(w http.ResponseWriter, r *http.Request) {
