@@ -1,10 +1,14 @@
 FROM node:22-alpine AS frontend
 
 WORKDIR /frontend
+RUN apk add --no-cache git
+COPY .git /repo/.git
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
-RUN npm run build
+ARG VITE_COMMIT_SHA=unknown
+ENV GIT_DIR=/repo/.git
+RUN COMMIT="$VITE_COMMIT_SHA" && test "$COMMIT" != unknown || COMMIT="$(git --git-dir=/repo/.git rev-parse --short HEAD 2>/dev/null || printf unknown)"; VITE_COMMIT_SHA="$COMMIT" npm run build
 
 FROM golang:1.25-alpine AS build
 

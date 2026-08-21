@@ -87,11 +87,19 @@
      .zenit-theme-toggle { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #d9e2ef; border-radius: 50%; background: #fff; color: #061744; cursor: pointer; font-size: 17px; transition: background .15s, border-color .15s; }
      .zenit-theme-toggle:hover { border-color: #1682ff; }
      .zenit-login-card { padding: clamp(28px, 5.2vh, 54px) clamp(30px, 4.5vw, 58px); border: 1px solid #cbd8e8; border-radius: 18px; background: rgba(255,255,255,.97); box-shadow: 0 26px 70px rgba(10,27,68,.14); }
+     .zenit-card-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 26px; padding: 10px 12px; border: 1px solid #d9e2ef; border-radius: 8px; background: #f8fbff; }
+     .zenit-card-status code { color: #7890ad; font-size: 11px; }
      .zenit-login-card .rkm-input { color: #061744; background: #fff; border-color: #d9e2ef; }
      .zenit-login-card .rkm-input:focus { border-color: #1682ff; background: #fff; box-shadow: 0 0 0 3px rgba(22,130,255,.12); }
      .zenit-login-card .rkm-input::placeholder { color: #9aa8bd; }
      .zenit-submit { border: 1px solid #006eff; background: linear-gradient(135deg, #006eff, #1682ff); color: #fff; box-shadow: 0 10px 20px rgba(0,110,255,.18); }
      .zenit-submit:hover { background: #005edb; }
+     .zenit-build-info { margin-top: 16px; padding-top: 12px; border-top: 1px solid #d9e2ef; color: #7b8da8; font-size: 11px; text-align: center; }
+     .zenit-build-info code { color: #1682ff; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; }
+     .rkm-tooltip { display: inline-block; outline: none; }
+     .rkm-tooltip-target { display: inline-block; }
+     .rkm-tooltip-content { position: fixed; z-index: 100; width: max-content; max-width: 280px; padding: 7px 9px; border: 1px solid #304766; border-radius: 6px; background: #0b192d; color: #e6eef8; box-shadow: 0 8px 20px rgba(0,0,0,.2); font-size: 11px; line-height: 1.45; white-space: pre-line; text-align: left; opacity: 0; pointer-events: none; transform: translate(-50%, calc(-100% - 12px)); transition: opacity .15s; }
+     .rkm-tooltip:hover .rkm-tooltip-content, .rkm-tooltip:focus-within .rkm-tooltip-content { opacity: 1; }
      .zenit-dev-access { max-width: 1100px; }
      .zenit-dev-card { border: 1px solid #d2deec; border-radius: 10px; background: #fff; transition: transform .15s, border-color .15s, box-shadow .15s, background .15s; }
      .zenit-dev-card:hover, .zenit-dev-card:focus-visible { transform: translateY(-3px); border-color: #1682ff; background: #f8fbff; box-shadow: 0 12px 26px rgba(0,110,255,.16), 0 0 0 1px rgba(22,130,255,.2); outline: none; }
@@ -104,12 +112,14 @@
      .zenit-dark .zenit-topbar-divider { background: #263852; }
      .zenit-dark .zenit-theme-toggle { border-color: #304766; background: #12233b; color: #f7c948; }
      .zenit-dark .zenit-login-card { border-color: #263852; background: #10213a; box-shadow: 0 26px 70px rgba(0,0,0,.28); }
+     .zenit-dark .zenit-card-status { border-color: #263852; background: #0b192d; }
      .zenit-dark .zenit-login-card .text-slate-900 { color: #f4f8fd; }
      .zenit-dark .zenit-login-card .text-slate-500 { color: #9fb2ca; }
      .zenit-dark .zenit-login-card label { color: #dbe7f5; }
      .zenit-dark .zenit-login-card .rkm-input { color: #f4f8fd; background: #0b192d; border-color: #304766; }
      .zenit-dark .zenit-login-card .rkm-input:focus { background: #0d2039; border-color: #4d9bff; }
      .zenit-dark .zenit-login-card .rkm-input::placeholder { color: #6e819b; }
+     .zenit-dark .zenit-build-info { border-color: #263852; color: #7890ad; }
      .zenit-dark .zenit-dev-access h2 { color: #f4f8fd; }
      .zenit-dark .zenit-dev-access p { color: #9fb2ca; }
      .zenit-dark .zenit-dev-card { border-color: #263852; background: #10213a; }
