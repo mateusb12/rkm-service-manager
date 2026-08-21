@@ -16,7 +16,7 @@ type DevCredential = { email: string; password: string; role: string; label: str
 type AuthContextValue = { user: AuthUser | null; loading: boolean; backendOnline: boolean; login: (email: string, password: string) => Promise<void>; logout: () => Promise<void>; devCredentials: DevCredential[] };
 const AuthContext = createContext<AuthContextValue | null>(null);
 const DEFAULT_DEV_CREDENTIALS: DevCredential[] = [
-  { email: 'admin@rkm.com.br', password: 'Rkm@123456', role: 'admin', label: 'Admin / SGI' },
+  { email: 'admin@rkm.com.br', password: 'Rkm@123456', role: 'admin', label: 'Admin' },
   { email: 'operador@rkm.com.br', password: 'Rkm@123456', role: 'operator', label: 'Operador / Técnico' },
   { email: 'supervisor@rkm.com.br', password: 'Rkm@123456', role: 'supervisor', label: 'Supervisor' },
   { email: 'qualidade@rkm.com.br', password: 'Rkm@123456', role: 'quality', label: 'Qualidade' },
@@ -108,7 +108,7 @@ export function LoginPage() {
   };
   return <main className={`zenit-login min-h-screen text-slate-700 flex ${darkMode ? 'zenit-dark' : ''}`}>
     <section className="zenit-login-main">
-      <div className="zenit-login-topbar"><span className="zenit-topbar-brand"><span className="zenit-brand-mark">R</span><span>RKM <b>SGI</b></span></span><span className="zenit-topbar-divider" /><span className="zenit-topbar-product">RKM Service Manager</span><button type="button" className="zenit-theme-toggle" aria-label={darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'} onClick={() => setDarkMode((value) => { const next = !value; try { localStorage.setItem('rkm-login-theme', next ? 'dark' : 'light'); } catch {} return next; })}>{darkMode ? '☀' : '☾'}</button></div>
+      <div className="zenit-login-topbar"><span className="zenit-topbar-brand"><span className="zenit-brand-mark">R</span><span>RKM</span></span><span className="zenit-topbar-divider" /><span className="zenit-topbar-product">RKM Service Manager</span><button type="button" className="zenit-theme-toggle" aria-label={darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'} onClick={() => setDarkMode((value) => { const next = !value; try { localStorage.setItem('rkm-login-theme', next ? 'dark' : 'light'); } catch {} return next; })}>{darkMode ? '☀' : '☾'}</button></div>
       <div className="flex-1 w-full flex items-center justify-center py-8">
       <form onSubmit={submit} className="w-full max-w-md zenit-surface zenit-login-card">
         <div className="zenit-card-status"><span className="zenit-status"><i className={backendOnline ? 'online' : 'offline'} />{backendOnline ? 'Sistema online' : 'Sistema offline'}</span><code>:8787</code></div>

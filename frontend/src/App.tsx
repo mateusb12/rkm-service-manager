@@ -26,7 +26,7 @@ const STEPS = [
     { id: 17, key: 'nonConformity', label: 'NC, retrabalho, interrupção', short: 'NC', critical: false },
     { id: 18, key: 'technicalValidation', label: 'Validação técnica', short: 'Validação', critical: false },
     { id: 19, key: 'release', label: 'Liberação', short: 'Liberação', critical: false },
-    { id: 20, key: 'sgiClassification', label: 'Classificação SGI', short: 'Classificação', critical: false },
+    { id: 20, key: 'classification', label: 'Classificação', short: 'Classificação', critical: false },
 ];
 const SERVICE_TYPES = [
     'Inspeção',
@@ -72,7 +72,7 @@ const initialRecord = () => ({
     nonConformity: { houve: false, tipos: [], interrompida: false, motivoInterrupcao: '', registroNum: '', acaoImediata: '', responsavel: '', evidencia: false },
     technicalValidation: { exigiu: false, motivo: '', validador: '', decisao: '', observacao: '', evidencia: false },
     release: { laudoEmitido: false, laudoFinal: '', checklistCompleto: false, evidenciasVinculadas: false, componentesRegistrados: false, preCargaRegistrada: false, resultadoRegistrado: false, condicaoFinal: '', responsavelLiberacao: '', responsavelPCP: '', dataLiberacao: '', notes: '' },
-    sgiClassification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
+    classification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
     assignedUsers: { operatorId: '', operatorName: '', supervisorId: '', supervisorName: '', qualityId: '', qualityName: '', pcpId: '', pcpName: '' },
     rolePermissions: {},
     visibility: { visibleToRoles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], editableByRoles: ['admin', 'operator'] },
@@ -86,7 +86,7 @@ const initialRecord = () => ({
    USUÁRIOS, PERFIS E PERMISSÕES (Tarefa 1 — base simulada)
    ============================================================ */
 const ROLES = [
-    { key: 'admin', label: 'Admin / SGI', tagClass: 'tag-violet' },
+    { key: 'admin', label: 'Admin', tagClass: 'tag-violet' },
     { key: 'supervisor', label: 'Supervisor', tagClass: 'tag-blue' },
     { key: 'quality', label: 'Qualidade', tagClass: 'tag-emerald' },
     { key: 'pcp', label: 'PCP', tagClass: 'tag-amber' },
@@ -161,7 +161,7 @@ const sampleServices = [
 /* ============================================================
    UTIL — persistência local (rascunho)
    ============================================================ */
-const draftKey = (it) => `rkm_sgi_${(it || 'IT001').toLowerCase()}_draft_v1`;
+const draftKey = (it) => `rkm_${(it || 'IT001').toLowerCase()}_draft_v1`;
 const loadDraft = (it = 'IT001') => {
     try {
         const raw = localStorage.getItem(draftKey(it));
@@ -263,9 +263,9 @@ const computeAlerts = (r) => {
 /* ============================================================
    COMPONENTES — Tags
    ============================================================ */
-const StatusTag = ({ status }) => {
+const StatusTag = ({ status, className = '' }) => {
     if (!status)
-        return React.createElement("span", { className: "tag tag-slate" }, "\u2014");
+        return React.createElement("span", { className: 'tag tag-slate ' + className }, "\u2014");
     const s = status.toLowerCase();
     let cls = 'tag-slate';
     if (/(aprovado|liberado|conclu)/.test(s) && !/ressalva/.test(s))
@@ -280,11 +280,11 @@ const StatusTag = ({ status }) => {
         cls = 'tag-blue';
     else if (/(reprovado|condenado|cancelad|bloqueado|interromp)/.test(s))
         cls = 'tag-red';
-    return React.createElement("span", { className: 'tag ' + cls }, status);
+    return React.createElement("span", { className: 'tag ' + cls + ' ' + className }, status);
 };
-const PriorityTag = ({ priority }) => {
+const PriorityTag = ({ priority, className = '' }) => {
     const map = { 'Baixa': 'tag-emerald', 'Média': 'tag-amber', 'Alta': 'tag-red', 'Crítica': 'tag-red' };
-    return React.createElement("span", { className: 'tag ' + (map[priority] || 'tag-slate') }, priority || '—');
+    return React.createElement("span", { className: 'tag ' + (map[priority] || 'tag-slate') + ' ' + className }, priority || '—');
 };
 /* ============================================================
    COMPONENTES — Inputs primitivos
@@ -324,7 +324,7 @@ const Sidebar = ({ view, setView, alertCount, activeIT, activeUser, activeRole }
         React.createElement("div", { className: "px-5 py-5 border-b border-rkmborder flex items-center gap-3" },
             React.createElement("div", { className: "w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"),
             React.createElement("div", null,
-                React.createElement("div", { className: "text-[15px] font-semibold leading-tight" }, "RKM SGI"),
+                React.createElement("div", { className: "text-[15px] font-semibold leading-tight" }, "RKM Service Manager"),
                 React.createElement("div", { className: "text-[11px] text-slate-400" }, "Servi\u00E7os Hidr\u00E1ulicos"))),
         React.createElement("nav", { className: "flex-1 py-3 px-2 flex flex-col gap-1" }, items.map(it => (React.createElement("button", { key: it.key, onClick: () => setView(it.key), className: 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] text-left transition ' +
                 (view === it.key ? 'bg-blue-500/15 text-blue-100 border border-blue-500/30' : 'text-slate-300 hover:bg-rkmcard2 border border-transparent') },
@@ -382,13 +382,13 @@ const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeR
         React.createElement("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: it.icon })),
         React.createElement("span", { className: "flex-1" }, it.label), it.key === 'pendencies' && alertCount > 0 && React.createElement("span", { className: "badge-num" }, alertCount));
     return React.createElement("aside", { className: "hidden md:flex sticky top-0 h-screen w-56 shrink-0 flex-col sidebar-shell" },
-        React.createElement("div", { className: "px-4 py-4 flex items-center gap-3" }, React.createElement("div", { className: "w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"), React.createElement("div", null, React.createElement("div", { className: "text-[15px] font-semibold leading-tight" }, "RKM SGI"), React.createElement("div", { className: "text-[11px] text-slate-400" }, "Serviços Hidráulicos"))),
+        React.createElement("div", { className: "px-4 py-4 flex items-center gap-3" }, React.createElement("div", { className: "w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"), React.createElement("div", null, React.createElement("div", { className: "text-[15px] font-semibold leading-tight" }, "RKM Service Manager"), React.createElement("div", { className: "text-[11px] text-slate-400" }, "Serviços Hidráulicos"))),
         React.createElement("nav", { className: "flex-1 px-3 pt-2" }, groups.map(([label, group]) => group.length > 0 && React.createElement("div", { key: label, className: "sidebar-section" }, React.createElement("div", { className: "sidebar-section-label" }, label), group.map(renderItem)))),
         React.createElement("div", { className: "px-4 py-3 sidebar-user flex items-center gap-3" }, React.createElement("div", { className: "w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-[12px] font-bold" }, user.short), React.createElement("div", { className: "text-[12px] leading-tight min-w-0" }, React.createElement("div", { className: "font-medium truncate" }, user.name), React.createElement("div", { className: "text-slate-400 truncate" }, role.label))));
 };
 const CleanTopBar = ({ view, alerts, onJumpAlerts, darkMode, onToggleDarkMode, onLogout }) => {
     const labels = { dashboard: 'Painel', mybench: 'Minha Bancada', supervisor: 'Visão do Supervisor', quality: 'Visão da Qualidade', pcp: 'Visão do PCP', it001: 'IT001 — Bexiga', it002: 'IT002 — Pistão', pendencies: 'Pendências', evidences: 'Evidências', summary: 'Resumo / Laudo', authHistory: 'Histórico de autorizações' };
-    return React.createElement("header", { className: "topbar px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20" }, React.createElement("div", { className: "flex-1 min-w-0" }, React.createElement("div", { className: "text-[12px] text-slate-500" }, "RKM SGI"), React.createElement("div", { className: "text-[15px] font-semibold text-slate-100 truncate" }, labels[view] || 'Operações')), React.createElement("button", { onClick: onJumpAlerts, className: 'btn ' + (alerts.length ? 'btn-danger' : 'btn-ghost') }, React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" })), alerts.length ? `${alerts.length} alerta${alerts.length > 1 ? 's' : ''}` : 'Sem alertas'), React.createElement("button", { onClick: onToggleDarkMode, className: "btn btn-ghost", title: darkMode ? "Ativar modo claro" : "Ativar modo escuro", "aria-label": darkMode ? "Ativar modo claro" : "Ativar modo escuro" }, darkMode ? "☀️" : "🌙"), React.createElement("button", { onClick: onLogout, className: "topbar-logout" }, "Sair"));
+    return React.createElement("header", { className: "topbar px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20" }, React.createElement("div", { className: "flex-1 min-w-0" }, React.createElement("div", { className: "text-[12px] text-slate-500" }, "RKM Service Manager"), React.createElement("div", { className: "text-[15px] font-semibold text-slate-100 truncate" }, labels[view] || 'Operações')), React.createElement("button", { onClick: onJumpAlerts, className: 'btn ' + (alerts.length ? 'btn-danger' : 'btn-ghost') }, React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" })), alerts.length ? `${alerts.length} alerta${alerts.length > 1 ? 's' : ''}` : 'Sem alertas'), React.createElement("button", { onClick: onToggleDarkMode, className: "btn btn-ghost", title: darkMode ? "Ativar modo claro" : "Ativar modo escuro", "aria-label": darkMode ? "Ativar modo claro" : "Ativar modo escuro" }, darkMode ? "☀️" : "🌙"), React.createElement("button", { onClick: onLogout, className: "topbar-logout" }, "Sair"));
 };
 /* ============================================================
    VIEW — Dashboard (cards + tabela referenciando o layout)
@@ -459,8 +459,8 @@ const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume00
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Equipamento"),
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "T\u00E9cnico"),
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Data"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Status"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Prioridade"),
+                            React.createElement("th", { className: "text-center font-medium px-5 py-3" }, "Status"),
+                            React.createElement("th", { className: "text-center font-medium px-5 py-3" }, "Prioridade"),
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Etapa"),
                             React.createElement("th", { className: "text-right font-medium px-5 py-3" }, "A\u00E7\u00F5es"))),
                     React.createElement("tbody", null, filtered.map(s => (React.createElement("tr", { key: s.id, className: "border-t border-rkmborder hover:bg-rkmcard2/40 transition" },
@@ -471,10 +471,10 @@ const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume00
                         React.createElement("td", { className: "px-5 py-3 text-slate-300" }, s.equipment),
                         React.createElement("td", { className: "px-5 py-3 text-slate-300" }, s.tech),
                         React.createElement("td", { className: "px-5 py-3 text-slate-400" }, s.date),
-                        React.createElement("td", { className: "px-5 py-3" },
-                            React.createElement(StatusTag, { status: s.status })),
-                        React.createElement("td", { className: "px-5 py-3" },
-                            React.createElement(PriorityTag, { priority: s.priority })),
+                        React.createElement("td", { className: "px-5 py-3 text-center" },
+                            React.createElement(StatusTag, { status: s.status, className: "table-tag table-status" })),
+                        React.createElement("td", { className: "px-5 py-3 text-center" },
+                            React.createElement(PriorityTag, { priority: s.priority, className: "table-tag table-priority" })),
                         React.createElement("td", { className: "px-5 py-3 text-slate-400" },
                             s.step,
                             "/20"),
@@ -917,18 +917,18 @@ const StepRelease = ({ r, set }) => (React.createElement(SectionCard, { title: "
             React.createElement(TextInput, { value: r.release.responsavelPCP, onChange: v => set('release.responsavelPCP', v) }))),
     React.createElement(Field, { label: "Observa\u00E7\u00F5es finais" },
         React.createElement(TextArea, { value: r.release.notes, onChange: v => set('release.notes', v) }))));
-const StepClassification = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o SGI", subtitle: "Fechamento \u2014 classifica\u00E7\u00E3o do servi\u00E7o para SGI e melhorias." },
-    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para o SGI" },
-        React.createElement(Select, { value: r.sgiClassification.classificacao, onChange: v => set('sgiClassification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
+const StepClassification = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o Qualidade", subtitle: "Fechamento \u2014 classifica\u00E7\u00E3o do servi\u00E7o para melhorias." },
+    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para melhorias" },
+        React.createElement(Select, { value: r.classification.classificacao, onChange: v => set('classification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
     React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2" },
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoQualidade, onChange: v => set('sgiClassification.riscoQualidade', v), label: "Houve risco de qualidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoSST, onChange: v => set('sgiClassification.riscoSST', v), label: "Houve risco de SST" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoAmbiental, onChange: v => set('sgiClassification.riscoAmbiental', v), label: "Houve risco ambiental" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoRastreabilidade, onChange: v => set('sgiClassification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.impactoEstoque, onChange: v => set('sgiClassification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.acaoCorretiva, onChange: v => set('sgiClassification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
+        React.createElement(Toggle, { checked: r.classification.riscoQualidade, onChange: v => set('classification.riscoQualidade', v), label: "Houve risco de qualidade" }),
+        React.createElement(Toggle, { checked: r.classification.riscoSST, onChange: v => set('classification.riscoSST', v), label: "Houve risco de SST" }),
+        React.createElement(Toggle, { checked: r.classification.riscoAmbiental, onChange: v => set('classification.riscoAmbiental', v), label: "Houve risco ambiental" }),
+        React.createElement(Toggle, { checked: r.classification.riscoRastreabilidade, onChange: v => set('classification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
+        React.createElement(Toggle, { checked: r.classification.impactoEstoque, onChange: v => set('classification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
+        React.createElement(Toggle, { checked: r.classification.acaoCorretiva, onChange: v => set('classification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
     React.createElement(Field, { label: "Observa\u00E7\u00E3o para melhoria do processo / IT" },
-        React.createElement(TextArea, { value: r.sgiClassification.observacaoMelhoria, onChange: v => set('sgiClassification.observacaoMelhoria', v) }))));
+        React.createElement(TextArea, { value: r.classification.observacaoMelhoria, onChange: v => set('classification.observacaoMelhoria', v) }))));
 const STEP_RENDERERS = {
     1: StepOpening, 2: StepEquipment, 3: StepReceived, 4: StepStartConditions, 5: StepSafety,
     6: StepDepressurization, 7: StepDisassembly, 8: StepInspection, 9: StepTechnicalDecision,
@@ -961,7 +961,7 @@ const STEPS_IT002 = [
     { id: 17, key: 'nonConformity', label: 'NC, retrabalho, interrupção', short: 'NC', critical: false },
     { id: 18, key: 'technicalValidation', label: 'Validação técnica (supervisor)', short: 'Supervisor', critical: false },
     { id: 19, key: 'release', label: 'Liberação', short: 'Liberação', critical: false },
-    { id: 20, key: 'sgiClassification', label: 'Classificação SGI', short: 'Classificação', critical: false },
+    { id: 20, key: 'classification', label: 'Classificação', short: 'Classificação', critical: false },
 ];
 const SERVICE_TYPES_IT002 = [
     'Avaliação técnica',
@@ -996,7 +996,7 @@ const initialRecordIT002 = () => ({
     nonConformity: { houve: false, tipos: [], interrompida: false, motivoInterrupcao: '', registroNum: '', acaoImediata: '', responsavel: '', evidencia: false },
     technicalValidation: { exigiu: false, motivo: '', validador: '', decisao: '', observacao: '', evidencia: false },
     release: { laudoEmitido: false, laudoFinal: '', checklistCompleto: false, evidenciasVinculadas: false, componentesRegistrados: false, pressaoAplicadaRegistrada: false, resultadoRegistrado: false, condicaoFinal: '', responsavelLiberacao: '', responsavelPCP: '', dataLiberacao: '', liseLancado: false, liseId: '', notes: '' },
-    sgiClassification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
+    classification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
     assignedUsers: { operatorId: '', operatorName: '', supervisorId: '', supervisorName: '', qualityId: '', qualityName: '', pcpId: '', pcpName: '' },
     rolePermissions: {},
     visibility: { visibleToRoles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], editableByRoles: ['admin', 'operator'] },
@@ -1424,18 +1424,18 @@ const StepReleaseIT002 = ({ r, set }) => (React.createElement(SectionCard, { tit
         React.createElement("div", { className: "text-[11.5px] text-slate-500" }, "Campo preparado para evolu\u00E7\u00E3o. N\u00E3o bloqueia libera\u00E7\u00E3o enquanto Lise est\u00E1 em implanta\u00E7\u00E3o (IT002 \u00A73, \u00A718; APH-15).")),
     React.createElement(Field, { label: "Observa\u00E7\u00F5es finais" },
         React.createElement(TextArea, { value: r.release.notes, onChange: v => set('release.notes', v) }))));
-const StepClassificationIT002 = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o SGI", subtitle: "IT002 \u00A719 \u2014 fechamento e classifica\u00E7\u00E3o do servi\u00E7o para o SGI." },
-    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para o SGI" },
-        React.createElement(Select, { value: r.sgiClassification.classificacao, onChange: v => set('sgiClassification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Pendente validação Qualidade', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
+const StepClassificationIT002 = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o Qualidade", subtitle: "IT002 \u00A719 \u2014 fechamento e classifica\u00E7\u00E3o do servi\u00E7o para melhorias." },
+    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para melhorias" },
+        React.createElement(Select, { value: r.classification.classificacao, onChange: v => set('classification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Pendente validação Qualidade', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
     React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2" },
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoQualidade, onChange: v => set('sgiClassification.riscoQualidade', v), label: "Houve risco de qualidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoSST, onChange: v => set('sgiClassification.riscoSST', v), label: "Houve risco de SST" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoAmbiental, onChange: v => set('sgiClassification.riscoAmbiental', v), label: "Houve risco ambiental" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoRastreabilidade, onChange: v => set('sgiClassification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.impactoEstoque, onChange: v => set('sgiClassification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.acaoCorretiva, onChange: v => set('sgiClassification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
+        React.createElement(Toggle, { checked: r.classification.riscoQualidade, onChange: v => set('classification.riscoQualidade', v), label: "Houve risco de qualidade" }),
+        React.createElement(Toggle, { checked: r.classification.riscoSST, onChange: v => set('classification.riscoSST', v), label: "Houve risco de SST" }),
+        React.createElement(Toggle, { checked: r.classification.riscoAmbiental, onChange: v => set('classification.riscoAmbiental', v), label: "Houve risco ambiental" }),
+        React.createElement(Toggle, { checked: r.classification.riscoRastreabilidade, onChange: v => set('classification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
+        React.createElement(Toggle, { checked: r.classification.impactoEstoque, onChange: v => set('classification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
+        React.createElement(Toggle, { checked: r.classification.acaoCorretiva, onChange: v => set('classification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
     React.createElement(Field, { label: "Observa\u00E7\u00E3o para melhoria do processo / IT" },
-        React.createElement(TextArea, { value: r.sgiClassification.observacaoMelhoria, onChange: v => set('sgiClassification.observacaoMelhoria', v) }))));
+        React.createElement(TextArea, { value: r.classification.observacaoMelhoria, onChange: v => set('classification.observacaoMelhoria', v) }))));
 const STEP_RENDERERS_IT002 = {
     1: StepOpeningIT002, 2: StepEquipmentIT002, 3: StepReceivedIT002, 4: StepStartConditionsIT002, 5: StepSafetyIsolationIT002,
     6: StepAssessmentPistonIT002, 7: StepAssessmentShellIT002, 8: StepAssessmentCapsIT002, 9: StepAcceptanceDecisionIT002,
@@ -1802,45 +1802,6 @@ const AuthorizationHistoryPanel = ({ rec001, rec002, scope = 'all', title = 'His
                 "Coment\u00E1rio/justificativa: ",
                 h.comment))))))));
 };
-const QuickActionsPanel = ({ activeRole, activeIT, ctx, setView, setActiveIT, onRequestAuth }) => {
-    const cfg = IT_CONFIG[activeIT || 'IT001'];
-    const stepInfo = (cfg.steps || []).find(s => s.id === ctx.step) || {};
-    const go = (viewKey, itCode) => {
-        if (itCode)
-            setActiveIT(itCode);
-        setView(viewKey);
-    };
-    const openCurrentRequest = () => {
-        var _a, _b, _c, _d;
-        if (!onRequestAuth)
-            return;
-        onRequestAuth({
-            it: activeIT,
-            osNumber: ((_b = (_a = ctx.record) === null || _a === void 0 ? void 0 : _a.identification) === null || _b === void 0 ? void 0 : _b.osNumber) || '',
-            client: ((_d = (_c = ctx.record) === null || _c === void 0 ? void 0 : _c.identification) === null || _d === void 0 ? void 0 : _d.client) || '',
-            stepId: ctx.step || 0,
-            stepLabel: stepInfo.label || '',
-            alertMessage: '',
-            requestType: 'Validação técnica',
-            suggestedReason: '',
-            suggestedCriticality: 'Média',
-        });
-    };
-    return (React.createElement("aside", { className: "hidden 2xl:flex fixed right-4 top-[86px] z-30 w-56 flex-col gap-2 rkm-card p-3 shadow-xl shadow-slate-950/30" },
-        React.createElement("div", { className: "border-b border-rkmborder pb-2 mb-1" },
-            React.createElement("div", { className: "text-[11px] uppercase tracking-wider text-blue-300" }, "Acesso r\u00E1pido"),
-            React.createElement("div", { className: "text-[12px] text-slate-500" }, "Solicita\u00E7\u00F5es \u00B7 filas \u00B7 hist\u00F3rico")),
-        activeRole === 'operator' && (React.createElement("button", { className: "btn btn-primary w-full justify-start text-[12px]", onClick: openCurrentRequest }, "Solicitar aprova\u00E7\u00E3o")),
-        React.createElement("button", { className: "btn btn-ghost w-full justify-start text-[12px]", onClick: () => go('mybench') }, "Minhas solicita\u00E7\u00F5es"),
-        (activeRole === 'admin' || activeRole === 'supervisor') && (React.createElement("button", { className: "btn btn-ghost w-full justify-start text-[12px]", onClick: () => go('supervisor') }, "Fila Supervisor")),
-        (activeRole === 'admin' || activeRole === 'quality') && (React.createElement("button", { className: "btn btn-ghost w-full justify-start text-[12px]", onClick: () => go('quality') }, "Fila Qualidade")),
-        (activeRole === 'admin' || activeRole === 'pcp') && (React.createElement("button", { className: "btn btn-ghost w-full justify-start text-[12px]", onClick: () => go('pcp') }, "Fila PCP")),
-        React.createElement("button", { className: "btn btn-ghost w-full justify-start text-[12px]", onClick: () => go('authHistory') }, "Hist\u00F3rico"),
-        React.createElement("div", { className: "border-t border-rkmborder pt-2 mt-1 grid grid-cols-2 gap-2" },
-            React.createElement("button", { className: "btn btn-ghost justify-center text-[11px] !py-1.5 !px-2", onClick: () => go('it001', 'IT001') }, "IT001"),
-            React.createElement("button", { className: "btn btn-ghost justify-center text-[11px] !py-1.5 !px-2", onClick: () => go('it002', 'IT002') }, "IT002")),
-        React.createElement("button", { className: "btn btn-ghost w-full justify-start text-[12px]", onClick: () => go('pendencies') }, "Pend\u00EAncias")));
-};
 /* ============================================================
        BLOCO 2B.1 + 2B.2 — Filas e decisões de aprovação
        ============================================================ */
@@ -1979,7 +1940,7 @@ const PCPAuthQueue = ({ rec001, rec002, activeRole, onDecisionClick }) => {
 /* Visão Admin — agrega todas */
 const AdminAuthQueueAll = ({ rec001, rec002, activeRole, onDecisionClick }) => {
     const all = getAllAuthorizationRequests(rec001, rec002);
-    return (React.createElement(AuthRequestQueue, { title: "Todas as solicita\u00E7\u00F5es de autoriza\u00E7\u00E3o", hint: "Vis\u00E3o consolidada IT001 + IT002 (auditoria). Admin/SGI pode simular decis\u00E3o no MVP.", requests: all, emptyMessage: "Nenhuma solicita\u00E7\u00E3o criada ainda em qualquer rascunho.", showApproverHint: true, activeRole: activeRole, onDecisionClick: onDecisionClick }));
+    return (React.createElement(AuthRequestQueue, { title: "Todas as solicita\u00E7\u00F5es de autoriza\u00E7\u00E3o", hint: "Vis\u00E3o consolidada IT001 + IT002 (auditoria). Admin pode simular decis\u00E3o no MVP.", requests: all, emptyMessage: "Nenhuma solicita\u00E7\u00E3o criada ainda em qualquer rascunho.", showApproverHint: true, activeRole: activeRole, onDecisionClick: onDecisionClick }));
 };
 /* Modal de decisão — Tarefa 2B.2 */
 const AuthDecisionModal = ({ open, onClose, request, decision, activeUser, activeRole, onConfirm }) => {
@@ -2454,13 +2415,13 @@ const SummaryView = ({ record, alerts, onExport, activeIT }) => {
                     React.createElement(Row, { label: "Condi\u00E7\u00E3o final", value: React.createElement(StatusTag, { status: r.release.condicaoFinal }) }),
                     React.createElement(Row, { label: "Lise", value: r.release.liseLancado ? `Lançado — ${r.release.liseId || 'sem ID'}` : 'Não lançado (sistema em implantação)' }))),
             React.createElement("div", { className: "rkm-card p-5" },
-                React.createElement("div", { className: "font-semibold mb-2" }, "SGI"),
-                React.createElement(Row, { label: "Classifica\u00E7\u00E3o", value: React.createElement(StatusTag, { status: r.sgiClassification.classificacao }) }),
-                React.createElement(Row, { label: "Risco qualidade", value: r.sgiClassification.riscoQualidade ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "Risco SST", value: r.sgiClassification.riscoSST ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "Risco ambiental", value: r.sgiClassification.riscoAmbiental ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "Risco rastreabilidade", value: r.sgiClassification.riscoRastreabilidade ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "A\u00E7\u00E3o corretiva sugerida", value: r.sgiClassification.acaoCorretiva ? 'Sim' : 'Não' }))),
+                React.createElement("div", { className: "font-semibold mb-2" }, "Qualidade"),
+                React.createElement(Row, { label: "Classifica\u00E7\u00E3o", value: React.createElement(StatusTag, { status: r.classification.classificacao }) }),
+                React.createElement(Row, { label: "Risco qualidade", value: r.classification.riscoQualidade ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "Risco SST", value: r.classification.riscoSST ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "Risco ambiental", value: r.classification.riscoAmbiental ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "Risco rastreabilidade", value: r.classification.riscoRastreabilidade ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "A\u00E7\u00E3o corretiva sugerida", value: r.classification.acaoCorretiva ? 'Sim' : 'Não' }))),
         React.createElement("div", { className: "rkm-card p-5" },
             React.createElement("div", { className: "font-semibold mb-2" }, "Estrutura de exporta\u00E7\u00E3o para Google Sheets"),
             React.createElement("div", { className: "text-[12px] text-slate-400 mb-3" },
@@ -2522,8 +2483,8 @@ const MyBenchView = ({ services, activeUser, openIT001, openIT002, rec001, rec00
                             React.createElement("th", { className: "text-left px-5 py-3" }, "Cliente"),
                             React.createElement("th", { className: "text-left px-5 py-3" }, "Equipamento"),
                             React.createElement("th", { className: "text-left px-5 py-3" }, "Etapa"),
-                            React.createElement("th", { className: "text-left px-5 py-3" }, "Status"),
-                            React.createElement("th", { className: "text-left px-5 py-3" }, "Prioridade"))),
+                            React.createElement("th", { className: "text-center px-5 py-3" }, "Status"),
+                            React.createElement("th", { className: "text-center px-5 py-3" }, "Prioridade"))),
                     React.createElement("tbody", null, mine.map(s => (React.createElement("tr", { key: s.id, className: "border-t border-rkmborder hover:bg-rkmcard2/40 transition" },
                         React.createElement("td", { className: "px-5 py-3 font-medium text-slate-100" }, s.id),
                         React.createElement("td", { className: "px-5 py-3" },
@@ -2533,10 +2494,10 @@ const MyBenchView = ({ services, activeUser, openIT001, openIT002, rec001, rec00
                         React.createElement("td", { className: "px-5 py-3 text-slate-400" },
                             s.step,
                             "/20"),
-                        React.createElement("td", { className: "px-5 py-3" },
-                            React.createElement(StatusTag, { status: s.status })),
-                        React.createElement("td", { className: "px-5 py-3" },
-                            React.createElement(PriorityTag, { priority: s.priority })))))))))),
+                        React.createElement("td", { className: "px-5 py-3 text-center" },
+                            React.createElement(StatusTag, { status: s.status, className: "table-tag table-status" })),
+                        React.createElement("td", { className: "px-5 py-3 text-center" },
+                            React.createElement(PriorityTag, { priority: s.priority, className: "table-tag table-priority" })))))))))),
         rec001 && rec002 && (React.createElement(MyAuthRequestsList, { rec001: rec001, rec002: rec002, activeUser: activeUser })),
         React.createElement("div", { className: "rkm-card p-5" },
             React.createElement("div", { className: "text-[13.5px] font-semibold mb-2" }, "Diretrizes operacionais"),
@@ -2933,7 +2894,6 @@ const App = () => {
                 React.createElement("div", { className: "mt-4" },
                     React.createElement(AuthorizationHistoryPanel, { rec001: rec001, rec002: rec002, scope: "all", title: "Hist\u00F3rico global de autoriza\u00E7\u00F5es" })))),
             renderView()),
-        React.createElement(QuickActionsPanel, { activeRole: activeRole, activeIT: activeIT, ctx: ctx, setView: handleSetView, setActiveIT: setActiveIT, onRequestAuth: handleRequestAuth }),
         React.createElement(AuthRequestModal, { open: authModal.open, onClose: closeAuthModal, onSubmit: handleSubmitAuth, context: authModal.context || {}, activeUser: activeUser, activeRole: activeRole }),
         React.createElement(AuthDecisionModal, { open: decisionModal.open, onClose: closeDecisionModal, request: decisionModal.request, decision: decisionModal.decision, activeUser: activeUser, activeRole: activeRole, onConfirm: handleConfirmDecision })));
 };

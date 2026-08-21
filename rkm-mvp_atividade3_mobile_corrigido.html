@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RKM SGI — Registro de Serviços Hidráulicos (IT001 — Acumulador Bexiga)</title>
+  <title>RKM Service Manager — Registro de Serviços Hidráulicos (IT001 — Acumulador Bexiga)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -88,7 +88,7 @@
   <div id="root">
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a1729;color:#e2e8f0;font-family:Inter,system-ui,sans-serif;padding:24px;text-align:center;">
       <div>
-        <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Carregando RKM SGI...</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Carregando RKM Service Manager...</div>
         <div style="font-size:13px;color:#94a3b8;">Se esta mensagem permanecer, abra no Chrome com internet ativa.</div>
       </div>
     </div>
@@ -135,7 +135,7 @@ const STEPS = [
     { id: 17, key: 'nonConformity', label: 'NC, retrabalho, interrupção', short: 'NC', critical: false },
     { id: 18, key: 'technicalValidation', label: 'Validação técnica', short: 'Validação', critical: false },
     { id: 19, key: 'release', label: 'Liberação', short: 'Liberação', critical: false },
-    { id: 20, key: 'sgiClassification', label: 'Classificação SGI', short: 'Classificação', critical: false },
+    { id: 20, key: 'classification', label: 'Classificação', short: 'Classificação', critical: false },
 ];
 const SERVICE_TYPES = [
     'Inspeção',
@@ -181,7 +181,7 @@ const initialRecord = () => ({
     nonConformity: { houve: false, tipos: [], interrompida: false, motivoInterrupcao: '', registroNum: '', acaoImediata: '', responsavel: '', evidencia: false },
     technicalValidation: { exigiu: false, motivo: '', validador: '', decisao: '', observacao: '', evidencia: false },
     release: { laudoEmitido: false, laudoFinal: '', checklistCompleto: false, evidenciasVinculadas: false, componentesRegistrados: false, preCargaRegistrada: false, resultadoRegistrado: false, condicaoFinal: '', responsavelLiberacao: '', responsavelPCP: '', dataLiberacao: '', notes: '' },
-    sgiClassification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
+    classification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
     assignedUsers: { operatorId: '', operatorName: '', supervisorId: '', supervisorName: '', qualityId: '', qualityName: '', pcpId: '', pcpName: '' },
     rolePermissions: {},
     visibility: { visibleToRoles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], editableByRoles: ['admin', 'operator'] },
@@ -195,7 +195,7 @@ const initialRecord = () => ({
    USUÁRIOS, PERFIS E PERMISSÕES (Tarefa 1 — base simulada)
    ============================================================ */
 const ROLES = [
-    { key: 'admin', label: 'Admin / SGI', tagClass: 'tag-violet' },
+    { key: 'admin', label: 'Admin', tagClass: 'tag-violet' },
     { key: 'supervisor', label: 'Supervisor', tagClass: 'tag-blue' },
     { key: 'quality', label: 'Qualidade', tagClass: 'tag-emerald' },
     { key: 'pcp', label: 'PCP', tagClass: 'tag-amber' },
@@ -270,7 +270,7 @@ const sampleServices = [
 /* ============================================================
    UTIL — persistência local (rascunho)
    ============================================================ */
-const draftKey = (it) => `rkm_sgi_${(it || 'IT001').toLowerCase()}_draft_v1`;
+const draftKey = (it) => `rkm_${(it || 'IT001').toLowerCase()}_draft_v1`;
 const loadDraft = (it = 'IT001') => {
     try {
         const raw = localStorage.getItem(draftKey(it));
@@ -431,7 +431,7 @@ const Sidebar = ({ view, setView, alertCount, activeIT, activeRole }) => {
         React.createElement("div", { className: "px-5 py-5 border-b border-rkmborder flex items-center gap-3" },
             React.createElement("div", { className: "w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"),
             React.createElement("div", null,
-                React.createElement("div", { className: "text-[15px] font-semibold leading-tight" }, "RKM SGI"),
+                React.createElement("div", { className: "text-[15px] font-semibold leading-tight" }, "RKM Service Manager"),
                 React.createElement("div", { className: "text-[11px] text-slate-400" }, "Servi\u00E7os Hidr\u00E1ulicos"))),
         React.createElement("nav", { className: "flex-1 py-3 px-2 flex flex-col gap-1" }, items.map(it => (React.createElement("button", { key: it.key, onClick: () => setView(it.key), className: 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] text-left transition ' +
                 (view === it.key ? 'bg-blue-500/15 text-blue-100 border border-blue-500/30' : 'text-slate-300 hover:bg-rkmcard2 border border-transparent') },
@@ -1005,18 +1005,18 @@ const StepRelease = ({ r, set }) => (React.createElement(SectionCard, { title: "
             React.createElement(TextInput, { value: r.release.responsavelPCP, onChange: v => set('release.responsavelPCP', v) }))),
     React.createElement(Field, { label: "Observa\u00E7\u00F5es finais" },
         React.createElement(TextArea, { value: r.release.notes, onChange: v => set('release.notes', v) }))));
-const StepClassification = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o SGI", subtitle: "Fechamento \u2014 classifica\u00E7\u00E3o do servi\u00E7o para SGI e melhorias." },
-    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para o SGI" },
-        React.createElement(Select, { value: r.sgiClassification.classificacao, onChange: v => set('sgiClassification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
+const StepClassification = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o Qualidade", subtitle: "Fechamento \u2014 classifica\u00E7\u00E3o do servi\u00E7o para melhorias." },
+    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para melhorias" },
+        React.createElement(Select, { value: r.classification.classificacao, onChange: v => set('classification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
     React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2" },
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoQualidade, onChange: v => set('sgiClassification.riscoQualidade', v), label: "Houve risco de qualidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoSST, onChange: v => set('sgiClassification.riscoSST', v), label: "Houve risco de SST" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoAmbiental, onChange: v => set('sgiClassification.riscoAmbiental', v), label: "Houve risco ambiental" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoRastreabilidade, onChange: v => set('sgiClassification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.impactoEstoque, onChange: v => set('sgiClassification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.acaoCorretiva, onChange: v => set('sgiClassification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
+        React.createElement(Toggle, { checked: r.classification.riscoQualidade, onChange: v => set('classification.riscoQualidade', v), label: "Houve risco de qualidade" }),
+        React.createElement(Toggle, { checked: r.classification.riscoSST, onChange: v => set('classification.riscoSST', v), label: "Houve risco de SST" }),
+        React.createElement(Toggle, { checked: r.classification.riscoAmbiental, onChange: v => set('classification.riscoAmbiental', v), label: "Houve risco ambiental" }),
+        React.createElement(Toggle, { checked: r.classification.riscoRastreabilidade, onChange: v => set('classification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
+        React.createElement(Toggle, { checked: r.classification.impactoEstoque, onChange: v => set('classification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
+        React.createElement(Toggle, { checked: r.classification.acaoCorretiva, onChange: v => set('classification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
     React.createElement(Field, { label: "Observa\u00E7\u00E3o para melhoria do processo / IT" },
-        React.createElement(TextArea, { value: r.sgiClassification.observacaoMelhoria, onChange: v => set('sgiClassification.observacaoMelhoria', v) }))));
+        React.createElement(TextArea, { value: r.classification.observacaoMelhoria, onChange: v => set('classification.observacaoMelhoria', v) }))));
 const STEP_RENDERERS = {
     1: StepOpening, 2: StepEquipment, 3: StepReceived, 4: StepStartConditions, 5: StepSafety,
     6: StepDepressurization, 7: StepDisassembly, 8: StepInspection, 9: StepTechnicalDecision,
@@ -1049,7 +1049,7 @@ const STEPS_IT002 = [
     { id: 17, key: 'nonConformity', label: 'NC, retrabalho, interrupção', short: 'NC', critical: false },
     { id: 18, key: 'technicalValidation', label: 'Validação técnica (supervisor)', short: 'Supervisor', critical: false },
     { id: 19, key: 'release', label: 'Liberação', short: 'Liberação', critical: false },
-    { id: 20, key: 'sgiClassification', label: 'Classificação SGI', short: 'Classificação', critical: false },
+    { id: 20, key: 'classification', label: 'Classificação', short: 'Classificação', critical: false },
 ];
 const SERVICE_TYPES_IT002 = [
     'Avaliação técnica',
@@ -1084,7 +1084,7 @@ const initialRecordIT002 = () => ({
     nonConformity: { houve: false, tipos: [], interrompida: false, motivoInterrupcao: '', registroNum: '', acaoImediata: '', responsavel: '', evidencia: false },
     technicalValidation: { exigiu: false, motivo: '', validador: '', decisao: '', observacao: '', evidencia: false },
     release: { laudoEmitido: false, laudoFinal: '', checklistCompleto: false, evidenciasVinculadas: false, componentesRegistrados: false, pressaoAplicadaRegistrada: false, resultadoRegistrado: false, condicaoFinal: '', responsavelLiberacao: '', responsavelPCP: '', dataLiberacao: '', liseLancado: false, liseId: '', notes: '' },
-    sgiClassification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
+    classification: { classificacao: '', riscoQualidade: false, riscoSST: false, riscoAmbiental: false, riscoRastreabilidade: false, impactoEstoque: false, acaoCorretiva: false, observacaoMelhoria: '' },
     assignedUsers: { operatorId: '', operatorName: '', supervisorId: '', supervisorName: '', qualityId: '', qualityName: '', pcpId: '', pcpName: '' },
     rolePermissions: {},
     visibility: { visibleToRoles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], editableByRoles: ['admin', 'operator'] },
@@ -1512,18 +1512,18 @@ const StepReleaseIT002 = ({ r, set }) => (React.createElement(SectionCard, { tit
         React.createElement("div", { className: "text-[11.5px] text-slate-500" }, "Campo preparado para evolu\u00E7\u00E3o. N\u00E3o bloqueia libera\u00E7\u00E3o enquanto Lise est\u00E1 em implanta\u00E7\u00E3o (IT002 \u00A73, \u00A718; APH-15).")),
     React.createElement(Field, { label: "Observa\u00E7\u00F5es finais" },
         React.createElement(TextArea, { value: r.release.notes, onChange: v => set('release.notes', v) }))));
-const StepClassificationIT002 = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o SGI", subtitle: "IT002 \u00A719 \u2014 fechamento e classifica\u00E7\u00E3o do servi\u00E7o para o SGI." },
-    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para o SGI" },
-        React.createElement(Select, { value: r.sgiClassification.classificacao, onChange: v => set('sgiClassification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Pendente validação Qualidade', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
+const StepClassificationIT002 = ({ r, set }) => (React.createElement(SectionCard, { title: "20. Classifica\u00E7\u00E3o Qualidade", subtitle: "IT002 \u00A719 \u2014 fechamento e classifica\u00E7\u00E3o do servi\u00E7o para melhorias." },
+    React.createElement(Field, { label: "Classifica\u00E7\u00E3o do servi\u00E7o para melhorias" },
+        React.createElement(Select, { value: r.classification.classificacao, onChange: v => set('classification.classificacao', v), options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Retrabalho', 'Condenado', 'Pendente técnico', 'Pendente cliente', 'Pendente material', 'Pendente validação Qualidade', 'Bloqueado por segurança', 'Bloqueado por rastreabilidade'] })),
     React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2" },
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoQualidade, onChange: v => set('sgiClassification.riscoQualidade', v), label: "Houve risco de qualidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoSST, onChange: v => set('sgiClassification.riscoSST', v), label: "Houve risco de SST" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoAmbiental, onChange: v => set('sgiClassification.riscoAmbiental', v), label: "Houve risco ambiental" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.riscoRastreabilidade, onChange: v => set('sgiClassification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.impactoEstoque, onChange: v => set('sgiClassification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
-        React.createElement(Toggle, { checked: r.sgiClassification.acaoCorretiva, onChange: v => set('sgiClassification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
+        React.createElement(Toggle, { checked: r.classification.riscoQualidade, onChange: v => set('classification.riscoQualidade', v), label: "Houve risco de qualidade" }),
+        React.createElement(Toggle, { checked: r.classification.riscoSST, onChange: v => set('classification.riscoSST', v), label: "Houve risco de SST" }),
+        React.createElement(Toggle, { checked: r.classification.riscoAmbiental, onChange: v => set('classification.riscoAmbiental', v), label: "Houve risco ambiental" }),
+        React.createElement(Toggle, { checked: r.classification.riscoRastreabilidade, onChange: v => set('classification.riscoRastreabilidade', v), label: "Risco de rastreabilidade" }),
+        React.createElement(Toggle, { checked: r.classification.impactoEstoque, onChange: v => set('classification.impactoEstoque', v), label: "Impacto em estoque/componente" }),
+        React.createElement(Toggle, { checked: r.classification.acaoCorretiva, onChange: v => set('classification.acaoCorretiva', v), label: "Necessidade de a\u00E7\u00E3o corretiva/preventiva" })),
     React.createElement(Field, { label: "Observa\u00E7\u00E3o para melhoria do processo / IT" },
-        React.createElement(TextArea, { value: r.sgiClassification.observacaoMelhoria, onChange: v => set('sgiClassification.observacaoMelhoria', v) }))));
+        React.createElement(TextArea, { value: r.classification.observacaoMelhoria, onChange: v => set('classification.observacaoMelhoria', v) }))));
 const STEP_RENDERERS_IT002 = {
     1: StepOpeningIT002, 2: StepEquipmentIT002, 3: StepReceivedIT002, 4: StepStartConditionsIT002, 5: StepSafetyIsolationIT002,
     6: StepAssessmentPistonIT002, 7: StepAssessmentShellIT002, 8: StepAssessmentCapsIT002, 9: StepAcceptanceDecisionIT002,
@@ -2067,7 +2067,7 @@ const PCPAuthQueue = ({ rec001, rec002, activeRole, onDecisionClick }) => {
 /* Visão Admin — agrega todas */
 const AdminAuthQueueAll = ({ rec001, rec002, activeRole, onDecisionClick }) => {
     const all = getAllAuthorizationRequests(rec001, rec002);
-    return (React.createElement(AuthRequestQueue, { title: "Todas as solicita\u00E7\u00F5es de autoriza\u00E7\u00E3o", hint: "Vis\u00E3o consolidada IT001 + IT002 (auditoria). Admin/SGI pode simular decis\u00E3o no MVP.", requests: all, emptyMessage: "Nenhuma solicita\u00E7\u00E3o criada ainda em qualquer rascunho.", showApproverHint: true, activeRole: activeRole, onDecisionClick: onDecisionClick }));
+    return (React.createElement(AuthRequestQueue, { title: "Todas as solicita\u00E7\u00F5es de autoriza\u00E7\u00E3o", hint: "Vis\u00E3o consolidada IT001 + IT002 (auditoria). Admin pode simular decis\u00E3o no MVP.", requests: all, emptyMessage: "Nenhuma solicita\u00E7\u00E3o criada ainda em qualquer rascunho.", showApproverHint: true, activeRole: activeRole, onDecisionClick: onDecisionClick }));
 };
 /* Modal de decisão — Tarefa 2B.2 */
 const AuthDecisionModal = ({ open, onClose, request, decision, activeUser, activeRole, onConfirm }) => {
@@ -2542,13 +2542,13 @@ const SummaryView = ({ record, alerts, onExport, activeIT }) => {
                     React.createElement(Row, { label: "Condi\u00E7\u00E3o final", value: React.createElement(StatusTag, { status: r.release.condicaoFinal }) }),
                     React.createElement(Row, { label: "Lise", value: r.release.liseLancado ? `Lançado — ${r.release.liseId || 'sem ID'}` : 'Não lançado (sistema em implantação)' }))),
             React.createElement("div", { className: "rkm-card p-5" },
-                React.createElement("div", { className: "font-semibold mb-2" }, "SGI"),
-                React.createElement(Row, { label: "Classifica\u00E7\u00E3o", value: React.createElement(StatusTag, { status: r.sgiClassification.classificacao }) }),
-                React.createElement(Row, { label: "Risco qualidade", value: r.sgiClassification.riscoQualidade ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "Risco SST", value: r.sgiClassification.riscoSST ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "Risco ambiental", value: r.sgiClassification.riscoAmbiental ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "Risco rastreabilidade", value: r.sgiClassification.riscoRastreabilidade ? 'Sim' : 'Não' }),
-                React.createElement(Row, { label: "A\u00E7\u00E3o corretiva sugerida", value: r.sgiClassification.acaoCorretiva ? 'Sim' : 'Não' }))),
+                React.createElement("div", { className: "font-semibold mb-2" }, "Qualidade"),
+                React.createElement(Row, { label: "Classifica\u00E7\u00E3o", value: React.createElement(StatusTag, { status: r.classification.classificacao }) }),
+                React.createElement(Row, { label: "Risco qualidade", value: r.classification.riscoQualidade ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "Risco SST", value: r.classification.riscoSST ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "Risco ambiental", value: r.classification.riscoAmbiental ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "Risco rastreabilidade", value: r.classification.riscoRastreabilidade ? 'Sim' : 'Não' }),
+                React.createElement(Row, { label: "A\u00E7\u00E3o corretiva sugerida", value: r.classification.acaoCorretiva ? 'Sim' : 'Não' }))),
         React.createElement("div", { className: "rkm-card p-5" },
             React.createElement("div", { className: "font-semibold mb-2" }, "Estrutura de exporta\u00E7\u00E3o para Google Sheets"),
             React.createElement("div", { className: "text-[12px] text-slate-400 mb-3" },

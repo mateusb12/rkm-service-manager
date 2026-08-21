@@ -34,12 +34,12 @@ _Evitar_: RBC, permissão somente no frontend
 
 ## Operação
 
-**Admin / SGI**:
+**Admin**:
 Cargo administrativo com acesso global ao sistema, sujeito apenas às proteções de segurança que não podem ser ignoradas.
 _Evitar_: superusuário (quando o assunto for o cargo do RKM)
 
 **Mapa de cargos**:
-`admin` = Admin / SGI; `operator` = Operador / Técnico; `supervisor` = Supervisor; `quality` = Qualidade; `pcp` = PCP. Os identificadores técnicos permanecem estáveis e os nomes em português são a apresentação oficial.
+`admin` = Admin; `operator` = Operador / Técnico; `supervisor` = Supervisor; `quality` = Qualidade; `pcp` = PCP. Os identificadores técnicos permanecem estáveis e os nomes em português são a apresentação oficial.
 
 **Usuários dummy**:
 Usuários de desenvolvimento com e-mails no domínio `rkm.com.br`; não representam credenciais de produção.

@@ -44,6 +44,14 @@
      .tag-slate  { background: rgba(100,116,139,.14); color: #cbd5e1; border-color: rgba(100,116,139,.35); }
      .tag-orange { background: rgba(249,115,22,.13); color: #fdba74; border-color: rgba(249,115,22,.35); }
      .tag-violet { background: rgba(139,92,246,.14); color: #c4b5fd; border-color: rgba(139,92,246,.35); }
+     .table-tag { justify-content: center; min-height: 25px; padding: 4px 9px; font-weight: 400; white-space: nowrap; background: #0b192d; border-color: #304766; width: fit-content; margin-inline: auto; }
+     .table-status { min-width: 112px; }
+     .table-priority { min-width: 62px; }
+     .table-tag.tag-emerald { color: #8be4c0; }
+     .table-tag.tag-red { color: #fda4af; }
+     .table-tag.tag-amber { color: #f8d477; }
+     .table-tag.tag-blue { color: #a8cfff; }
+     .table-tag.tag-slate { color: #b7c6d9; }
      /* Section header bullet */
      .sec-bullet { width: 8px; height: 8px; border-radius: 999px; background: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,.18); }
      .step-active { background: #132a45; border-color: #3b82f6 !important; }

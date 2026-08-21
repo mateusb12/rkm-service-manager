@@ -36,7 +36,7 @@ var rolePermissions = map[string][]string{
 }
 
 var roleLabels = map[string]string{
-	"admin": "Admin / SGI", "operator": "Operador / Técnico", "supervisor": "Supervisor", "quality": "Qualidade", "pcp": "PCP",
+	"admin": "Admin", "operator": "Operador / Técnico", "supervisor": "Supervisor", "quality": "Qualidade", "pcp": "PCP",
 }
 
 type AuthServer struct {
