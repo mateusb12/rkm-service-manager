@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './auth';
+import { useLocation, useNavigate } from 'react-router-dom';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -130,9 +131,13 @@ const ROLE_DEFAULT_VIEW = {
     pcp: 'pcp',
     operator: 'mybench',
 };
+const viewFromPath = (pathname) => {
+    const view = pathname.replace(/^\/+/, '').split('/')[0];
+    return view && SIDEBAR_ITEMS.some(item => item.key === view) ? view : 'dashboard';
+};
 /* Itens da sidebar com escopo por perfil */
 const SIDEBAR_ITEMS = [
-    { key: 'dashboard', label: 'Painel', roles: ['admin', 'supervisor', 'pcp'], icon: 'M3 12l2-2 4 4 8-8 4 4' },
+    { key: 'dashboard', label: 'Painel', roles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], icon: 'M3 12l2-2 4 4 8-8 4 4' },
     { key: 'mybench', label: 'Minha Bancada', roles: ['admin', 'operator'], icon: 'M3 7h18M3 12h18M3 17h12' },
     { key: 'supervisor', label: 'Visão do Supervisor', roles: ['admin', 'supervisor'], icon: 'M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
     { key: 'quality', label: 'Visão da Qualidade', roles: ['admin', 'quality'], icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11' },
@@ -2617,7 +2622,9 @@ const PCPView = ({ services, rec001, rec002, activeRole, onDecisionClick }) => {
    ============================================================ */
 const App = () => {
     const { user: authenticatedUser, logout } = useAuth();
-    const [view, setView] = useState('dashboard');
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [view, setView] = useState(() => viewFromPath(location.pathname));
     const [activeIT, setActiveIT] = useState('IT001');
     const [activeUser, setActiveUserState] = useState(() => authenticatedUser?.id || 'u5');
     const [activeRole, setActiveRoleState] = useState(() => authenticatedUser?.role || 'admin');
@@ -2664,19 +2671,22 @@ const App = () => {
         ? { record: rec002, setRecord: setRec002, step: step002, setStep: setStep002, alerts: alerts002, hasDraft: hasDraft002 }
         : { record: rec001, setRecord: setRec001, step: step001, setStep: setStep001, alerts: alerts001, hasDraft: hasDraft001 };
     const totalAlerts = alerts001.length + alerts002.length;
+    useEffect(() => {
+        setView(viewFromPath(location.pathname));
+    }, [location.pathname]);
     const handleSetView = (newView) => {
         if (newView === 'it001')
             setActiveIT('IT001');
         if (newView === 'it002')
             setActiveIT('IT002');
-        setView(newView);
+        navigate(`/${newView}`);
     };
     const setActiveUser = (userId) => {
         setActiveUserState(userId);
         const user = mockUsers.find(u => u.id === userId);
         if (user) {
             setActiveRoleState(user.role);
-            setView(ROLE_DEFAULT_VIEW[user.role] || 'dashboard');
+            handleSetView(ROLE_DEFAULT_VIEW[user.role] || 'dashboard');
         }
     };
     const setActiveRole = (role) => {
@@ -2684,7 +2694,7 @@ const App = () => {
         const defaultUserForRole = mockUsers.find(u => u.role === role);
         if (defaultUserForRole)
             setActiveUserState(defaultUserForRole.id);
-        setView(ROLE_DEFAULT_VIEW[role] || 'dashboard');
+        handleSetView(ROLE_DEFAULT_VIEW[role] || 'dashboard');
     };
     const openIT001 = () => {
         clearDraft('IT001');
@@ -2692,7 +2702,7 @@ const App = () => {
         setStep001(1);
         setHasDraft001(false);
         setActiveIT('IT001');
-        setView('it001');
+        navigate('/it001');
     };
     const openIT002 = () => {
         clearDraft('IT002');
@@ -2700,27 +2710,27 @@ const App = () => {
         setStep002(1);
         setHasDraft002(false);
         setActiveIT('IT002');
-        setView('it002');
+        navigate('/it002');
     };
     const resumeIT001 = () => {
         setActiveIT('IT001');
-        setView('it001');
+        navigate('/it001');
     };
     const resumeIT002 = () => {
         setActiveIT('IT002');
-        setView('it002');
+        navigate('/it002');
     };
     const goToPendencies = () => {
-        setView('pendencies');
+        navigate('/pendencies');
     };
     const goToStep = (step) => {
         if (activeIT === 'IT002') {
             setStep002(step);
-            setView('it002');
+            navigate('/it002');
         }
         else {
             setStep001(step);
-            setView('it001');
+            navigate('/it001');
         }
     };
     const handleFinish = () => {
@@ -2881,7 +2891,7 @@ const App = () => {
         }
         return null;
     };
-    return (React.createElement("div", { className: "min-h-screen flex bg-rkmbg text-slate-200" },
+    return (React.createElement("div", { className: "app-shell min-h-screen flex bg-rkmbg text-slate-200" },
         React.createElement(CleanSidebar, { view: view, setView: handleSetView, alertCount: totalAlerts, activeIT: activeIT, activeUser: activeUser, activeRole: activeRole }),
         React.createElement("main", { className: "flex-1 min-w-0" },
             React.createElement(CleanTopBar, { view: view, alerts: ctx.alerts, onJumpAlerts: goToPendencies, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value), onLogout: logout }),
