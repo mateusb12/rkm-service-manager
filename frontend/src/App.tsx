@@ -374,7 +374,7 @@ const TopBar = ({ alerts, onJumpAlerts, activeUser, activeRole, darkMode, onTogg
         React.createElement("button", { onClick: onLogout, className: "btn btn-ghost" }, "Sair"),
         null));
 };
-const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeRole }) => {
+const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeRole, onLogout }) => {
     const [collapsed, setCollapsed] = useState(false);
     const items = SIDEBAR_ITEMS.filter(it => it.roles.includes(activeRole || 'admin'));
     const user = mockUsers.find(u => u.id === activeUser) || mockUsers[0];
@@ -390,11 +390,22 @@ const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeR
     return React.createElement("aside", { className: `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ${collapsed ? 'sidebar-collapsed w-16' : 'w-56'}` },
         React.createElement("div", { className: "sidebar-header px-4 py-4 flex items-center gap-3" }, React.createElement("div", { className: "w-9 h-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"), React.createElement("div", { className: "sidebar-label min-w-0" }, React.createElement("div", { className: "text-[15px] font-semibold leading-tight truncate" }, "RKM Service Manager"), React.createElement("div", { className: "text-[11px] text-slate-400 truncate" }, "Serviços Hidráulicos")), React.createElement("button", { type: "button", className: "sidebar-toggle", onClick: () => setCollapsed(value => !value), title: collapsed ? 'Expandir sidebar' : 'Recolher sidebar', 'aria-label': collapsed ? 'Expandir sidebar' : 'Recolher sidebar' }, collapsed ? '›' : '‹')),
         React.createElement("nav", { className: "flex-1 px-3 pt-2" }, groups.map(([label, group]) => group.length > 0 && React.createElement("div", { key: label, className: "sidebar-section" }, React.createElement("div", { className: "sidebar-label sidebar-section-label" }, label), group.map(renderItem)))),
-        React.createElement("div", { className: "sidebar-user px-4 py-3 flex items-center gap-3" }, React.createElement("div", { className: "w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-[12px] font-bold" }, user.short), React.createElement("div", { className: "sidebar-label text-[12px] leading-tight min-w-0" }, React.createElement("div", { className: "font-medium truncate" }, user.name), React.createElement("div", { className: "text-slate-400 truncate" }, role.label))));
+        React.createElement("div", { className: "sidebar-user" },
+            React.createElement("div", { className: "sidebar-user-main flex items-center gap-3" },
+                React.createElement("div", { className: "w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-[12px] font-bold" }, user.short),
+                React.createElement("div", { className: "sidebar-label text-[12px] leading-tight min-w-0 flex-1" },
+                    React.createElement("div", { className: "font-medium truncate" }, user.name),
+                    React.createElement("div", { className: "text-slate-400 truncate" }, role.label))),
+            React.createElement("button", { type: "button", onClick: onLogout, className: "sidebar-logout", title: "Sair", "aria-label": "Sair" },
+                React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" },
+                    React.createElement("path", { d: "M10 17l5-5-5-5" }),
+                    React.createElement("path", { d: "M15 12H3" }),
+                    React.createElement("path", { d: "M21 19V5a2 2 0 00-2-2h-6" })),
+                React.createElement("span", { className: "sidebar-logout-text" }, "Sair"))));
 };
-const CleanTopBar = ({ view, alerts, onJumpAlerts, darkMode, onToggleDarkMode, onLogout }) => {
+const CleanTopBar = ({ view, alerts, onJumpAlerts, darkMode, onToggleDarkMode }) => {
     const labels = { dashboard: 'Painel', mybench: 'Minha Bancada', supervisor: 'Visão do Supervisor', quality: 'Visão da Qualidade', pcp: 'Visão do PCP', it001: 'IT001 — Bexiga', it002: 'IT002 — Pistão', pendencies: 'Pendências', evidences: 'Evidências', summary: 'Resumo / Laudo', authHistory: 'Histórico de autorizações' };
-    return React.createElement("header", { className: "topbar px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20" }, React.createElement("div", { className: "flex-1 min-w-0" }, React.createElement("div", { className: "text-[12px] text-slate-500" }, "RKM Service Manager"), React.createElement("div", { className: "text-[15px] font-semibold text-slate-100 truncate" }, labels[view] || 'Operações')), React.createElement("button", { onClick: onJumpAlerts, className: 'btn ' + (alerts.length ? 'btn-danger' : 'btn-ghost') }, React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" })), alerts.length ? `${alerts.length} alerta${alerts.length > 1 ? 's' : ''}` : 'Sem alertas'), React.createElement("button", { onClick: onToggleDarkMode, className: "btn btn-ghost", title: darkMode ? "Ativar modo claro" : "Ativar modo escuro", "aria-label": darkMode ? "Ativar modo claro" : "Ativar modo escuro" }, darkMode ? "☀️" : "🌙"), React.createElement("button", { onClick: onLogout, className: "topbar-logout" }, "Sair"));
+    return React.createElement("header", { className: "topbar px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20" }, React.createElement("div", { className: "flex-1 min-w-0" }, React.createElement("div", { className: "text-[12px] text-slate-500" }, "RKM Service Manager"), React.createElement("div", { className: "text-[15px] font-semibold text-slate-100 truncate" }, labels[view] || 'Operações')), React.createElement("button", { onClick: onJumpAlerts, className: 'btn ' + (alerts.length ? 'btn-danger' : 'btn-ghost') }, React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 001.71 3L13.71 3.86a2 2 0 00-3.42 0z" })), alerts.length ? `${alerts.length} alerta${alerts.length > 1 ? 's' : ''}` : 'Sem alertas'), React.createElement("button", { onClick: onToggleDarkMode, className: "btn btn-ghost", title: darkMode ? "Ativar modo claro" : "Ativar modo escuro", "aria-label": darkMode ? "Ativar modo claro" : "Ativar modo escuro" }, darkMode ? "☀️" : "🌙"));
 };
 /* ============================================================
    VIEW — Dashboard (cards + tabela referenciando o layout)
@@ -402,7 +413,7 @@ const CleanTopBar = ({ view, alerts, onJumpAlerts, darkMode, onToggleDarkMode, o
 const KPICard = ({ label, value, hint, accent, icon }) => (React.createElement("div", { className: "rkm-card kpi-card" },
     React.createElement("div", { className: "kpi-header" },
         React.createElement("div", { className: "kpi-label text-[12px] text-slate-400 uppercase tracking-wide" }, label),
-        React.createElement("div", { className: 'kpi-icon w-10 h-10 rounded-lg flex items-center justify-center ' + accent }, icon)),
+        React.createElement("div", { className: 'kpi-icon rounded-lg flex items-center justify-center ' + accent }, icon)),
     React.createElement("div", { className: "kpi-value text-[26px] font-semibold" }, value),
     React.createElement("div", { className: "kpi-hint text-[11px] text-slate-500" }, hint)));
 const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume002, hasDraft001, hasDraft002, alerts001, alerts002 }) => {
@@ -435,15 +446,15 @@ const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume00
                     hasDraft002 && React.createElement("button", { className: "btn btn-ghost operations-resume", onClick: onResume002, title: "Continuar rascunho IT002" }, "Continuar"),
                     React.createElement("button", { className: "btn btn-primary operations-new", onClick: onOpenIT002 }, "+ Novo servi\u00E7o")))),
         React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-4" },
-            React.createElement(KPICard, { label: "Em execu\u00E7\u00E3o", value: open, hint: filterIT === 'all' ? 'Todos os módulos' : filterIT, accent: "bg-blue-500/15 text-blue-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+            React.createElement(KPICard, { label: "Em execu\u00E7\u00E3o", value: open, hint: filterIT === 'all' ? 'Todos os módulos' : filterIT, accent: "bg-blue-500/20 text-blue-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
                     React.createElement("path", { d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" }),
                     React.createElement("path", { d: "M14 2v6h6" })) }),
-            React.createElement(KPICard, { label: "Aprovados / liberados", value: approved, hint: "Conforme IT", accent: "bg-emerald-500/15 text-emerald-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+            React.createElement(KPICard, { label: "Aprovados / liberados", value: approved, hint: "Conforme IT", accent: "bg-emerald-500/20 text-emerald-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
                     React.createElement("path", { d: "M5 13l4 4L19 7" })) }),
-            React.createElement(KPICard, { label: "Bloqueados", value: blocked, hint: "Seguran\u00E7a / rastreabilidade", accent: "bg-rose-500/15 text-rose-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+            React.createElement(KPICard, { label: "Bloqueados", value: blocked, hint: "Seguran\u00E7a / rastreabilidade", accent: "bg-rose-500/20 text-rose-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
                     React.createElement("circle", { cx: "12", cy: "12", r: "10" }),
                     React.createElement("path", { d: "M4.93 4.93l14.14 14.14" })) }),
-            React.createElement(KPICard, { label: "Alertas cr\u00EDticos", value: totalAlerts, hint: "Rascunhos IT001 + IT002", accent: "bg-amber-500/15 text-amber-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+            React.createElement(KPICard, { label: "Alertas cr\u00EDticos", value: totalAlerts, hint: "Rascunhos IT001 + IT002", accent: "bg-amber-500/20 text-amber-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
                     React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" })) })),
         React.createElement("div", { className: "rkm-card overflow-hidden" },
             React.createElement("div", { className: "px-5 py-3.5 border-b border-rkmborder flex items-center gap-2 flex-wrap" },
@@ -2892,9 +2903,9 @@ const App = () => {
         return null;
     };
     return (React.createElement("div", { className: "app-shell min-h-screen flex bg-rkmbg text-slate-200" },
-        React.createElement(CleanSidebar, { view: view, setView: handleSetView, alertCount: totalAlerts, activeIT: activeIT, activeUser: activeUser, activeRole: activeRole }),
+        React.createElement(CleanSidebar, { view: view, setView: handleSetView, alertCount: totalAlerts, activeIT: activeIT, activeUser: activeUser, activeRole: activeRole, onLogout: logout }),
         React.createElement("main", { className: "flex-1 min-w-0" },
-            React.createElement(CleanTopBar, { view: view, alerts: ctx.alerts, onJumpAlerts: goToPendencies, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value), onLogout: logout }),
+            React.createElement(CleanTopBar, { view: view, alerts: ctx.alerts, onJumpAlerts: goToPendencies, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value) }),
             activeRole === 'admin' && view === 'dashboard' && (React.createElement("div", { className: "px-4 md:px-6 pt-4" },
                 React.createElement(AdminAuthQueueAll, { rec001: rec001, rec002: rec002, activeRole: activeRole, onDecisionClick: handleDecisionClick }),
                 React.createElement("div", { className: "mt-4" },
