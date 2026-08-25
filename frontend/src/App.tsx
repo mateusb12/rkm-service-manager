@@ -370,6 +370,7 @@ const TopBar = ({ alerts, onJumpAlerts, activeUser, activeRole, darkMode, onTogg
         null));
 };
 const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeRole }) => {
+    const [collapsed, setCollapsed] = useState(false);
     const items = SIDEBAR_ITEMS.filter(it => it.roles.includes(activeRole || 'admin'));
     const user = mockUsers.find(u => u.id === activeUser) || mockUsers[0];
     const role = ROLES.find(r => r.key === activeRole) || ROLES[0];
@@ -380,11 +381,11 @@ const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeR
     ];
     const renderItem = (it) => React.createElement("button", { key: it.key, onClick: () => setView(it.key), className: 'sidebar-item ' + (view === it.key ? 'sidebar-item-active' : '') },
         React.createElement("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: it.icon })),
-        React.createElement("span", { className: "flex-1" }, it.label), it.key === 'pendencies' && alertCount > 0 && React.createElement("span", { className: "badge-num" }, alertCount));
-    return React.createElement("aside", { className: "hidden md:flex sticky top-0 h-screen w-56 shrink-0 flex-col sidebar-shell" },
-        React.createElement("div", { className: "px-4 py-4 flex items-center gap-3" }, React.createElement("div", { className: "w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"), React.createElement("div", null, React.createElement("div", { className: "text-[15px] font-semibold leading-tight" }, "RKM Service Manager"), React.createElement("div", { className: "text-[11px] text-slate-400" }, "Serviços Hidráulicos"))),
-        React.createElement("nav", { className: "flex-1 px-3 pt-2" }, groups.map(([label, group]) => group.length > 0 && React.createElement("div", { key: label, className: "sidebar-section" }, React.createElement("div", { className: "sidebar-section-label" }, label), group.map(renderItem)))),
-        React.createElement("div", { className: "px-4 py-3 sidebar-user flex items-center gap-3" }, React.createElement("div", { className: "w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-[12px] font-bold" }, user.short), React.createElement("div", { className: "text-[12px] leading-tight min-w-0" }, React.createElement("div", { className: "font-medium truncate" }, user.name), React.createElement("div", { className: "text-slate-400 truncate" }, role.label))));
+        React.createElement("span", { className: "sidebar-label flex-1" }, it.label), it.key === 'pendencies' && alertCount > 0 && React.createElement("span", { className: "badge-num" }, alertCount));
+    return React.createElement("aside", { className: `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ${collapsed ? 'sidebar-collapsed w-16' : 'w-56'}` },
+        React.createElement("div", { className: "sidebar-header px-4 py-4 flex items-center gap-3" }, React.createElement("div", { className: "w-9 h-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"), React.createElement("div", { className: "sidebar-label min-w-0" }, React.createElement("div", { className: "text-[15px] font-semibold leading-tight truncate" }, "RKM Service Manager"), React.createElement("div", { className: "text-[11px] text-slate-400 truncate" }, "Serviços Hidráulicos")), React.createElement("button", { type: "button", className: "sidebar-toggle", onClick: () => setCollapsed(value => !value), title: collapsed ? 'Expandir sidebar' : 'Recolher sidebar', 'aria-label': collapsed ? 'Expandir sidebar' : 'Recolher sidebar' }, collapsed ? '›' : '‹')),
+        React.createElement("nav", { className: "flex-1 px-3 pt-2" }, groups.map(([label, group]) => group.length > 0 && React.createElement("div", { key: label, className: "sidebar-section" }, React.createElement("div", { className: "sidebar-label sidebar-section-label" }, label), group.map(renderItem)))),
+        React.createElement("div", { className: "sidebar-user px-4 py-3 flex items-center gap-3" }, React.createElement("div", { className: "w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-[12px] font-bold" }, user.short), React.createElement("div", { className: "sidebar-label text-[12px] leading-tight min-w-0" }, React.createElement("div", { className: "font-medium truncate" }, user.name), React.createElement("div", { className: "text-slate-400 truncate" }, role.label))));
 };
 const CleanTopBar = ({ view, alerts, onJumpAlerts, darkMode, onToggleDarkMode, onLogout }) => {
     const labels = { dashboard: 'Painel', mybench: 'Minha Bancada', supervisor: 'Visão do Supervisor', quality: 'Visão da Qualidade', pcp: 'Visão do PCP', it001: 'IT001 — Bexiga', it002: 'IT002 — Pistão', pendencies: 'Pendências', evidences: 'Evidências', summary: 'Resumo / Laudo', authHistory: 'Histórico de autorizações' };
@@ -393,12 +394,12 @@ const CleanTopBar = ({ view, alerts, onJumpAlerts, darkMode, onToggleDarkMode, o
 /* ============================================================
    VIEW — Dashboard (cards + tabela referenciando o layout)
    ============================================================ */
-const KPICard = ({ label, value, hint, accent, icon }) => (React.createElement("div", { className: "rkm-card p-4 flex items-start gap-3" },
-    React.createElement("div", { className: 'w-10 h-10 rounded-lg flex items-center justify-center ' + accent }, icon),
-    React.createElement("div", { className: "flex-1 min-w-0" },
-        React.createElement("div", { className: "text-[12px] text-slate-400 uppercase tracking-wide" }, label),
-        React.createElement("div", { className: "text-[26px] font-semibold mt-0.5" }, value),
-        React.createElement("div", { className: "text-[11px] text-slate-500 mt-0.5" }, hint))));
+const KPICard = ({ label, value, hint, accent, icon }) => (React.createElement("div", { className: "rkm-card kpi-card" },
+    React.createElement("div", { className: "kpi-header" },
+        React.createElement("div", { className: "kpi-label text-[12px] text-slate-400 uppercase tracking-wide" }, label),
+        React.createElement("div", { className: 'kpi-icon w-10 h-10 rounded-lg flex items-center justify-center ' + accent }, icon)),
+    React.createElement("div", { className: "kpi-value text-[26px] font-semibold" }, value),
+    React.createElement("div", { className: "kpi-hint text-[11px] text-slate-500" }, hint)));
 const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume002, hasDraft001, hasDraft002, alerts001, alerts002 }) => {
     const [filterIT, setFilterIT] = useState('all');
     const filtered = services.filter(s => filterIT === 'all' ? true : s.it === filterIT);
@@ -407,32 +408,27 @@ const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume00
     const approved = filtered.filter(s => /(aprovad|liberad)/i.test(s.status)).length;
     const totalAlerts = alerts001.filter(a => a.severity === 'critical').length + alerts002.filter(a => a.severity === 'critical').length;
     return (React.createElement("div", { className: "p-4 md:p-6 space-y-6" },
-        React.createElement("div", { className: "rkm-card p-5 md:p-6 flex flex-col md:flex-row gap-5 items-start md:items-center" },
-            React.createElement("div", { className: "flex-1" },
-                React.createElement("div", { className: "flex items-center gap-2 text-[12px] text-blue-300" },
-                    React.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-blue-400" }),
-                    "Pilotos: IT001 (Bexiga) \u00B7 IT002 (Pist\u00E3o)"),
-                React.createElement("h1", { className: "text-[20px] md:text-[22px] font-semibold mt-2" }, "Registro Operacional de Servi\u00E7os"),
-                React.createElement("p", { className: "text-[13px] text-slate-400 mt-1 max-w-2xl" }, "Cada IT tem checklist, alertas e rascunho pr\u00F3prios. IT001 validada Rev. 00 (20/04/2026). IT002 validada Rev. 00 (23/04/2026).")),
-            React.createElement("div", { className: "flex flex-col gap-2 w-full md:w-auto" },
-                React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" },
-                    hasDraft001 && (React.createElement("button", { className: "btn btn-ghost", onClick: onResume001, title: "Continuar rascunho IT001" },
-                        React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                            React.createElement("path", { d: "M3 12a9 9 0 0015.5 6.36L21 21M21 12a9 9 0 00-15.5-6.36L3 3" })),
-                        "Rascunho IT001")),
-                    React.createElement("button", { className: "btn btn-primary", onClick: onOpenIT001 },
-                        React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                            React.createElement("path", { d: "M12 5v14m-7-7h14" })),
-                        "Novo servi\u00E7o \u2014 IT001")),
-                React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" },
-                    hasDraft002 && (React.createElement("button", { className: "btn btn-ghost", onClick: onResume002, title: "Continuar rascunho IT002" },
-                        React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                            React.createElement("path", { d: "M3 12a9 9 0 0015.5 6.36L21 21M21 12a9 9 0 00-15.5-6.36L3 3" })),
-                        "Rascunho IT002")),
-                    React.createElement("button", { className: "btn btn-primary", onClick: onOpenIT002 },
-                        React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                            React.createElement("path", { d: "M12 5v14m-7-7h14" })),
-                        "Novo servi\u00E7o \u2014 IT002")))),
+        React.createElement("div", { className: "rkm-card operations-header" },
+            React.createElement("div", { className: "operations-identity" },
+                React.createElement("div", { className: "operations-kicker" }, "REGISTRO OPERACIONAL"),
+                React.createElement("h1", { className: "text-[22px] md:text-[24px] font-semibold" }, "Registro Operacional de Servi\u00E7os"),
+                React.createElement("p", { className: "operations-description" }, "Cada IT possui checklist, alertas e rascunho independentes. Revis\u00F5es validadas: IT001 Rev. 00 \u00B7 IT002 Rev. 00"),
+                React.createElement("div", { className: "operations-pilots" },
+                    React.createElement("span", { className: "operations-meta-label" }, "Pilotos ativos"),
+                    React.createElement("span", { className: "operations-chip" }, "IT001 \u00B7 Bexiga"),
+                    React.createElement("span", { className: "operations-chip" }, "IT002 \u00B7 Pist\u00E3o"))),
+            React.createElement("div", { className: "operations-actions" },
+                React.createElement("div", { className: "operations-actions-title" }, "A\u00E7\u00F5es r\u00E1pidas"),
+                React.createElement("div", { className: "operations-action-row" },
+                    React.createElement("span", { className: "operations-it" }, "IT001"),
+                    React.createElement("span", { className: `operations-status ${hasDraft001 ? '' : 'is-empty'}` }, hasDraft001 ? 'Rascunho' : 'Sem rascunho'),
+                    hasDraft001 && React.createElement("button", { className: "btn btn-ghost operations-resume", onClick: onResume001, title: "Continuar rascunho IT001" }, "Continuar"),
+                    React.createElement("button", { className: "btn btn-primary operations-new", onClick: onOpenIT001 }, "+ Novo servi\u00E7o")),
+                React.createElement("div", { className: "operations-action-row" },
+                    React.createElement("span", { className: "operations-it" }, "IT002"),
+                    React.createElement("span", { className: `operations-status ${hasDraft002 ? '' : 'is-empty'}` }, hasDraft002 ? 'Rascunho' : 'Sem rascunho'),
+                    hasDraft002 && React.createElement("button", { className: "btn btn-ghost operations-resume", onClick: onResume002, title: "Continuar rascunho IT002" }, "Continuar"),
+                    React.createElement("button", { className: "btn btn-primary operations-new", onClick: onOpenIT002 }, "+ Novo servi\u00E7o")))),
         React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-4" },
             React.createElement(KPICard, { label: "Em execu\u00E7\u00E3o", value: open, hint: filterIT === 'all' ? 'Todos os módulos' : filterIT, accent: "bg-blue-500/15 text-blue-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
                     React.createElement("path", { d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" }),
@@ -2625,7 +2621,7 @@ const App = () => {
     const [activeIT, setActiveIT] = useState('IT001');
     const [activeUser, setActiveUserState] = useState(() => authenticatedUser?.id || 'u5');
     const [activeRole, setActiveRoleState] = useState(() => authenticatedUser?.role || 'admin');
-    const [darkMode, setDarkMode] = useState(() => localStorage.getItem('rkm-theme') !== 'light');
+    const [darkMode, setDarkMode] = useState(() => localStorage.getItem('rkm-theme') === 'dark');
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
         document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
