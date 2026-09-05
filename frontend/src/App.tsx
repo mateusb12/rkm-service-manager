@@ -135,7 +135,7 @@ const viewFromPath = (pathname) => {
     const view = pathname.replace(/^\/+/, '').split('/')[0];
     return view && SIDEBAR_ITEMS.some(item => item.key === view) ? view : 'dashboard';
 };
-/* Sidebar — escopo operacional contratado */
+/* Sidebar — roadmap completo de paridade Lizy */
 const ALL_ROLES = ['admin', 'supervisor', 'quality', 'pcp', 'operator'];
 
 const SIDEBAR_ITEMS = [
@@ -145,6 +145,8 @@ const SIDEBAR_ITEMS = [
         label: 'Painel',
         group: 'Visão geral',
         status: 'incomplete',
+        roadmapPhase: 'Fase 0',
+        lizySource: 'Visão geral da operação',
         roles: ALL_ROLES,
         icon: 'M3 12l2-2 4 4 8-8 4 4'
     },
@@ -153,62 +155,130 @@ const SIDEBAR_ITEMS = [
         label: 'Minha Bancada',
         group: 'Visão geral',
         status: 'incomplete',
+        roadmapPhase: 'Fase 0',
+        lizySource: 'Serviços → Desmontagem',
         roles: ['admin', 'operator'],
         icon: 'M3 7h18M3 12h18M3 17h12'
     },
 
-    /* CICLO OPERACIONAL */
+    /* SERVIÇOS — estrutura mental próxima da Lizy */
     {
-        key: 'receiving',
-        label: 'Recebimento / Entrada',
-        group: 'Operação',
+        key: 'services-disassembly',
+        label: 'Desmontagem',
+        group: 'Serviços',
         status: 'incomplete',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → Desmontagem',
         placeholder: true,
-        source: 'Serviços → Desmontagem → Criar Ordem',
-        description: 'Entrada da peça/equipamento, abertura da OS e identificação inicial.',
         roles: ALL_ROLES,
-        icon: 'M4 4h16v16H4zM8 8h8M8 12h8M8 16h5'
+        icon: 'M4 6h16M4 12h16M4 18h16'
     },
     {
-        key: 'inspection',
-        label: 'Peritagem',
-        group: 'Operação',
+        key: 'pcp',
+        label: 'PCP',
+        group: 'Serviços',
         status: 'incomplete',
-        placeholder: true,
-        source: 'Serviços → Desmontagem → Análise',
-        description: 'Peritagem, inspeção, diagnóstico e decisão técnica.',
-        roles: ALL_ROLES,
-        icon: 'M9 3h6M10 3v4M8 8h8l2 12H6L8 8z'
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → PCP',
+        roles: ['admin', 'pcp'],
+        icon: 'M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z'
     },
     {
-        key: 'execution',
-        label: 'Em Execução',
-        group: 'Operação',
-        status: 'incomplete',
+        key: 'services-external',
+        label: 'Serviço Externo',
+        group: 'Serviços',
+        status: 'missing',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → Serviço Externo',
         placeholder: true,
-        source: 'OS + IT001 / IT002',
-        description: 'Execução técnica do serviço e acompanhamento do progresso.',
         roles: ALL_ROLES,
         icon: 'M5 12h14M12 5v14'
     },
     {
-        key: 'finished',
-        label: 'Finalizados',
-        group: 'Operação',
-        status: 'missing',
+        key: 'services-cleaning',
+        label: 'Limpeza',
+        group: 'Serviços',
+        status: 'incomplete',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → Limpeza',
         placeholder: true,
-        source: 'Serviços → Finalizados',
-        description: 'Histórico de serviços concluídos e encerrados.',
+        roles: ALL_ROLES,
+        icon: 'M4 6h16M7 12h10M9 18h6'
+    },
+    {
+        key: 'services-machining',
+        label: 'Usinagem',
+        group: 'Serviços',
+        status: 'missing',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → Usinagem',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M4 12h16M12 4v16'
+    },
+    {
+        key: 'services-assembly',
+        label: 'Montagem',
+        group: 'Serviços',
+        status: 'incomplete',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → Montagem',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M5 6h14M5 12h14M5 18h14'
+    },
+    {
+        key: 'services-tests',
+        label: 'Testes',
+        group: 'Serviços',
+        status: 'incomplete',
+        roadmapPhase: 'Fase 1 · validar uso',
+        lizySource: 'Serviços → Testes',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M9 3h6M10 3v6l-5 10h14L14 9V3'
+    },
+    {
+        key: 'services-painting',
+        label: 'Pintura',
+        group: 'Serviços',
+        status: 'missing',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → Pintura',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M4 19h16M7 16l10-10M14 5l5 5'
+    },
+    {
+        key: 'quality',
+        label: 'Qualidade',
+        group: 'Serviços',
+        status: 'incomplete',
+        roadmapPhase: 'Fase 1 · validar uso',
+        lizySource: 'Serviços → Qualidade',
+        roles: ['admin', 'quality'],
+        icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'
+    },
+    {
+        key: 'services-finished',
+        label: 'Finalizados',
+        group: 'Serviços',
+        status: 'missing',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'Serviços → Finalizados',
+        placeholder: true,
         roles: ALL_ROLES,
         icon: 'M5 13l4 4L19 7'
     },
 
-    /* ITs */
+    /* FLUXO TÉCNICO PRÓPRIO DO RKM */
     {
         key: 'it001',
         label: 'IT001 — Bexiga',
         group: 'Instruções de trabalho',
         status: 'ok',
+        roadmapPhase: 'Core RKM',
+        lizySource: 'OS → Inspeção / Peritagem',
         roles: ALL_ROLES,
         icon: 'M12 6v12m6-6H6'
     },
@@ -217,34 +287,197 @@ const SIDEBAR_ITEMS = [
         label: 'IT002 — Pistão',
         group: 'Instruções de trabalho',
         status: 'ok',
+        roadmapPhase: 'Core RKM',
+        lizySource: 'OS → Inspeção / Peritagem',
         roles: ALL_ROLES,
         icon: 'M5 12h14M5 6h14M5 18h14'
     },
 
-    /* GESTÃO */
+    /* GESTÃO RKM */
     {
         key: 'supervisor',
-        label: 'Supervisor',
-        group: 'Gestão',
+        label: 'Visão do Supervisor',
+        group: 'Gestão RKM',
         status: 'incomplete',
+        roadmapPhase: 'Fase 0 / Fase 1',
+        lizySource: 'OS → Aprovações / Inspeção',
         roles: ['admin', 'supervisor'],
         icon: 'M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
     },
+
+    /* SUPRIMENTOS */
     {
-        key: 'quality',
-        label: 'Qualidade',
-        group: 'Gestão',
-        status: 'incomplete',
-        roles: ['admin', 'quality'],
-        icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'
+        key: 'purchases',
+        label: 'Compras',
+        group: 'Suprimentos',
+        status: 'missing',
+        roadmapPhase: 'Fase 2',
+        lizySource: 'Suprimentos → Compras',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M3 3h2l2 12h10l4-8H6M9 21h.01M17 21h.01'
     },
     {
-        key: 'pcp',
-        label: 'PCP',
-        group: 'Gestão',
+        key: 'stock',
+        label: 'Estoque',
+        group: 'Suprimentos',
+        status: 'missing',
+        roadmapPhase: 'Fase 2',
+        lizySource: 'Suprimentos → Estoque',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M3 7l9-4 9 4-9 4-9-4M3 7v10l9 4 9-4V7'
+    },
+
+    /* LOGÍSTICA — somente o fluxo com uso recente confirmado */
+    {
+        key: 'receiving',
+        label: 'Recebimento',
+        group: 'Logística',
+        status: 'missing',
+        roadmapPhase: 'Fase 2',
+        lizySource: 'Logística → Recebimento',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M3 12h18M12 3v18M7 8l5 5 5-5'
+    },
+
+    /* COMERCIAL — somente o que a RKM realmente usa */
+    {
+        key: 'budgets',
+        label: 'Orçamentos',
+        group: 'Comercial',
+        status: 'missing',
+        roadmapPhase: 'Fase 3',
+        lizySource: 'Comercial → Orçamentos',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M6 3h12v18H6zM9 8h6M9 12h6M9 16h4'
+    },
+
+    /* FINANCEIRO — uso real confirmado */
+    {
+        key: 'financial-entries',
+        label: 'Lançamentos',
+        group: 'Financeiro',
+        status: 'missing',
+        roadmapPhase: 'Fase 4',
+        lizySource: 'Financeiro → Lançamentos',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M4 7h16M4 12h16M4 17h16'
+    },
+    {
+        key: 'billing',
+        label: 'Faturamento',
+        group: 'Financeiro',
+        status: 'missing',
+        roadmapPhase: 'Fase 4',
+        lizySource: 'Financeiro → Faturamento',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M6 2h12v20l-3-2-3 2-3-2-3 2z'
+    },
+    {
+        key: 'invoices',
+        label: 'Notas Fiscais',
+        group: 'Financeiro',
+        status: 'missing',
+        roadmapPhase: 'Fase 4',
+        lizySource: 'Financeiro → Faturamento → Faturados/Notas Fiscais',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M6 2h9l3 3v17H6zM9 10h6M9 14h6M9 18h4'
+    },
+
+    /* BASE DE DADOS — dependências dos fluxos usados */
+    {
+        key: 'customers',
+        label: 'Clientes',
+        group: 'Cadastros',
+        status: 'missing',
+        roadmapPhase: 'Fase 0',
+        lizySource: 'Base de Dados → Cadastros → Clientes',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8'
+    },
+    {
+        key: 'suppliers',
+        label: 'Fornecedores',
+        group: 'Cadastros',
+        status: 'missing',
+        roadmapPhase: 'Fase 2',
+        lizySource: 'Base de Dados → Cadastros → Fornecedores',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M3 21h18M5 21V7l7-4 7 4v14M9 10h2M13 10h2M9 14h2M13 14h2'
+    },
+    {
+        key: 'products',
+        label: 'Produtos',
+        group: 'Cadastros',
+        status: 'missing',
+        roadmapPhase: 'Fase 2',
+        lizySource: 'Base de Dados → Cadastros → Produtos',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M3 7l9-4 9 4-9 4-9-4M3 7v10l9 4 9-4V7'
+    },
+    {
+        key: 'users',
+        label: 'Usuários',
+        group: 'Cadastros',
         status: 'incomplete',
-        roles: ['admin', 'pcp'],
-        icon: 'M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z'
+        roadmapPhase: 'Fase 0',
+        lizySource: 'Base de Dados → Cadastros → Usuários',
+        placeholder: true,
+        roles: ['admin'],
+        icon: 'M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M8.5 11a4 4 0 100-8 4 4 0 000 8M20 8v6M23 11h-6'
+    },
+    {
+        key: 'technicians',
+        label: 'Técnicos',
+        group: 'Cadastros',
+        status: 'incomplete',
+        roadmapPhase: 'Fase 0',
+        lizySource: 'Base de Dados → Cadastros → Técnicos',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M14 7l3 3M5 19l9-9M4 20l4-1-3-3-1 4z'
+    },
+    {
+        key: 'warehouses',
+        label: 'Estoques',
+        group: 'Cadastros',
+        status: 'missing',
+        roadmapPhase: 'Fase 2',
+        lizySource: 'Base de Dados → Cadastros → Estoques',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M3 9l9-6 9 6v12H3zM8 21v-7h8v7'
+    },
+    {
+        key: 'bank-accounts',
+        label: 'Contas Bancárias',
+        group: 'Cadastros',
+        status: 'missing',
+        roadmapPhase: 'Fase 4',
+        lizySource: 'Base de Dados → Cadastros → Contas Bancárias',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M3 10h18M5 10v8M9 10v8M15 10v8M19 10v8M2 20h20M12 3l9 5H3z'
+    },
+    {
+        key: 'financial-categories',
+        label: 'Categorias Financeiras',
+        group: 'Cadastros',
+        status: 'missing',
+        roadmapPhase: 'Fase 4',
+        lizySource: 'Base de Dados → Cadastros → Categorias Financeiras',
+        placeholder: true,
+        roles: ALL_ROLES,
+        icon: 'M4 6h16M4 12h10M4 18h7'
     },
 
     /* ACESSO RÁPIDO */
@@ -253,6 +486,8 @@ const SIDEBAR_ITEMS = [
         label: 'Pendências',
         group: 'Acesso rápido',
         status: 'ok',
+        roadmapPhase: 'Core RKM',
+        lizySource: 'OS → Pendências / bloqueios',
         roles: ['admin', 'supervisor', 'quality', 'operator'],
         icon: 'M12 3 2.5 20h19L12 3Zm0 6v4m0 4h.01'
     },
@@ -261,6 +496,8 @@ const SIDEBAR_ITEMS = [
         label: 'Evidências',
         group: 'Acesso rápido',
         status: 'incomplete',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'OS → Fotos / Arquivos',
         roles: ['admin', 'quality', 'operator'],
         icon: 'M4 7h16M4 12h16M4 17h10'
     },
@@ -269,6 +506,8 @@ const SIDEBAR_ITEMS = [
         label: 'Resumo / Laudo',
         group: 'Acesso rápido',
         status: 'incomplete',
+        roadmapPhase: 'Fase 1',
+        lizySource: 'OS → Relatório / Laudo',
         roles: ['admin', 'supervisor', 'quality', 'pcp'],
         icon: 'M9 12h6m-6 4h6m-7-9h8a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z'
     },
@@ -516,63 +755,136 @@ const SIDEBAR_STATUS_LABEL = {
     missing: 'INEXISTENTE',
 };
 
-const OperationalPlaceholder = ({ item }) => (
-    React.createElement("div", { className: "p-4 md:p-6" },
-        React.createElement("div", { className: "rkm-card w-full p-6 space-y-5" },
+const OperationalPlaceholder = ({ item }) => {
+    const source = item.source || item.lizySource || '';
 
-            React.createElement("div", { className: "flex items-start gap-3 flex-wrap" },
-                React.createElement("div", { className: "flex-1" },
-                    React.createElement(
-                        "div",
-                        { className: "text-[11px] uppercase tracking-wider text-blue-400 font-semibold mb-2" },
-                        "Ciclo operacional"
-                    ),
-                    React.createElement(
-                        "h1",
-                        { className: "text-[24px] font-semibold text-slate-100" },
-                        item.label
-                    ),
-                    React.createElement(
-                        "p",
-                        { className: "text-[13px] text-slate-400 mt-2" },
-                        item.description || ''
-                    )
-                ),
-                SHOW_DEV_GUIDES &&
-                React.createElement(
-                    "span",
-                    { className: `sidebar-progress sidebar-progress-${item.status}` },
-                    SIDEBAR_STATUS_LABEL[item.status]
-                )
-            ),
+    const description =
+        item.description ||
+        (
+            item.status === 'missing'
+                ? 'Esta capacidade faz parte do roadmap de paridade com a Lizy, mas ainda não possui implementação equivalente no RKM.'
+                : 'O RKM já possui parte desta capacidade, porém ainda não atingiu a paridade prevista.'
+        );
 
-            SHOW_DEV_GUIDES &&
-            item.source &&
-                React.createElement(
-                    "div",
-                    { className: "rkm-card-2 p-4" },
-                    React.createElement(
-                        "div",
-                        { className: "text-[11px] uppercase tracking-wide text-slate-500 mb-1" },
-                        "Referência atual na Lizy"
-                    ),
-                    React.createElement(
-                        "div",
-                        { className: "text-[14px] font-medium text-slate-200" },
-                        item.source
-                    )
-                ),
+    return React.createElement(
+        "div",
+        { className: "p-4 md:p-6" },
+
+        React.createElement(
+            "div",
+            { className: "rkm-card w-full p-6 space-y-5" },
 
             React.createElement(
                 "div",
-                { className: "text-[12px] text-slate-500" },
-                item.status === 'missing'
-                    ? 'Esta área faz parte do ciclo contratado, mas ainda não possui implementação equivalente.'
-                    : 'Esta área já possui parte da estrutura, mas ainda não está concluída.'
-            )
+                { className: "flex items-start gap-3 flex-wrap" },
+
+                React.createElement(
+                    "div",
+                    { className: "flex-1 min-w-[220px]" },
+
+                    React.createElement(
+                        "div",
+                        {
+                            className:
+                                "text-[11px] uppercase tracking-wider " +
+                                "text-blue-400 font-semibold mb-2"
+                        },
+                        "Roadmap de paridade Lizy"
+                    ),
+
+                    React.createElement(
+                        "h1",
+                        {
+                            className:
+                                "text-[24px] font-semibold text-slate-100"
+                        },
+                        item.label
+                    ),
+
+                    React.createElement(
+                        "p",
+                        {
+                            className:
+                                "text-[13px] text-slate-400 mt-2 max-w-2xl"
+                        },
+                        description
+                    )
+                ),
+
+                SHOW_DEV_GUIDES &&
+                    React.createElement(
+                        "span",
+                        {
+                            className:
+                                `sidebar-progress ` +
+                                `sidebar-progress-${item.status}`
+                        },
+                        SIDEBAR_STATUS_LABEL[item.status]
+                    )
+            ),
+
+            SHOW_DEV_GUIDES &&
+                (source || item.roadmapPhase) &&
+                React.createElement(
+                    "div",
+                    {
+                        className:
+                            "grid grid-cols-1 md:grid-cols-2 gap-4"
+                    },
+
+                    source &&
+                        React.createElement(
+                            "div",
+                            { className: "rkm-card-2 p-4" },
+
+                            React.createElement(
+                                "div",
+                                {
+                                    className:
+                                        "text-[11px] uppercase tracking-wide " +
+                                        "text-slate-500 mb-1"
+                                },
+                                "Referência atual na Lizy"
+                            ),
+
+                            React.createElement(
+                                "div",
+                                {
+                                    className:
+                                        "text-[14px] font-medium text-slate-200"
+                                },
+                                source
+                            )
+                        ),
+
+                    item.roadmapPhase &&
+                        React.createElement(
+                            "div",
+                            { className: "rkm-card-2 p-4" },
+
+                            React.createElement(
+                                "div",
+                                {
+                                    className:
+                                        "text-[11px] uppercase tracking-wide " +
+                                        "text-slate-500 mb-1"
+                                },
+                                "Roadmap"
+                            ),
+
+                            React.createElement(
+                                "div",
+                                {
+                                    className:
+                                        "text-[14px] font-medium text-slate-200"
+                                },
+                                item.roadmapPhase
+                            )
+                        )
+                )
         )
-    )
-);
+    );
+};
 
 
 const LizyReferenceCard = ({ source, detail }) =>
@@ -630,9 +942,14 @@ const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeR
 
     const [openGroups, setOpenGroups] = useState({
         'Visão geral': true,
-        'Operação': true,
+        'Serviços': true,
         'Instruções de trabalho': true,
-        'Gestão': true,
+        'Gestão RKM': true,
+        'Suprimentos': true,
+        'Logística': true,
+        'Comercial': true,
+        'Financeiro': true,
+        'Cadastros': true,
         'Acesso rápido': true,
     });
 
@@ -645,9 +962,14 @@ const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeR
 
     const groupOrder = [
         'Visão geral',
-        'Operação',
+        'Serviços',
         'Instruções de trabalho',
-        'Gestão',
+        'Gestão RKM',
+        'Suprimentos',
+        'Logística',
+        'Comercial',
+        'Financeiro',
+        'Cadastros',
         'Acesso rápido',
     ];
 
