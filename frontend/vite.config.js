@@ -17,6 +17,12 @@ export default defineConfig({
     'import.meta.env.VITE_COMMIT_DATE': JSON.stringify(commitDate),
     'import.meta.env.VITE_COMMIT_TITLE': JSON.stringify(commitTitle),
   },
-  server: { port: Number(process.env.FRONTEND_PORT || 4173), proxy: { '/api': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787) } },
+  server: {
+    port: Number(process.env.FRONTEND_PORT || 4173),
+    // O frontend roda em Docker com o código montado via volume.
+    // Polling garante que alterações feitas no host acionem o HMR.
+    watch: { usePolling: true, interval: 120 },
+    proxy: { '/api': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787) },
+  },
   preview: { port: Number(process.env.FRONTEND_PORT || 4173) },
 });
