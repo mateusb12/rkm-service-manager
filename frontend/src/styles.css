@@ -350,3 +350,123 @@ html.dark { --zenit-color-text: #e2e8f0; --zenit-color-muted: #94a3b8; --zenit-c
      html:not(.dark) .app-shell label.rkm-check.checked { background: #eff6ff; border-color: #3b82f6; }
      html:not(.dark) .zenit-login:not(.zenit-dark) .tag-emerald { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
      html:not(.dark) .zenit-login:not(.zenit-dark) .tag-amber { background: #fffbeb; color: #a16207; border-color: #fde68a; }
+
+
+/* RKM ROADMAP SIDEBAR STATUS */
+.sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, .22) transparent;
+}
+
+.sidebar-group-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px 7px;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: left;
+}
+
+.sidebar-group-toggle:hover {
+    color: #94a3b8;
+}
+
+.sidebar-group-chevron {
+    transition: transform .15s ease;
+    flex: none;
+}
+
+.sidebar-group-chevron.is-open {
+    transform: rotate(90deg);
+}
+
+.sidebar-status {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18px;
+    padding: 2px 5px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 8px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: .025em;
+    white-space: nowrap;
+}
+
+.sidebar-status-ok {
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, .10);
+    border-color: rgba(16, 185, 129, .28);
+}
+
+.sidebar-status-incomplete {
+    color: #fcd34d;
+    background: rgba(245, 158, 11, .10);
+    border-color: rgba(245, 158, 11, .28);
+}
+
+.sidebar-status-missing {
+    color: #fca5a5;
+    background: rgba(239, 68, 68, .09);
+    border-color: rgba(239, 68, 68, .25);
+}
+
+.sidebar-item-missing:not(.sidebar-item-active) {
+    color: #8291a5;
+}
+
+.sidebar-item-missing:hover {
+    color: #cbd5e1;
+}
+
+.sidebar-collapsed .sidebar-status,
+.sidebar-collapsed .sidebar-group-toggle {
+    display: none;
+}
+
+.sidebar-collapsed .sidebar-section {
+    margin-bottom: .45rem;
+}
+
+/* Light mode */
+html:not(.dark) .app-shell .sidebar-status-ok {
+    color: #047857;
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+}
+
+html:not(.dark) .app-shell .sidebar-status-incomplete {
+    color: #a16207;
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+html:not(.dark) .app-shell .sidebar-status-missing {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+html:not(.dark) .app-shell .sidebar-group-toggle {
+    color: #64748b;
+}
+
+html:not(.dark) .app-shell .sidebar-group-toggle:hover {
+    color: #1e293b;
+}
+
+html:not(.dark) .app-shell .sidebar-item-missing:not(.sidebar-item-active) {
+    color: #94a3b8;
+}
