@@ -67,7 +67,7 @@ html.dark { --zenit-color-text: #e2e8f0; --zenit-color-muted: #94a3b8; --zenit-c
      label.rkm-check input { margin-top: 3px; accent-color: #3b82f6; }
      .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-weight: 500; font-size: 14px; transition: all .15s; cursor: pointer; }
      .btn-primary { background: var(--zenit-color-brand-strong); color: #fff; border: 1px solid #1d4ed8; }
-     .sidebar-shell { position: relative; z-index: 30; background: #fff; border-right: 1px solid #d9e2ef; transition: width .22s cubic-bezier(.2,.8,.2,1); }
+     .sidebar-shell { position: sticky; top: 0; z-index: 30; background: #fff; border-right: 1px solid #d9e2ef; transition: width .22s cubic-bezier(.2,.8,.2,1); }
      .sidebar-header { height: 72px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid rgba(148,163,184,.12); overflow: visible; }
      .sidebar-brand-copy { flex: 1; }
      .sidebar-toggle { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border: 1px solid #d9e2ef; border-radius: 9px; color: #64748b; background: #f8fbff; cursor: pointer; transition: color .15s, background .15s, border-color .15s, transform .15s; }
@@ -350,3 +350,94 @@ html.dark { --zenit-color-text: #e2e8f0; --zenit-color-muted: #94a3b8; --zenit-c
      html:not(.dark) .app-shell label.rkm-check.checked { background: #eff6ff; border-color: #3b82f6; }
      html:not(.dark) .zenit-login:not(.zenit-dark) .tag-emerald { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
      html:not(.dark) .zenit-login:not(.zenit-dark) .tag-amber { background: #fffbeb; color: #a16207; border-color: #fde68a; }
+
+
+/* RKM OPERATIONAL SIDEBAR */
+
+.sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, .22) transparent;
+}
+
+.sidebar-group-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px 7px;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.sidebar-chevron {
+    font-size: 16px;
+    line-height: 1;
+    transition: transform .15s ease;
+}
+
+.sidebar-chevron.is-open {
+    transform: rotate(90deg);
+}
+
+.sidebar-progress {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18px;
+    padding: 2px 5px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 8px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: .025em;
+    white-space: nowrap;
+}
+
+.sidebar-progress-ok {
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, .10);
+    border-color: rgba(16, 185, 129, .28);
+}
+
+.sidebar-progress-incomplete {
+    color: #fcd34d;
+    background: rgba(245, 158, 11, .10);
+    border-color: rgba(245, 158, 11, .28);
+}
+
+.sidebar-progress-missing {
+    color: #fca5a5;
+    background: rgba(239, 68, 68, .09);
+    border-color: rgba(239, 68, 68, .25);
+}
+
+.sidebar-collapsed .sidebar-progress,
+.sidebar-collapsed .sidebar-group-toggle {
+    display: none;
+}
+
+html:not(.dark) .app-shell .sidebar-progress-ok {
+    color: #047857;
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+}
+
+html:not(.dark) .app-shell .sidebar-progress-incomplete {
+    color: #a16207;
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+html:not(.dark) .app-shell .sidebar-progress-missing {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+}

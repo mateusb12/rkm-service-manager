@@ -135,18 +135,143 @@ const viewFromPath = (pathname) => {
     const view = pathname.replace(/^\/+/, '').split('/')[0];
     return view && SIDEBAR_ITEMS.some(item => item.key === view) ? view : 'dashboard';
 };
-/* Itens da sidebar com escopo por perfil */
+/* Sidebar — escopo operacional contratado */
+const ALL_ROLES = ['admin', 'supervisor', 'quality', 'pcp', 'operator'];
+
 const SIDEBAR_ITEMS = [
-    { key: 'dashboard', label: 'Painel', roles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], icon: 'M3 12l2-2 4 4 8-8 4 4' },
-    { key: 'mybench', label: 'Minha Bancada', roles: ['admin', 'operator'], icon: 'M3 7h18M3 12h18M3 17h12' },
-    { key: 'supervisor', label: 'Visão do Supervisor', roles: ['admin', 'supervisor'], icon: 'M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-    { key: 'quality', label: 'Visão da Qualidade', roles: ['admin', 'quality'], icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11' },
-    { key: 'pcp', label: 'Visão do PCP', roles: ['admin', 'pcp'], icon: 'M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z' },
-    { key: 'it001', label: 'IT001 — Bexiga', roles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], icon: 'M12 6v12m6-6H6' },
-    { key: 'it002', label: 'IT002 — Pistão', roles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'], icon: 'M5 12h14M5 6h14M5 18h14' },
-    { key: 'pendencies', label: 'Pendências', roles: ['admin', 'supervisor', 'quality', 'operator'], icon: 'M12 3 2.5 20h19L12 3Zm0 6v4m0 4h.01' },
-    { key: 'evidences', label: 'Evidências', roles: ['admin', 'quality', 'operator'], icon: 'M4 7h16M4 12h16M4 17h10' },
-    { key: 'summary', label: 'Resumo / Laudo', roles: ['admin', 'supervisor', 'quality', 'pcp'], icon: 'M9 12h6m-6 4h6m-7-9h8a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z' },
+    /* VISÃO GERAL */
+    {
+        key: 'dashboard',
+        label: 'Painel',
+        group: 'Visão geral',
+        status: 'incomplete',
+        roles: ALL_ROLES,
+        icon: 'M3 12l2-2 4 4 8-8 4 4'
+    },
+    {
+        key: 'mybench',
+        label: 'Minha Bancada',
+        group: 'Visão geral',
+        status: 'incomplete',
+        roles: ['admin', 'operator'],
+        icon: 'M3 7h18M3 12h18M3 17h12'
+    },
+
+    /* CICLO OPERACIONAL */
+    {
+        key: 'receiving',
+        label: 'Recebimento / Entrada',
+        group: 'Operação',
+        status: 'incomplete',
+        placeholder: true,
+        source: 'Serviços → Desmontagem → Criar Ordem',
+        description: 'Entrada da peça/equipamento, abertura da OS e identificação inicial.',
+        roles: ALL_ROLES,
+        icon: 'M4 4h16v16H4zM8 8h8M8 12h8M8 16h5'
+    },
+    {
+        key: 'inspection',
+        label: 'Peritagem',
+        group: 'Operação',
+        status: 'incomplete',
+        placeholder: true,
+        source: 'Serviços → Desmontagem → Análise',
+        description: 'Peritagem, inspeção, diagnóstico e decisão técnica.',
+        roles: ALL_ROLES,
+        icon: 'M9 3h6M10 3v4M8 8h8l2 12H6L8 8z'
+    },
+    {
+        key: 'execution',
+        label: 'Em Execução',
+        group: 'Operação',
+        status: 'incomplete',
+        placeholder: true,
+        source: 'OS + IT001 / IT002',
+        description: 'Execução técnica do serviço e acompanhamento do progresso.',
+        roles: ALL_ROLES,
+        icon: 'M5 12h14M12 5v14'
+    },
+    {
+        key: 'finished',
+        label: 'Finalizados',
+        group: 'Operação',
+        status: 'missing',
+        placeholder: true,
+        source: 'Serviços → Finalizados',
+        description: 'Histórico de serviços concluídos e encerrados.',
+        roles: ALL_ROLES,
+        icon: 'M5 13l4 4L19 7'
+    },
+
+    /* ITs */
+    {
+        key: 'it001',
+        label: 'IT001 — Bexiga',
+        group: 'Instruções de trabalho',
+        status: 'ok',
+        roles: ALL_ROLES,
+        icon: 'M12 6v12m6-6H6'
+    },
+    {
+        key: 'it002',
+        label: 'IT002 — Pistão',
+        group: 'Instruções de trabalho',
+        status: 'ok',
+        roles: ALL_ROLES,
+        icon: 'M5 12h14M5 6h14M5 18h14'
+    },
+
+    /* GESTÃO */
+    {
+        key: 'supervisor',
+        label: 'Supervisor',
+        group: 'Gestão',
+        status: 'incomplete',
+        roles: ['admin', 'supervisor'],
+        icon: 'M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+    },
+    {
+        key: 'quality',
+        label: 'Qualidade',
+        group: 'Gestão',
+        status: 'incomplete',
+        roles: ['admin', 'quality'],
+        icon: 'M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'
+    },
+    {
+        key: 'pcp',
+        label: 'PCP',
+        group: 'Gestão',
+        status: 'incomplete',
+        roles: ['admin', 'pcp'],
+        icon: 'M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z'
+    },
+
+    /* ACESSO RÁPIDO */
+    {
+        key: 'pendencies',
+        label: 'Pendências',
+        group: 'Acesso rápido',
+        status: 'ok',
+        roles: ['admin', 'supervisor', 'quality', 'operator'],
+        icon: 'M12 3 2.5 20h19L12 3Zm0 6v4m0 4h.01'
+    },
+    {
+        key: 'evidences',
+        label: 'Evidências',
+        group: 'Acesso rápido',
+        status: 'incomplete',
+        roles: ['admin', 'quality', 'operator'],
+        icon: 'M4 7h16M4 12h16M4 17h10'
+    },
+    {
+        key: 'summary',
+        label: 'Resumo / Laudo',
+        group: 'Acesso rápido',
+        status: 'incomplete',
+        roles: ['admin', 'supervisor', 'quality', 'pcp'],
+        icon: 'M9 12h6m-6 4h6m-7-9h8a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z'
+    },
 ];
 /* ============================================================
    MOCK — serviços de exemplo (com atribuições de usuários)
@@ -374,38 +499,334 @@ const TopBar = ({ alerts, onJumpAlerts, activeUser, activeRole, darkMode, onTogg
         React.createElement("button", { onClick: onLogout, className: "btn btn-ghost" }, "Sair"),
         null));
 };
+
+const SIDEBAR_STATUS_LABEL = {
+    ok: 'OK',
+    incomplete: 'INCOMPLETO',
+    missing: 'INEXISTENTE',
+};
+
+const OperationalPlaceholder = ({ item }) => (
+    React.createElement("div", { className: "p-4 md:p-6" },
+        React.createElement("div", { className: "rkm-card w-full p-6 space-y-5" },
+
+            React.createElement("div", { className: "flex items-start gap-3 flex-wrap" },
+                React.createElement("div", { className: "flex-1" },
+                    React.createElement(
+                        "div",
+                        { className: "text-[11px] uppercase tracking-wider text-blue-400 font-semibold mb-2" },
+                        "Ciclo operacional"
+                    ),
+                    React.createElement(
+                        "h1",
+                        { className: "text-[24px] font-semibold text-slate-100" },
+                        item.label
+                    ),
+                    React.createElement(
+                        "p",
+                        { className: "text-[13px] text-slate-400 mt-2" },
+                        item.description || ''
+                    )
+                ),
+                React.createElement(
+                    "span",
+                    { className: `sidebar-progress sidebar-progress-${item.status}` },
+                    SIDEBAR_STATUS_LABEL[item.status]
+                )
+            ),
+
+            item.source &&
+                React.createElement(
+                    "div",
+                    { className: "rkm-card-2 p-4" },
+                    React.createElement(
+                        "div",
+                        { className: "text-[11px] uppercase tracking-wide text-slate-500 mb-1" },
+                        "Referência atual na Lizy"
+                    ),
+                    React.createElement(
+                        "div",
+                        { className: "text-[14px] font-medium text-slate-200" },
+                        item.source
+                    )
+                ),
+
+            React.createElement(
+                "div",
+                { className: "text-[12px] text-slate-500" },
+                item.status === 'missing'
+                    ? 'Esta área faz parte do ciclo contratado, mas ainda não possui implementação equivalente.'
+                    : 'Esta área já possui parte da estrutura, mas ainda não está concluída.'
+            )
+        )
+    )
+);
+
 const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeRole, onLogout }) => {
     const [collapsed, setCollapsed] = useState(false);
-    const items = SIDEBAR_ITEMS.filter(it => it.roles.includes(activeRole || 'admin'));
+
+    const [openGroups, setOpenGroups] = useState({
+        'Visão geral': true,
+        'Operação': true,
+        'Instruções de trabalho': true,
+        'Gestão': true,
+        'Acesso rápido': true,
+    });
+
+    const items = SIDEBAR_ITEMS.filter(
+        it => it.roles.includes(activeRole || 'admin')
+    );
+
     const user = mockUsers.find(u => u.id === activeUser) || mockUsers[0];
     const role = ROLES.find(r => r.key === activeRole) || ROLES[0];
-    const groups = [
-        ['Visão geral', items.filter(it => !['it001', 'it002', 'pendencies', 'evidences', 'summary'].includes(it.key))],
-        ['Instruções de trabalho', items.filter(it => ['it001', 'it002'].includes(it.key))],
-        ['Acesso rápido', items.filter(it => ['pendencies', 'evidences', 'summary'].includes(it.key))],
+
+    const groupOrder = [
+        'Visão geral',
+        'Operação',
+        'Instruções de trabalho',
+        'Gestão',
+        'Acesso rápido',
     ];
-    const renderItem = (it) => React.createElement("button", { key: it.key, onClick: () => setView(it.key), className: 'sidebar-item ' + (view === it.key ? 'sidebar-item-active' : ''), title: it.label, 'aria-label': it.label },
-        React.createElement("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: it.icon })),
-        React.createElement("span", { className: "sidebar-label flex-1" }, it.label), it.key === 'pendencies' && alertCount > 0 && React.createElement("span", { className: "badge-num" }, alertCount));
-    return React.createElement("aside", { className: `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ${collapsed ? 'sidebar-collapsed w-[72px]' : 'w-64'}` },
-        React.createElement("div", { className: "sidebar-header" }, React.createElement("div", { className: "sidebar-brand w-9 h-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold" }, "RK"), React.createElement("div", { className: "sidebar-label sidebar-brand-copy min-w-0" }, React.createElement("div", { className: "text-[15px] font-semibold leading-tight truncate" }, "RKM Service Manager"), React.createElement("div", { className: "text-[11px] text-slate-400 truncate" }, "Serviços Hidráulicos")), React.createElement("button", { type: "button", className: "sidebar-toggle", onClick: () => setCollapsed(value => !value), title: collapsed ? 'Expandir sidebar' : 'Recolher sidebar', 'aria-label': collapsed ? 'Expandir sidebar' : 'Recolher sidebar', 'aria-expanded': !collapsed }, React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", 'aria-hidden': 'true' }, React.createElement("path", { d: collapsed ? 'm9 18 6-6-6-6' : 'm15 18-6-6 6-6' })))),
-        React.createElement("nav", { className: "flex-1 px-3 pt-2" }, groups.map(([label, group]) => group.length > 0 && React.createElement("div", { key: label, className: "sidebar-section" }, React.createElement("div", { className: "sidebar-label sidebar-section-label" }, label), group.map(renderItem)))),
-        React.createElement("div", { className: "sidebar-user" },
-            React.createElement("div", { className: "sidebar-user-main flex items-center gap-3" },
-                React.createElement("div", { className: "w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-[12px] font-bold" }, user.short),
-                React.createElement("div", { className: "sidebar-label text-[12px] leading-tight min-w-0 flex-1" },
-                    React.createElement("div", { className: "font-medium truncate" }, user.name),
-                    React.createElement("div", { className: "text-slate-400 truncate" }, role.label))),
-            React.createElement("button", { type: "button", onClick: onLogout, className: "sidebar-logout", title: "Sair", "aria-label": "Sair" },
-                React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" },
-                    React.createElement("path", { d: "M10 17l5-5-5-5" }),
-                    React.createElement("path", { d: "M15 12H3" }),
-                    React.createElement("path", { d: "M21 19V5a2 2 0 00-2-2h-6" })),
-                React.createElement("span", { className: "sidebar-logout-text" }, "Sair"))));
+
+    const groups = groupOrder.map(group => [
+        group,
+        items.filter(item => item.group === group),
+    ]);
+
+    const toggleGroup = group =>
+        setOpenGroups(prev => ({
+            ...prev,
+            [group]: !prev[group],
+        }));
+
+    return React.createElement(
+        "aside",
+        {
+            className:
+                `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ` +
+                `${collapsed ? 'sidebar-collapsed w-[72px]' : 'w-80'}`
+        },
+
+        React.createElement(
+            "div",
+            { className: "sidebar-header" },
+
+            React.createElement(
+                "div",
+                {
+                    className:
+                        "sidebar-brand w-9 h-9 shrink-0 rounded-lg " +
+                        "bg-gradient-to-br from-blue-500 to-indigo-600 " +
+                        "flex items-center justify-center font-bold"
+                },
+                "RK"
+            ),
+
+            React.createElement(
+                "div",
+                { className: "sidebar-label sidebar-brand-copy min-w-0" },
+                React.createElement(
+                    "div",
+                    { className: "text-[15px] font-semibold truncate" },
+                    "RKM Service Manager"
+                ),
+                React.createElement(
+                    "div",
+                    { className: "text-[11px] text-slate-400 truncate" },
+                    "Ciclo Operacional"
+                )
+            ),
+
+            React.createElement(
+                "button",
+                {
+                    type: "button",
+                    className: "sidebar-toggle",
+                    onClick: () => setCollapsed(v => !v),
+                    title: collapsed ? 'Expandir sidebar' : 'Recolher sidebar'
+                },
+                React.createElement(
+                    "svg",
+                    {
+                        width: "16",
+                        height: "16",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        stroke: "currentColor",
+                        strokeWidth: "2"
+                    },
+                    React.createElement("path", {
+                        d: collapsed
+                            ? 'm9 18 6-6-6-6'
+                            : 'm15 18-6-6 6-6'
+                    })
+                )
+            )
+        ),
+
+        React.createElement(
+            "nav",
+            {
+                className:
+                    "sidebar-nav flex-1 min-h-0 overflow-y-auto px-3 pt-2"
+            },
+
+            groups.map(([groupLabel, groupItems]) =>
+                groupItems.length > 0 &&
+                React.createElement(
+                    "div",
+                    {
+                        key: groupLabel,
+                        className: "sidebar-section"
+                    },
+
+                    React.createElement(
+                        "button",
+                        {
+                            type: "button",
+                            className: "sidebar-label sidebar-group-toggle",
+                            onClick: () => toggleGroup(groupLabel)
+                        },
+
+                        React.createElement("span", null, groupLabel),
+
+                        React.createElement(
+                            "span",
+                            {
+                                className:
+                                    `sidebar-chevron ` +
+                                    `${openGroups[groupLabel] ? 'is-open' : ''}`
+                            },
+                            "›"
+                        )
+                    ),
+
+                    openGroups[groupLabel] &&
+                        groupItems.map(it =>
+                            React.createElement(
+                                "button",
+                                {
+                                    key: it.key,
+                                    onClick: () => setView(it.key),
+                                    className:
+                                        'sidebar-item ' +
+                                        (view === it.key
+                                            ? 'sidebar-item-active'
+                                            : ''),
+                                    title: `${it.label} — ${
+                                        SIDEBAR_STATUS_LABEL[it.status]
+                                    }`
+                                },
+
+                                React.createElement(
+                                    "svg",
+                                    {
+                                        width: "17",
+                                        height: "17",
+                                        viewBox: "0 0 24 24",
+                                        fill: "none",
+                                        stroke: "currentColor",
+                                        strokeWidth: "1.8",
+                                        strokeLinecap: "round",
+                                        strokeLinejoin: "round"
+                                    },
+                                    React.createElement("path", {
+                                        d: it.icon
+                                    })
+                                ),
+
+                                React.createElement(
+                                    "span",
+                                    {
+                                        className:
+                                            "sidebar-label flex-1 min-w-0 truncate"
+                                    },
+                                    it.label
+                                ),
+
+                                it.key === 'pendencies' &&
+                                    alertCount > 0 &&
+                                    React.createElement(
+                                        "span",
+                                        { className: "badge-num" },
+                                        alertCount
+                                    ),
+
+                                React.createElement(
+                                    "span",
+                                    {
+                                        className:
+                                            `sidebar-progress ` +
+                                            `sidebar-progress-${it.status}`
+                                    },
+                                    SIDEBAR_STATUS_LABEL[it.status]
+                                )
+                            )
+                        )
+                )
+            )
+        ),
+
+        React.createElement(
+            "div",
+            { className: "sidebar-user" },
+
+            React.createElement(
+                "div",
+                { className: "sidebar-user-main flex items-center gap-3" },
+
+                React.createElement(
+                    "div",
+                    {
+                        className:
+                            "w-9 h-9 shrink-0 rounded-full " +
+                            "bg-gradient-to-br from-emerald-500 to-cyan-600 " +
+                            "flex items-center justify-center text-[12px] font-bold"
+                    },
+                    user.short
+                ),
+
+                React.createElement(
+                    "div",
+                    { className: "sidebar-label min-w-0 flex-1" },
+
+                    React.createElement(
+                        "div",
+                        {
+                            className:
+                                "text-[12px] font-medium text-slate-200 truncate"
+                        },
+                        user.name
+                    ),
+
+                    React.createElement(
+                        "div",
+                        {
+                            className:
+                                "text-[11px] text-slate-500 truncate"
+                        },
+                        role.label
+                    )
+                )
+            ),
+
+            React.createElement(
+                "button",
+                {
+                    className: "sidebar-logout",
+                    onClick: onLogout,
+                    title: "Sair"
+                },
+                React.createElement("span", {
+                    className: "sidebar-logout-text"
+                }, "Sair")
+            )
+        )
+    );
 };
 const CleanTopBar = ({ view, alerts, onJumpAlerts, darkMode, onToggleDarkMode }) => {
     const labels = { dashboard: 'Painel', mybench: 'Minha Bancada', supervisor: 'Visão do Supervisor', quality: 'Visão da Qualidade', pcp: 'Visão do PCP', it001: 'IT001 — Bexiga', it002: 'IT002 — Pistão', pendencies: 'Pendências', evidences: 'Evidências', summary: 'Resumo / Laudo', authHistory: 'Histórico de autorizações' };
-    return React.createElement("header", { className: "topbar px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20" }, React.createElement("div", { className: "flex-1 min-w-0" }, React.createElement("div", { className: "text-[12px] text-slate-500" }, "RKM Service Manager"), React.createElement("div", { className: "text-[15px] font-semibold text-slate-100 truncate" }, labels[view] || 'Operações')), React.createElement("button", { onClick: onJumpAlerts, className: 'btn ' + (alerts.length ? 'btn-danger' : 'btn-ghost') }, React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 001.71 3L13.71 3.86a2 2 0 00-3.42 0z" })), alerts.length ? `${alerts.length} alerta${alerts.length > 1 ? 's' : ''}` : 'Sem alertas'), React.createElement("button", { onClick: onToggleDarkMode, className: "btn btn-ghost", title: darkMode ? "Ativar modo claro" : "Ativar modo escuro", "aria-label": darkMode ? "Ativar modo claro" : "Ativar modo escuro" }, darkMode ? "☀️" : "🌙"));
+    return React.createElement("header", { className: "topbar px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20" }, React.createElement("div", { className: "flex-1 min-w-0" }, React.createElement("div", { className: "text-[12px] text-slate-500" }, "RKM Service Manager"), React.createElement("div", { className: "text-[15px] font-semibold text-slate-100 truncate" }, (SIDEBAR_ITEMS.find(item => item.key === view)?.label || labels[view] || 'Operações'))), React.createElement("button", { onClick: onJumpAlerts, className: 'btn ' + (alerts.length ? 'btn-danger' : 'btn-ghost') }, React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 001.71 3L13.71 3.86a2 2 0 00-3.42 0z" })), alerts.length ? `${alerts.length} alerta${alerts.length > 1 ? 's' : ''}` : 'Sem alertas'), React.createElement("button", { onClick: onToggleDarkMode, className: "btn btn-ghost", title: darkMode ? "Ativar modo claro" : "Ativar modo escuro", "aria-label": darkMode ? "Ativar modo claro" : "Ativar modo escuro" }, darkMode ? "☀️" : "🌙"));
 };
 /* ============================================================
    VIEW — Dashboard (cards + tabela referenciando o layout)
@@ -2900,6 +3321,17 @@ const App = () => {
             return (React.createElement("div", { className: "p-4 md:p-6" },
                 React.createElement(AuthorizationHistoryPanel, { rec001: rec001, rec002: rec002, scope: activeRole === 'admin' ? 'all' : activeRole, title: activeRole === 'admin' ? 'Histórico global de autorizações' : 'Histórico de autorizações' })));
         }
+        const operationalItem = SIDEBAR_ITEMS.find(
+            item => item.key === view && item.placeholder
+        );
+
+        if (operationalItem) {
+            return React.createElement(
+                OperationalPlaceholder,
+                { item: operationalItem }
+            );
+        }
+
         return null;
     };
     return (React.createElement("div", { className: "app-shell min-h-screen flex bg-rkmbg text-slate-200" },
