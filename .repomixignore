@@ -1,0 +1,27 @@
+# Saída do próprio Repomix
+codebase.md
+
+# Dependências instaladas
+frontend/node_modules/
+frontend/package-lock.json
+backend/go.sum
+
+# Builds e artefatos gerados
+frontend/dist/
+backend/tmp/
+coverage/
+*.out
+
+# Dados locais e logs
+backend/*.db
+*.log
+
+# Variáveis de ambiente reais
+.env
+.env.*
+!.env.example
+
+# Arquivos de sistema/IDE
+.idea/
+.vscode/
+.DS_Store
