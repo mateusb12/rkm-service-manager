@@ -562,6 +562,57 @@ const OperationalPlaceholder = ({ item }) => (
     )
 );
 
+
+const LizyReferenceCard = ({ source, detail }) =>
+    React.createElement(
+        "div",
+        { className: "rkm-card-2 p-4 flex flex-col md:flex-row md:items-center gap-3" },
+
+        React.createElement(
+            "div",
+            { className: "flex-1 min-w-0" },
+
+            React.createElement(
+                "div",
+                {
+                    className:
+                        "text-[10px] uppercase tracking-wider text-slate-500 mb-1"
+                },
+                "Referência atual na Lizy"
+            ),
+
+            React.createElement(
+                "div",
+                {
+                    className:
+                        "text-[13.5px] font-medium text-slate-200"
+                },
+                source
+            ),
+
+            detail &&
+                React.createElement(
+                    "div",
+                    {
+                        className:
+                            "text-[11.5px] text-slate-500 mt-1"
+                    },
+                    detail
+                )
+        ),
+
+        React.createElement(
+            "span",
+            {
+                className:
+                    "text-[10px] px-2 py-1 rounded-md " +
+                    "border border-blue-500/25 bg-blue-500/10 text-blue-300 " +
+                    "whitespace-nowrap"
+            },
+            "FONTE DE VERDADE"
+        )
+    );
+
 const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeRole, onLogout }) => {
     const [collapsed, setCollapsed] = useState(false);
 
@@ -845,6 +896,10 @@ const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume00
     const approved = filtered.filter(s => /(aprovad|liberad)/i.test(s.status)).length;
     const totalAlerts = alerts001.filter(a => a.severity === 'critical').length + alerts002.filter(a => a.severity === 'critical').length;
     return (React.createElement("div", { className: "p-4 md:p-6 space-y-6" },
+        React.createElement(LizyReferenceCard, {
+            source: "Serviços → Desmontagem",
+            detail: "Referência para visão geral das OS, status, técnico responsável e andamento operacional."
+        }),
         React.createElement("div", { className: "rkm-card operations-header" },
             React.createElement("div", { className: "operations-identity" },
                 React.createElement("div", { className: "operations-kicker" }, "REGISTRO OPERACIONAL"),
@@ -2886,6 +2941,10 @@ const MyBenchView = ({ services, activeUser, openIT001, openIT002, rec001, rec00
     const user = userById(activeUser) || mockUsers[0];
     const mine = services.filter(s => s.assignedTo && s.assignedTo.operator === activeUser);
     return (React.createElement("div", { className: "p-4 md:p-6 space-y-5" },
+        React.createElement(LizyReferenceCard, {
+            source: "Serviços → Desmontagem",
+            detail: "A Lizy concentra aqui a lista de OS e o técnico associado; a Minha Bancada especializa essa visão por operador."
+        }),
         React.createElement("div", { className: "rkm-card p-5 flex flex-col md:flex-row md:items-center gap-3" },
             React.createElement("div", { className: "flex-1" },
                 React.createElement("div", { className: "text-[11px] text-blue-300 uppercase tracking-wider" }, "Operador / T\u00E9cnico"),
