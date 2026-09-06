@@ -3170,6 +3170,600 @@ const BenchActions = ({
     )
 );
 
+
+/* ============================================================
+   VIEW — Recebimento / Entrada — Criar Ordem
+   Paridade inicial: Lizy → Serviços → Desmontagem → Criar Ordem
+   ============================================================ */
+
+const SERVICE_ENTRY_STORAGE_KEY = 'rkm-service-entry-orders-v1';
+
+const createEmptyServiceEntry = () => ({
+    orderType: 'Cilindro',
+    orderNumber: '',
+    previousOrderNumber: '',
+    expectedDeliveryDate: '',
+    urgent: false,
+
+    client: '',
+    clientReference: '',
+    requester: '',
+    openingDate: new Date().toISOString().slice(0, 10),
+    invoiceNumber: '',
+
+    serialNumber: '',
+    manufacturer: '',
+    equipment: '',
+    model: '',
+    claimedDefect: '',
+
+    shippingNotes: '',
+    equipmentLocation: '',
+    serviceResponsible: '',
+    expertTechnician: '',
+
+    hydraulic: true,
+    pneumatic: false,
+    fluidApplication: '',
+});
+
+const loadServiceEntries = () => {
+    try {
+        const raw = localStorage.getItem(SERVICE_ENTRY_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    }
+    catch {
+        return [];
+    }
+};
+
+const saveServiceEntries = (entries) => {
+    try {
+        localStorage.setItem(
+            SERVICE_ENTRY_STORAGE_KEY,
+            JSON.stringify(entries)
+        );
+    }
+    catch {}
+};
+
+const normalizeOrderNumber = (value) => {
+    const clean = String(value || '').trim().toUpperCase();
+
+    if (!clean) return '';
+
+    return clean.startsWith('OS-')
+        ? clean
+        : `OS-${clean}`;
+};
+
+const serviceEntryDateLabel = (value) => {
+    if (!value) return '—';
+
+    const date = new Date(`${value}T12:00:00`);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleDateString('pt-BR');
+};
+
+const ServiceEntrySection = ({ title, description, children }) => (
+    <section className="service-entry-section">
+        <div className="service-entry-section-header">
+            <div>
+                <h2>{title}</h2>
+
+                {description && (
+                    <p>{description}</p>
+                )}
+            </div>
+        </div>
+
+        <div className="service-entry-grid">
+            {children}
+        </div>
+    </section>
+);
+
+const ServiceEntryView = () => {
+    const [form, setForm] = useState(() => createEmptyServiceEntry());
+    const [entries, setEntries] = useState(() => loadServiceEntries());
+    const [error, setError] = useState('');
+    const [savedOrder, setSavedOrder] = useState('');
+
+    const set = (key, value) => {
+        setForm(prev => ({
+            ...prev,
+            [key]: value,
+        }));
+
+        if (error) setError('');
+        if (savedOrder) setSavedOrder('');
+    };
+
+    const reset = () => {
+        setForm(createEmptyServiceEntry());
+        setError('');
+        setSavedOrder('');
+    };
+
+    const submit = (event) => {
+        event.preventDefault();
+
+        const required = [
+            ['orderType', 'Tipo da ordem'],
+            ['orderNumber', 'Nº da ordem'],
+            ['expectedDeliveryDate', 'Data prevista de entrega'],
+            ['client', 'Cliente'],
+            ['invoiceNumber', 'Nº da nota'],
+            ['manufacturer', 'Fabricante'],
+            ['equipment', 'Equipamento'],
+            ['model', 'Modelo'],
+        ];
+
+        const missing = required
+            .filter(([key]) => !String(form[key] || '').trim())
+            .map(([, label]) => label);
+
+        if (missing.length > 0) {
+            setError(
+                `Preencha os campos obrigatórios: ${missing.join(', ')}.`
+            );
+            return;
+        }
+
+        const normalizedId = normalizeOrderNumber(form.orderNumber);
+
+        if (
+            entries.some(
+                entry =>
+                    normalizeOrderNumber(entry.orderNumber) === normalizedId
+            )
+        ) {
+            setError(`A ${normalizedId} já foi cadastrada nesta demonstração.`);
+            return;
+        }
+
+        const entry = {
+            ...form,
+            id: normalizedId,
+            orderNumber: normalizedId,
+            status: 'Recebido',
+            createdAt: new Date().toISOString(),
+        };
+
+        const next = [
+            entry,
+            ...entries,
+        ];
+
+        setEntries(next);
+        saveServiceEntries(next);
+
+        setSavedOrder(normalizedId);
+
+        setForm({
+            ...createEmptyServiceEntry(),
+            orderType: form.orderType,
+        });
+    };
+
+    return (
+        <div className="p-4 md:p-6 space-y-5 service-entry-page">
+
+            {SHOW_DEV_GUIDES && (
+                <LizyReferenceCard
+                    source="Serviços → Desmontagem → Criar Ordem"
+                    detail="Primeira paridade funcional: abertura e identificação inicial da ordem de serviço."
+                />
+            )}
+
+            <div className="service-entry-hero rkm-card">
+                <div className="flex-1 min-w-0">
+                    <div className="service-entry-kicker">
+                        Ciclo operacional · Entrada
+                    </div>
+
+                    <h1>
+                        Criar ordem de serviço
+                    </h1>
+
+                    <p>
+                        Registre a entrada da peça ou equipamento e reúna as
+                        informações necessárias antes da peritagem.
+                    </p>
+                </div>
+
+                <div className="service-entry-hero-status">
+                    <span className="service-entry-status-dot" />
+
+                    Recebimento
+                </div>
+            </div>
+
+            {savedOrder && (
+                <div className="service-entry-success">
+                    <div className="service-entry-success-icon">✓</div>
+
+                    <div>
+                        <strong>{savedOrder} criada com sucesso</strong>
+
+                        <span>
+                            A ordem foi armazenada nesta demonstração local.
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {error && (
+                <div className="alert-critical rounded-lg p-4 text-[12.5px]">
+                    {error}
+                </div>
+            )}
+
+            <form
+                className="rkm-card service-entry-form"
+                onSubmit={submit}
+            >
+                <ServiceEntrySection
+                    title="Dados da ordem"
+                    description="Identificação, prazo e prioridade do atendimento."
+                >
+                    <Field
+                        label="Tipo da ordem"
+                        required
+                        className="md:col-span-3"
+                    >
+                        <div
+                            className="service-entry-order-types"
+                            role="radiogroup"
+                            aria-label="Tipo da ordem"
+                        >
+                            {[
+                                'Cilindro',
+                                'Acumulador',
+                                'Bomba',
+                                'Motor hidráulico',
+                                'Outro',
+                            ].map(type => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={form.orderType === type}
+                                    className={
+                                        'service-entry-order-type ' +
+                                        (
+                                            form.orderType === type
+                                                ? 'is-active'
+                                                : ''
+                                        )
+                                    }
+                                    onClick={() => set('orderType', type)}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+                    </Field>
+
+                    <Field label="Nº da ordem" required>
+                        <TextInput
+                            value={form.orderNumber}
+                            onChange={value => set('orderNumber', value)}
+                            placeholder="Ex.: 2541"
+                        />
+                    </Field>
+
+                    <Field label="Nº da ordem anterior">
+                        <TextInput
+                            value={form.previousOrderNumber}
+                            onChange={value => set('previousOrderNumber', value)}
+                            placeholder="Opcional"
+                        />
+                    </Field>
+
+                    <Field label="Data de abertura">
+                        <TextInput
+                            type="date"
+                            value={form.openingDate}
+                            onChange={value => set('openingDate', value)}
+                        />
+                    </Field>
+
+                    <Field label="Data prevista de entrega" required>
+                        <TextInput
+                            type="date"
+                            value={form.expectedDeliveryDate}
+                            onChange={value =>
+                                set('expectedDeliveryDate', value)
+                            }
+                        />
+                    </Field>
+
+                    <Field label="Prioridade">
+                        <Toggle
+                            checked={form.urgent}
+                            onChange={value => set('urgent', value)}
+                            label="Atendimento urgente"
+                        />
+                    </Field>
+                </ServiceEntrySection>
+
+                <ServiceEntrySection
+                    title="Cliente e solicitação"
+                    description="Origem da ordem e referência administrativa."
+                >
+                    <Field
+                        label="Cliente"
+                        required
+                        className="md:col-span-2"
+                    >
+                        <TextInput
+                            value={form.client}
+                            onChange={value => set('client', value)}
+                            placeholder="Nome ou razão social"
+                        />
+                    </Field>
+
+                    <Field label="Referência do cliente">
+                        <TextInput
+                            value={form.clientReference}
+                            onChange={value => set('clientReference', value)}
+                            placeholder="Pedido, chamado, referência..."
+                        />
+                    </Field>
+
+                    <Field label="Solicitante">
+                        <TextInput
+                            value={form.requester}
+                            onChange={value => set('requester', value)}
+                            placeholder="Pessoa responsável"
+                        />
+                    </Field>
+
+                    <Field label="Nº da nota" required>
+                        <TextInput
+                            value={form.invoiceNumber}
+                            onChange={value => set('invoiceNumber', value)}
+                            placeholder="NF / documento de entrada"
+                        />
+                    </Field>
+                </ServiceEntrySection>
+
+                <ServiceEntrySection
+                    title="Equipamento"
+                    description="Identificação técnica inicial do item recebido."
+                >
+                    <Field label="Nº de série">
+                        <TextInput
+                            value={form.serialNumber}
+                            onChange={value => set('serialNumber', value)}
+                            placeholder="Número de série"
+                        />
+                    </Field>
+
+                    <Field label="Fabricante" required>
+                        <TextInput
+                            value={form.manufacturer}
+                            onChange={value => set('manufacturer', value)}
+                            placeholder="Ex.: Parker, HYDAC..."
+                        />
+                    </Field>
+
+                    <Field
+                        label="Equipamento"
+                        required
+                        className="md:col-span-2"
+                    >
+                        <TextInput
+                            value={form.equipment}
+                            onChange={value => set('equipment', value)}
+                            placeholder="Descrição do equipamento"
+                        />
+                    </Field>
+
+                    <Field label="Modelo" required>
+                        <TextInput
+                            value={form.model}
+                            onChange={value => set('model', value)}
+                            placeholder="Modelo"
+                        />
+                    </Field>
+
+                    <Field label="Tipo">
+                        <div className="service-entry-type-options">
+                            <Toggle
+                                checked={form.hydraulic}
+                                onChange={value => set('hydraulic', value)}
+                                label="Hidráulico"
+                            />
+
+                            <Toggle
+                                checked={form.pneumatic}
+                                onChange={value => set('pneumatic', value)}
+                                label="Pneumático"
+                            />
+                        </div>
+                    </Field>
+
+                    <Field
+                        label="Fluido / aplicação"
+                        className="md:col-span-2"
+                    >
+                        <TextInput
+                            value={form.fluidApplication}
+                            onChange={value => set('fluidApplication', value)}
+                            placeholder="Fluido utilizado e aplicação"
+                        />
+                    </Field>
+
+                    <Field
+                        label="Defeito alegado"
+                        className="md:col-span-3"
+                    >
+                        <TextArea
+                            rows={3}
+                            value={form.claimedDefect}
+                            onChange={value => set('claimedDefect', value)}
+                            placeholder="Descreva o problema relatado pelo cliente..."
+                        />
+                    </Field>
+                </ServiceEntrySection>
+
+                <ServiceEntrySection
+                    title="Atendimento e logística"
+                    description="Responsáveis e informações de movimentação do equipamento."
+                >
+                    <Field label="Localização do equipamento">
+                        <TextInput
+                            value={form.equipmentLocation}
+                            onChange={value =>
+                                set('equipmentLocation', value)
+                            }
+                            placeholder="Bancada, setor, área..."
+                        />
+                    </Field>
+
+                    <Field label="Responsável pelo atendimento">
+                        <TextInput
+                            value={form.serviceResponsible}
+                            onChange={value =>
+                                set('serviceResponsible', value)
+                            }
+                            placeholder="Responsável RKM"
+                        />
+                    </Field>
+
+                    <Field label="Técnico perito">
+                        <TextInput
+                            value={form.expertTechnician}
+                            onChange={value =>
+                                set('expertTechnician', value)
+                            }
+                            placeholder="Técnico responsável"
+                        />
+                    </Field>
+
+                    <Field
+                        label="Observações de expedição"
+                        className="md:col-span-3"
+                    >
+                        <TextArea
+                            rows={3}
+                            value={form.shippingNotes}
+                            onChange={value => set('shippingNotes', value)}
+                            placeholder="Transporte, acondicionamento, retirada, entrega..."
+                        />
+                    </Field>
+                </ServiceEntrySection>
+
+                <div className="service-entry-actions">
+                    <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={reset}
+                    >
+                        Limpar
+                    </button>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary service-entry-save"
+                    >
+                        Salvar ordem
+                    </button>
+                </div>
+            </form>
+
+            <section className="rkm-card service-entry-history">
+                <div className="service-entry-history-head">
+                    <div>
+                        <div className="text-[13.5px] font-semibold">
+                            Ordens abertas
+                        </div>
+
+                        <div className="text-[11.5px] text-slate-500 mt-1">
+                            Registros criados nesta demonstração.
+                        </div>
+                    </div>
+
+                    <span className="service-entry-count">
+                        {entries.length}
+                    </span>
+                </div>
+
+                {entries.length === 0 ? (
+                    <div className="service-entry-empty">
+                        Nenhuma ordem criada ainda.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="service-entry-table">
+                            <thead>
+                                <tr>
+                                    <th>OS</th>
+                                    <th>Cliente</th>
+                                    <th>Equipamento</th>
+                                    <th>Entrega</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {entries.slice(0, 8).map(entry => (
+                                    <tr key={entry.id}>
+                                        <td>
+                                            <strong>{entry.orderNumber}</strong>
+
+                                            {entry.urgent && (
+                                                <span className="service-entry-urgent-tag">
+                                                    URGENTE
+                                                </span>
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            {entry.client}
+                                        </td>
+
+                                        <td>
+                                            <div>{entry.equipment}</div>
+
+                                            <small>
+                                                {entry.manufacturer}
+                                                {entry.model
+                                                    ? ` · ${entry.model}`
+                                                    : ''}
+                                            </small>
+                                        </td>
+
+                                        <td>
+                                            {serviceEntryDateLabel(
+                                                entry.expectedDeliveryDate
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            <span className="tag tag-blue">
+                                                Recebido
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
+        </div>
+    );
+};
+
+
 /* ============================================================
    VIEW — Minha Bancada (Operador / Técnico)
    ============================================================ */
@@ -4097,6 +4691,9 @@ const App = () => {
     const closeAuthModal = () => setAuthModal({ open: false, context: null });
     const closeDecisionModal = () => setDecisionModal({ open: false, request: null, decision: '' });
     const renderView = () => {
+        if (view === 'receiving') {
+            return React.createElement(ServiceEntryView);
+        }
         if (view === 'dashboard') {
             return (React.createElement(Dashboard, { services: services, onOpenIT001: openIT001, onOpenIT002: openIT002, onResume001: resumeIT001, onResume002: resumeIT002, hasDraft001: hasDraft001, hasDraft002: hasDraft002, alerts001: alerts001, alerts002: alerts002 }));
         }
