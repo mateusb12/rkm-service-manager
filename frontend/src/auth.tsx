@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [backendOnline, setBackendOnline] = useState(false);
-  const [devCredentials, setDevCredentials] = useState<DevCredential[]>(import.meta.env.DEV ? DEFAULT_DEV_CREDENTIALS : []);
+  const [devCredentials, setDevCredentials] = useState<DevCredential[]>(DEFAULT_DEV_CREDENTIALS);
 
   const refresh = async () => {
     const response = await api('/auth/refresh', { method: 'POST', headers: { 'X-CSRF-Token': csrf() } });
@@ -121,7 +121,7 @@ export function LoginPage() {
         <div className="zenit-build-info"><Tooltip content={`${BUILD_COMMIT}\n${formatCommitDate(BUILD_COMMIT_DATE)}\n${BUILD_COMMIT_TITLE}`}><span>Commit do deploy: <code>{BUILD_COMMIT}</code></span></Tooltip></div>
       </form>
     </div>
-    {devCredentials.length > 0 && <section className="zenit-dev-access w-full max-w-6xl mx-auto pb-2"><div className="flex items-center justify-between gap-3 mb-3"><div><h2 className="font-semibold text-slate-800">Acessos de desenvolvimento</h2><p className="text-xs text-slate-500 mt-1">Cards visíveis somente no ambiente de desenvolvimento.</p></div><span className="tag tag-amber">DUMMY</span></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">{devCredentials.map((credential) => <button key={credential.email} type="button" className="zenit-surface zenit-dev-card text-left p-4" onClick={() => { setEmail(credential.email); setPassword(credential.password); }}><div className="font-medium text-slate-800">{credential.label}</div><div className="text-xs text-slate-500 mt-3 break-all">{credential.email}</div><div className="text-xs text-blue-600 mt-1">Senha: {credential.password}</div></button>)}</div></section>}
+    {devCredentials.length > 0 && <section className="zenit-dev-access w-full max-w-6xl mx-auto pb-2"><div className="flex items-center justify-between gap-3 mb-3"><div><h2 className="font-semibold text-slate-800">Perfis de acesso</h2><p className="text-xs text-slate-500 mt-1">Selecione um perfil para preencher as credenciais de acesso.</p></div><span className="tag tag-amber">RKM</span></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">{devCredentials.map((credential) => <button key={credential.email} type="button" className="zenit-surface zenit-dev-card text-left p-4" onClick={() => { setEmail(credential.email); setPassword(credential.password); }}><div className="font-medium text-slate-800">{credential.label}</div><div className="text-xs text-slate-500 mt-3 break-all">{credential.email}</div><div className="text-xs text-blue-600 mt-1">Senha: {credential.password}</div></button>)}</div></section>}
     </section>
   </main>;
 }

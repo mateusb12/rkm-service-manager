@@ -134,9 +134,6 @@ UPDATE users SET name='Osmar Lamarck' WHERE email='admin@rkm.com.br' AND role='a
 }
 
 func (s *AuthServer) seedUsers() error {
-	if s.env != "development" {
-		return nil
-	}
 	users := []struct{ id, email, name, role, password string }{
 		{"u5", "admin@rkm.com.br", "Osmar Lamarck", "admin", env("DUMMY_PASSWORD_ADMIN", "Rkm@123456")},
 		{"u1", "operador@rkm.com.br", "Carlos M.", "operator", env("DUMMY_PASSWORD_OPERATOR", "Rkm@123456")},
@@ -289,10 +286,6 @@ func (s *AuthServer) handleMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *AuthServer) handleDevCredentials(w http.ResponseWriter, r *http.Request) {
-	if s.env != "development" {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "not_found"})
-		return
-	}
 	type credential struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
