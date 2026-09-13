@@ -4,6 +4,17 @@ import {
 } from 'react';
 
 import {
+    SERVICE_ENTRY_STEPS,
+    createEmptyServiceEntry,
+    normalizeOrderNumber,
+} from './model';
+
+import {
+    loadServiceEntries,
+    saveServiceEntries,
+} from './repository';
+
+import {
     Field,
     TextArea,
     TextInput,
@@ -15,17 +26,7 @@ import {
     SHOW_DEV_GUIDES,
 } from '../../shared/dev/lizy-reference';
 
-const SERVICE_ENTRY_STORAGE_KEY = 'rkm-service-entry-orders-v1';
 const SERVICE_ENTRY_PHOTO_DB = 'rkm-service-entry-photo-store-v1';
-
-const SERVICE_ENTRY_STEPS = [
-    { id: 'receiving', label: 'Recebimento', status: 'Recebido' },
-    { id: 'triage', label: 'Condição e segurança', status: 'Em triagem' },
-    { id: 'disassembly', label: 'Desmontagem', status: 'Aguardando desmontagem' },
-    { id: 'diagnosis', label: 'Diagnóstico e aprovação', status: 'Em diagnóstico' },
-    { id: 'execution', label: 'Execução e qualidade', status: 'Em execução' },
-    { id: 'dispatch', label: 'Expedição', status: 'Pronto para expedição' },
-];
 
 const openServiceEntryPhotoDb = () => new Promise((resolve, reject) => {
     if (!('indexedDB' in window)) {
@@ -62,66 +63,6 @@ const deleteServiceEntryPhoto = async (id) => {
         tx.onerror = () => { db.close(); reject(tx.error || new Error('Não foi possível remover a foto.')); };
     });
 };
-
-const createEmptyServiceEntry = () => ({
-    orderType: '',
-    orderNumber: '',
-    previousOrderNumber: '',
-    expectedDeliveryDate: '',
-    urgent: false,
-
-    client: '',
-    clientReference: '',
-    requester: '',
-    openingDate: new Date().toISOString().slice(0, 10),
-    invoiceNumber: '',
-
-    serialNumber: '',
-    manufacturer: '',
-    equipment: '',
-    model: '',
-    claimedDefect: '',
-
-    shippingNotes: '',
-    equipmentLocation: '',
-    serviceResponsible: '',
-    expertTechnician: '',
-
-    hydraulic: true,
-    pneumatic: false,
-    fluidApplication: '',
-    receivedBy: '',
-    deliveredBy: '',
-    arrivalCondition: '',
-    receivedAccessories: '',
-    pressureState: 'Desconhecida',
-    safetyReviewed: false,
-    safeToDisassemble: false,
-    disassemblyOperator: '',
-    disassemblyStartedAt: '',
-    disassemblyComplete: false,
-    disassemblyControlled: false,
-    partsSeparated: false,
-    oilCollected: false,
-    disassemblyNotes: '',
-    partsDisposition: '',
-    diagnosis: '',
-    measurements: '',
-    repairRecommendation: '',
-    approvalRequired: false,
-    approvalStatus: 'Pendente',
-    materialStatus: 'A verificar',
-    approvalReference: '',
-    workPerformed: '',
-    testResult: '',
-    qualityApproved: false,
-    dispatchMethod: '',
-    dispatchReference: '',
-    dispatchNotes: '',
-    dispatched: false,
-    photos: { arrival: [], disassembly: [], diagnosis: [], execution: [], dispatch: [] },
-    currentStep: 0,
-});
 
 const createDemoServiceEntry = () => {
     const now = new Date();
@@ -205,37 +146,6 @@ const createDemoServiceEntry = () => {
         currentStep: 0,
         status: 'Recebido',
     };
-};
-
-const loadServiceEntries = () => {
-    try {
-        const raw = localStorage.getItem(SERVICE_ENTRY_STORAGE_KEY);
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-    }
-    catch {
-        return [];
-    }
-};
-
-const saveServiceEntries = (entries) => {
-    try {
-        localStorage.setItem(
-            SERVICE_ENTRY_STORAGE_KEY,
-            JSON.stringify(entries)
-        );
-    }
-    catch {}
-};
-
-const normalizeOrderNumber = (value) => {
-    const clean = String(value || '').trim().toUpperCase();
-
-    if (!clean) return '';
-
-    return clean.startsWith('OS-')
-        ? clean
-        : `OS-${clean}`;
 };
 
 const serviceEntryDateLabel = (value) => {
