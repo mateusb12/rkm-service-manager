@@ -79,12 +79,12 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
                 { className: "sidebar-label sidebar-brand-copy min-w-0" },
                 React.createElement(
                     "div",
-                    { className: "text-[15px] font-semibold truncate" },
+                    { className: "text-base font-semibold truncate" },
                     "RKM Service Manager"
                 ),
                 React.createElement(
                     "div",
-                    { className: "text-[11px] text-slate-400 truncate" },
+                    { className: "text-xs text-slate-400 truncate" },
                     "Ciclo Operacional"
                 )
             ),
@@ -234,7 +234,7 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
                         className:
                             "w-9 h-9 shrink-0 rounded-full " +
                             "bg-gradient-to-br from-emerald-500 to-cyan-600 " +
-                            "flex items-center justify-center text-[12px] font-bold"
+                            "flex items-center justify-center text-xs font-bold"
                     },
                     user.short
                 ),
@@ -247,7 +247,7 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
                         "div",
                         {
                             className:
-                                "text-[12px] font-medium text-slate-200 truncate"
+                                "text-xs font-medium text-slate-200 truncate"
                         },
                         user.name
                     ),
@@ -256,7 +256,7 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
                         "div",
                         {
                             className:
-                                "text-[11px] text-slate-500 truncate"
+                                "text-xs text-slate-500 truncate"
                         },
                         role.label
                     )

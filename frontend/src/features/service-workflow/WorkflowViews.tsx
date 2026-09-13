@@ -15,21 +15,21 @@ import { AlertBox } from '../../shared/ui/feedback';
 
 import { StatusTag } from '../../shared/ui/tags';
 const Stepper = ({ currentStep, setStep, alertsByStep, steps, itLabel, onStepClick, blockedInfo }) => (React.createElement("aside", { className: "rkm-card p-3 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[80px]" },
-    React.createElement("div", { className: "text-[11px] uppercase tracking-wider text-slate-500 px-2 py-1 mb-1" },
+    React.createElement("div", { className: "text-xs uppercase tracking-wider text-slate-500 px-2 py-1 mb-1" },
         "Etapas \u2014 ",
         itLabel || 'IT001'),
     React.createElement("div", { className: "flex flex-col gap-1" }, steps.map(s => {
         const isActive = currentStep === s.id;
         const stepAlerts = alertsByStep[s.id] || 0;
         const forwardBlocked = (blockedInfo === null || blockedInfo === void 0 ? void 0 : blockedInfo.blocked) && s.id > currentStep;
-        return (React.createElement("button", { key: s.id, onClick: () => (onStepClick || setStep)(s.id), className: 'flex items-center gap-2 px-2.5 py-2 rounded-md text-left text-[12.5px] border transition ' +
+        return (React.createElement("button", { key: s.id, onClick: () => (onStepClick || setStep)(s.id), className: 'flex items-center gap-2 px-2.5 py-2 rounded-md text-left text-xs border transition ' +
                 (isActive ? 'step-active border-blue-500 text-blue-100' : 'border-transparent text-slate-300 hover:bg-rkmcard2') +
                 (forwardBlocked ? ' opacity-60' : ''), title: forwardBlocked ? 'Avanço bloqueado por autorização da etapa atual' : '' },
             React.createElement("span", { className: 'badge-num ' + (isActive ? 'bg-blue-500 text-white' : 'bg-rkmcard2 text-slate-400 border border-rkmborder') }, s.id),
             React.createElement("span", { className: "flex-1 truncate" }, s.short),
             s.critical && React.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-rose-400", title: "Etapa cr\u00EDtica" }),
-            stepAlerts > 0 && React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded" }, stepAlerts),
-            forwardBlocked && React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded" }, "bloq.")));
+            stepAlerts > 0 && React.createElement("span", { className: "text-xs px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded" }, stepAlerts),
+            forwardBlocked && React.createElement("span", { className: "text-xs px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded" }, "bloq.")));
     }))));
 
 export const ITForm = ({ record, setRecord, currentStep, setCurrentStep, alerts, onFinish, itCode, activeRole, onRequestAuth }) => {
@@ -88,14 +88,14 @@ export const ITForm = ({ record, setRecord, currentStep, setCurrentStep, alerts,
         React.createElement("div", { className: "space-y-4" },
             React.createElement("div", { className: "rkm-card p-4 flex flex-col md:flex-row gap-3 md:items-center" },
                 React.createElement("div", { className: "flex-1" },
-                    React.createElement("div", { className: "text-[11px] text-blue-300 uppercase tracking-wider" },
+                    React.createElement("div", { className: "text-xs text-blue-300 uppercase tracking-wider" },
                         cfg.label,
                         " \u2022 Etapa ",
                         currentStep,
                         " de ",
                         lastStep),
-                    React.createElement("div", { className: "text-[16px] font-semibold mt-0.5" }, stepInfo.label),
-                    React.createElement("div", { className: "text-[12px] text-slate-400" },
+                    React.createElement("div", { className: "text-base font-semibold mt-0.5" }, stepInfo.label),
+                    React.createElement("div", { className: "text-xs text-slate-400" },
                         "OS: ",
                         React.createElement("b", { className: "text-slate-200" }, record.identification.osNumber || '—'),
                         " \u00B7 Cliente: ",
@@ -138,21 +138,21 @@ export const PendenciesView = ({ alerts, record, goTo, activeIT, activeRole, onR
     };
     return (React.createElement("div", { className: "p-4 md:p-6 space-y-5" },
         React.createElement("div", { className: "rkm-card p-5" },
-            React.createElement("div", { className: "text-[11px] text-blue-300 uppercase tracking-wider" },
+            React.createElement("div", { className: "text-xs text-blue-300 uppercase tracking-wider" },
                 activeIT || 'IT001',
                 " \u2022 Pend\u00EAncias"),
-            React.createElement("div", { className: "text-[16px] font-semibold mt-0.5" }, "Pend\u00EAncias cr\u00EDticas \u2014 Rascunho atual"),
-            React.createElement("div", { className: "text-[12.5px] text-slate-400" }, activeIT === 'IT002' ? 'Regras 1–16 do checklist IT002 (alertas críticos / atenção).' : 'Regras 1–14 do checklist IT001 (alertas críticos / atenção).')),
+            React.createElement("div", { className: "text-base font-semibold mt-0.5" }, "Pend\u00EAncias cr\u00EDticas \u2014 Rascunho atual"),
+            React.createElement("div", { className: "text-xs text-slate-400" }, activeIT === 'IT002' ? 'Regras 1–16 do checklist IT002 (alertas críticos / atenção).' : 'Regras 1–14 do checklist IT001 (alertas críticos / atenção).')),
         alerts.length === 0 ? (React.createElement("div", { className: "rkm-card p-8 text-center text-slate-400" },
-            React.createElement("div", { className: "text-emerald-300 text-[28px] mb-2" }, "\u2713"),
+            React.createElement("div", { className: "text-emerald-300 text-3xl mb-2" }, "\u2713"),
             "Nenhum alerta cr\u00EDtico identificado no rascunho atual.")) : (React.createElement("div", { className: "space-y-2" }, alerts.map((a, i) => (React.createElement("div", { key: i, className: (a.severity === 'critical' ? 'alert-critical' : 'alert-warn') + ' rounded-lg p-3.5 flex items-center gap-3 flex-wrap' },
             React.createElement("span", { className: 'tag ' + (a.severity === 'critical' ? 'tag-red' : 'tag-amber') }, a.severity === 'critical' ? 'Crítico' : 'Atenção'),
-            React.createElement("span", { className: "text-[12px] text-slate-400" },
+            React.createElement("span", { className: "text-xs text-slate-400" },
                 "Etapa ",
                 a.step),
-            React.createElement("div", { className: "flex-1 min-w-[200px] text-[13px] text-slate-200" }, a.msg),
+            React.createElement("div", { className: "flex-1 min-w-[200px] text-sm text-slate-200" }, a.msg),
             React.createElement(AuthRequestButton, { activeRole: activeRole, onClick: () => handleRequestAuthFor(a) }),
-            React.createElement("button", { className: "btn btn-ghost text-[12px]", onClick: () => goTo(a.step) }, "Ir para etapa \u2192"))))))));
+            React.createElement("button", { className: "btn btn-ghost text-xs", onClick: () => goTo(a.step) }, "Ir para etapa \u2192"))))))));
 };
 
 export const EvidencesView = ({ record, activeIT }) => {
@@ -190,22 +190,22 @@ export const EvidencesView = ({ record, activeIT }) => {
     return (React.createElement("div", { className: "p-4 md:p-6 space-y-5" },
         React.createElement("div", { className: "rkm-card p-5 flex items-center gap-4" },
             React.createElement("div", { className: "flex-1" },
-                React.createElement("div", { className: "text-[11px] text-blue-300 uppercase tracking-wider" },
+                React.createElement("div", { className: "text-xs text-blue-300 uppercase tracking-wider" },
                     activeIT || 'IT001',
                     " \u2022 Evid\u00EAncias"),
-                React.createElement("div", { className: "text-[16px] font-semibold mt-0.5" }, "Evid\u00EAncias do servi\u00E7o"),
-                React.createElement("div", { className: "text-[12.5px] text-slate-400" },
+                React.createElement("div", { className: "text-base font-semibold mt-0.5" }, "Evid\u00EAncias do servi\u00E7o"),
+                React.createElement("div", { className: "text-xs text-slate-400" },
                     got,
                     " de ",
                     items.length,
                     " evid\u00EAncias marcadas (mock \u2014 futuro upload real)")),
-            React.createElement("div", { className: "text-[26px] font-semibold" },
+            React.createElement("div", { className: "text-2xl font-semibold" },
                 Math.round((got / items.length) * 100),
                 "%")),
         React.createElement("div", { className: "rkm-card overflow-hidden" },
-            React.createElement("table", { className: "w-full text-[13px]" },
+            React.createElement("table", { className: "w-full text-sm" },
                 React.createElement("thead", null,
-                    React.createElement("tr", { className: "text-slate-400 text-[11px] uppercase tracking-wide" },
+                    React.createElement("tr", { className: "text-slate-400 text-xs uppercase tracking-wide" },
                         React.createElement("th", { className: "text-left px-5 py-3" }, "Evid\u00EAncia"),
                         React.createElement("th", { className: "text-left px-5 py-3" }, "Etapa"),
                         React.createElement("th", { className: "text-left px-5 py-3" }, "Status"))),
@@ -218,8 +218,8 @@ export const EvidencesView = ({ record, activeIT }) => {
 };
 
 const Row = ({ label, value }) => (React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-[260px_1fr] py-2 border-b border-rkmborder last:border-b-0" },
-    React.createElement("div", { className: "text-[12px] text-slate-400 uppercase tracking-wide" }, label),
-    React.createElement("div", { className: "text-[13.5px] text-slate-100" }, value || React.createElement("span", { className: "text-slate-500" }, "\u2014"))));
+    React.createElement("div", { className: "text-xs text-slate-400 uppercase tracking-wide" }, label),
+    React.createElement("div", { className: "text-sm text-slate-100" }, value || React.createElement("span", { className: "text-slate-500" }, "\u2014"))));
 
 export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
     const r = record;
@@ -229,11 +229,11 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
     return (React.createElement("div", { className: "p-4 md:p-6 space-y-5" },
         React.createElement("div", { className: "rkm-card p-5 flex flex-col md:flex-row md:items-center gap-3" },
             React.createElement("div", { className: "flex-1" },
-                React.createElement("div", { className: "text-[11px] text-blue-300 uppercase tracking-wider" },
+                React.createElement("div", { className: "text-xs text-blue-300 uppercase tracking-wider" },
                     "Resumo / Vis\u00E3o de Laudo \u00B7 ",
                     activeIT || 'IT001'),
-                React.createElement("div", { className: "text-[18px] font-semibold mt-1" }, titleLong),
-                React.createElement("div", { className: "text-[12.5px] text-slate-400" },
+                React.createElement("div", { className: "text-lg font-semibold mt-1" }, titleLong),
+                React.createElement("div", { className: "text-xs text-slate-400" },
                     "OS ",
                     r.identification.osNumber || '—',
                     " \u00B7 ",
@@ -251,7 +251,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
                     "(etapa ",
                     a.step,
                     ")")))),
-            alerts.length > 5 && React.createElement("div", { className: "text-[12px] text-slate-400" },
+            alerts.length > 5 && React.createElement("div", { className: "text-xs text-slate-400" },
                 "+ ",
                 alerts.length - 5,
                 " outro(s) \u2014 ver Pend\u00EAncias."))),
@@ -322,8 +322,8 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
                     React.createElement(Row, { label: "Decis\u00E3o consolidada", value: React.createElement(StatusTag, { status: r.acceptanceDecision.resultado }) }),
                     React.createElement(Row, { label: "Valida\u00E7\u00E3o supervisor", value: r.acceptanceDecision.validacaoSupervisor ? `Sim — ${r.acceptanceDecision.validador || '—'}` : 'Não' }),
                     React.createElement("div", { className: "pt-2 mt-2 border-t border-rkmborder" },
-                        React.createElement("div", { className: "text-[11px] uppercase text-slate-500 mb-1" }, "Checkpoints anti-erro de montagem (IT002 \u00A714)"),
-                        React.createElement("div", { className: "text-[12px] text-slate-300 grid grid-cols-2 gap-1" },
+                        React.createElement("div", { className: "text-xs uppercase text-slate-500 mb-1" }, "Checkpoints anti-erro de montagem (IT002 \u00A714)"),
+                        React.createElement("div", { className: "text-xs text-slate-300 grid grid-cols-2 gap-1" },
                             React.createElement("div", null,
                                 r.assemblyIntegrity.semCorteVedacao ? '✓' : '×',
                                 " Sem corte de veda\u00E7\u00E3o"),
@@ -357,9 +357,9 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
                 React.createElement(Row, { label: "A\u00E7\u00E3o corretiva sugerida", value: r.classification.acaoCorretiva ? 'Sim' : 'Não' }))),
         React.createElement("div", { className: "rkm-card p-5" },
             React.createElement("div", { className: "font-semibold mb-2" }, "Estrutura de exporta\u00E7\u00E3o para Google Sheets"),
-            React.createElement("div", { className: "text-[12px] text-slate-400 mb-3" },
+            React.createElement("div", { className: "text-xs text-slate-400 mb-3" },
                 "Os campos abaixo s\u00E3o os que iriam para a planilha-m\u00E3e na pr\u00F3xima etapa (Apps Script / API). Roteamento por ",
                 React.createElement("code", { className: "text-blue-300" }, "meta.itCode"),
                 "."),
-            React.createElement("div", { className: "bg-rkmbg border border-rkmborder rounded-lg p-3 text-[11.5px] font-mono text-slate-300 overflow-auto max-h-[420px] whitespace-pre" }, exportable))));
+            React.createElement("div", { className: "bg-rkmbg border border-rkmborder rounded-lg p-3 text-xs font-mono text-slate-300 overflow-auto max-h-[420px] whitespace-pre" }, exportable))));
 };

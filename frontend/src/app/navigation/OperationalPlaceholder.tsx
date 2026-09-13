@@ -22,17 +22,17 @@ export const OperationalPlaceholder = ({ item }) => (
                 React.createElement("div", { className: "flex-1" },
                     React.createElement(
                         "div",
-                        { className: "text-[11px] uppercase tracking-wider text-blue-400 font-semibold mb-2" },
+                        { className: "text-xs uppercase tracking-wider text-blue-400 font-semibold mb-2" },
                         "Ciclo operacional"
                     ),
                     React.createElement(
                         "h1",
-                        { className: "text-[24px] font-semibold text-slate-100" },
+                        { className: "text-2xl font-semibold text-slate-100" },
                         item.label
                     ),
                     React.createElement(
                         "p",
-                        { className: "text-[13px] text-slate-400 mt-2" },
+                        { className: "text-sm text-slate-400 mt-2" },
                         item.description || ''
                     )
                 ),
@@ -51,19 +51,19 @@ export const OperationalPlaceholder = ({ item }) => (
                     { className: "rkm-card-2 p-4" },
                     React.createElement(
                         "div",
-                        { className: "text-[11px] uppercase tracking-wide text-slate-500 mb-1" },
+                        { className: "text-xs uppercase tracking-wide text-slate-500 mb-1" },
                         "Referência atual na Lizy"
                     ),
                     React.createElement(
                         "div",
-                        { className: "text-[14px] font-medium text-slate-200" },
+                        { className: "text-sm font-medium text-slate-200" },
                         item.source
                     )
                 ),
 
             React.createElement(
                 "div",
-                { className: "text-[12px] text-slate-500" },
+                { className: "text-xs text-slate-500" },
                 item.status === 'missing'
                     ? 'Esta área faz parte do ciclo contratado, mas ainda não possui implementação equivalente.'
                     : 'Esta área já possui parte da estrutura, mas ainda não está concluída.'

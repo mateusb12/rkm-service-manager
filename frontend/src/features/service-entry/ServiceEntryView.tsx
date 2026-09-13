@@ -582,11 +582,11 @@ export const ServiceEntryView = () => {
             <section className="rkm-card service-entry-history">
                 <div className="service-entry-history-head">
                     <div>
-                        <div className="text-[13.5px] font-semibold">
+                        <div className="text-sm font-semibold">
                             Ordens em acompanhamento
                         </div>
 
-                        <div className="text-[11.5px] text-slate-500 mt-1">
+                        <div className="text-xs text-slate-500 mt-1">
                             Registros criados nesta demonstração.
                         </div>
                     </div>
@@ -709,7 +709,7 @@ export const ServiceEntryView = () => {
             )}
 
             {error && (
-                <div className="alert-critical rounded-lg p-4 text-[12.5px]">
+                <div className="alert-critical rounded-lg p-4 text-xs">
                     {error}
                 </div>
             )}

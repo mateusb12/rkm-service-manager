@@ -15,7 +15,7 @@ export const LizyReferenceCard = ({ source, detail }) =>
                 "div",
                 {
                     className:
-                        "text-[10px] uppercase tracking-wider text-slate-500 mb-1"
+                        "text-xs uppercase tracking-wider text-slate-500 mb-1"
                 },
                 "Referência atual na Lizy"
             ),
@@ -24,7 +24,7 @@ export const LizyReferenceCard = ({ source, detail }) =>
                 "div",
                 {
                     className:
-                        "text-[13.5px] font-medium text-slate-200"
+                        "text-sm font-medium text-slate-200"
                 },
                 source
             ),
@@ -34,7 +34,7 @@ export const LizyReferenceCard = ({ source, detail }) =>
                     "div",
                     {
                         className:
-                            "text-[11.5px] text-slate-500 mt-1"
+                            "text-xs text-slate-500 mt-1"
                     },
                     detail
                 )
@@ -44,7 +44,7 @@ export const LizyReferenceCard = ({ source, detail }) =>
             "span",
             {
                 className:
-                    "text-[10px] px-2 py-1 rounded-md " +
+                    "text-xs px-2 py-1 rounded-md " +
                     "border border-blue-500/25 bg-blue-500/10 text-blue-300 " +
                     "whitespace-nowrap"
             },

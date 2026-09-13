@@ -299,7 +299,7 @@ export const MyBenchView = ({
                         "div",
                         {
                             className:
-                                "text-[11px] text-blue-300 uppercase tracking-wider"
+                                "text-xs text-blue-300 uppercase tracking-wider"
                         },
                         "Operador / Técnico"
                     ),
@@ -308,7 +308,7 @@ export const MyBenchView = ({
                         "div",
                         {
                             className:
-                                "text-[18px] font-semibold mt-1"
+                                "text-lg font-semibold mt-1"
                         },
                         "Minha Bancada — ",
                         user.name
@@ -318,7 +318,7 @@ export const MyBenchView = ({
                         "div",
                         {
                             className:
-                                "text-[12.5px] text-slate-400"
+                                "text-xs text-slate-400"
                         },
                         "Apenas serviços atribuídos a você. ",
                         mine.length,
@@ -362,7 +362,7 @@ export const MyBenchView = ({
                         "div",
                         {
                             className:
-                                "text-[28px] mb-2 text-slate-500"
+                                "text-3xl mb-2 text-slate-500"
                         },
                         "∅"
                     ),
@@ -395,7 +395,7 @@ export const MyBenchView = ({
                             "div",
                             {
                                 className:
-                                    "text-[13.5px] font-semibold flex-1"
+                                    "text-sm font-semibold flex-1"
                             },
                             "Meus serviços"
                         ),
@@ -404,7 +404,7 @@ export const MyBenchView = ({
                             "div",
                             {
                                 className:
-                                    "text-[11px] text-slate-500"
+                                    "text-xs text-slate-500"
                             },
                             mine.length,
                             mine.length === 1
@@ -424,7 +424,7 @@ export const MyBenchView = ({
                             "table",
                             {
                                 className:
-                                    "bench-table w-full text-[13px]"
+                                    "bench-table w-full text-sm"
                             },
 
                             React.createElement(
@@ -435,7 +435,7 @@ export const MyBenchView = ({
                                     "tr",
                                     {
                                         className:
-                                            "text-slate-400 text-[11px] " +
+                                            "text-slate-400 text-xs " +
                                             "uppercase tracking-wide"
                                     },
 
@@ -640,7 +640,7 @@ export const MyBenchView = ({
                                                 "div",
                                                 {
                                                     className:
-                                                        "text-[11px] text-slate-500 " +
+                                                        "text-xs text-slate-500 " +
                                                         "mt-0.5 whitespace-nowrap"
                                                 },
                                                 step.label
@@ -709,7 +709,7 @@ export const MyBenchView = ({
                                                     "div",
                                                     {
                                                         className:
-                                                            "text-[10.5px] text-slate-500 " +
+                                                            "text-xs text-slate-500 " +
                                                             "mt-1 whitespace-nowrap"
                                                     },
                                                     deadline.detail.replace(
@@ -784,7 +784,7 @@ export const MyBenchView = ({
                     "div",
                     {
                         className:
-                            "text-[13.5px] font-semibold mb-2"
+                            "text-sm font-semibold mb-2"
                     },
                     "Diretrizes operacionais"
                 ),
@@ -793,7 +793,7 @@ export const MyBenchView = ({
                     "ul",
                     {
                         className:
-                            "text-[12.5px] text-slate-300 " +
+                            "text-xs text-slate-300 " +
                             "space-y-1.5 list-disc pl-5"
                     },
 
