@@ -64,7 +64,7 @@ const deleteServiceEntryPhoto = async (id) => {
 };
 
 const createEmptyServiceEntry = () => ({
-    orderType: 'Cilindro',
+    orderType: '',
     orderNumber: '',
     previousOrderNumber: '',
     expectedDeliveryDate: '',
@@ -348,10 +348,10 @@ export const ServiceEntryView = () => {
     const validateStep = () => {
         const requiredByStep = {
             0: [
-                ['orderType', 'Tipo da ordem'], ['orderNumber', 'Nº da ordem'],
-                ['expectedDeliveryDate', 'Data prevista de entrega'], ['client', 'Cliente'],
-                ['invoiceNumber', 'Nº da nota'], ['manufacturer', 'Fabricante'],
-                ['equipment', 'Equipamento'], ['model', 'Modelo'],
+                ['orderType', 'Categoria do equipamento'],
+                ['orderNumber', 'Nº da ordem'],
+                ['client', 'Cliente'],
+                ['equipment', 'Equipamento'],
             ],
             1: [['receivedBy', 'Responsável pelo recebimento'], ['arrivalCondition', 'Condição de chegada']],
             2: [['disassemblyOperator', 'Responsável pela desmontagem']],
@@ -732,17 +732,17 @@ export const ServiceEntryView = () => {
                 {step === 0 && <>
                 <ServiceEntrySection
                     title="Dados da ordem"
-                    description="Identificação, prazo e prioridade do atendimento."
+                    description="Registre o que é conhecido na entrada. Dados ainda indisponíveis podem ser complementados depois."
                 >
                     <Field
-                        label="Tipo da ordem"
+                        label="Categoria do equipamento"
                         required
                         className="md:col-span-3"
                     >
                         <div
                             className="service-entry-order-types"
                             role="radiogroup"
-                            aria-label="Tipo da ordem"
+                            aria-label="Categoria do equipamento"
                         >
                             {[
                                 'Cilindro',
@@ -797,7 +797,10 @@ export const ServiceEntryView = () => {
                         />
                     </Field>
 
-                    <Field label="Data prevista de entrega" required>
+                    <Field
+                        label="Data prevista de entrega"
+                        hint="Opcional — deixe em branco quando não houver prazo informado."
+                    >
                         <TextInput
                             type="date"
                             value={form.expectedDeliveryDate}
@@ -848,7 +851,10 @@ export const ServiceEntryView = () => {
                         />
                     </Field>
 
-                    <Field label="Nº da nota" required>
+                    <Field
+                        label="Nº da nota"
+                        hint="Opcional — não use N.I.; deixe em branco quando não houver documento informado."
+                    >
                         <TextInput
                             value={form.invoiceNumber}
                             onChange={value => set('invoiceNumber', value)}
@@ -869,7 +875,10 @@ export const ServiceEntryView = () => {
                         />
                     </Field>
 
-                    <Field label="Fabricante" required>
+                    <Field
+                        label="Fabricante"
+                        hint="Opcional — deixe em branco quando o fabricante não estiver identificado."
+                    >
                         <TextInput
                             value={form.manufacturer}
                             onChange={value => set('manufacturer', value)}
@@ -889,7 +898,10 @@ export const ServiceEntryView = () => {
                         />
                     </Field>
 
-                    <Field label="Modelo" required>
+                    <Field
+                        label="Modelo"
+                        hint="Opcional — deixe em branco quando o modelo não estiver identificado."
+                    >
                         <TextInput
                             value={form.model}
                             onChange={value => set('model', value)}
