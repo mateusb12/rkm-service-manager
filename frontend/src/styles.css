@@ -664,6 +664,13 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
     font-weight: 600;
 }
 
+.service-entry-hero-controls {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .service-entry-status-dot {
     width: 7px;
     height: 7px;
@@ -674,6 +681,283 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-form {
     overflow: hidden;
+}
+
+.service-entry-stepper {
+    display: grid;
+    grid-template-columns: repeat(6, 145px);
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 1px;
+}
+
+.service-entry-step {
+    min-width: 128px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 11px;
+    border: 1px solid rgba(100, 116, 139, .24);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, .24);
+    color: #94a3b8;
+    text-align: left;
+    transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.service-entry-step > span {
+    width: 25px;
+    height: 25px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(148, 163, 184, .35);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.service-entry-step strong {
+    font-size: 10.5px;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.service-entry-step:hover {
+    border-color: rgba(96, 165, 250, .5);
+    color: #dbeafe;
+}
+
+.service-entry-step.is-active {
+    border-color: rgba(59, 130, 246, .55);
+    background: rgba(37, 99, 235, .14);
+    color: #dbeafe;
+}
+
+.service-entry-step.is-active > span {
+    border-color: #60a5fa;
+    background: rgba(59, 130, 246, .2);
+    color: #bfdbfe;
+}
+
+.service-entry-step.is-done > span {
+    border-color: rgba(16, 185, 129, .45);
+    background: rgba(16, 185, 129, .13);
+    color: #6ee7b7;
+}
+
+.service-entry-step-context {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 3px 10px;
+    padding: 12px 15px;
+    border: 1px solid rgba(59, 130, 246, .16);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, .16);
+}
+
+.service-entry-step-context > span {
+    grid-row: span 2;
+    color: #60a5fa;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: .08em;
+}
+
+.service-entry-step-context > strong {
+    color: #e2e8f0;
+    font-size: 12px;
+}
+
+.service-entry-step-context > small {
+    color: #64748b;
+    font-size: 10.5px;
+}
+
+.service-entry-checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 10px;
+}
+
+.service-entry-blocked {
+    padding: 11px 13px;
+    border: 1px solid rgba(244, 63, 94, .25);
+    border-radius: 8px;
+    background: rgba(244, 63, 94, .08);
+    color: #fda4af;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.service-entry-photo-field {
+    display: grid;
+    gap: 9px;
+}
+
+.service-entry-photo-field > p {
+    margin: -4px 0 0;
+    color: #64748b;
+    font-size: 10.5px;
+    line-height: 1.45;
+}
+
+.service-entry-photo-label {
+    color: #cbd5e1;
+    font-size: 11.5px;
+    font-weight: 650;
+}
+
+.service-entry-photo-picker {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 12px;
+    border: 1px dashed rgba(96, 165, 250, .42);
+    border-radius: 8px;
+    background: rgba(59, 130, 246, .045);
+    color: #93c5fd;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.service-entry-photo-picker input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.service-entry-photo-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 9px;
+}
+
+.service-entry-photo-item {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px;
+    border: 1px solid rgba(100, 116, 139, .2);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, .16);
+}
+
+.service-entry-photo-item img,
+.service-entry-photo-placeholder {
+    width: 42px;
+    height: 42px;
+    flex: none;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.service-entry-photo-placeholder {
+    display: grid;
+    place-items: center;
+    background: rgba(100, 116, 139, .12);
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.service-entry-photo-item > div {
+    min-width: 0;
+    flex: 1;
+}
+
+.service-entry-photo-item > span[title] {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    color: #cbd5e1;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.service-entry-photo-item strong {
+    display: block;
+    overflow: hidden;
+    color: #cbd5e1;
+    font-size: 10px;
+    font-weight: 550;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.service-entry-photo-item button {
+    flex: none;
+    color: #fda4af;
+    font-size: 10px;
+}
+
+.service-entry-step-actions {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.service-entry-action-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.service-entry-open {
+    min-height: 30px;
+    padding: 4px 9px;
+}
+
+.service-entry-open-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.service-entry-deselect {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(244, 63, 94, .28);
+    border-radius: 7px;
+    color: #fda4af;
+    font-size: 20px;
+    line-height: 1;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.service-entry-deselect:hover {
+    border-color: rgba(244, 63, 94, .55);
+    background: rgba(244, 63, 94, .10);
+}
+
+.service-entry-delete {
+    min-height: 30px;
+    padding: 4px 9px;
+    border: 1px solid rgba(244, 63, 94, .28);
+    border-radius: 7px;
+    color: #fda4af;
+    font-size: 11px;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.service-entry-delete:hover:not(:disabled) {
+    border-color: rgba(244, 63, 94, .55);
+    background: rgba(244, 63, 94, .10);
+}
+
+.service-entry-delete:disabled {
+    cursor: wait;
+    opacity: .65;
 }
 
 .service-entry-section {
@@ -883,6 +1167,25 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
     .service-entry-actions {
         padding: 14px 18px;
     }
+
+    .service-entry-stepper {
+        grid-template-columns: repeat(6, 145px);
+        padding-bottom: 8px;
+    }
+
+    .service-entry-step-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .service-entry-action-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .service-entry-action-group .service-entry-save {
+        grid-column: 1 / -1;
+    }
 }
 
 
@@ -921,6 +1224,35 @@ html:not(.dark) .app-shell .service-entry-success strong {
 
 html:not(.dark) .app-shell .service-entry-success span {
     color: #4b7f70;
+}
+
+html:not(.dark) .app-shell .service-entry-step {
+    border-color: #e2e8f0;
+    background: #fff;
+    color: #64748b;
+}
+
+html:not(.dark) .app-shell .service-entry-step.is-active {
+    border-color: #93c5fd;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+html:not(.dark) .app-shell .service-entry-step-context {
+    border-color: #dbeafe;
+    background: #f8fbff;
+}
+
+html:not(.dark) .app-shell .service-entry-step-context > strong,
+html:not(.dark) .app-shell .service-entry-photo-label,
+html:not(.dark) .app-shell .service-entry-photo-item strong,
+html:not(.dark) .app-shell .service-entry-photo-item > span[title] {
+    color: #334155;
+}
+
+html:not(.dark) .app-shell .service-entry-photo-item {
+    border-color: #e2e8f0;
+    background: #fff;
 }
 
 
@@ -994,4 +1326,103 @@ html:not(.dark) .app-shell .service-entry-order-type.is-active {
     border-color: #3b82f6;
     background: #eff6ff;
     color: #1d4ed8;
+}
+
+/* Receiving page typography: keep compact labels at the XS floor (12px). */
+.service-entry-page .service-entry-kicker,
+.service-entry-page .service-entry-hero-status,
+.service-entry-page .service-entry-step > span,
+.service-entry-page .service-entry-step strong,
+.service-entry-page .service-entry-step-context > span,
+.service-entry-page .service-entry-step-context > small,
+.service-entry-page .service-entry-blocked,
+.service-entry-page .service-entry-photo-field > p,
+.service-entry-page .service-entry-photo-picker,
+.service-entry-page .service-entry-photo-picker span,
+.service-entry-page .service-entry-photo-picker strong,
+.service-entry-page .service-entry-photo-picker small,
+.service-entry-page .service-entry-photo-placeholder,
+.service-entry-page .service-entry-photo-item > span[title],
+.service-entry-page .service-entry-photo-item strong,
+.service-entry-page .service-entry-photo-item button,
+.service-entry-page .service-entry-success span,
+.service-entry-page .service-entry-count,
+.service-entry-page .service-entry-table th,
+.service-entry-page .service-entry-table strong,
+.service-entry-page .service-entry-table small,
+.service-entry-page .service-entry-urgent-tag,
+.service-entry-page .service-entry-grid > div > span {
+    font-size: 12px;
+}
+
+.service-entry-page .service-entry-hero p,
+.service-entry-page .service-entry-step-context > strong,
+.service-entry-page .service-entry-photo-label,
+.service-entry-page .service-entry-section-header p,
+.service-entry-page .service-entry-success strong,
+.service-entry-page .service-entry-table,
+.service-entry-page .service-entry-table .tag,
+.service-entry-page .service-entry-empty,
+.service-entry-page .service-entry-grid > div > label,
+.service-entry-page .service-entry-grid input:not([type="checkbox"]),
+.service-entry-page .service-entry-grid select,
+.service-entry-page .service-entry-grid textarea,
+.service-entry-page .service-entry-grid .rkm-check span,
+.service-entry-page .service-entry-actions .btn,
+.service-entry-page .alert-critical {
+    font-size: 14px;
+}
+
+.service-entry-page .service-entry-hero h1 {
+    font-size: 26px;
+}
+
+.service-entry-page .service-entry-section-header h2,
+.service-entry-page .service-entry-success-icon {
+    font-size: 16px;
+}
+
+.service-entry-page .service-entry-order-type,
+.service-entry-page .service-entry-history-head .font-semibold {
+    font-size: 14px;
+}
+
+.service-entry-page .service-entry-history-head .text-slate-500 {
+    font-size: 12px;
+}
+
+.service-entry-page .service-entry-photo-label {
+    font-weight: 650;
+}
+
+.service-entry-page .service-entry-table tbody tr.is-selected {
+    background: rgba(59, 130, 246, .12);
+    box-shadow: inset 3px 0 #60a5fa;
+}
+
+.service-entry-page .service-entry-table tbody tr {
+    cursor: pointer;
+}
+
+.service-entry-page .service-entry-table tbody tr:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: -2px;
+}
+
+.service-entry-page .service-entry-open:disabled {
+    cursor: default;
+    opacity: .8;
+}
+
+html:not(.dark) .app-shell .service-entry-table tbody tr.is-selected {
+    background: #eff6ff;
+    box-shadow: inset 3px 0 #3b82f6;
+}
+
+html:not(.dark) .app-shell .service-entry-deselect {
+    color: #be123c;
+}
+
+html:not(.dark) .app-shell .service-entry-delete {
+    color: #be123c;
 }
