@@ -5,3 +5,4 @@ backend/*.db
 backend/tmp/
 .idea/
 /codebase.md
+/frontend/frontend.md

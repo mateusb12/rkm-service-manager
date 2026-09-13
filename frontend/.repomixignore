@@ -1,0 +1,41 @@
+# Artefato gerado pelo Repomix
+frontend.md
+
+# Artefatos de build e cobertura
+dist/
+coverage/
+.nyc_output/
+*.map
+
+# Dependências e caches
+node_modules/
+.vite/
+.cache/
+.parcel-cache/
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.temp
+tmp/
+.temp/
+
+# Configurações locais e possíveis segredos
+.env
+.env.*
+!.env.example
+*.local
+
+# Arquivos de sistema e IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Metadados do Repomix
+repomix.config.json
+.repomixignore
+
+# Infraestrutura fora do escopo do código da aplicação
+Dockerfile
+.dockerignore
