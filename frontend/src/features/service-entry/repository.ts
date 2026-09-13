@@ -26,6 +26,10 @@ export const saveServiceEntries = (entries) => {
             SERVICE_ENTRY_STORAGE_KEY,
             JSON.stringify(entries)
         );
+
+        return true;
     }
-    catch {}
+    catch {
+        return false;
+    }
 };

@@ -142,6 +142,16 @@ export const SIDEBAR_ITEMS = [
         roles: ['admin', 'supervisor', 'quality', 'pcp'],
         icon: 'M9 12h6m-6 4h6m-7-9h8a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V9a2 2 0 012-2z'
     },
+
+    /* FERRAMENTAS */
+    {
+        key: 'populator',
+        label: 'Populador',
+        group: 'Ferramentas',
+        status: 'incomplete',
+        roles: ['admin'],
+        icon: 'M4 6c0-2 16-2 16 0s-16 2-16 0Zm0 0v12c0 2 16 2 16 0V6M4 12c0 2 16 2 16 0'
+    },
 ];
 
 export const SIDEBAR_STATUS_LABEL = {

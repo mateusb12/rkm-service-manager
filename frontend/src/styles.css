@@ -1474,3 +1474,383 @@ html:not(.dark) .app-shell .service-entry-deselect {
 html:not(.dark) .app-shell .service-entry-delete {
     color: #be123c;
 }
+
+
+/* ==================================================================
+   RKM BIG-BOX PROGRESS STEPPER V2
+
+   Large operational cards + connected progress rails.
+
+   Existing JSX states:
+     .is-done   = completed
+     .is-active = current
+     default    = pending
+   ================================================================== */
+
+.service-entry-amazon-stepper {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  align-items: stretch;
+
+  /*
+   * Gap and rail width intentionally match.
+   */
+  gap: 22px;
+
+  width: 100%;
+
+  overflow-x: auto;
+  overflow-y: visible;
+
+  padding:
+    5px
+    3px
+    14px;
+
+  scrollbar-width: thin;
+}
+
+
+/* ------------------------------------------------------------------
+   BIG STEP BOX
+   ------------------------------------------------------------------ */
+
+.service-entry-amazon-stepper
+.service-entry-step {
+  position: relative;
+
+  min-width: 150px;
+  min-height: 64px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding:
+    11px
+    13px;
+
+  border:
+    1px solid
+    rgba(63, 87, 116, 0.62);
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(14, 34, 58, 0.98),
+      rgba(9, 26, 47, 0.98)
+    );
+
+  color: #91a6c2;
+
+  text-align: left;
+
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+
+.service-entry-amazon-stepper
+.service-entry-step:hover {
+  border-color:
+    rgba(96, 165, 250, 0.62);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(18, 43, 73, 0.98),
+      rgba(11, 31, 54, 0.98)
+    );
+
+  color: #dbeafe;
+}
+
+
+/* ------------------------------------------------------------------
+   CONNECTING RAIL
+   ------------------------------------------------------------------ */
+
+.service-entry-amazon-stepper
+.service-entry-step::after {
+  content: "";
+
+  position: absolute;
+
+  top: 50%;
+  left: 100%;
+
+  width: 22px;
+  height: 5px;
+
+  transform:
+    translateY(-50%);
+
+  border-radius: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2a405a,
+      #1c3048
+    );
+
+  box-shadow:
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0
+    rgba(0, 0, 0, 0.22);
+
+  pointer-events: none;
+
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+
+/*
+ * Last box has nowhere to connect.
+ */
+.service-entry-amazon-stepper
+.service-entry-step:last-child::after {
+  display: none;
+}
+
+
+/* ------------------------------------------------------------------
+   STEP NUMBER / CHECK CIRCLE
+   ------------------------------------------------------------------ */
+
+.service-entry-amazon-stepper
+.service-entry-step
+> span:first-child {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+
+  display: inline-grid;
+  place-items: center;
+
+  margin: 0;
+
+  border:
+    1px solid
+    rgba(100, 116, 139, 0.58);
+
+  border-radius: 999px;
+
+  background: #09192c;
+
+  color: #a8bad0;
+
+  font-size: var(--font-xs);
+  font-weight: 700;
+  line-height: 1;
+
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+
+/* ------------------------------------------------------------------
+   LABEL
+   ------------------------------------------------------------------ */
+
+.service-entry-amazon-stepper
+.service-entry-step
+> strong {
+  display: block;
+
+  min-width: 0;
+
+  color: inherit;
+
+  font-size: var(--font-xs);
+  line-height: 1.28;
+  font-weight: 700;
+}
+
+
+/* ==================================================================
+   PENDING
+   ================================================================== */
+
+.service-entry-amazon-stepper
+.service-entry-step:not(.is-active):not(.is-done) {
+  opacity: 0.78;
+}
+
+
+/* ==================================================================
+   ACTIVE
+   ================================================================== */
+
+.service-entry-amazon-stepper
+.service-entry-step.is-active {
+  opacity: 1;
+
+  border-color: #3b82f6;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.25),
+      rgba(11, 43, 78, 0.98)
+    );
+
+  color: #f4f8ff;
+
+  box-shadow:
+    0 0 0 1px
+    rgba(59, 130, 246, 0.12),
+
+    0 7px 22px
+    rgba(2, 12, 27, 0.23);
+}
+
+
+.service-entry-amazon-stepper
+.service-entry-step.is-active
+> span:first-child {
+  border-color: #60a5fa;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1d4ed8,
+      #2563eb
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(59, 130, 246, 0.10);
+}
+
+
+/*
+ * Current segment begins blue but fades into
+ * the neutral future path.
+ */
+.service-entry-amazon-stepper
+.service-entry-step.is-active::after {
+  background:
+    linear-gradient(
+      90deg,
+      #3b82f6 0%,
+      #3b82f6 24%,
+      #29415c 68%,
+      #1c3048 100%
+    );
+
+  box-shadow:
+    0 0 6px
+    rgba(59, 130, 246, 0.14);
+}
+
+
+/* ==================================================================
+   COMPLETED
+   ================================================================== */
+
+.service-entry-amazon-stepper
+.service-entry-step.is-done {
+  opacity: 1;
+
+  border-color:
+    rgba(16, 185, 129, 0.55);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(5, 150, 105, 0.16),
+      rgba(9, 34, 48, 0.98)
+    );
+
+  color: #ddfaef;
+}
+
+
+.service-entry-amazon-stepper
+.service-entry-step.is-done
+> span:first-child {
+  border-color:
+    rgba(52, 211, 153, 0.72);
+
+  background:
+    rgba(5, 150, 105, 0.27);
+
+  color: #6ee7b7;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(16, 185, 129, 0.07);
+}
+
+
+/*
+ * Completed path:
+ *
+ * ✓ BOX ━━━━━ ✓ BOX
+ */
+.service-entry-amazon-stepper
+.service-entry-step.is-done::after {
+  background:
+    linear-gradient(
+      90deg,
+      #10b981 0%,
+      #16b981 38%,
+      #22c55e 62%,
+      #3b82f6 100%
+    );
+
+  box-shadow:
+    0 0 7px
+    rgba(16, 185, 129, 0.24);
+}
+
+
+/* ==================================================================
+   LARGE DESKTOP
+   ================================================================== */
+
+@media (min-width: 1280px) {
+  .service-entry-amazon-stepper {
+    grid-template-columns:
+      repeat(6, minmax(0, 1fr));
+  }
+}
+
+
+/* ==================================================================
+   SMALLER VIEWPORT
+
+   Do not crush cards.
+   Preserve size and scroll horizontally.
+   ================================================================== */
+
+@media (max-width: 900px) {
+  .service-entry-amazon-stepper {
+    grid-template-columns:
+      repeat(6, 160px);
+
+    gap: 20px;
+
+    padding-bottom: 15px;
+  }
+
+  .service-entry-amazon-stepper
+  .service-entry-step::after {
+    width: 20px;
+  }
+}

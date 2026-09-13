@@ -587,13 +587,33 @@ export const ServiceEntryView = () => {
                                                 )}
                                                 <button
                                                     type="button"
-                                                    className="service-entry-delete"
+                                                    className="service-entry-delete w-9 h-9 !p-0 inline-flex items-center justify-center"
                                                     aria-label={`Excluir OS ${entry.orderNumber}`}
                                                     title={`Excluir OS ${entry.orderNumber}`}
                                                     disabled={deletingOrderId === entry.id}
                                                     onClick={event => { event.stopPropagation(); deleteEntry(entry); }}
                                                 >
-                                                    {deletingOrderId === entry.id ? 'Excluindo…' : 'Excluir'}
+                                                    {deletingOrderId === entry.id ? (
+                                                        <span aria-hidden="true">…</span>
+                                                    ) : (
+                                                        <svg
+                                                            width="16"
+                                                            height="16"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.8"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            aria-hidden="true"
+                                                        >
+                                                            <path d="M3 6h18" />
+                                                            <path d="M8 6V4h8v2" />
+                                                            <path d="M7 6l1 14h8l1-14" />
+                                                            <path d="M10 10v6" />
+                                                            <path d="M14 10v6" />
+                                                        </svg>
+                                                    )}
                                                 </button>
                                             </div>
                                         </td>
@@ -624,7 +644,7 @@ export const ServiceEntryView = () => {
                 </div>
             )}
 
-            <div className="service-entry-stepper" aria-label="Etapas do ciclo operacional">
+            <div className="service-entry-stepper service-entry-amazon-stepper" aria-label="Etapas do ciclo operacional">
                 {SERVICE_ENTRY_STEPS.map((item, index) => (
                     <button type="button" key={item.id} className={`service-entry-step ${step === index ? 'is-active' : ''} ${step > index ? 'is-done' : ''}`} onClick={() => changeStep(index)} aria-current={step === index ? 'step' : undefined}>
                         <span>{step > index ? '✓' : index + 1}</span><strong>{item.label}</strong>

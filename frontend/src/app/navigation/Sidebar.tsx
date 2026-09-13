@@ -23,6 +23,7 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
         'Instruções de trabalho': true,
         'Gestão': true,
         'Acesso rápido': true,
+        'Ferramentas': true,
     });
 
     const items = SIDEBAR_ITEMS.filter(
@@ -38,6 +39,7 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
         'Instruções de trabalho',
         'Gestão',
         'Acesso rápido',
+        'Ferramentas',
     ];
 
     const groups = groupOrder.map(group => [

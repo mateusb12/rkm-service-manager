@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './features/auth';
 import { ServiceEntryView } from './features/service-entry';
+import { PopulatorView } from './features/populator';
 import { MyBenchView } from './features/bench';
 import {
     STEPS_IT002,
@@ -602,6 +603,10 @@ const App = () => {
     const closeAuthModal = () => setAuthModal({ open: false, context: null });
     const closeDecisionModal = () => setDecisionModal({ open: false, request: null, decision: '' });
     const renderView = () => {
+        if (view === 'populator') {
+            return React.createElement(PopulatorView);
+        }
+
         if (view === 'receiving') {
             return React.createElement(ServiceEntryView);
         }
