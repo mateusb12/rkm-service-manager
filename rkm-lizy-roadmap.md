@@ -57,13 +57,13 @@ Reproduzir o início do fluxo da oficina: receber o equipamento, abrir a OS, ide
 
 ### Features
 
-| Feature | Escopo funcional | Evidência Lizy | Critério de aceite |
-|---|---|---|---|
-| Criar Ordem de Serviço | Abrir uma ordem de serviço para o equipamento recebido | Menu `Serviços → Desmontagem` permite criar ordem | Usuário cria OS com número, cliente e equipamento |
-| Identificação do cliente | Relacionar a OS ao cliente correto | OS 20265592: VLI PECEM; OS 20265591: RKM HIDRAULICA | Cliente selecionável e visível em toda a OS |
-| Fila de inspeção | Listar ordens aguardando análise | 17 OS em `Aguardando Inspeções` | Fila filtrável por status e prioridade |
-| Prazo e prioridade | Exibir urgência e dias restantes | OS 2026465 com -80 dias; OS 2026388 com -126 dias | Atraso e prioridade aparecem na lista |
-| Acesso à análise | Abrir a OS a partir da fila | A fila possui funções para acessar a ordem | Usuário entra na OS sem perder o contexto da fila |
+| Feature | Escopo funcional | Evidência Lizy | Exemplo concreto observado | Critério de aceite |
+|---|---|---|---|---|
+| Criar Ordem de Serviço | Abrir uma ordem de serviço para o equipamento recebido | Menu `Serviços → Desmontagem` permite criar ordem | OS 20265592 para VLI PECEM e OS 20265591 para RKM HIDRAULICA aparecem na fila | Usuário cria OS com número, cliente, equipamento e data |
+| Identificação do cliente | Relacionar a OS ao cliente correto | A OS mantém cliente e equipamento no fluxo | OS 2026522: Ecofor Ambiental S/A G2 / cilindro hidráulico transportador; OS 2026534: caixa de comando hidráulico | Cliente selecionável e visível em toda a OS |
+| Fila de inspeção | Listar ordens aguardando análise | 17 OS em `Aguardando Inspeções` | 20265592 VLI PECEM, 20265590 PLANALTO INDUSTRIA e OS-DEBUG-001 RKM HIDRAULICA | Fila filtrável por status e prioridade |
+| Prazo e prioridade | Exibir urgência e dias restantes | A fila mostra atraso por OS | OS 2026465 RES ENERGY com -80 dias; OS 2026388 GERDAU CAUCAIA com -126 dias | Atraso e prioridade aparecem na lista |
+| Acesso à análise | Abrir a OS a partir da fila | A fila possui funções para acessar a ordem | Ação disponível diretamente nas linhas da OS 20265592 e OS 20265591 | Usuário entra na OS sem perder o contexto da fila |
 
 ### Amostra de aceite da V1
 
