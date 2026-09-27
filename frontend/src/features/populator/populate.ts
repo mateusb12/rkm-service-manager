@@ -15,6 +15,7 @@ import {
 
 import {
     mapLizyOrderToServiceEntry,
+    mapLizyStatusToServiceEntry,
     validateMappedServiceEntry,
 } from './mapper';
 
@@ -23,11 +24,35 @@ const orderIdentity = value =>
     normalizeOrderNumber(value);
 
 
+const migrateLegacyLizyEntry = entry => {
+    const isLegacyLizyEntry =
+        entry?.sourceMetadata?.system === 'lizy' &&
+        entry.status === 'Recebido' &&
+        Number(entry.currentStep) === 0 &&
+        entry.sourceMetadata.sourceStatus;
+
+    if (!isLegacyLizyEntry) {
+        return entry;
+    }
+
+    return {
+        ...entry,
+        ...mapLizyStatusToServiceEntry(
+            entry.sourceMetadata.sourceStatus,
+        ),
+        updatedAt: new Date().toISOString(),
+    };
+};
+
+
 export const planLizyPopulation = (
     existingEntries = loadServiceEntries(),
 ) => {
+    const migratedExistingEntries =
+        (existingEntries || []).map(migrateLegacyLizyEntry);
+
     const existingIds = new Set(
-        (existingEntries || [])
+        migratedExistingEntries
             .map(entry =>
                 orderIdentity(
                     entry.orderNumber || entry.id
@@ -109,9 +134,7 @@ export const planLizyPopulation = (
          * skippedExisting
          *   = source Lizy OS that collided with the current base
          */
-        existingEntries: [
-            ...(existingEntries || []),
-        ],
+        existingEntries: migratedExistingEntries,
 
         entriesToInsert,
         skippedExisting,
@@ -120,7 +143,7 @@ export const planLizyPopulation = (
 
         nextEntries: [
             ...entriesToInsert,
-            ...(existingEntries || []),
+            ...migratedExistingEntries,
         ],
     };
 };
@@ -144,7 +167,12 @@ export const populateLizyServiceEntries = () => {
         };
     }
 
-    if (plan.entriesToInsert.length === 0) {
+    const existingEntriesChanged = plan.existingEntries.some((entry, index) => {
+        const previous = existingEntries[index];
+        return JSON.stringify(entry) !== JSON.stringify(previous);
+    });
+
+    if (plan.entriesToInsert.length === 0 && !existingEntriesChanged) {
         return {
             ...plan,
             persisted: true,

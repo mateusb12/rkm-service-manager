@@ -60,6 +60,24 @@ export const validateMappedServiceEntry = entry => {
 };
 
 
+const LIZY_STATUS_STEP = {
+    'Aguardando Inspeções': 2,
+    Analisando: 2,
+};
+
+
+export const mapLizyStatusToServiceEntry = sourceStatus => {
+    const status = String(sourceStatus || '').trim();
+
+    return {
+        status: status || 'Recebido',
+        currentStep: status
+            ? (LIZY_STATUS_STEP[status] ?? 0)
+            : 0,
+    };
+};
+
+
 export const mapLizyOrderToServiceEntry = (
     source,
     timestamp = new Date().toISOString(),
@@ -131,8 +149,7 @@ export const mapLizyOrderToServiceEntry = (
         pneumatic:
             source.pneumatic === true,
 
-        status: 'Recebido',
-        currentStep: 0,
+        ...mapLizyStatusToServiceEntry(source.sourceStatus),
 
         createdAt: timestamp,
         updatedAt: timestamp,
