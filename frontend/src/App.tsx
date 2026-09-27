@@ -394,11 +394,25 @@ const App = () => {
     const activeUser = authenticatedUser?.id || 'u5';
     const activeRole = authenticatedUser?.role || 'admin';
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem('rkm-theme') === 'dark');
+    const [topBarVisible, setTopBarVisible] = useState(true);
+    const topBarTimeout = useRef(null);
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
         document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
         localStorage.setItem('rkm-theme', darkMode ? 'dark' : 'light');
     }, [darkMode]);
+    useEffect(() => () => {
+        if (topBarTimeout.current) {
+            window.clearTimeout(topBarTimeout.current);
+        }
+    }, []);
+    const hideTopBar = () => {
+        setTopBarVisible(false);
+        topBarTimeout.current = window.setTimeout(() => {
+            setTopBarVisible(true);
+            topBarTimeout.current = null;
+        }, 30000);
+    };
     // Modal de solicitação (Bloco 2A)
     const [authModal, setAuthModal] = useState({ open: false, context: null });
     const [decisionModal, setDecisionModal] = useState({ open: false, request: null, decision: '' });
@@ -687,7 +701,7 @@ const App = () => {
     return (React.createElement("div", { className: "app-shell min-h-screen flex bg-rkmbg text-slate-200" },
         React.createElement(CleanSidebar, { view: view, setView: handleSetView, alertCount: totalAlerts, activeIT: activeIT, activeUser: activeUser, activeRole: activeRole, onLogout: logout }),
         React.createElement("main", { className: "flex-1 min-w-0" },
-            React.createElement(CleanTopBar, { view: view, alerts: ctx.alerts, onJumpAlerts: goToPendencies, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value) }),
+            topBarVisible && React.createElement(CleanTopBar, { view: view, alerts: ctx.alerts, onJumpAlerts: goToPendencies, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value), onHide: hideTopBar }),
             activeRole === 'admin' && view === 'dashboard' && (React.createElement("div", { className: "px-4 md:px-6 pt-4" },
                 React.createElement(AdminAuthQueueAll, { rec001: rec001, rec002: rec002, activeRole: activeRole, onDecisionClick: handleDecisionClick }),
                 React.createElement("div", { className: "mt-4" },

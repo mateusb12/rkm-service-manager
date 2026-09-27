@@ -49,6 +49,30 @@ const GATES = [
 const STATUS_CLASS = { done: 'bg-emerald-400 text-emerald-950', active: 'bg-blue-400 text-blue-950', next: 'bg-amber-300 text-amber-950', planned: 'bg-slate-500 text-slate-100', vision: 'bg-violet-400 text-violet-950' };
 const FEATURE_STATUS = { done: ['Concluída', 'tag-emerald'], active: ['Em construção', 'tag-blue'], next: ['Próxima', 'tag-amber'], planned: ['Planejada', 'tag-slate'], vision: ['Visão', 'tag-violet'] };
 
+const STEP_GLOW_STYLE: Record<string, React.CSSProperties> = {
+    done: {
+        boxShadow: '0 0 0 3px rgba(52,211,153,0.18), 0 0 12px 3px rgba(52,211,153,0.34)',
+        transform: 'scale(1.08)',
+    },
+    active: {
+        boxShadow: '0 0 0 3px rgba(96,165,250,0.18), 0 0 12px 3px rgba(96,165,250,0.34)',
+        transform: 'scale(1.08)',
+    },
+    next: {
+        boxShadow: '0 0 0 3px rgba(250,204,21,0.20), 0 0 13px 3px rgba(250,204,21,0.36)',
+        transform: 'scale(1.08)',
+    },
+    planned: {
+        boxShadow: '0 0 0 3px rgba(148,163,184,0.16), 0 0 10px 2px rgba(148,163,184,0.26)',
+        transform: 'scale(1.06)',
+    },
+    vision: {
+        boxShadow: '0 0 0 3px rgba(167,139,250,0.18), 0 0 12px 3px rgba(167,139,250,0.34)',
+        transform: 'scale(1.08)',
+    },
+};
+
+
 const RoadmapView = () => {
     const [selectedVersion, setSelectedVersion] = useState('V2');
     const selectedGate = GATES.find(item => item.version === selectedVersion) || GATES[1];
@@ -70,8 +94,15 @@ const RoadmapView = () => {
                                 {GATES.slice(0, -1).map((item, index) => <div key={`rail-${item.version}`} className={`${index < 2 ? 'bg-blue-400/70' : 'bg-slate-700'}`} style={{ height: '2px', flex: '1 1 0%' }} />)}
                             </div>
                             <div className="relative grid grid-cols-5">
-                                {GATES.map(item => <button type="button" key={item.version} onClick={() => setSelectedVersion(item.version)} aria-pressed={selectedVersion === item.version} className={`flex flex-col items-center justify-start rounded-lg p-1 text-center transition ${selectedVersion === item.version ? 'bg-blue-500/10' : 'hover:bg-slate-800/40'}`}>
-                                    <div style={{ position: 'relative', zIndex: 1 }} className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-rkmbg ${STATUS_CLASS[item.status]} ${selectedVersion === item.version ? 'ring-blue-400/30' : ''}`}>{item.version}</div>
+                                {GATES.map(item => <button type="button" key={item.version} onClick={() => setSelectedVersion(item.version)} aria-pressed={selectedVersion === item.version} className={`flex flex-col items-center justify-start rounded-lg p-1 text-center transition hover:bg-slate-800/20`}>
+                                    <div
+                                        style={{
+                                            position: 'relative',
+                                            zIndex: 1,
+                                            ...(selectedVersion === item.version ? STEP_GLOW_STYLE[item.status] : {}),
+                                        }}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold ring-4 transition-all duration-300 ${STATUS_CLASS[item.status]} ${selectedVersion === item.version ? 'ring-white/30' : 'ring-rkmbg'}`}
+                                    >{item.version}</div>
                                     <div className="mt-2"><div className="text-sm font-semibold text-slate-200">{item.phase}</div><div className="text-xs text-slate-500">{item.statusLabel}</div></div>
                                 </button>)}
                             </div>
