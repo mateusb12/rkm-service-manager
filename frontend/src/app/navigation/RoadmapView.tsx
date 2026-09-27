@@ -13,11 +13,11 @@ const GATES = [
     },
     {
         version: 'V2', phase: 'Planejamento', status: 'active', statusLabel: 'Em andamento', title: 'Planejamento e execução', description: 'Transformar o diagnóstico em uma sequência de trabalho clara e executável pela oficina.', objective: 'A OS diagnosticada entra no PCP, recebe prazo e prioridade e passa a ter etapas produtivas acompanháveis.', outcome: 'O PCP e os setores sabem o que precisa ser feito, qual é a prioridade, onde a peça está, quem deve agir e qual é o próximo passo.', exitCriteria: 'A OS percorre Diagnóstico → Planejamento → Priorização → Execução por etapas → Próximo passo.', deliverables: ['Enviar a OS para o PCP', 'Definir prazo e prioridade', 'Executar por etapa', 'Registrar avanço e próximo passo'], gate: 'Gate 2 · Fluxo executável', owner: 'PCP + Técnicos', coverage: '45%', summary: 'A V2 transforma o diagnóstico em trabalho executável, sem ainda fechar qualidade, entrega ou gestão avançada.', features: [
-            { name: 'PCP da oficina', status: 'active', owner: 'PCP', evidence: '10 OS no PCP; 0 aguardando planejamento.', example: 'Exemplo concreto: a OS 2026458 aparece para Apodi Caucaia como bomba manual; as OS 2026522 e 2026524 aparecem para Ecofor.', acceptance: 'Mostrar todas as OS abertas e o estado de cada etapa.' },
-            { name: 'Prazo e prioridade', status: 'active', owner: 'PCP', evidence: 'A fila exibe dias restantes e atraso por OS.', example: 'Exemplo concreto: OS 2026465 RES ENERGY com -80 dias; OS 2026388 GERDAU CAUCAIA com -126 dias.', acceptance: 'Ordenar a execução por prazo, atraso e prioridade.' },
-            { name: 'Etapas produtivas', status: 'active', owner: 'Setores da oficina', evidence: 'Limpeza, Usinagem, Montagem, Teste, Pintura e Qualidade aparecem no PCP.', example: 'Exemplo concreto: na OS 2026522, Limpeza/Usinagem/Montagem/Teste/Pintura estão Finalizados e Qualidade está Em andamento.', acceptance: 'Cada etapa possui estado próprio e histórico de mudança.' },
-            { name: 'Estado Não Possui Serviço', status: 'active', owner: 'PCP', evidence: 'Etapas não aplicáveis aparecem explicitamente no PCP.', example: 'Exemplo concreto: OS 2026531 — cilindro hidráulico transportador — tem Limpeza, Usinagem, Montagem, Teste, Pintura e Qualidade como Não Possui Serviço.', acceptance: 'Etapa não aplicável não bloqueia a execução.' },
-            { name: 'Próximo passo operacional', status: 'next', owner: 'Técnico', evidence: 'A OS indica a etapa que deve começar.', example: 'Exemplo concreto: OS 2026458 — bomba manual — está com Limpeza Em andamento e Montagem Iniciar Montagem.', acceptance: 'O técnico identifica claramente qual ação vem a seguir.' },
+            { name: 'PCP da oficina', status: 'active', owner: 'PCP', evidence: '10 OS no PCP; 0 aguardando planejamento.', example: 'a OS 2026458 aparece para Apodi Caucaia como bomba manual; as OS 2026522 e 2026524 aparecem para Ecofor.', acceptance: 'Mostrar todas as OS abertas e o estado de cada etapa.' },
+            { name: 'Prazo e prioridade', status: 'active', owner: 'PCP', evidence: 'A fila exibe dias restantes e atraso por OS.', example: 'OS 2026465 RES ENERGY com -80 dias; OS 2026388 GERDAU CAUCAIA com -126 dias.', acceptance: 'Ordenar a execução por prazo, atraso e prioridade.' },
+            { name: 'Etapas produtivas', status: 'active', owner: 'Setores da oficina', evidence: 'Limpeza, Usinagem, Montagem, Teste, Pintura e Qualidade aparecem no PCP.', example: 'na OS 2026522, Limpeza/Usinagem/Montagem/Teste/Pintura estão Finalizados e Qualidade está Em andamento.', acceptance: 'Cada etapa possui estado próprio e histórico de mudança.' },
+            { name: 'Estado Não Possui Serviço', status: 'active', owner: 'PCP', evidence: 'Etapas não aplicáveis aparecem explicitamente no PCP.', example: 'OS 2026531 — cilindro hidráulico transportador — tem Limpeza, Usinagem, Montagem, Teste, Pintura e Qualidade como Não Possui Serviço.', acceptance: 'Etapa não aplicável não bloqueia a execução.' },
+            { name: 'Próximo passo operacional', status: 'next', owner: 'Técnico', evidence: 'A OS indica a etapa que deve começar.', example: 'OS 2026458 — bomba manual — está com Limpeza Em andamento e Montagem Iniciar Montagem.', acceptance: 'O técnico identifica claramente qual ação vem a seguir.' },
         ]
     },
     {
@@ -48,6 +48,39 @@ const GATES = [
 
 const STATUS_CLASS = { done: 'bg-emerald-400 text-emerald-950', active: 'bg-blue-400 text-blue-950', next: 'bg-amber-300 text-amber-950', planned: 'bg-slate-500 text-slate-100', vision: 'bg-violet-400 text-violet-950' };
 const FEATURE_STATUS = { done: ['Concluída', 'tag-emerald'], active: ['Em construção', 'tag-blue'], next: ['Próxima', 'tag-amber'], planned: ['Planejada', 'tag-slate'], vision: ['Visão', 'tag-violet'] };
+
+const FEATURE_ACCENT = {
+    done: {
+        border: 'border-emerald-400/35',
+        bar: 'bg-emerald-400',
+        soft: 'bg-emerald-400/10',
+        text: 'text-emerald-300',
+    },
+    active: {
+        border: 'border-blue-400/35',
+        bar: 'bg-blue-400',
+        soft: 'bg-blue-400/10',
+        text: 'text-blue-300',
+    },
+    next: {
+        border: 'border-amber-300/35',
+        bar: 'bg-amber-300',
+        soft: 'bg-amber-300/10',
+        text: 'text-amber-300',
+    },
+    planned: {
+        border: 'border-slate-500/45',
+        bar: 'bg-slate-500',
+        soft: 'bg-slate-500/10',
+        text: 'text-slate-300',
+    },
+    vision: {
+        border: 'border-violet-400/35',
+        bar: 'bg-violet-400',
+        soft: 'bg-violet-400/10',
+        text: 'text-violet-300',
+    },
+};
 
 const STEP_GLOW_STYLE: Record<string, React.CSSProperties> = {
     done: {
@@ -126,8 +159,107 @@ const RoadmapView = () => {
                     <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4"><div><div className="flex items-center gap-2"><span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STATUS_CLASS[selectedGate.status]}`}>{selectedGate.version} · {selectedGate.statusLabel}</span><span className="text-xs text-slate-500">{selectedGate.phase}</span></div><h2 className="text-xl font-semibold text-slate-100 mt-3">{selectedGate.title}</h2><p className="text-sm text-slate-400 mt-2 max-w-3xl">{selectedGate.summary}</p></div><div className="lg:text-right"><div className="text-xs uppercase tracking-wider text-slate-500">Gate de saída</div><div className="text-sm font-semibold text-blue-300 mt-1">{selectedGate.gate}</div><div className="text-xs text-slate-500 mt-1">Owner: {selectedGate.owner}</div></div></div>
                 </div>
                 <div className="p-5 md:p-6"><div className="mb-5"><div className="text-xs uppercase tracking-wider text-slate-500">Ordem natural da peça</div><div className="flex flex-wrap items-center gap-2 mt-3">{selectedGate.features.map((feature, index) => <React.Fragment key={`flow-${feature.name}`}><div className="inline-flex items-center gap-2 rounded-lg border border-blue-400/20 bg-blue-500/[.06] px-3 py-2 text-xs text-slate-300"><span className="font-semibold text-blue-300">{String(index + 1).padStart(2, '0')}</span><span>{feature.name}</span></div>{index < selectedGate.features.length - 1 && <span className="text-slate-600">→</span>}</React.Fragment>)}</div></div><div className="flex items-center justify-between mb-4"><div><div className="text-xs uppercase tracking-wider text-slate-500">Features do gate</div><div className="text-sm text-slate-300 mt-1">{selectedGate.features.length} itens para inspecionar</div></div><div className="text-right"><div className="text-2xl font-semibold text-blue-300">{selectedGate.coverage}</div><div className="text-[11px] text-slate-500">cobertura alvo</div></div></div>
-                    {selectedGate.outcome && <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mb-5"><div className="rounded-lg border border-rkmborder bg-rkmcard2/25 p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Resultado esperado</div><p className="text-xs text-slate-300 leading-5 mt-1">{selectedGate.outcome}</p></div><div className="rounded-lg border border-emerald-400/20 bg-emerald-400/[.04] p-3"><div className="text-[10px] uppercase tracking-wider text-emerald-300">Critério de saída</div><p className="text-xs text-slate-300 leading-5 mt-1">{selectedGate.exitCriteria}</p></div></div>}
-                    <div className="space-y-3">{selectedGate.features.map((feature, index) => { const [label, tag] = FEATURE_STATUS[feature.status]; return <article key={feature.name} className="rounded-xl border border-rkmborder bg-rkmcard2/25 p-4"><div className="grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)] gap-4 items-start"><div className="flex items-start gap-3 min-w-0"><div className="w-7 h-7 shrink-0 rounded-lg bg-blue-500/15 text-blue-300 flex items-center justify-center text-xs font-semibold">{String(index + 1).padStart(2, '0')}</div><div className="min-w-0"><h3 className="text-sm font-semibold text-slate-100 leading-5">{feature.name}</h3><div className="flex flex-wrap items-center gap-2 mt-2"><span className={`tag ${tag}`}>{label}</span><span className="text-xs text-slate-500">Owner: {feature.owner}</span></div></div></div><div className="min-w-0 text-xs text-slate-400 leading-5 space-y-2"><div><span className="text-slate-500">Evidência: </span>{feature.evidence}</div>{feature.example && <div className="rounded-lg border border-blue-400/20 bg-blue-500/[.06] px-3 py-2"><span className="text-blue-300 font-medium">Exemplo concreto: </span>{feature.example}</div>}</div></div><div className="mt-3 pt-3 border-t border-rkmborder text-xs"><span className="text-slate-500">Critério de aceite: </span><span className="text-slate-300">{feature.acceptance}</span></div></article>; })}</div>
+                    {selectedGate.outcome && (
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+                            <div className="rounded-xl border border-blue-400/30 bg-blue-500/[.08] p-4 shadow-sm shadow-black/10">
+                                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider font-semibold text-blue-300">
+                                    <span className="w-2 h-2 rounded-full bg-blue-400" />
+                                    Resultado esperado
+                                </div>
+                                <p className="text-sm text-slate-200 leading-6 mt-2">
+                                    {selectedGate.outcome}
+                                </p>
+                            </div>
+                    
+                            <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/[.07] p-4 shadow-sm shadow-black/10">
+                                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider font-semibold text-emerald-300">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                                    Critério de saída
+                                </div>
+                                <p className="text-sm text-slate-200 leading-6 mt-2">
+                                    {selectedGate.exitCriteria}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                    <div className="space-y-4">
+                        {selectedGate.features.map((feature, index) => {
+                            const [label, tag] = FEATURE_STATUS[feature.status];
+                            const accent = FEATURE_ACCENT[feature.status] || FEATURE_ACCENT.planned;
+                    
+                            return (
+                                <article
+                                    key={feature.name}
+                                    className={`relative overflow-hidden rounded-xl border ${accent.border} bg-rkmcard2 shadow-sm shadow-black/10`}
+                                >
+                                    <div className={`absolute inset-y-0 left-0 w-1 ${accent.bar}`} />
+                    
+                                    <div className="p-5 pl-6">
+                                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                            <div className="flex items-start gap-3 min-w-0">
+                                                <div
+                                                    className={`w-8 h-8 shrink-0 rounded-lg border ${accent.border} ${accent.soft} ${accent.text} flex items-center justify-center text-xs font-bold`}
+                                                >
+                                                    {String(index + 1).padStart(2, '0')}
+                                                </div>
+                    
+                                                <div className="min-w-0">
+                                                    <h3 className="text-base font-semibold text-slate-100 leading-6">
+                                                        {feature.name}
+                                                    </h3>
+                    
+                                                    <div className="text-xs text-slate-400 mt-1">
+                                                        Owner: <span className="text-slate-300">{feature.owner}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                    
+                                            <span className={`tag ${tag} shrink-0`}>
+                                                {label}
+                                            </span>
+                                        </div>
+                    
+                                        <div
+                                            className={`grid grid-cols-1 ${feature.example ? 'xl:grid-cols-3' : 'xl:grid-cols-2'} gap-3 mt-4`}
+                                        >
+                                            <section className="rounded-lg border border-slate-700/80 bg-slate-950/20 p-4">
+                                                <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">
+                                                    Evidência
+                                                </div>
+                    
+                                                <p className="text-sm text-slate-200 leading-6 mt-2">
+                                                    {feature.evidence}
+                                                </p>
+                                            </section>
+                    
+                                            {feature.example && (
+                                                <section className="rounded-lg border border-blue-400/30 bg-blue-500/[.08] p-4">
+                                                    <div className="text-[11px] uppercase tracking-wider font-semibold text-blue-300">
+                                                        Exemplo concreto
+                                                    </div>
+                    
+                                                    <p className="text-sm text-slate-200 leading-6 mt-2">
+                                                        {feature.example}
+                                                    </p>
+                                                </section>
+                                            )}
+                    
+                                            <section className="rounded-lg border border-emerald-400/30 bg-emerald-400/[.07] p-4">
+                                                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider font-semibold text-emerald-300">
+                                                    <span className="text-emerald-300">✓</span>
+                                                    Critério de aceite
+                                                </div>
+                    
+                                                <p className="text-sm text-slate-100 leading-6 mt-2">
+                                                    {feature.acceptance}
+                                                </p>
+                                            </section>
+                                        </div>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
                 </div>
             </section>
 
