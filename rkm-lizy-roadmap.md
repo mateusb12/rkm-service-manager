@@ -53,13 +53,13 @@ Os percentuais são marcos de cobertura de features, não percentual de tarefas 
 
 ### Objetivo
 
-Reproduzir o início do fluxo da oficina: receber o equipamento, abrir a OS, identificar o cliente e colocar a ordem na fila de inspeção.
+Reproduzir o início do fluxo da oficina: receber o equipamento, abrir a OS, identificar o cliente, colocar a ordem na fila de inspeção e controlar prazo/prioridade.
 
 ### Features
 
 | Feature | Escopo funcional | Evidência Lizy | Critério de aceite |
 |---|---|---|---|
-| Criar OS | Abrir uma ordem de serviço para o equipamento recebido | Menu `Serviços → Desmontagem` permite criar ordem | Usuário cria OS com número, cliente e equipamento |
+| Criar Ordem de Serviço | Abrir uma ordem de serviço para o equipamento recebido | Menu `Serviços → Desmontagem` permite criar ordem | Usuário cria OS com número, cliente e equipamento |
 | Identificação do cliente | Relacionar a OS ao cliente correto | OS 20265592: VLI PECEM; OS 20265591: RKM HIDRAULICA | Cliente selecionável e visível em toda a OS |
 | Fila de inspeção | Listar ordens aguardando análise | 17 OS em `Aguardando Inspeções` | Fila filtrável por status e prioridade |
 | Prazo e prioridade | Exibir urgência e dias restantes | OS 2026465 com -80 dias; OS 2026388 com -126 dias | Atraso e prioridade aparecem na lista |
@@ -82,7 +82,7 @@ Reproduzir o início do fluxo da oficina: receber o equipamento, abrir a OS, ide
 
 ### Gate V1
 
-V1 está concluída quando uma OS consegue percorrer: **criação → identificação → fila de inspeção → abertura para análise**, mantendo histórico e prazo.
+V1 está concluída quando uma OS consegue percorrer: **criação → identificação → fila de inspeção → abertura para análise**, mantendo histórico, prazo e prioridade.
 
 ---
 
