@@ -648,7 +648,7 @@ export const ServiceEntryView = () => {
 
             <div className="service-entry-stepper service-entry-amazon-stepper" aria-label="Etapas do ciclo operacional">
                 {SERVICE_ENTRY_STEPS.map((item, index) => (
-                    <button type="button" key={item.id} className={`service-entry-step ${step === index && furthestReachedStep <= index ? 'is-active' : ''} ${furthestReachedStep === index ? 'is-current' : ''} ${furthestReachedStep > index ? 'is-done' : ''} ${step === index && furthestReachedStep > index ? 'is-selected-done' : ''} ${furthestReachedStep < index ? 'is-locked' : ''}`} onClick={() => changeStep(index)} aria-current={step === index ? 'step' : undefined} aria-disabled={furthestReachedStep < index ? 'true' : undefined} title={furthestReachedStep < index ? 'Conclua a etapa anterior para liberar esta etapa' : undefined}>
+                    <button type="button" key={item.id} className={`service-entry-step ${step === index && furthestReachedStep <= index ? 'is-active' : ''} ${furthestReachedStep === index ? 'is-current' : ''} ${step === index && furthestReachedStep === index ? 'is-selected-current' : ''} ${furthestReachedStep > index ? 'is-done' : ''} ${step === index && furthestReachedStep > index ? 'is-selected-done' : ''} ${furthestReachedStep < index ? 'is-locked' : ''}`} onClick={() => changeStep(index)} aria-current={step === index ? 'step' : undefined} aria-disabled={furthestReachedStep < index ? 'true' : undefined} title={furthestReachedStep < index ? 'Conclua a etapa anterior para liberar esta etapa' : undefined}>
                         <span>{furthestReachedStep > index ? '✓' : index + 1}</span><strong>{item.label}</strong>
                     </button>
                 ))}

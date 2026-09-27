@@ -1803,6 +1803,20 @@ html:not(.dark) .app-shell .service-entry-delete {
 }
 
 
+/* The current step gets a stronger orange treatment only when selected. */
+.service-entry-amazon-stepper
+.service-entry-step.is-selected-current {
+  border-color: rgba(224, 183, 104, 0.96);
+
+  box-shadow:
+    0 0 0 1px
+    rgba(224, 183, 104, 0.24),
+
+    0 7px 22px
+    rgba(2, 12, 27, 0.22);
+}
+
+
 /* ==================================================================
    COMPLETED
    ================================================================== */
