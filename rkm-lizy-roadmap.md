@@ -1,600 +1,798 @@
-# RKM × Lizy — Roadmap de Paridade do Uso Real
+# RKM × Lizy — Raio-X do Uso Atual
 
-> **Objetivo atual:** fazer o RKM atingir paridade com o subconjunto da Lizy que a RKM Hidráulica realmente utiliza hoje — não reproduzir 100% da Lizy.
+> **Objetivo:** registrar, de forma objetiva, o que pertence à OFICINA, o que pertence à NÃO-OFICINA, o que a RKM realmente usa, o que não apresenta uso e o que estava sem registro no momento da inspeção.
 
-## 1. Regra de escopo
+**Data da inspeção:** 27/09/2026  
+**Empresa ativa:** Rkm Hidraulica  
+**Fonte:** sidebar da Lizy e telas operacionais acessíveis a partir dela.
 
-Uma funcionalidade entra no roadmap de paridade somente quando houver evidência de que ela é usada pela RKM ou quando for dependência necessária de um fluxo usado.
+## Como ler este documento
 
-Não entram no roadmap apenas porque existem na Lizy.
-
-### Classificação
-
-- **✅ Já existe no RKM** — capacidade operacional já implementada.
-- **🟡 Parcial no RKM** — modelada ou disponível no MVP, mas ainda não equivalente ao uso real da Lizy.
-- **❌ Falta no RKM** — usada na Lizy e ainda sem equivalente no RKM.
-- **🔎 Validar** — uso/necessidade ainda precisa de confirmação cirúrgica.
-- **🚫 Fora do escopo atual** — disponível na Lizy, porém sem evidência de uso pela RKM.
+- **USA**: há registros, volumes ou estados operacionais visíveis na tela.
+- **NÃO USA / sem evidência**: a funcionalidade existe, mas a tela não apresentou operação ou registro que justifique considerá-la usada.
+- **SEM REGISTRO ATUAL**: a tela existe, mas estava vazia, zerada ou sem itens carregados durante a inspeção. Isso não prova que nunca tenha sido usada.
+- **USA INDIRETAMENTE**: não há necessariamente uma fila preenchida própria, mas o fluxo aparece registrado em outra tela operacional, principalmente no PCP.
 
 ---
 
-## 2. O que a RKM realmente usa na Lizy
+# 1. OFICINA
 
-A auditoria de 05/09/2026 encontrou uso recente principalmente em:
+OFICINA é tudo que participa da entrada, inspeção, execução, acompanhamento, validação e finalização de uma Ordem de Serviço.
 
-1. **Serviços / Ordens de Serviço**
-2. **PCP / acompanhamento por setor**
-3. **Orçamentos**
-4. **Compras**
-5. **Estoque e requisições**
-6. **Recebimento**
-7. **Financeiro / lançamentos**
-8. **Faturamento**
-9. **Documentos fiscais**
+## 1.1 O que a OFICINA USA
 
-### Evidências recentes observadas
+### Desmontagem / análise
 
-- Desmontagem/Análise: **22 OS**; peritagem observada em **04/09/2026 08:00**.
-- Finalizados: **6 OS em setembro/2026** e **86 em 2026**; finalização visível em **03/09/2026**.
-- Orçamentos: **130 aguardando envio**, **305 aguardando aprovação**, **63 aprovados**, **13 não aprovados**.
-- Compras: **17 requisições**, **4 cotações**, **19 compras**; RC83 em **04/09/2026 14:37**.
-- Estoque: **145 requisições** e **765 itens em estoque**; RE145 em **04/09/2026 08:41**.
-- Financeiro: **185 lançamentos**, sendo **40 a receber** e **145 a pagar**.
-- Faturamento: **150 OS liberadas**.
-- Fiscal: **39 notas/protocolos autorizados**; NF 1285 em **27/08/2026**.
+**Status: USA**
 
-> A auditoria não conseguiu determinar com segurança qual foi a OS mais recentemente criada, pois a data de abertura não estava disponível de forma confiável.
+Menu: `Serviços → Desmontagem`
 
----
+Evidências:
 
-## 3. O que não deve puxar o roadmap agora
+- 17 ordens na fila durante a inspeção.
+- Ordens com status `Aguardando Inspeções`.
+- A fila apresenta número da OS, cliente, status, técnico, observações, dias restantes e funções.
+- A tela permite criar ordem e acessar a ordem para análise.
+- Havia OS recentes, inclusive números 20265592, 20265591, 20265590, 20265589 e OS-DEBUG-001.
 
-As capacidades abaixo existem na Lizy, mas não apresentaram evidência de uso operacional suficiente no tenant auditado:
+O que isso representa:
 
-- 🚫 CRM / funil
-- 🚫 Prospecção
-- 🚫 Cobrança / boletos
-- 🚫 Conciliação bancária
-- 🚫 Atendimento Externo
-- 🚫 Locações
-- 🚫 Ativos imobilizados / movimentação de ferramentas
-- 🚫 Centro de custo
-- 🚫 Agentes de IA
-- 🚫 Agenda, salvo confirmação posterior de necessidade
+- entrada operacional da OS;
+- identificação do cliente e equipamento;
+- fila de inspeção;
+- distribuição/visualização de responsáveis;
+- controle de prioridade e prazo;
+- início do fluxo técnico da oficina.
 
-### Não concluir ainda
+### PCP / planejamento da oficina
 
-As filas **Testes** e **Qualidade** estavam vazias no momento da auditoria, mas aparecem no modelo operacional e dentro da estrutura das OS. Portanto, não devem ser descartadas somente por estarem com zero itens no instante da inspeção.
+**Status: USA**
 
----
+Menu: `Serviços → PCP`
 
-# 4. Estado atual do RKM
+Evidências:
 
-## 4.1 Capacidades já existentes
+- 10 ordens no PCP.
+- 0 ordens aguardando planejamento no momento da inspeção.
+- A tela exibe as colunas ordem, cliente, categoria do equipamento, observações, prioridade, dias restantes e funções.
+- O PCP mostra o estado de cada serviço dentro da ordem.
+- Foram observados serviços `Em andamento`, `Finalizado`, `Iniciar Montagem` e `Não Possui Serviço`.
 
-O RKM já possui uma base especializada para execução técnica:
+O PCP é a principal evidência de que a oficina não trabalha apenas com uma fila de desmontagem: existe acompanhamento por setor e por etapa produtiva.
 
-- ✅ Autenticação real.
-- ✅ Cargos e RBAC no backend:
-  - Admin
-  - Operador / Técnico
-  - Supervisor
-  - Qualidade
-  - PCP
-- ✅ Visões por cargo.
-- ✅ IT001 — acumulador tipo bexiga.
-- ✅ IT002 — acumulador tipo pistão.
-- ✅ Fluxos técnicos de 20 etapas.
-- ✅ Alertas e bloqueios críticos.
-- ✅ Validação de supervisor.
-- ✅ Validação de qualidade modelada.
-- ✅ Não conformidade / interrupção modeladas.
-- ✅ Pendências.
-- ✅ Histórico de autorizações modelado.
-- ✅ Resumo / laudo em tela.
-- ✅ Identificação do equipamento.
-- ✅ Status, prioridade e responsáveis.
-- ✅ Dashboard e bancada do operador.
+### Limpeza
 
-## 4.2 Limitações atuais importantes
+**Status: USA INDIRETAMENTE**
 
-Apesar da profundidade técnica, o MVP ainda não possui paridade operacional com a Lizy:
+Evidência encontrada no PCP:
 
-- 🟡 Registros de serviço ainda trabalham como rascunhos no frontend/localStorage.
-- 🟡 A listagem operacional usa serviços de exemplo/mock.
-- 🟡 Evidências são marcadas no modelo, mas o próprio sistema identifica upload real como futuro.
-- 🟡 Resumo/laudo existe, mas ainda não equivale ao ciclo documental usado na Lizy.
-- ❌ Não há fluxo produtivo real por setores.
-- ❌ Não há apontamento real de início/fim/horas por serviço/setor.
-- ❌ Não há peças vinculadas à OS.
-- ❌ Não há estoque operacional.
-- ❌ Não há requisições de estoque.
-- ❌ Não há compras/cotações.
-- ❌ Não há recebimento.
-- ❌ Não há orçamento comercial equivalente.
-- ❌ Não há financeiro operacional equivalente.
-- ❌ Não há faturamento/fiscal equivalente.
+- ordens com Limpeza `Em andamento`;
+- ordens com Limpeza `Finalizado`.
 
----
+A rota própria de Limpeza não apresentou registros preenchidos durante o crawl. A existência de estados no PCP, porém, comprova que Limpeza participa do fluxo de algumas OS.
 
-# 5. Matriz de paridade — Lizy usada × RKM atual
+### Usinagem
 
-| Capacidade usada na Lizy | Evidência de uso | RKM atual | Gap |
-|---|---|---|---|
-| Criar e acompanhar OS | Uso recente | 🟡 Parcial | Persistência real, CRUD e histórico |
-| Cliente na OS | Uso estrutural | 🟡 Parcial | Cadastro/persistência operacional |
-| Equipamento na OS | Uso estrutural | ✅/🟡 | Base técnica existe; persistência real falta |
-| Técnico e responsáveis | Uso estrutural | ✅/🟡 | RBAC existe; operação ainda mock/local |
-| Prioridade e status | Uso estrutural | ✅/🟡 | Persistência e transições reais |
-| Inspeção técnica | Uso confirmado | ✅ | RKM é mais especializado em IT001/IT002 |
-| Diagnóstico | Uso confirmado | ✅ | Consolidar no backend |
-| Checklist | Uso confirmado | ✅ | Consolidar no backend |
-| Regras/bloqueios técnicos | Lizy parcial / RKM forte | ✅ | Diferencial do RKM |
-| Filas por setor | Uso ativo | ❌ | Implementar |
-| PCP / acompanhamento da produção | 7 OS observadas | 🟡 | Tornar operacional e persistente |
-| Limpeza | 5 OS | ❌ como fila real | Implementar setor |
-| Usinagem | 3 OS | ❌ como fila real | Implementar setor |
-| Montagem | 5 OS | ❌ como fila real | Implementar setor |
-| Pintura | 2 OS | ❌ como fila real | Implementar setor |
-| Testes | Estrutura existe; fila vazia | 🔎 | Validar histórico antes de definir |
-| Qualidade | Estrutura existe; fila vazia | ✅/🔎 | Validar fluxo histórico e tornar persistente |
-| Tempo no setor | Uso confirmado na OS | ❌ | Implementar apontamento |
-| Início/fim/horas | Uso confirmado | ❌ | Implementar apontamento |
-| Serviços da OS | Uso confirmado | 🟡 | Modelo técnico existe, catálogo operacional falta |
-| Peças da OS | Uso confirmado | ❌ | Implementar |
-| Custo/venda de peça | Uso confirmado | ❌ | Implementar |
-| Serviço externo | 3 registros | ❌ | Implementar ou validar prioridade |
-| Fotos | Estrutura Lizy confirmada | 🟡 | Upload/storage real |
-| Arquivos | Estrutura Lizy confirmada | 🟡 | Upload/storage real |
-| Laudo/relatório | Uso estrutural confirmado | 🟡 | Geração documental real |
-| Finalização de OS | 86 em 2026 | 🟡 | Estado persistente e workflow real |
-| Orçamentos | Uso forte | ❌ | Implementar |
-| Requisições de estoque | 145 | ❌ | Implementar |
-| Estoque | 765 itens | ❌ | Implementar |
-| Compras/requisições/cotações | Uso recente | ❌ | Implementar |
-| Recebimento | Uso recente | ❌ | Implementar |
-| Financeiro / lançamentos | 185 lançamentos | ❌ | Implementar se saída total da Lizy for objetivo |
-| Faturamento | 150 OS liberadas | ❌ | Implementar se saída total da Lizy for objetivo |
-| Documentos fiscais | 39 autorizados | ❌ | Implementar/integrar se saída total da Lizy for objetivo |
+**Status: USA INDIRETAMENTE**
 
----
+Evidência encontrada no PCP:
 
-# 5.1 Índice rápido — qual tela da Lizy abrir enquanto programa
+- ordens com Usinagem `Finalizado`.
 
-| Se estiver implementando... | Abra na Lizy |
-|---|---|
-| Criação/persistência de OS | `Serviços → Desmontagem → Criar Ordem` |
-| Lista/status da OS | `Serviços → Desmontagem` |
-| Inspeção/checklist/diagnóstico | uma OS em `Serviços → Desmontagem → Alterar Ordem` |
-| Setores/PCP | `Serviços → PCP` e a fila do setor correspondente |
-| Apontamento de horas | uma OS aberta em `Análise - Cilindro` |
-| Fotos/arquivos/laudo | abas da própria OS |
-| Peças da OS | aba `Peças Ordem` |
-| Estoque/requisição | `Suprimentos → Estoque` |
-| Compras/cotações | `Suprimentos → Compras` |
-| Recebimento | `Logística → Recebimento` |
-| Orçamento | `Comercial → Orçamentos` |
-| Financeiro | `Financeiro → Lançamentos` |
-| Faturamento | `Financeiro → Faturamento` |
-| Fiscal | `Financeiro → Faturamento → Faturados/Notas Fiscais` |
+A rota própria de Usinagem não apresentou registros preenchidos durante o crawl, mas o serviço aparece efetivamente no acompanhamento das ordens.
 
-> Este índice é deliberadamente baseado no **uso real auditado**. Menus vazios ou não utilizados não são fonte de verdade do roadmap atual.
+### Montagem
 
----
+**Status: USA INDIRETAMENTE**
 
-# 6. Roadmap
+Evidências encontradas no PCP:
 
-## Fase 0 — Base operacional real
+- ordens com Montagem `Iniciar Montagem`;
+- ordens com Montagem `Finalizado`.
 
-**Objetivo:** tirar o núcleo de serviços do estado de protótipo e torná-lo fonte de verdade.
+Montagem deve ser considerada parte do fluxo da oficina, mesmo que a tela isolada não tenha sido usada como fonte principal de contagem.
 
-### Fonte de verdade na Lizy
+### Testes
 
-Use estas telas abertas enquanto implementar a base da OS:
+**Status: USA INDIRETAMENTE**
 
-| O que comparar | Sidebar Lizy | Rota observada | O que olhar |
-|---|---|---|---|
-| Lista/fila de OS | `Serviços → Desmontagem` | `/servicos/fila/ed349c70-099e-4610-8512-e8f626004b90` | Número da OS, cliente, status, técnico, observações, prazo/dias restantes e ações |
-| Criação da OS | `Serviços → Desmontagem → Criar Ordem` | `/FilaExpedicao/CriarOrdem/49` | Tipo Serviço/Garantia, nº OS, data prevista, cliente, nota, fabricante, equipamento, modelo, urgente, técnico, série, defeito, rastreabilidade e arquivo de chegada |
-| Estrutura de uma OS | abrir uma OS pela fila de Desmontagem | `/FilaAnalise/EdicaoOrdem/6979/0` | Abas, identificação, inspeção, responsáveis, serviços, peças, fotos, arquivos e estados |
-| OS encerradas | `Serviços → Finalizados` | `/servicos/fila/e331ca3a-4071-440f-a99e-94f4fec00188` | Estado final, data de término e histórico operacional visível |
-| Cliente | `Base de Dados → Cadastros → Clientes` | `/cadastros/clientes` | Estrutura mínima do cadastro necessário para vincular uma OS |
-| Usuários | `Base de Dados → Cadastros → Usuários` | `/cadastros/usuarios` | Usuários existentes e estrutura de identidade |
-| Permissões | `Configurações` | `/conta` | Permissões/toggles por módulo e comportamento por perfil |
+Evidência encontrada no PCP:
 
-> **Tela principal para Alt+Tab nesta fase:** `Serviços → Desmontagem` + uma OS aberta em `Análise - Cilindro`.
+- ordens com Teste `Finalizado`.
 
-### Entregas
+A fila direta de Testes não apresentou registros durante o crawl, mas não deve ser classificada como não usada: há estados finalizados registrados dentro do PCP.
 
-- [ ] Persistir OS no backend/SQLite.
-- [ ] CRUD real de OS.
-- [ ] Persistir cliente/equipamento/responsáveis da OS.
-- [ ] Persistir etapas IT001/IT002.
-- [ ] Persistir status, prioridade e setor atual.
-- [ ] Persistir autorizações e histórico.
-- [ ] Remover dependência de `sampleServices` para operação.
-- [ ] Remover `localStorage` como persistência principal de registros operacionais.
-- [ ] Criar histórico/auditoria básico de mudanças da OS.
+### Pintura
 
-### Critério de saída
+**Status: USA INDIRETAMENTE**
 
-Uma OS deve poder ser criada, fechada, reaberta para consulta e continuar íntegra após logout/restart do navegador.
+Evidência encontrada no PCP:
+
+- ordens com Pintura `Finalizado`.
+
+A tela direta de Pintura não apresentou registros no momento da inspeção, mas o setor aparece no fluxo produtivo das OS.
+
+### Qualidade
+
+**Status: USA INDIRETAMENTE**
+
+Evidência encontrada no PCP:
+
+- ordens com Qualidade `Em andamento`.
+
+A fila própria não apresentou registros durante o crawl. Ainda assim, Qualidade está presente como etapa operacional real dentro de ordens acompanhadas pelo PCP.
+
+### Finalização de OS
+
+**Status: USA**
+
+Menu: `Serviços → Finalizados`
+
+Evidências:
+
+- 31 ordens finalizadas no mês exibido.
+- 111 ordens finalizadas no ano exibido.
+- A listagem possui número da OS, cliente, data de fim, foto e funções.
+- Foram observadas finalizações recentes, incluindo datas em 03/09/2026, 10/09/2026, 14/09/2026, 16/09/2026 e 22/09/2026.
+
+Isso comprova que o fluxo da oficina chega a um estado de encerramento operacional e mantém histórico de ordens concluídas.
+
+### Serviço externo dentro da oficina
+
+**Status: SEM REGISTRO ATUAL**
+
+Menu: `Serviços → Serviço Externo`
+
+Evidência:
+
+- a tela apresentou `Nenhum registro encontrado`;
+- total exibido: 0 registros.
+
+Não é possível concluir, apenas por essa tela vazia, que a RKM nunca usa fornecedor externo. A classificação correta é sem registro atual; o histórico anterior mencionava poucos registros, mas não foi confirmado nesta inspeção.
+
+## 1.2 Capacidades da OFICINA sem comprovação suficiente nesta inspeção
+
+Estas capacidades existem na estrutura da Lizy ou aparecem dentro das telas de OS, mas não tiveram seu uso efetivo comprovado pelo crawl da sidebar:
+
+| Capacidade | Estado | O que foi possível observar |
+|---|---|---|
+| Apontamento de início/fim | SEM REGISTRO ATUAL / validar | A estrutura é esperada no fluxo de OS, mas não foi medida em uma OS aberta nesta inspeção |
+| Horas e tempo por setor | SEM REGISTRO ATUAL / validar | Não houve amostra detalhada de apontamentos |
+| Peças vinculadas à OS | SEM REGISTRO ATUAL / validar | A capacidade existe na OS, mas não foi contabilizada |
+| Fotos | SEM REGISTRO ATUAL / validar | A coluna Foto existe em Finalizados, mas não foi aberta uma amostra para verificar anexos |
+| Arquivos | SEM REGISTRO ATUAL / validar | A aba/capacidade existe, mas não houve comprovação de anexos nesta passagem |
+| Laudo/relatório | SEM REGISTRO ATUAL / validar | A estrutura é mencionada no fluxo, mas o uso efetivo não foi observado |
+
+## 1.3 Resumo da OFICINA
+
+### Usa
+
+- Desmontagem e análise.
+- Ordens de Serviço.
+- PCP e planejamento.
+- Limpeza, Usinagem, Montagem, Testes, Pintura e Qualidade como etapas observadas no PCP.
+- Finalização e histórico de OS.
+
+### Não há evidência suficiente para chamar de “usa”
+
+- apontamento de horas;
+- tempo por setor;
+- peças da OS;
+- fotos efetivamente anexadas;
+- arquivos efetivamente anexados;
+- laudo efetivamente gerado;
+- Serviço Externo como fluxo atual preenchido.
+
+### Não deve ser descartado
+
+Testes e Qualidade não podem ser classificados como “não usados” só porque suas filas diretas estavam vazias. Ambos aparecem como estados dentro de ordens do PCP.
 
 ---
 
-## Fase 1 — Paridade do núcleo de Serviços
+# 2. NÃO-OFICINA
 
-**Objetivo:** o operador conseguir executar no RKM o fluxo que hoje depende da Lizy.
+NÃO-OFICINA é tudo que apoia a operação ou pertence aos domínios comercial, suprimentos, logística, financeiro e fiscal, mas não é execução direta do serviço técnico na bancada.
 
-### Fonte de verdade na Lizy
+## 2.1 Comercial
 
-O fluxo produtivo usado hoje está distribuído principalmente pelo menu `Serviços`.
+### Orçamentos
 
-| Etapa / capacidade | Sidebar Lizy | Rota observada | O que comparar no RKM |
-|---|---|---|---|
-| Desmontagem / análise | `Serviços → Desmontagem` | `/servicos/fila/ed349c70-099e-4610-8512-e8f626004b90` | Fila, status, técnico, início de serviço e entrada na análise |
-| PCP / aprovados | `Serviços → PCP` | `/servicos/fila/410a9684-8b28-480f-be99-aa0e18cd6de8` | OS planejadas e estados dos serviços/setores |
-| Serviço externo | `Serviços → Serviço Externo` | `/servicos/fila/a561ccf8-a43b-49eb-b11a-5d143984a2e1` | OS/serviço, fornecedor, prazo, envio/finalização |
-| Limpeza | `Serviços → Limpeza` | `/servicos/fila/794d5d0f-3242-405a-a30a-b2ca6e16eadc` | Entrada na fila, estado Em andamento/Iniciar Serviço |
-| Usinagem | `Serviços → Usinagem` | `/servicos/fila/1c66174e-fd10-45b7-9185-b70d9f959ce9` | Fila e início/fim do trabalho |
-| Montagem | `Serviços → Montagem` | `/servicos/fila/602d944a-6cea-4865-892e-fa7362525036` | Fila e apontamento de montagem |
-| Testes | `Serviços → Testes` | `/servicos/fila/d6e512b3-0c16-4f18-bfaa-daeacc414860` | Estrutura da fila; uso histórico ainda precisa ser validado |
-| Pintura | `Serviços → Pintura` | `/servicos/fila/5b90bd0f-cb4e-4c1b-aef8-d1b308d80bf0` | OS Em andamento e transição do setor |
-| Qualidade | `Serviços → Qualidade` | `/servicos/fila/2af52fe1-e486-46e3-a6c1-d91f78a0ae35` | Estrutura da fila; uso histórico ainda precisa ser validado |
-| Finalização | `Serviços → Finalizados` | `/servicos/fila/e331ca3a-4071-440f-a99e-94f4fec00188` | Data fim, estados encerrados e saída do fluxo |
-| Inspeção / peritagem | abrir uma OS em Desmontagem | `/FilaAnalise/EdicaoOrdem/6979/0` | C/NC/NA, causa provável, medições, serviços a executar, status final, assinatura técnica e visto da qualidade |
-| Apontamento | mesma OS | `/FilaAnalise/EdicaoOrdem/6979/0` | Início, fim, tempo no setor, técnico responsável, horas e prioridade |
-| Fotos | mesma OS → aba `Fotos` | `/FilaAnalise/EdicaoOrdem/6979/0` | Upload por componente e organização das evidências |
-| Arquivos / laudo | mesma OS → aba `Arquivos` | `/FilaAnalise/EdicaoOrdem/6979/0` | Relatórios da ordem, arquivos e apresentação/impressão do relatório |
+**Status: USA**
 
-> **Tela principal para Alt+Tab nesta fase:** uma OS real em `Análise - Cilindro`. Ela concentra inspeção, apontamento, serviços, fotos, arquivos e qualidade.
+Menu: `Comercial → Orçamentos`
 
-### 1.1 Fluxo produtivo por setor
+Evidências atuais:
 
-- [ ] Desmontagem / Análise
-- [ ] PCP
-- [ ] Serviço Externo
-- [ ] Limpeza
-- [ ] Usinagem
-- [ ] Montagem
-- [ ] Pintura
-- [ ] Testes — condicionado à validação final
-- [ ] Qualidade — condicionado à validação final
-- [ ] Finalizados
+- 120 orçamentos `Aguardando Envio`;
+- 310 orçamentos `Aguardando Aprovação`;
+- 69 orçamentos `Aprovados`;
+- 16 orçamentos `Não Aprovados`.
 
-Cada OS deve possuir:
+Também foram observados:
 
-- setor atual;
-- histórico de setores;
-- responsável;
-- data/hora de entrada;
-- data/hora de saída;
-- status do setor;
+- referências vinculadas a OS, como OS 2026593, OS 20265588 e OS 20265587;
+- cliente;
+- vendedor;
+- equipamento;
 - observação;
-- bloqueios aplicáveis.
+- situação do orçamento;
+- data desde a qual está pendente;
+- valor;
+- indicação de agendamento.
 
-### 1.2 Apontamento
+Orçamento é uso real e prioritário. Não é apenas um menu disponível.
 
-- [ ] Iniciar serviço.
-- [ ] Pausar/retomar, se necessário.
-- [ ] Finalizar serviço.
-- [ ] Técnico responsável.
-- [ ] Início.
-- [ ] Fim.
-- [ ] Horas.
-- [ ] Tempo no setor.
-- [ ] Histórico de apontamentos.
+### CRM / funil
 
-### 1.3 Evidências
+**Status: NÃO USA / sem evidência**
 
-- [ ] Upload real de fotos.
-- [ ] Upload real de arquivos.
-- [ ] Associação à OS.
-- [ ] Associação à etapa/componente.
-- [ ] Metadados de autoria/data.
-- [ ] Consulta histórica.
+Menu: `Comercial → CRM`
 
-### 1.4 Laudo
+Evidência:
 
-- [ ] Gerar laudo real a partir da OS.
-- [ ] Incluir inspeção, diagnóstico, medições, decisões, peças, serviços e evidências.
-- [ ] Registrar versão/data/responsável.
-- [ ] Exportação adequada para uso operacional.
+- a tela informa `Nenhum funil cadastrado`.
 
-### Critério de saída da Fase 1
+Não há funil, oportunidade ou pipeline comercial registrado na tela inspecionada.
 
-Uma OS real deve poder atravessar o fluxo produtivo principal sem exigir a Lizy para registrar execução técnica, setor, tempo, evidências, validações e laudo.
+### Dashboard comercial
 
----
+**Status: NÃO USA / sem evidência**
 
-## Fase 2 — Peças, estoque e suprimentos
+Menu: `Comercial → Dashboard`
 
-**Objetivo:** cobrir a dependência operacional mais forte da OS fora do fluxo técnico.
+Evidência:
 
-### Fonte de verdade na Lizy
+- a tela possui cartões e relatórios disponíveis, mas não apresentou métricas preenchidas de clientes, ticket ou vendas durante a inspeção.
 
-Nesta fase existem duas fontes: a **OS**, onde nasce a necessidade, e os módulos de **Suprimentos/Logística**, onde ela é atendida.
+O dashboard existir não é evidência de uso operacional.
 
-| Capacidade | Sidebar Lizy | Rota observada | O que comparar no RKM |
+## 2.2 Suprimentos
+
+### Compras
+
+**Status: USA**
+
+Menu: `Suprimentos → Compras`
+
+Volumes exibidos:
+
+- 22 requisições de compra;
+- 4 cotações;
+- 19 compras.
+
+Evidências de operação:
+
+- RC83 criada em 04/09/2026 às 14:37;
+- requisições com status `Aguardando Suprimentos`;
+- itens pendentes;
+- prioridades `Urgente` e `Alta`;
+- observações como `Para Uso na Oficina`, `Serviço`, `Uso Diário Oficina`, `Uso de Oficina` e `Uso Interno no Compressor`.
+
+Compras é claramente parte da operação real e possui ligação explícita com necessidades da oficina.
+
+### Estoque
+
+**Status: USA**
+
+Menu: `Suprimentos → Estoque`
+
+Evidências atuais:
+
+- 765 itens em estoque;
+- 0 itens abaixo do estoque;
+- 765 itens classificados como nível `ALTO`;
+- 0 itens no nível `IDEAL`;
+- 0 itens no nível `BAIXO`;
+- 125 itens no nível `ZERO`.
+
+A tela também possui a área `Requisições Estoque`, com ação para criar nova requisição.
+
+### Requisições de estoque
+
+**Status: USA**
+
+Evidência concreta: 174 requisições. Primeiras 10 observadas:
+
+| Data | Código | Referência | Status |
 |---|---|---|---|
-| Peças necessárias da OS | abrir OS → aba `Peças Ordem` | `/FilaAnalise/EdicaoOrdem/6979/0` | Produto/peça, quantidade, unidade, custo, venda, recebido, NCM, IPI/ICMS e observação |
-| Estoque operacional | `Suprimentos → Estoque` | `/suprimentos/estoque` | Saldo, níveis, requisições, movimentações e geração de requisição de compra |
-| Compras | `Suprimentos → Compras` | `/suprimentos/compras` | Requisição, cotação, compra/pedido, fornecedor, aprovação e chegada |
-| Recebimento | `Logística → Recebimento` | `/logistica/recebimento` | Chegada de compra, entrada por nota/XML e manifestação de não conformidade |
-| Produtos | `Base de Dados → Cadastros → Produtos` | `/cadastros/produtos` | Cadastro de produto, kits, grupos, preço e dados que alimentam peças/estoque |
-| Fornecedores | `Base de Dados → Cadastros → Fornecedores` | `/cadastros/fornecedores` | Cadastro mínimo necessário para compras e serviços externos |
-| Locais de estoque | `Base de Dados → Cadastros → Estoques` | `/cadastros/estoque` | Estrutura dos estoques físicos (`01-Geral`, `02-Uso e Consumo`, `03-Ferramentas`) |
+| 17/09/2026 15:07 | RE173 | Requisição OS 2026458 | Pendente |
+| 17/09/2026 08:11 | RE172 | Requisição OS 20265586 | Pendente |
+| 14/09/2026 13:10 | RE171 | Requisição OS 2026557 | Pendente |
+| 14/09/2026 13:10 | RE170 | Requisição OS 2026556 | Pendente |
+| 14/09/2026 13:10 | RE169 | Requisição OS 2026392 | Pendente |
+| 14/09/2026 13:10 | RE168 | Requisição OS 2026393 | Pendente |
+| 14/09/2026 13:10 | RE167 | Requisição OS 2026391 | Pendente |
+| 14/09/2026 10:51 | RE166 | Requisição OS 2026522 | Pendente |
+| 14/09/2026 10:50 | RE165 | Requisição OS 2026523 | Pendente |
+| 14/09/2026 10:50 | RE164 | Requisição OS 2026524 | Pendente |
 
-> **Tela principal para Alt+Tab nesta fase:** OS na aba `Peças Ordem` de um lado e `Suprimentos → Estoque` do outro. A implementação deve ligar esses dois mundos.
+Isso comprova ligação direta entre estoque e OS da oficina.
 
-### 2.1 Peças da OS
+## 2.3 Logística
 
-- [ ] Produto/peça.
-- [ ] Quantidade.
-- [ ] Unidade.
-- [ ] Custo.
-- [ ] Venda.
-- [ ] Recebido/disponível.
-- [ ] Observação.
-- [ ] Relação com serviço/componente da OS.
+### Recebimento
 
-### 2.2 Estoque
+**Status: USA**
 
-- [ ] Cadastro de produtos.
-- [ ] Locais de estoque.
-- [ ] Saldo.
-- [ ] Estoque mínimo.
-- [ ] Movimentações.
-- [ ] Requisição de material.
-- [ ] Vínculo OS ↔ requisição.
+Menu: `Logística → Recebimento`
 
-### 2.3 Compras
+Evidências:
 
-- [ ] Requisição de compra.
-- [ ] Cotação.
-- [ ] Fornecedor.
-- [ ] Pedido de compra.
-- [ ] Status.
-- [ ] Chegada/recebimento.
-- [ ] Vínculo com necessidade originada na OS.
+- notas emitidas de fornecedores listadas;
+- fornecedores reais identificados;
+- número da nota;
+- chave de acesso;
+- natureza da operação;
+- valor;
+- data de emissão;
+- status `Não Baixada`.
 
-### 2.4 Recebimento
+Foram observadas notas como 23656, 67629, 30895, 15540, 5649, 11892, 95106, 23638 e 30816.
 
-- [ ] Registrar chegada de compra.
-- [ ] Dar entrada no estoque.
-- [ ] Registrar divergência/não conformidade quando necessário.
+A tela oferece `Entrada Compra` e `Gerar XML das Notas Fornecedor`, indicando uso operacional de recebimento e entrada fiscal.
 
-### Critério de saída da Fase 2
+### Estoque terceiro
 
-Uma peça necessária à OS deve poder nascer como necessidade técnica, ser atendida pelo estoque ou virar compra e retornar à OS como disponível/recebida.
+**Status: USA**
 
----
+Menu: `Logística → Estoque Terceiro`
 
-## Fase 3 — Orçamentos
+Evidências:
 
-**Objetivo:** substituir o fluxo comercial que possui evidência clara de uso, sem reconstruir CRM/prospecção não utilizados.
+- registros de nota de entrada;
+- cliente associado;
+- chave de acesso;
+- situação `Ag. Devolução`;
+- datas de devolução.
 
-### Fonte de verdade na Lizy
+Foram observados registros para Mizu Barauna, Teclav, Siemens Gamesa, Gerdau Caucaia e outros clientes.
 
-| Capacidade | Sidebar Lizy | Rota observada | O que comparar no RKM |
-|---|---|---|---|
-| Lista e workflow de orçamento | `Comercial → Orçamentos` | `/comercial/orcamentos` | Referência, cliente, valor, versões e estados do orçamento |
-| Serviços orçados da OS | abrir OS → `Serviços Orçamento da Ordem` | `/FilaAnalise/EdicaoOrdem/6979/0` | Quantidade, descrição, setor, valor unitário/total, prazo, custo/venda por hora, técnico e componente |
-| Peças que entram no orçamento | abrir OS → `Peças Ordem` | `/FilaAnalise/EdicaoOrdem/6979/0` | Peça, quantidade, custo, venda, impostos e descrição para orçamento |
-| Cliente | `Base de Dados → Cadastros → Clientes` | `/cadastros/clientes` | Dados comerciais necessários ao orçamento |
+### Expedição
 
-Estados observados na Lizy que devem servir de referência:
+**Status: SEM REGISTRO ATUAL**
 
-- `Aguardando Envio`
-- `Aguardando Aprovação`
-- `Aprovados`
-- `Não Aprovados`
-- `Finalizados`
-- `Consolidados`
+Menu: `Logística → Expedição`
 
-> **Tela principal para Alt+Tab nesta fase:** `Comercial → Orçamentos`. Para composição detalhada, mantenha também uma OS aberta nas abas `Serviços Orçamento da Ordem` e `Peças Ordem`.
+Evidência:
 
-### Entregas
+- a tela permaneceu em `Carregando registros...` e não mostrou itens operacionais.
 
-- [ ] Criar orçamento.
-- [ ] Cliente.
-- [ ] Referência/OS.
-- [ ] Serviços.
-- [ ] Peças.
-- [ ] Quantidades.
-- [ ] Valores.
-- [ ] Versões.
-- [ ] Status:
-  - aguardando envio;
-  - aguardando aprovação;
-  - aprovado;
-  - não aprovado;
-  - finalizado/consolidado quando aplicável.
-- [ ] Histórico de alterações/status.
+Não há base suficiente para afirmar uso ou não uso; o estado correto é sem registro atual.
 
-### Fora desta fase
+## 2.4 Financeiro e fiscal
 
-- CRM/funil.
-- Prospecção.
-- Automação comercial genérica.
+### Visão financeira e lançamentos
 
-### Critério de saída
+**Status: USA**
 
-A RKM deve conseguir montar e acompanhar o orçamento associado ao serviço sem usar o módulo de Orçamentos da Lizy.
+Menus:
 
----
+- `Financeiro → Visão Geral`;
+- `Financeiro → Lançamentos`.
 
-## Fase 4 — Financeiro, faturamento e fiscal
+Evidências atuais:
 
-**Objetivo:** necessário **somente se o objetivo for abandonar a Lizy por completo**. A auditoria mostra que esses módulos são usados e, portanto, não podem ser ignorados em uma migração total.
+- Total de Entradas: **R$ 404.267,43**;
+- Total de Saídas: **R$ 457.890,57**;
+- Saldo Atual: **R$ 189.972,27**;
+- Saldo em 31/08/2026: **R$ 75.908,06**;
+- Previsão em 30/09/2026: **R$ 27.433,00**;
+- lançamentos com NF-e, fornecedor, categoria, conta bancária, parcela, boleto e status pago.
 
-### Fonte de verdade na Lizy
+Há também relatórios de contas a pagar/receber, contas pagas/recebidas, fluxo de caixa, faturamento, comissão e lançamentos.
 
-Não use Cobrança/Boletos ou Conciliação como referência obrigatória de paridade neste momento: ambas estavam sem evidência de uso. Foque somente no que apareceu ativo.
+Financeiro é uso real. Deve entrar no escopo se a intenção for substituir a Lizy por completo.
 
-| Capacidade | Sidebar Lizy | Rota observada | O que comparar no RKM |
-|---|---|---|---|
-| Visão financeira | `Financeiro → Visão Geral` | `/financeiro/visao-geral` | Receitas, despesas, saldo, filtros de período e relatórios utilizados |
-| Lançamentos | `Financeiro → Lançamentos` | `/financeiro/lancamentos-v2` | A pagar/a receber, emissão, vencimento, valor, status, conta e categoria |
-| Faturamento de OS | `Financeiro → Faturamento` | `/financeiro/faturamento-v2` | OS liberadas, pronta/bloqueada para faturar, cliente, referência e emissão |
-| Documentos fiscais | `Financeiro → Faturamento → Faturados/Notas Fiscais` | `/financeiro/notas-fiscais-v2` | NF-e/NFS-e, status, XML, protocolo, autorização/rejeição/cancelamento |
-| Contas bancárias | `Base de Dados → Cadastros → Contas Bancárias` | `/cadastros/contas-bancarias` | Estrutura das contas usadas pelos lançamentos |
-| Categorias financeiras | `Base de Dados → Cadastros → Categorias Financeiras` | `/cadastros/categorias-financeiras` | Classificação das receitas/despesas |
+### Faturamento
 
-> **Tela principal para Alt+Tab nesta fase:** `Financeiro → Lançamentos` para o financeiro operacional e `Financeiro → Faturamento` para a transição OS → faturamento.
+**Status: USA**
 
-### 4.1 Financeiro operacional
+Menu: `Financeiro → Faturamento`
 
-- [ ] Contas a pagar.
-- [ ] Contas a receber.
-- [ ] Emissão/vencimento/pagamento.
-- [ ] Categorias financeiras.
-- [ ] Contas bancárias.
-- [ ] Status.
-- [ ] Visão de receitas/despesas.
+Evidências:
 
-### 4.2 Faturamento
+- registros de OS e OV;
+- clientes;
+- datas de emissão e vencimento;
+- registros em atraso;
+- situação `Pronta p/ faturar`;
+- ação `Emitir Nota`.
 
-- [ ] OS liberada para faturamento.
-- [ ] Bloqueio/liberação.
-- [ ] Cliente.
-- [ ] Valor.
-- [ ] Referência da OS/orçamento.
-- [ ] Status de faturamento.
+Foram observados, entre outros, OS 14587, OS 30303120, OV 2, OV 4, OV 20, OV 31, OV 39, OV 40 e OV 28.
 
-### 4.3 Fiscal
+### Documentos fiscais
 
-Decisão arquitetural obrigatória:
+**Status: USA**
 
-- [ ] implementar emissão fiscal no RKM; **ou**
-- [ ] integrar com um provedor/sistema fiscal externo.
-
-Cobertura observada na Lizy:
+Evidências nas telas de Recebimento e Faturamento:
 
 - NF-e;
-- NFS-e;
-- documentos/protocolos;
-- XML;
-- estados de autorização/rejeição/cancelamento.
+- número da nota;
+- chave de acesso;
+- XML/geração de XML;
+- emissão de nota;
+- notas de fornecedores;
+- estados de baixa e pendência.
 
-### Critério de saída
+Documentos fiscais fazem parte da operação observada, mesmo que a emissão própria ainda precise ser detalhada em uma etapa específica.
 
-Se a Lizy for cancelada totalmente, nenhuma rotina financeira/fiscal ativa pode depender dela.
+### Cobrança / boletos
 
----
+**Status: NÃO USA / sem evidência atual**
 
-# 7. Validação cirúrgica final — antes de congelar o roadmap
+Menu: `Financeiro → Cobrança`
 
-Vale uma última inspeção, mas **somente nos pontos que podem alterar o roadmap**.
+Evidências:
 
-Não refazer o crawl geral.
+- 0 boletos no período;
+- valor total R$ 0,00;
+- 0 boletos vencidos;
+- 0 boletos com falha;
+- `0 of 0` itens listados.
 
-## Perguntas finais
+Não há evidência atual de operação de cobrança ou emissão de boletos.
 
-### Testes e Qualidade
+### Conciliação bancária
 
-- [ ] Abrir OS finalizadas recentes e verificar se passaram por Testes.
-- [ ] Verificar se houve registro/visto real de Qualidade.
-- [ ] Estimar frequência: obrigatório, ocasional ou não usado.
+**Status: SEM REGISTRO ATUAL**
 
-### Fotos, arquivos e laudos
+Menu: `Financeiro → Conciliação`
 
-Em uma pequena amostra de OS recentes/finalizadas:
+Evidência:
 
-- [ ] Fotos realmente foram anexadas?
-- [ ] Arquivos realmente foram anexados?
-- [ ] Relatório/laudo foi gerado?
-- [ ] Esses itens são rotina ou apenas capacidade disponível?
+- `Nenhum extrato carregado`;
+- nenhum arquivo OFX ou PDF importado na tela;
+- o fluxo aparece como disponível, mas depende de importação de extrato.
 
-### Apontamento
+Não deve ser chamada de usada só porque há uma tela para ela.
 
-Em OS recentes/finalizadas:
+## 2.5 Outros módulos da sidebar
 
-- [ ] Início/fim estão preenchidos?
-- [ ] Horas são usadas de verdade?
-- [ ] Tempo por setor é usado?
-- [ ] Técnico responsável por serviço é preenchido?
+### Agenda
 
-### Peças / estoque
+**Status: SEM REGISTRO ATUAL**
 
-Em OS recentes:
+Menu: `Agenda`
 
-- [ ] Peças da OS estão efetivamente preenchidas?
-- [ ] Há vínculo observável entre OS e requisição de estoque?
-- [ ] O status “recebido” da peça é usado?
+O calendário de setembro/2026 foi exibido, mas não havia evento operacional identificável na inspeção.
 
-### Serviço externo
+### Atendimento Externo
 
-- [ ] Os três registros representam fluxo atual ou histórico?
-- [ ] Há OS recentes dependendo de fornecedor externo?
+**Status: SEM REGISTRO ATUAL**
 
-### Financeiro/fiscal
+Menu: `Atendimento Externo`
 
-Não é necessário aprofundar funcionalidade. Apenas confirmar com o cliente:
+A tela possui as seções `Atendimentos Ativos` e `Atendimentos Finalizados`, mas não apresentou registros carregados.
 
-- [ ] A intenção futura é cancelar a Lizy inteira?
-- [ ] Se sim, financeiro/faturamento/fiscal entram obrigatoriamente no roadmap.
-- [ ] Se não, definir qual sistema continuará sendo dono desses dados.
+### Locações
 
----
+**Status: SEM REGISTRO ATUAL**
 
-# 8. Definição de “paridade com a Lizy”
+Menu: `Ativos → Locações`
 
-A paridade **não** será medida por quantidade de menus.
+Evidências:
 
-O RKM atinge o objetivo quando:
+- Ativos: 0;
+- Finalizados: 0;
+- `Nenhum Registro Encontrado`;
+- `0 of 0` itens.
 
-1. todas as capacidades da Lizy com **uso real confirmado pela RKM** possuem equivalente no RKM ou integração explicitamente definida;
-2. o fluxo operacional pode ocorrer sem depender de uma funcionalidade ativa da Lizy;
-3. dados e histórico necessários permanecem persistidos;
-4. módulos não utilizados da Lizy não são reconstruídos apenas para aumentar cobertura nominal;
-5. os diferenciais técnicos atuais do RKM — IT001/IT002, regras críticas, bloqueios e validações — são preservados.
+### Ativos imobilizados / ferramentas
 
-## Métrica sugerida
+**Status: SEM REGISTRO ATUAL**
 
-```text
-Paridade de uso =
-capacidades ativas cobertas pelo RKM
-────────────────────────────────────
-capacidades ativas utilizadas na Lizy
-```
+Menu: `Ativos → Imobilizados`
 
-A meta inicial é **100% de paridade sobre o uso real**, e não 100% de paridade sobre o catálogo da Lizy.
+Evidência:
 
----
+- tela de Movimentações sem registros;
+- `Nenhum Registro Encontrado`;
+- `0 of 0` itens.
 
-# 9. Ordem recomendada
+### Agentes de IA
 
-```text
-Fase 0 — Persistência e OS real
-           ↓
-Fase 1 — Serviços / setores / apontamento / evidências / laudo
-           ↓
-Fase 2 — Peças / estoque / compras / recebimento
-           ↓
-Fase 3 — Orçamentos
-           ↓
-Fase 4 — Financeiro / faturamento / fiscal
-           somente se a saída total da Lizy for objetivo
-```
+**Status: NÃO USA / indisponível para o tenant observado**
 
-Essa ordem protege o diferencial do RKM e fecha primeiro os gaps que impedem substituir a Lizy no dia a dia da operação técnica.
+Na sidebar, Financeiro, Comercial e Engenheiro aparecem bloqueados na área `Agentes de IA`, sem operação acessível observada.
 
 ---
 
-# 10. Fora do roadmap de paridade neste momento
+# 3. Cadastros que sustentam os dois escopos
 
-Até surgir evidência contrária:
+Os cadastros não são classificados como oficina ou não-oficina isoladamente; eles servem de base para os dois lados.
 
-- CRM/funil;
-- prospecção;
-- boletos/remessa;
-- conciliação bancária;
-- atendimento externo;
-- locações;
-- ativos imobilizados;
-- centro de custo;
-- agentes de IA;
-- agenda genérica.
+| Cadastro | Estado observado |
+|---|---:|
+| Clientes | 168 clientes |
+| Fornecedores | 341 fornecedores |
+| Produtos | 890 produtos |
+| Usuários | 12 usuários |
+| Estoques físicos | 3 locais |
+| Contas bancárias | 7 contas |
+| Categorias financeiras | 146 categorias |
+| Centro de custo | Nenhum cadastrado |
+| Ativos imobilizados | Nenhum cadastrado |
+| Transportadoras | 2 transportadoras |
 
-Esses itens podem ser revisitados no futuro, mas **não contam como gap para o objetivo atual de paridade de uso real**.
+---
+
+# 4. Resumo final
+
+## Usa com evidência atual
+
+### OFICINA
+
+- Desmontagem e análise.
+- Ordens de Serviço.
+- PCP.
+- Limpeza, Usinagem, Montagem, Testes, Pintura e Qualidade como etapas registradas no PCP.
+- Finalização de OS.
+
+### NÃO-OFICINA
+
+- Orçamentos.
+- Compras, cotações e requisições de compra.
+- Estoque.
+- Recebimento.
+- Estoque terceiro.
+- Financeiro e lançamentos.
+- Faturamento.
+- Documentos fiscais.
+
+## Não usa / não há evidência de uso
+
+- CRM/funil.
+- Dashboard comercial como operação recorrente.
+- Cobrança e boletos.
+- Agentes de IA.
+
+## Sem registro atual — não concluir que nunca usa
+
+- Serviço Externo.
+- Apontamento de horas e tempo por setor.
+- Peças da OS.
+- Fotos, arquivos e laudos efetivamente anexados.
+- Requisições de estoque.
+- Expedição.
+- Conciliação bancária.
+- Agenda.
+- Atendimento Externo.
+- Locações.
+- Ativos imobilizados e movimentação de ferramentas.
+
+## 5. Evidências concretas dos cadastros-base
+
+As tabelas abaixo substituem a leitura genérica de “há X cadastros” por exemplos do que efetivamente estava cadastrado.
+
+### Clientes — 168 ativos, 0 inativos
+
+| Código | Cliente | CNPJ/CPF |
+|---:|---|---|
+| 3 | Rkm Hidraulica | 42.325.935/0001-98 |
+| 4 | As Hidropneumatica | 58.155.687/0001-14 |
+| 5 | Unidade Joao Camara | 69.119.386/0037-62 |
+| 6 | Lizy | 27.473.744/0001-80 |
+| 7 | Apodi Caucaia | 10.260.249/0002-70 |
+| 8 | Mossoro Plasticos | 09.403.980/0001-48 |
+| 9 | Siemens Gamesa Ba | 69.119.386/0011-23 |
+| 10 | Siemens Gamesa Trairi | 69.119.386/0070-83 |
+| 11 | Rafael de Sousa Nunes | 050.882.863-50 |
+| 12 | Magnesium | 07.207.806/0004-47 |
+
+### Fornecedores — 341
+
+| Código | Fornecedor | CNPJ |
+|---:|---|---|
+| 1 | Comercial Abrantes Ltda | 13.614.797/0002-40 |
+| 2 | Marvitubos | 56.287.725/0006-71 |
+| 3 | Jrg Saturno | 09.621.419/0001-35 |
+| 4 | Filtrec Industria e Comercio de Filtros | 31.080.160/0001-11 |
+| 5 | Bemax Servicos | 19.046.437/0001-94 |
+| 6 | Btr Hidropneumatica | 41.092.712/0001-65 |
+| 7 | Br Hidraulica | 12.196.927/0002-09 |
+| 8 | So Vedacoes Centro | 73.728.297/0001-80 |
+| 9 | Th Vedacoes | 22.255.463/0001-37 |
+| 10 | Difertec | 05.298.238/0001-69 |
+
+### Produtos — 889
+
+| Código | Produto | Custo | Venda | Estoque físico | Unidade |
+|---:|---|---:|---:|---:|---|
+| 0 | Manometro Diametro 63mm Conexão 1/4 Vertical | R$ 1.500,00 | R$ 3.000,00 | 39,00 | — |
+| 1 | Manometro 700 Bar 1/4 | R$ 216,00 | R$ 312,80 | 8,48 | — |
+| 2 | Contador de Particulas para Óleo | R$ 27,00 | R$ 54,00 | 1,26 | UN |
+| 3 | Sensor para Contador de Particulas Fmss01s0 | R$ 0,00 | R$ 0,00 | 0,00 | UN |
+| 4 | Fuh015mg0bs0 — Sistema de Filtragem Movel 15 L/min | R$ 66.000,00 | R$ 0,00 | 1,00 | UN |
+| 5 | Fmcs3 — Maleta de Controle Contaminacao e Umidade | R$ 48.000,00 | R$ 96.000,00 | 7,00 | UN |
+| 6 | Oleo Hidraulico 68 | R$ 360,00 | R$ 0,00 | 9,00 | BD |
+| 7 | Adaptador Cast Reto Macho 3/8 | R$ 47,00 | R$ 0,00 | 23,00 | UN |
+| 8 | Macho Manual M16 X 2 | R$ 511,00 | R$ 0,00 | 2,00 | CJ |
+| 9 | Filtro Sucção | R$ 142,00 | R$ 0,00 | 1,00 | UN |
+
+### Usuários — 12 visíveis
+
+| Usuário | E-mail |
+|---|---|
+| Rafael Nunes | rafael.nunes@rkmhidro.com.br |
+| Débora Guimarães | financeiro@rkmhidro.com.br |
+| Danilo Compras | compras@rkmhidro.com.br |
+| Paulo Roberto da Silva | comercial@rkmhidro.com.br |
+| Samila Rodrigues | srconsultoriaoficial@gmail.com |
+| Rayssa de Sousa Lima | fiscal@rkmhidro.com.br |
+| Jefferson Nunes | pcp@rkmhidro.com.br |
+| Ricardo Caracas | ricardo.caracas@rkmhidro.com.br |
+| Raimundo Nonato | manufatura@rkmhidro.com.br |
+| Carlos Gurgel | gurgel@rkmhidro.com.br |
+| Jonathan Carneiro | vendas1@rkmhidro.com.br |
+| William Rodney | vendas2@rkmhidro.com.br |
+
+### Contas, estoque, categorias e demais bases
+
+| Cadastro | Volume/estado | Exemplos concretos |
+|---|---:|---|
+| Locais de estoque | 3 | 01 - Geral; 02 - Uso e Consumo; 03 - Ferramentas |
+| Contas bancárias | 7 | Nubank Rafael (-R$ 1.872,34); Nubank Rkm (-R$ 8.874,96); Banco Santander (-R$ 5.885,14); Caixa Rkm (R$ 5,78); Cartao de Credito Nubank (-R$ 225,00); Bradesco (R$ 207.517,25); Cartao de Credito Bradesco (-R$ 693,32) |
+| Categorias financeiras | 146 | Receita Bruta; Outras Receitas Operacionais; Receitas Financeiras; Aporte Dos Sócios; Devolução de Mercadoria; Importação; Impostos Sobre a Receita; Custo Das Mercadorias; Custo Dos Produtos; Custo Dos Serviços |
+| Centro de custo | 0 | Nenhum Registro Encontrado |
+| Ativos imobilizados | 0 | Nenhum Registro Encontrado |
+| Transportadoras | 2 | Btu - Braspress - Itj; Rkm Hidraulica |
+
+## 6. Tabelas de amostras operacionais
+
+Esta seção concentra os exemplos concretos dos módulos operacionais, para que o estado atual possa ser conferido sem depender apenas dos totais.
+
+### Oficina — Desmontagem
+
+| OS | Cliente | Status |
+|---|---|---|
+| 20265592 | VLI PECEM | Aguardando Inspeções |
+| 20265591 | RKM HIDRAULICA | Aguardando Inspeções |
+| 20265590 | PLANALTO INDUSTRIA | Aguardando Inspeções |
+| 20265589 | PLANALTO INDUSTRIA | Aguardando Inspeções |
+| OS-DEBUG-001 | RKM HIDRAULICA | Aguardando Inspeções |
+| 20265584 | RKM HIDRAULICA | Aguardando Inspeções |
+| 2026465 | RES ENERGY | Aguardando Inspeções |
+| 2026445 | RKM HIDRAULICA | Aguardando Inspeções |
+| 2026390 | GERDAU CAUCAIA | Aguardando Inspeções |
+| 2026388 | GERDAU CAUCAIA | Aguardando Inspeções |
+
+### Oficina — PCP
+
+| OS | Cliente | Equipamento | Estado resumido |
+|---|---|---|---|
+| 2026458 | Apodi Caucaia | Bomba manual | Limpeza em andamento; Montagem iniciar |
+| 2026522 | Ecofor Ambiental G2 | Cilindro transportador | Limpeza/Usinagem/Montagem/Teste/Pintura finalizados; Qualidade em andamento |
+| 2026524 | Ecofor Ambiental G2 | Cilindro compactador | Limpeza/Usinagem/Montagem/Teste/Pintura finalizados; Qualidade em andamento |
+| 2026525 | Ecofor Ambiental G2 | Cilindro compactador | Limpeza/Usinagem/Montagem/Teste/Pintura finalizados; Qualidade em andamento |
+| 2026526 | Ecofor Ambiental G2 | Cilindro compactador | Limpeza/Usinagem/Montagem/Teste/Pintura finalizados; Qualidade em andamento |
+| 2026527 | Ecofor Ambiental G2 | Cilindro compactador | Limpeza/Usinagem/Montagem/Teste/Pintura finalizados; Qualidade em andamento |
+| 2026530 | Ecofor Ambiental G2 | Cilindro transportador | Limpeza/Usinagem/Montagem/Teste/Pintura finalizados; Qualidade em andamento |
+| 2026531 | Ecofor Ambiental G2 | Cilindro transportador | Todas as etapas: Não Possui Serviço |
+| 2026534 | Ecofor Ambiental G2 | Caixa comando hidráulico | Limpeza/Montagem/Teste/Pintura finalizados; Qualidade em andamento |
+| 2026551 | Ecofor Ambiental G2 | Cilindro estribo | Todas as etapas: Não Possui Serviço |
+
+### Oficina — Finalizados
+
+| OS | Cliente | Data |
+|---|---|---|
+| 20265586 | Bemax Comercio Atacadista | 22/09/2026 |
+| 20265579 | Ecofor Ambiental S/A | 10/09/2026 |
+| 20265575 | Echoenergia | 14/09/2026 |
+| 20265574 | Echoenergia | 14/09/2026 |
+| 20265573 | Echoenergia | 14/09/2026 |
+| 2026557 | Gerdau Aços Longos | 16/09/2026 |
+| 2026556 | Gerdau Aços Longos | 22/09/2026 |
+| 2026543 | Ecofor Ambiental S/A | 14/09/2026 |
+| 2026537 | RES Energy Services | 03/09/2026 |
+| 2026535 | Gerdau Aços Longos | 03/09/2026 |
+
+### Comercial — Orçamentos
+
+| OS | Cliente | Equipamento | Valor |
+|---|---|---|---:|
+| 2026593 | Mizu Barauna | Bomba — N.I — N.I | R$ 0,00 |
+| 20265588 | Gerdau Caucaia | Cilindro guia amarradeira — Parker | R$ 0,00 |
+| 20265587 | Can Pack Brasil | Bomba hidráulica para prensa — Bovenau | R$ 0,00 |
+| 20265580 | Artur Arruda | Comando hidráulico | R$ 0,00 |
+| 20265585 | Gerdau Caucaia | Bomba hidráulica dupla | R$ 0,00 |
+| 20265583 | RKM Hidraulica | Bomba de pistão | R$ 0,00 |
+| 20265581 | Planalto Industria | Telescópio | R$ 2.350,88 |
+| 20265582 | Planalto Industria | Cilindro hidráulico | R$ 2.350,88 |
+| 2026562 | Ecofor Ambiental G2 | Cilindro compactador G2 19 | R$ 0,00 |
+| 2026358 | RKM Hidraulica | RKM — RKM — RKM | R$ 0,00 |
+
+### Suprimentos — Compras
+
+| Código | Data | Descrição/observação | Prioridade |
+|---|---|---|---|
+| RC83 | 04/09/2026 | sem descrição | — |
+| RC82 | 31/08/2026 | Metalo 50x50; Para Uso na Oficina | Urgente |
+| RC81 | 28/08/2026 | Serviço | Urgente |
+| RC80 | 14/08/2026 | sem descrição | — |
+| RC79 | 10/08/2026 | sem descrição | — |
+| RC78 | 06/08/2026 | sem descrição | — |
+| RC77 | 28/07/2026 | Uso Diário Oficina | — |
+| RC76 | 20/07/2026 | Uso de Oficina | Urgente |
+| RC75 | 13/07/2026 | uso oficina | Urgente |
+| RC74 | 09/07/2026 | uso de oficina; compressor | Alta |
+
+### Logística — Recebimento
+
+| Fornecedor | NF | Data | Valor | Status |
+|---|---:|---|---:|---|
+| Bemax | 23656 | 17/09/2026 | R$ 3.783,99 | Não Baixada |
+| Recautec Matriz | 67629 | 15/09/2026 | R$ 36,30 | Não Baixada |
+| BTR | 30895 | 15/09/2026 | R$ 247,21 | Não Baixada |
+| SV Comercio | 15540 | 15/09/2026 | R$ 432,51 | Não Baixada |
+| Rolpaf Ceará | 5649 | 14/09/2026 | R$ 205,00 | Não Baixada |
+| TH Vedações | 11892 | 14/09/2026 | R$ 4.026,00 | Não Baixada |
+| Petral | 95106 | 14/09/2026 | R$ 473,46 | Não Baixada |
+| Bemax | 23638 | 11/09/2026 | R$ 184,30 | Não Baixada |
+| BTR | 30816 | 11/09/2026 | R$ 184,11 | Não Baixada |
+| Difertec | 13727 | 11/09/2026 | R$ 1.645,00 | Não Baixada |
+
+### Logística — Estoque terceiro
+
+| Nota | Cliente | Situação | Devolução |
+|---:|---|---|---|
+| 754858 | Mizu Barauna | Ag. Devolução | 15/04/2026 |
+| 12.997 | Teclav | Ag. Devolução | 19/02/2026 |
+| 110.357 | Siemens Gamesa BA | Ag. Devolução | 19/02/2026 |
+| 412 | Siemens Gamesa Trairi | Ag. Devolução | 26/02/2026 |
+| 44389 | Gerdau Caucaia | Ag. Devolução | 06/05/2026 |
+| 114717 | Siemens Gamesa BA | Ag. Devolução | 30/04/2026 |
+
+### Financeiro — Lançamentos
+
+| Tipo/documento | Contraparte | Categoria/descrição | Valor | Situação |
+|---|---|---|---:|---|
+| NF-E 122024 | Marvitubos | Uso e Consumo | R$ 1.111,10 | Pago |
+| NF-E 123003 | Marvitubos | Uso e Consumo | R$ 1.320,17 | Pago |
+| SEM NF | Banco Santander | Seguro Santander Auto | R$ 303,60 | Em atraso |
+| NF-E 224 | Francisco Fábio | Nota de Serviço | R$ 1.700,00 | Pago |
+| NF-E 25 | Unidade João Câmara | Recuperação de Cilindro Hidráulico | R$ 4.740,00 | Pago |
+| NF-E 132 | Gerdau Caucaia | Pedido de compra 4524016741 | R$ 953,50 | Pago |
+| SEM NF | Bradesco Est Unif | Previdência | R$ 127,91 | Pago |
+| NFS-E 195 | Gerdau Caucaia | Nota Serviço | R$ 9.535,02 | Pago |
+| NFS-E 194 | Gerdau Caucaia | Nota Serviço | R$ 7.714,33 | Pago |
+| SEM NF | Nobre Variedades | Aluguel | R$ 5.000,00 | Pago |
+
+### Financeiro — Faturamento
+
+| Registro | Cliente | Atraso | Situação |
+|---|---|---:|---|
+| OS 14587 | Teste Razão Social | 366 dias | Pronta p/ faturar |
+| OS 30303120 | Siemens Gamesa BA | 224 dias | Pronta p/ faturar |
+| OV 2 | RKM Hidraulica | 213 dias | Pronta p/ faturar |
+| OV 4 | Cordeiro Locação | 205 dias | Pronta p/ faturar |
+| OV 20 | Mec Esa | 205 dias | Pronta p/ faturar |
+| OV 31 | Interbelle | 204 dias | Pronta p/ faturar |
+| OV 39 | Siemens Gamesa BA | 203 dias | Pronta p/ faturar |
+| OV 40 | Siemens Gamesa BA | 203 dias | Pronta p/ faturar |
+| OV 28 | ICT — Indústria | 199 dias | Pronta p/ faturar |
+
+### Telas sem registros concretos
+
+| Módulo | Evidência observada |
+|---|---|
+| CRM | Nenhum funil cadastrado |
+| Dashboard comercial | Nenhuma métrica preenchida observada |
+| Serviço Externo | 0 registros / nenhum registro encontrado |
+| Expedição | Ficou em `Carregando registros...` |
+| Cobrança | 0 boletos; R$ 0,00; `0 of 0` |
+| Conciliação | Nenhum extrato carregado |
+| Agenda | Nenhuma atividade identificável no calendário |
+| Atendimento Externo | Nenhum atendimento carregado |
+| Locações | Ativos 0; finalizados 0 |
+| Ativos imobilizados | Nenhum registro encontrado |
+| Centro de custo | Nenhum registro encontrado |
+| Agentes de IA | Módulos bloqueados |
+
+## Conclusão
+
+A Lizy é usada pela RKM em dois grandes blocos:
+
+1. **OFICINA:** execução e acompanhamento das OS, do recebimento técnico até a finalização, passando por PCP e setores produtivos.
+2. **NÃO-OFICINA:** orçamento, suprimentos, estoque, recebimento, financeiro, faturamento e fiscal.
+
+O roadmap do RKM deve priorizar esses dois blocos. Menus vazios ou sem evidência atual não devem virar requisito automaticamente, mas também não devem ser declarados definitivamente como “não usados” sem uma confirmação histórica.
