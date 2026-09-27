@@ -86,3 +86,7 @@ export const normalizeOrderNumber = (value) => {
         ? clean
         : `OS-${clean}`;
 };
+
+export const getFurthestServiceEntryStep = (currentStep, persistedStep = 0) => (
+    Math.max(Number(currentStep) || 0, Number(persistedStep) || 0)
+);

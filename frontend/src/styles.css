@@ -126,8 +126,8 @@ html.dark { --zenit-color-text: #e2e8f0; --zenit-color-muted: #94a3b8; --zenit-c
      .sidebar-collapsed .sidebar-toggle:hover, .sidebar-collapsed .sidebar-toggle:focus-visible { background: #193457; }
      .sidebar-section { margin-bottom: 1.15rem; }
      .sidebar-section-label { padding: 0 10px 7px; color: #64748b; font-size: var(--font-xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
-     .sidebar-item { position: relative; display: flex; align-items: center; gap: 11px; width: 100%; min-height: 42px; padding: 9px 12px; border: 0; border-radius: 10px; color: #9fb0c6; background: transparent; text-align: left; font-size: var(--font-sm); transition: background .15s, color .15s, transform .15s; }
-     .sidebar-item:hover { color: #e2e8f0; background: rgba(30, 53, 80, .55); }
+     .sidebar-item { position: relative; display: flex; align-items: center; gap: 11px; width: 100%; min-height: 42px; padding: 9px 12px; border: 0; border-radius: 10px; color: #9fb0c6; background: transparent; text-align: left; font-size: var(--font-sm); }
+     .sidebar-item:hover { color: #e2e8f0; background: #1e3550; }
      .sidebar-item-active { color: #dbeafe; background: rgba(37, 99, 235, .18); }
      .sidebar-item-active::before { content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #60a5fa; }
      .sidebar-collapsed .sidebar-label, .sidebar-collapsed .sidebar-section-label { display: none; }
@@ -1281,9 +1281,9 @@ html:not(.dark) .app-shell .service-entry-step {
 }
 
 html:not(.dark) .app-shell .service-entry-step.is-active {
-    border-color: #93c5fd;
-    background: #eff6ff;
-    color: #1d4ed8;
+    border-color: #d2b779;
+    background: #fffdf6;
+    color: #876f3f;
 }
 
 html:not(.dark) .app-shell .service-entry-step-context {
@@ -1685,8 +1685,47 @@ html:not(.dark) .app-shell .service-entry-delete {
    ================================================================== */
 
 .service-entry-amazon-stepper
-.service-entry-step:not(.is-active):not(.is-done) {
+.service-entry-step:not(.is-active):not(.is-current):not(.is-done) {
   opacity: 0.78;
+}
+
+
+/* ==================================================================
+   LOCKED / NOT YET AVAILABLE
+   ================================================================== */
+
+.service-entry-amazon-stepper
+.service-entry-step.is-locked {
+  opacity: 0.58;
+
+  border-color: rgba(71, 91, 116, 0.42);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12, 29, 49, 0.86),
+      rgba(8, 23, 41, 0.92)
+    );
+
+  color: #71839b;
+
+  cursor: not-allowed;
+}
+
+
+.service-entry-amazon-stepper
+.service-entry-step.is-locked > span:first-child {
+  border-color: rgba(100, 116, 139, 0.4);
+  background: rgba(15, 31, 50, 0.76);
+  color: #71839b;
+  box-shadow: none;
+}
+
+
+.service-entry-amazon-stepper
+.service-entry-step.is-locked::after {
+  background: #263a53;
+  box-shadow: none;
 }
 
 
@@ -1695,23 +1734,25 @@ html:not(.dark) .app-shell .service-entry-delete {
    ================================================================== */
 
 .service-entry-amazon-stepper
-.service-entry-step.is-active {
+.service-entry-step.is-active,
+.service-entry-amazon-stepper
+.service-entry-step.is-current {
   opacity: 1;
 
-  border-color: #3b82f6;
+  border-color: #bfa36b;
 
   background:
     linear-gradient(
       135deg,
-      rgba(37, 99, 235, 0.25),
-      rgba(11, 43, 78, 0.98)
+      rgba(170, 137, 76, 0.16),
+      rgba(53, 46, 31, 0.98)
     );
 
   color: #f4f8ff;
 
   box-shadow:
     0 0 0 1px
-    rgba(59, 130, 246, 0.12),
+    rgba(191, 163, 107, 0.10),
 
     0 7px 22px
     rgba(2, 12, 27, 0.23);
@@ -1719,22 +1760,23 @@ html:not(.dark) .app-shell .service-entry-delete {
 
 
 .service-entry-amazon-stepper
-.service-entry-step.is-active
-> span:first-child {
-  border-color: #60a5fa;
+.service-entry-step.is-active > span:first-child,
+.service-entry-amazon-stepper
+.service-entry-step.is-current > span:first-child {
+  border-color: #d0b678;
 
   background:
     linear-gradient(
       135deg,
-      #1d4ed8,
-      #2563eb
+      #8d7443,
+      #b99a5f
     );
 
   color: #ffffff;
 
   box-shadow:
     0 0 0 4px
-    rgba(59, 130, 246, 0.10);
+    rgba(191, 163, 107, 0.10);
 }
 
 
@@ -1743,19 +1785,21 @@ html:not(.dark) .app-shell .service-entry-delete {
  * the neutral future path.
  */
 .service-entry-amazon-stepper
-.service-entry-step.is-active::after {
+.service-entry-step.is-active::after,
+.service-entry-amazon-stepper
+.service-entry-step.is-current::after {
   background:
     linear-gradient(
       90deg,
-      #3b82f6 0%,
-      #3b82f6 24%,
+      #b99a5f 0%,
+      #b99a5f 24%,
       #29415c 68%,
       #1c3048 100%
     );
 
   box-shadow:
     0 0 6px
-    rgba(59, 130, 246, 0.14);
+    rgba(191, 163, 107, 0.12);
 }
 
 
@@ -1796,6 +1840,22 @@ html:not(.dark) .app-shell .service-entry-delete {
     0 0 0 3px
     rgba(16, 185, 129, 0.07);
 }
+
+
+/* A completed step keeps its green meaning when selected. */
+.service-entry-amazon-stepper
+.service-entry-step.is-selected-done {
+  border-color: rgba(52, 211, 153, 0.92);
+
+  box-shadow:
+    0 0 0 1px
+    rgba(52, 211, 153, 0.22),
+
+    0 7px 22px
+    rgba(2, 12, 27, 0.18);
+}
+
+
 
 
 /*

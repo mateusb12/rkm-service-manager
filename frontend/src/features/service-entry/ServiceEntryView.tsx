@@ -6,6 +6,7 @@ import {
 import {
     SERVICE_ENTRY_STEPS,
     createEmptyServiceEntry,
+    getFurthestServiceEntryStep,
     normalizeOrderNumber,
 } from './model';
 
@@ -446,7 +447,7 @@ export const ServiceEntryView = () => {
     };
 
     const changeStep = (nextStep) => {
-        const furthestReachedStep = Math.max(step, Number(form.currentStep) || 0);
+        const furthestReachedStep = getFurthestServiceEntryStep(step, form.currentStep);
         if (nextStep <= furthestReachedStep) {
             setStep(nextStep);
             setError('');
@@ -454,6 +455,7 @@ export const ServiceEntryView = () => {
     };
 
     const currentStep = SERVICE_ENTRY_STEPS[step];
+    const furthestReachedStep = getFurthestServiceEntryStep(step, form.currentStep);
 
     return (
         <div className="p-4 md:p-6 space-y-5 service-entry-page">
@@ -646,8 +648,8 @@ export const ServiceEntryView = () => {
 
             <div className="service-entry-stepper service-entry-amazon-stepper" aria-label="Etapas do ciclo operacional">
                 {SERVICE_ENTRY_STEPS.map((item, index) => (
-                    <button type="button" key={item.id} className={`service-entry-step ${step === index ? 'is-active' : ''} ${step > index ? 'is-done' : ''}`} onClick={() => changeStep(index)} aria-current={step === index ? 'step' : undefined}>
-                        <span>{step > index ? '✓' : index + 1}</span><strong>{item.label}</strong>
+                    <button type="button" key={item.id} className={`service-entry-step ${step === index && furthestReachedStep <= index ? 'is-active' : ''} ${furthestReachedStep === index ? 'is-current' : ''} ${furthestReachedStep > index ? 'is-done' : ''} ${step === index && furthestReachedStep > index ? 'is-selected-done' : ''} ${furthestReachedStep < index ? 'is-locked' : ''}`} onClick={() => changeStep(index)} aria-current={step === index ? 'step' : undefined} aria-disabled={furthestReachedStep < index ? 'true' : undefined} title={furthestReachedStep < index ? 'Conclua a etapa anterior para liberar esta etapa' : undefined}>
+                        <span>{furthestReachedStep > index ? '✓' : index + 1}</span><strong>{item.label}</strong>
                     </button>
                 ))}
             </div>
