@@ -53,17 +53,16 @@ Os percentuais são marcos de cobertura de features, não percentual de tarefas 
 
 ### Objetivo
 
-Reproduzir o início do fluxo da oficina: receber o equipamento, abrir a OS, identificar o cliente, colocar a ordem na fila de inspeção e controlar prazo/prioridade.
+Reproduzir o início do fluxo da oficina pela ordem em que a peça passa por ele: receber, abrir a OS, identificar, inspecionar/desmontar e definir o diagnóstico e o escopo da execução.
 
 ### Features
 
 | Feature | Escopo funcional | Evidência Lizy | Exemplo concreto observado | Critério de aceite |
 |---|---|---|---|---|
-| Criar Ordem de Serviço | Abrir uma ordem de serviço para o equipamento recebido | Menu `Serviços → Desmontagem` permite criar ordem | OS 20265592 para VLI PECEM e OS 20265591 para RKM HIDRAULICA aparecem na fila | Usuário cria OS com número, cliente, equipamento e data |
-| Identificação do cliente | Relacionar a OS ao cliente correto | A OS mantém cliente e equipamento no fluxo | OS 2026522: Ecofor Ambiental S/A G2 / cilindro hidráulico transportador; OS 2026534: caixa de comando hidráulico | Cliente selecionável e visível em toda a OS |
-| Fila de inspeção | Listar ordens aguardando análise | 17 OS em `Aguardando Inspeções` | 20265592 VLI PECEM, 20265590 PLANALTO INDUSTRIA e OS-DEBUG-001 RKM HIDRAULICA | Fila filtrável por status e prioridade |
-| Prazo e prioridade | Exibir urgência e dias restantes | A fila mostra atraso por OS | OS 2026465 RES ENERGY com -80 dias; OS 2026388 GERDAU CAUCAIA com -126 dias | Atraso e prioridade aparecem na lista |
-| Acesso à análise | Abrir a OS a partir da fila | A fila possui funções para acessar a ordem | Ação disponível diretamente nas linhas da OS 20265592 e OS 20265591 | Usuário entra na OS sem perder o contexto da fila |
+| Receber a peça e criar OS | Abrir uma ordem de serviço para o equipamento recebido | Menu `Serviços → Desmontagem` permite criar ordem | A peça do cliente VLI PECEM aparece cadastrada na OS 20265592; uma peça da RKM aparece na OS 20265591 | Usuário cria OS com número, cliente, equipamento e data de entrada |
+| Identificar cliente e equipamento | Relacionar a OS à peça correta | A OS mantém cliente e equipamento no fluxo | OS 2026522: Ecofor Ambiental S/A G2 / cilindro hidráulico transportador; OS 2026534: caixa de comando hidráulico | Cliente e equipamento permanecem visíveis em toda a OS |
+| Inspecionar e desmontar | Listar e abrir ordens aguardando análise | 17 OS em `Aguardando Inspeções` | A fila continha 20265592 VLI PECEM, 20265590 PLANALTO INDUSTRIA e OS-DEBUG-001 RKM HIDRAULICA | Fila filtrável e OS acessível para inspeção/desmontagem |
+| Definir diagnóstico e escopo | Registrar o que será feito e o que não se aplica | O PCP registra serviços aplicáveis e `Não Possui Serviço` | Na OS 2026531, etapas aparecem como `Não Possui Serviço`; na OS 2026458, Montagem aparece como `Iniciar Montagem` | Diagnóstico define as etapas que seguem para planejamento |
 
 ### Amostra de aceite da V1
 
@@ -82,7 +81,7 @@ Reproduzir o início do fluxo da oficina: receber o equipamento, abrir a OS, ide
 
 ### Gate V1
 
-V1 está concluída quando uma OS consegue percorrer: **criação → identificação → fila de inspeção → abertura para análise**, mantendo histórico, prazo e prioridade.
+V1 está concluída quando uma peça consegue percorrer: **entrada → criação da OS → identificação → inspeção/desmontagem → diagnóstico e escopo**, pronta para ser planejada no PCP.
 
 ---
 
@@ -97,6 +96,7 @@ Transformar a OS em uma sequência operacional acompanhável pelo PCP e pelos se
 | Feature | Escopo funcional | Evidência Lizy | Critério de aceite |
 |---|---|---|---|
 | PCP da oficina | Listar OS em acompanhamento produtivo | 10 OS no PCP; 0 aguardando planejamento | PCP mostra todas as OS abertas e seus estados |
+| Prazo e prioridade | Ordenar o trabalho depois do diagnóstico | A fila exibe dias restantes e atraso por OS | OS 2026465 RES ENERGY com -80 dias; OS 2026388 GERDAU CAUCAIA com -126 dias | Execução é ordenada por prazo, atraso e prioridade |
 | Etapas configuráveis | Representar etapas aplicáveis à OS | Limpeza, Usinagem, Montagem, Teste, Pintura e Qualidade | Cada etapa tem estado próprio |
 | Não aplicável | Marcar etapa que não pertence ao serviço | `Não Possui Serviço` em várias OS | Etapa não aplicável não bloqueia o fluxo |
 | Em andamento | Indicar trabalho em execução | Limpeza da OS 2026458; Qualidade da OS 2026522 | Usuário identifica o setor atualmente responsável |
