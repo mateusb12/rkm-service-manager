@@ -55,6 +55,10 @@ Os percentuais são marcos de cobertura de features, não percentual de tarefas 
 
 Reproduzir o início do fluxo da oficina pela ordem em que a peça passa por ele: receber, abrir a OS, identificar, inspecionar/desmontar e definir o diagnóstico e o escopo da execução.
 
+**Objetivo da fase:** a peça entra, ganha uma OS, é identificada, inspecionada e recebe um diagnóstico inicial.
+
+**Resultado esperado:** sabemos que peça entrou, de quem é, qual equipamento é, em que estado está e o que precisa ser feito.
+
 ### Features
 
 | Feature | Escopo funcional | Evidência Lizy | Exemplo concreto observado | Critério de aceite |
@@ -91,6 +95,10 @@ V1 está concluída quando uma peça consegue percorrer: **entrada → criação
 
 Transformar a OS em uma sequência operacional acompanhável pelo PCP e pelos setores da oficina.
 
+**Objetivo da fase:** transformar o diagnóstico em uma sequência de trabalho clara, com prazo, prioridade, etapas produtivas e próximo passo definido para cada peça.
+
+**Resultado esperado:** o PCP e os setores sabem o que precisa ser feito, qual é a prioridade, onde a peça está, quem deve agir e qual é o próximo passo.
+
 ### Features
 
 | Feature | Escopo funcional | Evidência Lizy | Critério de aceite |
@@ -120,7 +128,9 @@ Transformar a OS em uma sequência operacional acompanhável pelo PCP e pelos se
 
 ### Gate V2
 
-V2 está concluída quando o PCP consegue mostrar, para cada OS, **em qual etapa está, o que já terminou, o que não se aplica e qual é o próximo passo**.
+V2 está concluída quando a OS percorre **diagnóstico → planejamento → priorização → execução por etapas → próximo passo**, mostrando em qual etapa está, o que já terminou, o que não se aplica e qual é a próxima ação.
+
+A V2 ainda não cobre fechamento de qualidade, entrega ao cliente, faturamento ou indicadores gerenciais avançados.
 
 ---
 
@@ -129,6 +139,10 @@ V2 está concluída quando o PCP consegue mostrar, para cada OS, **em qual etapa
 ### Objetivo
 
 Registrar os elementos que provam o que aconteceu durante o serviço, sem depender de memória, conversa ou planilha paralela.
+
+**Objetivo da fase:** consolidar evidências, materiais, pendências e validação técnica antes de encerrar a OS.
+
+**Resultado esperado:** a oficina consegue provar o que foi feito, quais materiais foram usados, quais pendências existem e se a peça está pronta para liberação.
 
 ### Features
 
@@ -205,6 +219,10 @@ V4 está concluída quando a OS percorre **execução → teste → qualidade �
 ---
 
 ## Gate 5 — 100% da oficina usada pelo cliente
+
+**Objetivo da fase:** consolidar em um único sistema todo o ciclo da oficina comprovadamente usado pelo cliente.
+
+**Resultado esperado:** a RKM consegue operar a oficina de ponta a ponta, com rastreabilidade, sem depender de controles paralelos para nenhuma etapa crítica.
 
 ### Definição de pronto
 
