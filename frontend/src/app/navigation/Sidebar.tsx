@@ -14,16 +14,14 @@ import {
 
 import { SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
 
-export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, activeRole, onLogout }) => {
+export const CleanSidebar = ({ view, setView, activeIT, activeUser, activeRole, onLogout }) => {
     const [collapsed, setCollapsed] = useState(false);
 
     const [openGroups, setOpenGroups] = useState({
         'Visão geral': true,
         'Operação': true,
         'Planejamento': true,
-        'Instruções de trabalho': true,
         'Gestão': true,
-        'Acesso rápido': true,
         'Ferramentas': true,
     });
 
@@ -38,9 +36,7 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
         'Visão geral',
         'Operação',
         'Planejamento',
-        'Instruções de trabalho',
         'Gestão',
-        'Acesso rápido',
         'Ferramentas',
     ];
 
@@ -199,14 +195,6 @@ export const CleanSidebar = ({ view, setView, alertCount, activeIT, activeUser, 
                                     },
                                     it.label
                                 ),
-
-                                it.key === 'pendencies' &&
-                                    alertCount > 0 &&
-                                    React.createElement(
-                                        "span",
-                                        { className: "badge-num" },
-                                        alertCount
-                                    ),
 
                                 SHOW_DEV_GUIDES &&
                                 React.createElement(

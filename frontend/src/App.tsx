@@ -449,7 +449,6 @@ const App = () => {
     const ctx = activeIT === 'IT002'
         ? { record: rec002, setRecord: setRec002, step: step002, setStep: setStep002, alerts: alerts002, hasDraft: hasDraft002 }
         : { record: rec001, setRecord: setRec001, step: step001, setStep: setStep001, alerts: alerts001, hasDraft: hasDraft001 };
-    const totalAlerts = alerts001.length + alerts002.length;
     useEffect(() => {
         setView(viewFromPath(location.pathname));
     }, [location.pathname]);
@@ -483,9 +482,6 @@ const App = () => {
     const resumeIT002 = () => {
         setActiveIT('IT002');
         navigate('/it002');
-    };
-    const goToPendencies = () => {
-        navigate('/pendencies');
     };
     const goToStep = (step) => {
         if (activeIT === 'IT002') {
@@ -699,9 +695,9 @@ const App = () => {
         return null;
     };
     return (React.createElement("div", { className: "app-shell min-h-screen flex bg-rkmbg text-slate-200" },
-        React.createElement(CleanSidebar, { view: view, setView: handleSetView, alertCount: totalAlerts, activeIT: activeIT, activeUser: activeUser, activeRole: activeRole, onLogout: logout }),
+        React.createElement(CleanSidebar, { view: view, setView: handleSetView, activeIT: activeIT, activeUser: activeUser, activeRole: activeRole, onLogout: logout }),
         React.createElement("main", { className: "flex-1 min-w-0" },
-            topBarVisible && React.createElement(CleanTopBar, { view: view, alerts: ctx.alerts, onJumpAlerts: goToPendencies, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value), onHide: hideTopBar }),
+            topBarVisible && React.createElement(CleanTopBar, { view: view, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value), onHide: hideTopBar }),
             activeRole === 'admin' && view === 'dashboard' && (React.createElement("div", { className: "px-4 md:px-6 pt-4" },
                 React.createElement(AdminAuthQueueAll, { rec001: rec001, rec002: rec002, activeRole: activeRole, onDecisionClick: handleDecisionClick }),
                 React.createElement("div", { className: "mt-4" },

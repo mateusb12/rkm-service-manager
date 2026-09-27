@@ -43,7 +43,7 @@ export const SIDEBAR_ITEMS = [
         key: 'inspection',
         label: 'Peritagem',
         group: 'Operação',
-        status: 'incomplete',
+        status: 'missing',
         placeholder: true,
         source: 'Serviços → Desmontagem → Análise',
         description: 'Peritagem, inspeção, diagnóstico e decisão técnica.',
@@ -54,7 +54,7 @@ export const SIDEBAR_ITEMS = [
         key: 'execution',
         label: 'Em Execução',
         group: 'Operação',
-        status: 'incomplete',
+        status: 'missing',
         placeholder: true,
         source: 'OS + IT001 / IT002',
         description: 'Execução técnica do serviço e acompanhamento do progresso.',
@@ -86,22 +86,6 @@ export const SIDEBAR_ITEMS = [
     },
 
     /* ITs */
-    {
-        key: 'it001',
-        label: 'IT001 — Bexiga',
-        group: 'Instruções de trabalho',
-        status: 'ok',
-        roles: ALL_ROLES,
-        icon: 'M12 6v12m6-6H6'
-    },
-    {
-        key: 'it002',
-        label: 'IT002 — Pistão',
-        group: 'Instruções de trabalho',
-        status: 'ok',
-        roles: ALL_ROLES,
-        icon: 'M5 12h14M5 6h14M5 18h14'
-    },
 
     /* GESTÃO */
     {
@@ -129,7 +113,23 @@ export const SIDEBAR_ITEMS = [
         icon: 'M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z'
     },
 
-    /* ACESSO RÁPIDO */
+    /* ROTAS INTERNAS */
+    {
+        key: 'it001',
+        label: 'IT001 — Bexiga',
+        group: 'Instruções de trabalho',
+        status: 'ok',
+        roles: ALL_ROLES,
+        icon: 'M12 6v12m6-6H6'
+    },
+    {
+        key: 'it002',
+        label: 'IT002 — Pistão',
+        group: 'Instruções de trabalho',
+        status: 'ok',
+        roles: ALL_ROLES,
+        icon: 'M5 12h14M5 6h14M5 18h14'
+    },
     {
         key: 'pendencies',
         label: 'Pendências',
