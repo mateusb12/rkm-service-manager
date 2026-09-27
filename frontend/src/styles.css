@@ -1817,6 +1817,13 @@ html:not(.dark) .app-shell .service-entry-delete {
 }
 
 
+/* The current-but-unselected step stays visually faint. */
+.service-entry-amazon-stepper
+.service-entry-step.is-current:not(.is-selected-current) {
+  border-color: rgba(191, 163, 107, 0.42);
+}
+
+
 /* ==================================================================
    COMPLETED
    ================================================================== */
