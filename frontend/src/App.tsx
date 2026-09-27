@@ -56,6 +56,7 @@ import {
     OperationalPlaceholder,
     CleanSidebar,
     CleanTopBar,
+    RoadmapView,
 } from './app/navigation';
 import {
     IT_CONFIG,
@@ -666,6 +667,9 @@ const App = () => {
             }
             return (React.createElement("div", { className: "p-4 md:p-6" },
                 React.createElement(AuthorizationHistoryPanel, { rec001: rec001, rec002: rec002, scope: activeRole === 'admin' ? 'all' : activeRole, title: activeRole === 'admin' ? 'Histórico global de autorizações' : 'Histórico de autorizações' })));
+        }
+        if (view === 'roadmap') {
+            return React.createElement(RoadmapView);
         }
         const operationalItem = SIDEBAR_ITEMS.find(
             item => item.key === view && item.placeholder

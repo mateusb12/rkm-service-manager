@@ -73,6 +73,18 @@ export const SIDEBAR_ITEMS = [
         icon: 'M5 13l4 4L19 7'
     },
 
+    /* PLANEJAMENTO */
+    {
+        key: 'roadmap',
+        label: 'Roadmap',
+        group: 'Planejamento',
+        status: 'ok',
+        placeholder: true,
+        description: 'hello world',
+        roles: ALL_ROLES,
+        icon: 'M4 5h16M4 12h16M4 19h10'
+    },
+
     /* ITs */
     {
         key: 'it001',
