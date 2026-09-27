@@ -10,8 +10,10 @@ export {
 } from './mapper';
 
 export {
+    deleteLizyServiceEntries,
     planLizyPopulation,
     populateLizyServiceEntries,
+    overwriteLizyServiceEntries,
     formatLizyPopulationReport,
 } from './populate';
 

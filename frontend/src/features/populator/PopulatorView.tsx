@@ -5,6 +5,8 @@ import React, {
 } from 'react';
 
 import {
+    deleteLizyServiceEntries,
+    overwriteLizyServiceEntries,
     planLizyPopulation,
     populateLizyServiceEntries,
 } from './populate';
@@ -97,6 +99,44 @@ export const PopulatorView = () => {
     };
 
 
+    const overwrite = () => {
+        const lizyCount = plan.existingEntries.filter(
+            entry => entry.sourceMetadata?.system === 'lizy'
+        ).length;
+        const confirmed = window.confirm(
+            `Sobrescrever ${lizyCount} OS importadas da Lizy?\n\n` +
+            'Os dados importados, status e etapa serão atualizados. ' +
+            'Fotos locais serão preservadas.'
+        );
+
+        if (!confirmed) return;
+
+        const result = overwriteLizyServiceEntries();
+        setLastResult(result);
+        setPlan(planLizyPopulation());
+    };
+
+
+    const remove = () => {
+        const lizyCount = plan.existingEntries.filter(
+            entry => entry.sourceMetadata?.system === 'lizy'
+        ).length;
+
+        if (!lizyCount) return;
+
+        const confirmed = window.confirm(
+            `APAGAR ${lizyCount} OS importadas da Lizy?\n\n` +
+            'Cadastros locais serão preservados. Esta ação não pode ser desfeita.'
+        );
+
+        if (!confirmed) return;
+
+        const result = deleteLizyServiceEntries();
+        setLastResult(result);
+        setPlan(planLizyPopulation());
+    };
+
+
     const hasDatasetDuplicates =
         plan.duplicateDatasetRecords.length > 0;
 
@@ -169,11 +209,11 @@ export const PopulatorView = () => {
                     </div>
 
                     <div className="text-xs text-slate-400 mt-2">
-                        Inseridas: {lastResult.entriesToInsert.length}
-                        {' · '}
-                        Já existentes: {lastResult.skippedExisting.length}
-                        {' · '}
-                        Inválidas: {lastResult.invalid.length}
+                        {'entriesToInsert' in lastResult && <>Inseridas: {lastResult.entriesToInsert.length} · </>}
+                        {'skippedExisting' in lastResult && <>Já existentes: {lastResult.skippedExisting.length} · </>}
+                        {'overwritten' in lastResult && <>Sobrescritas: {lastResult.overwritten} · </>}
+                        {'deleted' in lastResult && <>Apagadas: {lastResult.deleted} · </>}
+                        Inválidas: {lastResult.invalid?.length || 0}
                         {' · '}
                         Persistência: {
                             lastResult.persisted
@@ -316,6 +356,24 @@ export const PopulatorView = () => {
                         }
                     >
                         Popular {plan.entriesToInsert.length} OS
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={overwrite}
+                        disabled={hasDatasetDuplicates}
+                    >
+                        Sobrescrever OS da Lizy
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn btn-ghost text-rose-300"
+                        onClick={remove}
+                        disabled={!plan.existingEntries.some(entry => entry.sourceMetadata?.system === 'lizy')}
+                    >
+                        Apagar OS da Lizy
                     </button>
                 </div>
 

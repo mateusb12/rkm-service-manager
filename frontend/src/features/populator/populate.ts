@@ -24,6 +24,10 @@ const orderIdentity = value =>
     normalizeOrderNumber(value);
 
 
+const isLizyEntry = entry =>
+    entry?.sourceMetadata?.system === 'lizy';
+
+
 const migrateLegacyLizyEntry = entry => {
     const isLegacyLizyEntry =
         entry?.sourceMetadata?.system === 'lizy' &&
@@ -193,6 +197,92 @@ export const populateLizyServiceEntries = () => {
             persisted
                 ? 'saved'
                 : 'storage-error',
+    };
+};
+
+
+export const overwriteLizyServiceEntries = () => {
+    const existingEntries = loadServiceEntries();
+    const existingById = new Map(
+        existingEntries.map(entry => [
+            orderIdentity(entry.orderNumber || entry.id),
+            entry,
+        ])
+    );
+    const timestamp = new Date().toISOString();
+    const sourceIds = new Set();
+    const overwrittenIds = new Set();
+    const invalid = [];
+    const replacementById = new Map();
+
+    for (const source of LIZY_ORDERS) {
+        const sourceId = orderIdentity(source.orderNumber);
+
+        if (sourceIds.has(sourceId)) continue;
+        sourceIds.add(sourceId);
+
+        const mapped = mapLizyOrderToServiceEntry(source, timestamp);
+        const validation = validateMappedServiceEntry(mapped);
+
+        if (!validation.valid) {
+            invalid.push({
+                orderNumber: sourceId,
+                missing: validation.missing,
+                source,
+            });
+            continue;
+        }
+
+        const existing = existingById.get(sourceId);
+
+        if (existing && isLizyEntry(existing)) {
+            replacementById.set(sourceId, {
+                ...mapped,
+                id: existing.id || sourceId,
+                createdAt: existing.createdAt || mapped.createdAt,
+                photos: existing.photos || mapped.photos,
+            });
+            overwrittenIds.add(sourceId);
+            continue;
+        }
+
+        if (!existing) {
+            replacementById.set(sourceId, mapped);
+        }
+    }
+
+    const nextEntries = existingEntries.map(entry => {
+        const id = orderIdentity(entry.orderNumber || entry.id);
+        return replacementById.get(id) || entry;
+    });
+
+    for (const [id, entry] of replacementById) {
+        if (!existingById.has(id)) nextEntries.unshift(entry);
+    }
+
+    const persisted = saveServiceEntries(nextEntries);
+
+    return {
+        persisted,
+        overwritten: overwrittenIds.size,
+        inserted: [...replacementById.keys()]
+            .filter(id => !existingById.has(id)).length,
+        invalid,
+        persistenceReason: persisted ? 'overwritten' : 'storage-error',
+    };
+};
+
+
+export const deleteLizyServiceEntries = () => {
+    const existingEntries = loadServiceEntries();
+    const lizyEntries = existingEntries.filter(isLizyEntry);
+    const nextEntries = existingEntries.filter(entry => !isLizyEntry(entry));
+    const persisted = saveServiceEntries(nextEntries);
+
+    return {
+        persisted,
+        deleted: lizyEntries.length,
+        persistenceReason: persisted ? 'deleted' : 'storage-error',
     };
 };
 
