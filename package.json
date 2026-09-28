@@ -2,8 +2,8 @@
   "name": "rkm-service-manager",
   "private": true,
   "scripts": {
-    "deploy": "fly deploy --build-arg VITE_COMMIT_SHA=$(git rev-parse --short HEAD) --config backend/fly.toml",
-    "db:pull-prod": "fly ssh sftp get /data/rkm.db /tmp/rkm-service-manager-prod.sqlite --app rkm-service-manager",
-    "db:restore-prod": "fly ssh sftp put backend/rkm.db /data/rkm-import.sqlite --app rkm-service-manager && fly apps restart rkm-service-manager"
+    "deploy": "bash scripts/deploy.sh",
+    "db:pull-prod": "bash scripts/fly-project.sh ssh sftp get /data/rkm.db /tmp/rkm-service-manager-prod.sqlite --app rkm-service-manager",
+    "db:restore-prod": "bash scripts/fly-project.sh ssh sftp put backend/rkm.db /data/rkm-import.sqlite --app rkm-service-manager && bash scripts/fly-project.sh apps restart rkm-service-manager"
   }
 }

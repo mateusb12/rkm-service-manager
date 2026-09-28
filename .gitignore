@@ -3,6 +3,8 @@ frontend/dist/
 *.log
 backend/*.db
 backend/tmp/
+.env.deploy.local
 .idea/
 /codebase.md
 /frontend/frontend.md
+/.env
