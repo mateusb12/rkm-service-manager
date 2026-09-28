@@ -68,6 +68,7 @@ import {
     EvidencesView,
     SummaryView,
 } from './features/service-workflow';
+import { loadServiceEntries } from './features/service-entry/repository';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -93,6 +94,30 @@ const sampleServices = [
     { id: 'OS-1043', it: 'IT001', client: 'Petroquímica Norte', equipment: 'Acumulador Bexiga 8L • Parker', tech: 'Marcelo R.', date: '25/04/2026', status: 'Recebido', priority: 'Média', step: 1, assignedTo: { operator: 'u6', supervisor: 'u2', quality: 'u3', pcp: 'u4' } },
     { id: 'OS-2020', it: 'IT002', client: 'Açúcar e Álcool Cana', equipment: 'Acumulador Pistão 40L • Roth', tech: 'Carlos M.', date: '25/04/2026', status: 'Pendente material', priority: 'Média', step: 10, assignedTo: { operator: 'u1', supervisor: 'u2', quality: 'u3', pcp: 'u4' } },
 ];
+
+const formatDashboardDate = value => {
+    if (!value) return '—';
+
+    const date = new Date(value.includes?.('T') ? value : `${value}T12:00:00`);
+
+    return Number.isNaN(date.getTime())
+        ? value
+        : date.toLocaleDateString('pt-BR');
+};
+
+const mapServiceEntryToDashboardService = entry => ({
+    id: entry.orderNumber || entry.id,
+    it: 'RCM',
+    client: entry.client || 'Cliente não informado',
+    equipment: [entry.equipment, entry.manufacturer].filter(Boolean).join(' • ') || 'Equipamento não informado',
+    tech: entry.serviceResponsible || entry.expertTechnician || entry.disassemblyOperator || 'Não atribuído',
+    date: formatDashboardDate(entry.updatedAt || entry.openingDate),
+    status: entry.status || 'Recebido',
+    priority: entry.urgent ? 'Alta' : 'Média',
+    step: Number(entry.currentStep || 0) + 1,
+    stepTotal: 6,
+    assignedTo: { operator: 'u1', supervisor: 'u2', quality: 'u3', pcp: 'u4' },
+} );
 /* ============================================================
    UTIL — persistência local (rascunho)
    ============================================================ */
@@ -182,13 +207,13 @@ const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume00
             React.createElement("div", { className: "px-5 py-3.5 border-b border-rkmborder flex items-center gap-2 flex-wrap" },
                 React.createElement("span", { className: "sec-bullet" }),
                 React.createElement("div", { className: "text-sm font-semibold flex-1" }, "Servi\u00E7os \u2014 Acompanhamento Operacional"),
-                React.createElement("div", { className: "flex gap-1" }, [{ k: 'all', l: 'Todos' }, { k: 'IT001', l: 'IT001 — Bexiga' }, { k: 'IT002', l: 'IT002 — Pistão' }].map(opt => (React.createElement("button", { key: opt.k, onClick: () => setFilterIT(opt.k), className: 'btn text-xs ' + (filterIT === opt.k ? 'btn-primary' : 'btn-ghost') }, opt.l))))),
+                React.createElement("div", { className: "flex gap-1 flex-wrap" }, [{ k: 'all', l: 'Todos' }, { k: 'IT001', l: 'IT001 — Bexiga' }, { k: 'IT002', l: 'IT002 — Pistão' }, { k: 'RCM', l: 'RCMs cadastradas' }].map(opt => (React.createElement("button", { key: opt.k, onClick: () => setFilterIT(opt.k), className: 'btn text-xs ' + (filterIT === opt.k ? 'btn-primary' : 'btn-ghost') }, opt.l))))),
             React.createElement("div", { className: "overflow-x-auto" },
                 React.createElement("table", { className: "w-full text-sm" },
                     React.createElement("thead", null,
                         React.createElement("tr", { className: "text-slate-400 text-xs uppercase tracking-wide" },
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "OS / Laudo"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "IT"),
+                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Origem"),
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Cliente"),
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Equipamento"),
                             React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "T\u00E9cnico"),
@@ -211,7 +236,8 @@ const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume00
                             React.createElement(PriorityTag, { priority: s.priority, className: "table-tag table-priority" })),
                         React.createElement("td", { className: "px-5 py-3 text-slate-400" },
                             s.step,
-                            "/20"),
+                            "/",
+                            s.stepTotal || 20),
                         React.createElement("td", { className: "px-5 py-3 text-right" },
                             React.createElement("button", { className: "text-slate-400 hover:text-blue-300 px-2", title: "Visualizar" },
                                 React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
@@ -426,6 +452,11 @@ const App = () => {
     const didMount001 = useRef(false);
     const didMount002 = useRef(false);
     const [services] = useState(sampleServices);
+    const [serviceEntries, setServiceEntries] = useState(() => loadServiceEntries());
+    const dashboardServices = useMemo(
+        () => [...services, ...serviceEntries.map(mapServiceEntryToDashboardService)],
+        [services, serviceEntries],
+    );
     const alerts001 = useMemo(() => computeAlerts(rec001), [rec001]);
     const alerts002 = useMemo(() => computeAlertsIT002(rec002), [rec002]);
     useEffect(() => {
@@ -451,6 +482,7 @@ const App = () => {
         : { record: rec001, setRecord: setRec001, step: step001, setStep: setStep001, alerts: alerts001, hasDraft: hasDraft001 };
     useEffect(() => {
         setView(viewFromPath(location.pathname));
+        setServiceEntries(loadServiceEntries());
     }, [location.pathname]);
     const handleSetView = (newView) => {
         if (newView === 'it001')
@@ -622,7 +654,7 @@ const App = () => {
             return React.createElement(ServiceEntryView);
         }
         if (view === 'dashboard') {
-            return (React.createElement(Dashboard, { services: services, onOpenIT001: openIT001, onOpenIT002: openIT002, onResume001: resumeIT001, onResume002: resumeIT002, hasDraft001: hasDraft001, hasDraft002: hasDraft002, alerts001: alerts001, alerts002: alerts002 }));
+            return (React.createElement(Dashboard, { services: dashboardServices, onOpenIT001: openIT001, onOpenIT002: openIT002, onResume001: resumeIT001, onResume002: resumeIT002, hasDraft001: hasDraft001, hasDraft002: hasDraft002, alerts001: alerts001, alerts002: alerts002 }));
         }
         if (view === 'mybench') {
             return React.createElement(MyBenchView, { itConfig: IT_CONFIG,
