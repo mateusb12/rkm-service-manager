@@ -4,6 +4,7 @@ import { useAuth } from './features/auth';
 import { ServiceEntryView } from './features/service-entry';
 import { PopulatorView } from './features/populator';
 import { MyBenchView } from './features/bench';
+import { DashboardView } from './features/dashboard';
 import {
     STEPS_IT002,
     initialRecordIT002,
@@ -30,13 +31,11 @@ import {
     SupervisorAuthQueue,
     QualityAuthQueue,
     PCPAuthQueue,
-    AdminAuthQueueAll,
     AuthDecisionModal,
     getStepAuthorizationState,
     StepAuthorizationHistory,
 } from './features/role-access';
 import { AlertBox } from './shared/ui/feedback';
-import { PriorityTag, StatusTag } from './shared/ui/tags';
 import {
     Field,
     TextArea,
@@ -45,10 +44,6 @@ import {
     Toggle,
     ChipMulti,
 } from './shared/ui/form-controls';
-import {
-    LizyReferenceCard,
-    SHOW_DEV_GUIDES,
-} from './shared/dev/lizy-reference';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
     viewFromPath,
@@ -68,7 +63,6 @@ import {
     EvidencesView,
     SummaryView,
 } from './features/service-workflow';
-import { loadServiceEntries } from './features/service-entry/repository';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -95,29 +89,6 @@ const sampleServices = [
     { id: 'OS-2020', it: 'IT002', client: 'Açúcar e Álcool Cana', equipment: 'Acumulador Pistão 40L • Roth', tech: 'Carlos M.', date: '25/04/2026', status: 'Pendente material', priority: 'Média', step: 10, assignedTo: { operator: 'u1', supervisor: 'u2', quality: 'u3', pcp: 'u4' } },
 ];
 
-const formatDashboardDate = value => {
-    if (!value) return '—';
-
-    const date = new Date(value.includes?.('T') ? value : `${value}T12:00:00`);
-
-    return Number.isNaN(date.getTime())
-        ? value
-        : date.toLocaleDateString('pt-BR');
-};
-
-const mapServiceEntryToDashboardService = entry => ({
-    id: entry.orderNumber || entry.id,
-    it: 'RCM',
-    client: entry.client || 'Cliente não informado',
-    equipment: [entry.equipment, entry.manufacturer].filter(Boolean).join(' • ') || 'Equipamento não informado',
-    tech: entry.serviceResponsible || entry.expertTechnician || entry.disassemblyOperator || 'Não atribuído',
-    date: formatDashboardDate(entry.updatedAt || entry.openingDate),
-    status: entry.status || 'Recebido',
-    priority: entry.urgent ? 'Alta' : 'Média',
-    step: Number(entry.currentStep || 0) + 1,
-    stepTotal: 6,
-    assignedTo: { operator: 'u1', supervisor: 'u2', quality: 'u3', pcp: 'u4' },
-} );
 /* ============================================================
    UTIL — persistência local (rascunho)
    ============================================================ */
@@ -150,138 +121,6 @@ const mapServiceEntryToDashboardService = entry => ({
 
 
 
-/* ============================================================
-   VIEW — Dashboard (cards + tabela referenciando o layout)
-   ============================================================ */
-const KPICard = ({ label, value, hint, accent, icon }) => (React.createElement("div", { className: "rkm-card kpi-card" },
-    React.createElement("div", { className: "kpi-header" },
-        React.createElement("div", { className: "kpi-label text-xs text-slate-400 uppercase tracking-wide" }, label),
-        React.createElement("div", { className: 'kpi-icon rounded-lg flex items-center justify-center ' + accent }, icon)),
-    React.createElement("div", { className: "kpi-value text-2xl font-semibold" }, value),
-    React.createElement("div", { className: "kpi-hint text-xs text-slate-500" }, hint)));
-const Dashboard = ({ services, onOpenIT001, onOpenIT002, onResume001, onResume002, hasDraft001, hasDraft002, alerts001, alerts002 }) => {
-    const [filterIT, setFilterIT] = useState('all');
-    const filtered = services.filter(s => filterIT === 'all' ? true : s.it === filterIT);
-    const open = filtered.filter(s => /(execu|análise|recebido|pendente)/i.test(s.status)).length;
-    const blocked = filtered.filter(s => /bloque/i.test(s.status)).length;
-    const approved = filtered.filter(s => /(aprovad|liberad)/i.test(s.status)).length;
-    const totalAlerts = alerts001.filter(a => a.severity === 'critical').length + alerts002.filter(a => a.severity === 'critical').length;
-    return (React.createElement("div", { className: "p-4 md:p-6 space-y-6" },
-        SHOW_DEV_GUIDES && React.createElement(LizyReferenceCard, {
-            source: "Serviços → Desmontagem",
-            detail: "Referência para visão geral das OS, status, técnico responsável e andamento operacional."
-        }),
-        React.createElement("div", { className: "rkm-card operations-header" },
-            React.createElement("div", { className: "operations-identity" },
-                React.createElement("div", { className: "operations-kicker" }, "REGISTRO OPERACIONAL"),
-                React.createElement("h1", { className: "text-xl md:text-2xl font-semibold" }, "Registro Operacional de Servi\u00E7os"),
-                React.createElement("p", { className: "operations-description" }, "Cada IT possui checklist, alertas e rascunho independentes. Revis\u00F5es validadas: IT001 Rev. 00 \u00B7 IT002 Rev. 00"),
-                React.createElement("div", { className: "operations-pilots" },
-                    React.createElement("span", { className: "operations-meta-label" }, "Pilotos ativos"),
-                    React.createElement("span", { className: "operations-chip" }, "IT001 \u00B7 Bexiga"),
-                    React.createElement("span", { className: "operations-chip" }, "IT002 \u00B7 Pist\u00E3o"))),
-            React.createElement("div", { className: "operations-actions" },
-                React.createElement("div", { className: "operations-actions-title" }, "A\u00E7\u00F5es r\u00E1pidas"),
-                React.createElement("div", { className: "operations-action-row" },
-                    React.createElement("span", { className: "operations-it" }, "IT001"),
-                    React.createElement("span", { className: `operations-status ${hasDraft001 ? '' : 'is-empty'}` }, hasDraft001 ? 'Rascunho' : 'Sem rascunho'),
-                    hasDraft001 && React.createElement("button", { className: "btn btn-ghost operations-resume", onClick: onResume001, title: "Continuar rascunho IT001" }, "Continuar"),
-                    React.createElement("button", { className: "btn btn-primary operations-new", onClick: onOpenIT001 }, "+ Novo servi\u00E7o")),
-                React.createElement("div", { className: "operations-action-row" },
-                    React.createElement("span", { className: "operations-it" }, "IT002"),
-                    React.createElement("span", { className: `operations-status ${hasDraft002 ? '' : 'is-empty'}` }, hasDraft002 ? 'Rascunho' : 'Sem rascunho'),
-                    hasDraft002 && React.createElement("button", { className: "btn btn-ghost operations-resume", onClick: onResume002, title: "Continuar rascunho IT002" }, "Continuar"),
-                    React.createElement("button", { className: "btn btn-primary operations-new", onClick: onOpenIT002 }, "+ Novo servi\u00E7o")))),
-        React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-4" },
-            React.createElement(KPICard, { label: "Em execu\u00E7\u00E3o", value: open, hint: filterIT === 'all' ? 'Todos os módulos' : filterIT, accent: "bg-blue-500/20 text-blue-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                    React.createElement("path", { d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" }),
-                    React.createElement("path", { d: "M14 2v6h6" })) }),
-            React.createElement(KPICard, { label: "Aprovados / liberados", value: approved, hint: "Conforme IT", accent: "bg-emerald-500/20 text-emerald-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                    React.createElement("path", { d: "M5 13l4 4L19 7" })) }),
-            React.createElement(KPICard, { label: "Bloqueados", value: blocked, hint: "Seguran\u00E7a / rastreabilidade", accent: "bg-rose-500/20 text-rose-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                    React.createElement("circle", { cx: "12", cy: "12", r: "10" }),
-                    React.createElement("path", { d: "M4.93 4.93l14.14 14.14" })) }),
-            React.createElement(KPICard, { label: "Alertas cr\u00EDticos", value: totalAlerts, hint: "Rascunhos IT001 + IT002", accent: "bg-amber-500/20 text-amber-300", icon: React.createElement("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                    React.createElement("path", { d: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" })) })),
-        React.createElement("div", { className: "rkm-card overflow-hidden" },
-            React.createElement("div", { className: "px-5 py-3.5 border-b border-rkmborder flex items-center gap-2 flex-wrap" },
-                React.createElement("span", { className: "sec-bullet" }),
-                React.createElement("div", { className: "text-sm font-semibold flex-1" }, "Servi\u00E7os \u2014 Acompanhamento Operacional"),
-                React.createElement("div", { className: "flex gap-1 flex-wrap" }, [{ k: 'all', l: 'Todos' }, { k: 'IT001', l: 'IT001 — Bexiga' }, { k: 'IT002', l: 'IT002 — Pistão' }, { k: 'RCM', l: 'RCMs cadastradas' }].map(opt => (React.createElement("button", { key: opt.k, onClick: () => setFilterIT(opt.k), className: 'btn text-xs ' + (filterIT === opt.k ? 'btn-primary' : 'btn-ghost') }, opt.l))))),
-            React.createElement("div", { className: "overflow-x-auto" },
-                React.createElement("table", { className: "w-full text-sm" },
-                    React.createElement("thead", null,
-                        React.createElement("tr", { className: "text-slate-400 text-xs uppercase tracking-wide" },
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "OS / Laudo"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Origem"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Cliente"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Equipamento"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "T\u00E9cnico"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Data"),
-                            React.createElement("th", { className: "text-center font-medium px-5 py-3" }, "Status"),
-                            React.createElement("th", { className: "text-center font-medium px-5 py-3" }, "Prioridade"),
-                            React.createElement("th", { className: "text-left font-medium px-5 py-3" }, "Etapa"),
-                            React.createElement("th", { className: "text-right font-medium px-5 py-3" }, "A\u00E7\u00F5es"))),
-                    React.createElement("tbody", null, filtered.map(s => (React.createElement("tr", { key: s.id, className: "border-t border-rkmborder hover:bg-rkmcard2/40 transition" },
-                        React.createElement("td", { className: "px-5 py-3 font-medium text-slate-100" }, s.id),
-                        React.createElement("td", { className: "px-5 py-3" },
-                            React.createElement("span", { className: 'tag ' + (s.it === 'IT001' ? 'tag-blue' : 'tag-violet') }, s.it)),
-                        React.createElement("td", { className: "px-5 py-3 text-slate-300" }, s.client),
-                        React.createElement("td", { className: "px-5 py-3 text-slate-300" }, s.equipment),
-                        React.createElement("td", { className: "px-5 py-3 text-slate-300" }, s.tech),
-                        React.createElement("td", { className: "px-5 py-3 text-slate-400" }, s.date),
-                        React.createElement("td", { className: "px-5 py-3 text-center" },
-                            React.createElement(StatusTag, { status: s.status, className: "table-tag table-status" })),
-                        React.createElement("td", { className: "px-5 py-3 text-center" },
-                            React.createElement(PriorityTag, { priority: s.priority, className: "table-tag table-priority" })),
-                        React.createElement("td", { className: "px-5 py-3 text-slate-400" },
-                            s.step,
-                            "/",
-                            s.stepTotal || 20),
-                        React.createElement("td", { className: "px-5 py-3 text-right" },
-                            React.createElement("button", { className: "text-slate-400 hover:text-blue-300 px-2", title: "Visualizar" },
-                                React.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-                                    React.createElement("path", { d: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" }),
-                                    React.createElement("circle", { cx: "12", cy: "12", r: "3" }))))))))))),
-        React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4" },
-            React.createElement("div", { className: "rkm-card p-5" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                    React.createElement("span", { className: "sec-bullet" }),
-                    React.createElement("div", { className: "text-sm font-semibold" }, "Postura t\u00E9cnica \u2014 IT001 (Bexiga)")),
-                React.createElement("ul", { className: "text-xs text-slate-300 space-y-1.5 list-disc pl-5" },
-                    React.createElement("li", null, "Sem teste hidr\u00E1ulico formal \u2014 verifica\u00E7\u00E3o final por pr\u00E9-carga + estanqueidade (IT001 \u00A721)."),
-                    React.createElement("li", null,
-                        "Pr\u00E9-carga somente com ",
-                        React.createElement("b", null, "nitrog\u00EAnio seco"),
-                        "; sem fonte confi\u00E1vel \u2192 pend\u00EAncia t\u00E9cnica (IT001 \u00A719)."),
-                    React.createElement("li", null, "Sem torque gen\u00E9rico \u2014 fabricante ou valida\u00E7\u00E3o do supervisor (IT001 \u00A718)."),
-                    React.createElement("li", null, "Despressuriza\u00E7\u00E3o confirmada antes da abertura \u2014 ponto de bloqueio (IT001 \u00A711)."),
-                    React.createElement("li", null, "Lacuna ambiental ainda imatura (IT001 \u00A724, plano ABX-18/19)."))),
-            React.createElement("div", { className: "rkm-card p-5" },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                    React.createElement("span", { className: "w-2 h-2 rounded-full bg-violet-400", style: { boxShadow: '0 0 0 4px rgba(167,139,250,.18)' } }),
-                    React.createElement("div", { className: "text-sm font-semibold" }, "Postura t\u00E9cnica \u2014 IT002 (Pist\u00E3o)")),
-                React.createElement("ul", { className: "text-xs text-slate-300 space-y-1.5 list-disc pl-5" },
-                    React.createElement("li", null,
-                        "Aprova\u00E7\u00E3o trip\u00E9: ",
-                        React.createElement("b", null, "mant\u00E9m press\u00E3o + sem vazamento + valida\u00E7\u00E3o da Qualidade"),
-                        " (IT002 \u00A717)."),
-                    React.createElement("li", null,
-                        React.createElement("b", null, "Apenas nitrog\u00EAnio"),
-                        " \u2014 nunca oxig\u00EAnio ou ar comprimido (IT002 \u00A710)."),
-                    React.createElement("li", null,
-                        "Antes de leitura/carga: ",
-                        React.createElement("b", null, "isolar do sistema"),
-                        " e ",
-                        React.createElement("b", null, "descarregar lado fluido"),
-                        " (IT002 \u00A710)."),
-                    React.createElement("li", null,
-                        "Sem placa/dado confi\u00E1vel \u2192 ",
-                        React.createElement("b", null, "parar"),
-                        " at\u00E9 valida\u00E7\u00E3o do supervisor (IT002 \u00A715)."),
-                    React.createElement("li", null, "Erros cr\u00EDticos de montagem (corte veda\u00E7\u00E3o / veda\u00E7\u00E3o invertida / lubrifica\u00E7\u00E3o / alinhamento) bloqueiam a carga (IT002 \u00A714)."),
-                    React.createElement("li", null, "Libera\u00E7\u00E3o operacional s\u00F3 com aprova\u00E7\u00E3o da Qualidade (IT002 \u00A719)."))))));
-};
 /* ============================================================
    VIEW — IT Form (multi-step)
    ============================================================ */
@@ -452,11 +291,6 @@ const App = () => {
     const didMount001 = useRef(false);
     const didMount002 = useRef(false);
     const [services] = useState(sampleServices);
-    const [serviceEntries, setServiceEntries] = useState(() => loadServiceEntries());
-    const dashboardServices = useMemo(
-        () => [...services, ...serviceEntries.map(mapServiceEntryToDashboardService)],
-        [services, serviceEntries],
-    );
     const alerts001 = useMemo(() => computeAlerts(rec001), [rec001]);
     const alerts002 = useMemo(() => computeAlertsIT002(rec002), [rec002]);
     useEffect(() => {
@@ -482,7 +316,6 @@ const App = () => {
         : { record: rec001, setRecord: setRec001, step: step001, setStep: setStep001, alerts: alerts001, hasDraft: hasDraft001 };
     useEffect(() => {
         setView(viewFromPath(location.pathname));
-        setServiceEntries(loadServiceEntries());
     }, [location.pathname]);
     const handleSetView = (newView) => {
         if (newView === 'it001')
@@ -654,7 +487,7 @@ const App = () => {
             return React.createElement(ServiceEntryView);
         }
         if (view === 'dashboard') {
-            return (React.createElement(Dashboard, { services: dashboardServices, onOpenIT001: openIT001, onOpenIT002: openIT002, onResume001: resumeIT001, onResume002: resumeIT002, hasDraft001: hasDraft001, hasDraft002: hasDraft002, alerts001: alerts001, alerts002: alerts002 }));
+            return (React.createElement(DashboardView, { onOpenServiceEntry: () => navigate('/receiving') }));
         }
         if (view === 'mybench') {
             return React.createElement(MyBenchView, { itConfig: IT_CONFIG,
@@ -730,10 +563,6 @@ const App = () => {
         React.createElement(CleanSidebar, { view: view, setView: handleSetView, activeIT: activeIT, activeUser: activeUser, activeRole: activeRole, onLogout: logout }),
         React.createElement("main", { className: "flex-1 min-w-0" },
             topBarVisible && React.createElement(CleanTopBar, { view: view, darkMode: darkMode, onToggleDarkMode: () => setDarkMode(value => !value), onHide: hideTopBar }),
-            activeRole === 'admin' && view === 'dashboard' && (React.createElement("div", { className: "px-4 md:px-6 pt-4" },
-                React.createElement(AdminAuthQueueAll, { rec001: rec001, rec002: rec002, activeRole: activeRole, onDecisionClick: handleDecisionClick }),
-                React.createElement("div", { className: "mt-4" },
-                    React.createElement(AuthorizationHistoryPanel, { rec001: rec001, rec002: rec002, scope: "all", title: "Hist\u00F3rico global de autoriza\u00E7\u00F5es" })))),
             renderView()),
         React.createElement(AuthRequestModal, { open: authModal.open, onClose: closeAuthModal, onSubmit: handleSubmitAuth, context: authModal.context || {}, activeUser: activeUser, activeRole: activeRole }),
         React.createElement(AuthDecisionModal, { open: decisionModal.open, onClose: closeDecisionModal, request: decisionModal.request, decision: decisionModal.decision, activeUser: activeUser, activeRole: activeRole, onConfirm: handleConfirmDecision })));
