@@ -26,14 +26,11 @@ export function formatDuration(value: number | null): string {
   const h = Math.floor(n / 60);
   const m = n % 60;
 
-  return [
-    h ? `${h}h` : '',
-    m || !h ? `${m}min` : '',
-  ].filter(Boolean).join(' ');
+  return [h ? `${h}h` : '', m || !h ? `${m}min` : ''].filter(Boolean).join(' ');
 }
 
 function polarToCartesian(cx: number, cy: number, radius: number, angle: number) {
-  const rad = (angle - 90) * Math.PI / 180;
+  const rad = ((angle - 90) * Math.PI) / 180;
   return {
     x: cx + radius * Math.cos(rad),
     y: cy + radius * Math.sin(rad),
@@ -46,14 +43,14 @@ function describeRingArc(
   outerR: number,
   innerR: number,
   startAngle: number,
-  endAngle: number
+  endAngle: number,
 ) {
   const startOuter = polarToCartesian(cx, cy, outerR, startAngle);
   const endOuter = polarToCartesian(cx, cy, outerR, endAngle);
   const startInner = polarToCartesian(cx, cy, innerR, startAngle);
   const endInner = polarToCartesian(cx, cy, innerR, endAngle);
 
-  const delta = ((endAngle - startAngle) % 360 + 360) % 360;
+  const delta = (((endAngle - startAngle) % 360) + 360) % 360;
   const largeArc = delta > 180 ? 1 : 0;
 
   return [
@@ -92,9 +89,8 @@ function ClockHand({
 }
 
 function DurationClock({ minutes }: { minutes: number | null }) {
-  const total = minutes === null || !Number.isFinite(minutes)
-    ? 0
-    : Math.max(0, Math.round(minutes));
+  const total =
+    minutes === null || !Number.isFinite(minutes) ? 0 : Math.max(0, Math.round(minutes));
 
   const fullHours = Math.floor(total / 60);
   const mins = total % 60;
@@ -103,10 +99,7 @@ function DurationClock({ minutes }: { minutes: number | null }) {
   const totalAngle = (normalizedTotal / 720) * 360;
   const minuteAngle = (mins / 60) * 360;
 
-  const innerBand =
-    mins > 0
-      ? describeRingArc(50, 50, 29, 20, 0, minuteAngle)
-      : null;
+  const innerBand = mins > 0 ? describeRingArc(50, 50, 29, 20, 0, minuteAngle) : null;
 
   const ticks = useMemo(() => {
     const highlightedHourTicks = Math.min(fullHours % 12, 12);
@@ -130,11 +123,11 @@ function DurationClock({ minutes }: { minutes: number | null }) {
           stroke={
             active
               ? 'rgba(250,204,21,0.95)'
-              : (i % 3 === 0
+              : i % 3 === 0
                 ? 'rgba(255,255,255,0.55)'
-                : 'rgba(255,255,255,0.22)')
+                : 'rgba(255,255,255,0.22)'
           }
-          strokeWidth={active ? 3 : (i % 3 === 0 ? 2 : 1.2)}
+          strokeWidth={active ? 3 : i % 3 === 0 ? 2 : 1.2}
           strokeLinecap="round"
         />
       );
@@ -172,19 +165,9 @@ function DurationClock({ minutes }: { minutes: number | null }) {
 
           {ticks}
 
-          <ClockHand
-            angle={totalAngle}
-            length={25}
-            width={4}
-            color="rgba(250,204,21,0.95)"
-          />
+          <ClockHand angle={totalAngle} length={25} width={4} color="rgba(250,204,21,0.95)" />
 
-          <ClockHand
-            angle={minuteAngle}
-            length={35}
-            width={2.5}
-            color="rgba(96,165,250,0.95)"
-          />
+          <ClockHand angle={minuteAngle} length={35} width={2.5} color="rgba(96,165,250,0.95)" />
 
           <circle cx="50" cy="50" r="4.5" fill="rgba(255,255,255,0.95)" />
         </svg>
@@ -197,23 +180,14 @@ function DurationClock({ minutes }: { minutes: number | null }) {
       </div>
 
       <div className="text-center">
-        <div className="text-[11px] uppercase tracking-wider text-slate-500">
-          Relógio
-        </div>
-        <div className="text-sm font-semibold text-blue-300">
-          {formatDuration(total)}
-        </div>
+        <div className="text-[11px] uppercase tracking-wider text-slate-500">Relógio</div>
+        <div className="text-sm font-semibold text-blue-300">{formatDuration(total)}</div>
       </div>
     </div>
   );
 }
 
-export function DurationPicker({
-  label,
-  minutes,
-  onChange,
-  mode = 'locked',
-}: Props) {
+export function DurationPicker({ label, minutes, onChange, mode = 'locked' }: Props) {
   const [manual, setManual] = useState(false);
 
   useEffect(() => {
@@ -225,19 +199,13 @@ export function DurationPicker({
   const mins = (value ?? 0) % 60;
 
   const update = (n: number | null) =>
-    onChange(
-      n === null
-        ? null
-        : Math.max(0, Math.min(599999, Math.round(n)))
-    );
+    onChange(n === null ? null : Math.max(0, Math.min(599999, Math.round(n))));
 
   return (
     <div className="rounded-lg border border-rkmborder bg-rkmcard2/40 p-3">
       <div className={`flex items-center justify-between gap-2 ${mode === 'edit' ? 'mb-3' : ''}`}>
         <span className="text-xs text-slate-400">{label}</span>
-        <strong className="text-sm tabular-nums text-blue-300">
-          {formatDuration(value)}
-        </strong>
+        <strong className="text-sm tabular-nums text-blue-300">{formatDuration(value)}</strong>
       </div>
 
       {mode === 'edit' && (
@@ -322,9 +290,12 @@ export function DurationPicker({
                   min="0"
                   max="9999"
                   value={hours}
-                  onChange={e => update(
-                    Math.min(9999, Math.max(0, Math.trunc(Number(e.target.value) || 0))) * 60 + mins
-                  )}
+                  onChange={(e) =>
+                    update(
+                      Math.min(9999, Math.max(0, Math.trunc(Number(e.target.value) || 0))) * 60 +
+                        mins,
+                    )
+                  }
                 />
               </label>
 
@@ -336,10 +307,12 @@ export function DurationPicker({
                   min="0"
                   max="59"
                   value={mins}
-                  onChange={e => update(
-                    hours * 60 +
-                    Math.min(59, Math.max(0, Math.trunc(Number(e.target.value) || 0)))
-                  )}
+                  onChange={(e) =>
+                    update(
+                      hours * 60 +
+                        Math.min(59, Math.max(0, Math.trunc(Number(e.target.value) || 0))),
+                    )
+                  }
                 />
               </label>
             </div>

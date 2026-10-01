@@ -58,28 +58,28 @@ const ROADMAP = [
           feature(
             'pcp/clientes',
             'Cadastro e busca de clientes',
-            'Selecionar por CNPJ, razão social ou nome fantasia.'
+            'Selecionar por CNPJ, razão social ou nome fantasia.',
           ),
           feature(
             'pcp/nota-fiscal',
             'Nota fiscal ou N/A',
-            'Registrar a nota fiscal ou marcar não aplicável.'
+            'Registrar a nota fiscal ou marcar não aplicável.',
           ),
           feature(
             'pcp/numeracao-os',
             'Numeração automática da OS',
-            'Gerar identificador único ao salvar.'
+            'Gerar identificador único ao salvar.',
           ),
           feature(
             'pcp/abertura-os',
             'Abertura mínima da OS',
-            'Criar e consultar uma OS vinculada ao cliente.'
+            'Criar e consultar uma OS vinculada ao cliente.',
           ),
           feature(
             'pcp/fotografias',
             'Fotografias',
             'Reservar espaço. Upload será implementado depois.',
-            'Depois do MVP'
+            'Depois do MVP',
           ),
         ],
       },
@@ -88,15 +88,11 @@ const ROADMAP = [
         title: 'Oficina · Peritagem',
         branch: 'features/oficina-peritagem',
         features: [
-          feature(
-            'oficina/bancadas',
-            'Bancadas',
-            'Identificar bancada livre ou ocupada.'
-          ),
+          feature('oficina/bancadas', 'Bancadas', 'Identificar bancada livre ou ocupada.'),
           feature(
             'oficina/inspecao',
             'Inspeção inicial',
-            'Classificar equipamento e registrar análise.'
+            'Classificar equipamento e registrar análise.',
           ),
         ],
       },
@@ -131,49 +127,56 @@ const ROADMAP = [
     id: 'V3',
     title: 'Controle e liberação',
     description: 'Evidências, pendências e validação.',
-    areas: [{
-      id: 'controle',
-      title: 'Controle técnico',
-      branch: 'features/controle-tecnico',
-      features: [
-        feature('controle/evidencias', 'Evidências', 'Vincular evidências à OS.'),
-        feature('controle/pendencias', 'Pendências', 'Registrar motivo e responsável.'),
-        feature('controle/liberacao', 'Liberação', 'Registrar validação técnica.'),
-      ],
-    }],
+    areas: [
+      {
+        id: 'controle',
+        title: 'Controle técnico',
+        branch: 'features/controle-tecnico',
+        features: [
+          feature('controle/evidencias', 'Evidências', 'Vincular evidências à OS.'),
+          feature('controle/pendencias', 'Pendências', 'Registrar motivo e responsável.'),
+          feature('controle/liberacao', 'Liberação', 'Registrar validação técnica.'),
+        ],
+      },
+    ],
   },
   {
     id: 'V4',
     title: 'Gestão operacional',
     description: 'Filas, gargalos e atrasos.',
-    areas: [{
-      id: 'gestao',
-      title: 'Gestão',
-      branch: 'features/gestao-operacional',
-      features: [
-        feature('gestao/capacidade', 'Capacidade por setor', 'Visualizar carga de trabalho.'),
-        feature('gestao/historico', 'Histórico operacional', 'Consultar evolução das OS.'),
-      ],
-    }],
+    areas: [
+      {
+        id: 'gestao',
+        title: 'Gestão',
+        branch: 'features/gestao-operacional',
+        features: [
+          feature('gestao/capacidade', 'Capacidade por setor', 'Visualizar carga de trabalho.'),
+          feature('gestao/historico', 'Histórico operacional', 'Consultar evolução das OS.'),
+        ],
+      },
+    ],
   },
   {
     id: 'V5',
     title: 'Cobertura validada',
     description: 'Fluxo completo utilizado pela RKM.',
-    areas: [{
-      id: 'escala',
-      title: 'Cobertura da oficina',
-      branch: 'features/cobertura-oficina',
-      features: [
-        feature('cobertura/ponta-a-ponta', 'Fluxo completo', 'Acompanhar até a finalização.'),
-        feature('cobertura/aceite', 'Aceite da RKM', 'Validar funcionalidades com o cliente.'),
-      ],
-    }],
+    areas: [
+      {
+        id: 'escala',
+        title: 'Cobertura da oficina',
+        branch: 'features/cobertura-oficina',
+        features: [
+          feature('cobertura/ponta-a-ponta', 'Fluxo completo', 'Acompanhar até a finalização.'),
+          feature('cobertura/aceite', 'Aceite da RKM', 'Validar funcionalidades com o cliente.'),
+        ],
+      },
+    ],
   },
 ];
 
 // Métricas exclusivamente para desenvolvimento em localhost.
-const LOCAL = import.meta.env.DEV &&
+const LOCAL =
+  import.meta.env.DEV &&
   typeof window !== 'undefined' &&
   ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
@@ -181,7 +184,6 @@ const STORAGE_KEY = 'rkm:private-dev-hours';
 
 // RKM_TASK_DONE_DEV_V1
 const TASK_STATUS_KEY = 'rkm:private-dev-task-status';
-
 
 function readHours() {
   if (!LOCAL) return {};
@@ -196,12 +198,9 @@ function readTaskStatuses() {
   if (!LOCAL) return {};
 
   try {
-    const value = JSON.parse(
-      localStorage.getItem(TASK_STATUS_KEY) || '{}'
-    );
+    const value = JSON.parse(localStorage.getItem(TASK_STATUS_KEY) || '{}');
 
-    return value && typeof value === 'object' &&
-      !Array.isArray(value) ? value : {};
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }
@@ -212,13 +211,12 @@ export function RoadmapView() {
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
   const [hours, setHours] = useState(readHours);
-  const [completedFeatures, setCompletedFeatures] =
-    useState(readTaskStatuses);
+  const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);
 
   // RKM_ROADMAP_MODES_V1
   const [editingHoursId, setEditingHoursId] = useState(null);
 
-  const version = ROADMAP.find(v => v.id === versionId) || ROADMAP[0];
+  const version = ROADMAP.find((v) => v.id === versionId) || ROADMAP[0];
 
   const toggleTaskDone = (id) => {
     if (!LOCAL) return;
@@ -232,10 +230,7 @@ export function RoadmapView() {
     }
 
     try {
-      localStorage.setItem(
-        TASK_STATUS_KEY,
-        JSON.stringify(next)
-      );
+      localStorage.setItem(TASK_STATUS_KEY, JSON.stringify(next));
 
       setCompletedFeatures(next);
 
@@ -266,9 +261,7 @@ export function RoadmapView() {
         <div className="text-xs font-semibold uppercase tracking-widest text-blue-300">
           Planejamento
         </div>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-100">
-          Roadmap
-        </h1>
+        <h1 className="mt-1 text-2xl font-semibold text-slate-100">Roadmap</h1>
         <p className="mt-1 text-sm text-slate-400">
           Selecione a versão e expanda a funcionalidade desejada.
         </p>
@@ -276,7 +269,7 @@ export function RoadmapView() {
         <div className="relative mt-6 grid grid-cols-5 gap-1 sm:gap-3">
           <div className="pointer-events-none absolute left-[10%] right-[10%] top-5 h-px bg-blue-400/50" />
 
-          {ROADMAP.map(v => {
+          {ROADMAP.map((v) => {
             const c = COLORS[v.id];
             const selected = v.id === versionId;
 
@@ -295,12 +288,12 @@ export function RoadmapView() {
                     : 'border-transparent hover:bg-slate-800/30'
                 }`}
               >
-                <span className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold ring-4 ring-rkmbg ${c.dot} ${selected ? c.glow : ''}`}>
+                <span
+                  className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold ring-4 ring-rkmbg ${c.dot} ${selected ? c.glow : ''}`}
+                >
                   {v.id}
                 </span>
-                <span className="mt-2 block text-[11px] font-medium text-slate-200">
-                  {c.name}
-                </span>
+                <span className="mt-2 block text-[11px] font-medium text-slate-200">{c.name}</span>
               </button>
             );
           })}
@@ -309,15 +302,9 @@ export function RoadmapView() {
 
       <section className="rkm-card overflow-hidden">
         <header className="border-b border-rkmborder p-5">
-          <span className="text-xs font-bold text-blue-300">
-            {version.id}
-          </span>
-          <h2 className="mt-2 text-xl font-semibold text-slate-100">
-            {version.title}
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            {version.description}
-          </p>
+          <span className="text-xs font-bold text-blue-300">{version.id}</span>
+          <h2 className="mt-2 text-xl font-semibold text-slate-100">{version.title}</h2>
+          <p className="mt-1 text-sm text-slate-400">{version.description}</p>
           {LOCAL && (
             <code className="mt-2 block text-xs text-blue-300">
               versions/{version.id.toLowerCase()}
@@ -326,7 +313,7 @@ export function RoadmapView() {
         </header>
 
         <div className="space-y-3 p-4">
-          {version.areas.map(area => (
+          {version.areas.map((area) => (
             <section
               key={area.id}
               className="overflow-hidden rounded-xl border border-rkmborder bg-rkmcard2/30"
@@ -340,15 +327,13 @@ export function RoadmapView() {
                   {areaId === area.id ? '▾' : '▸'} {area.title}
                 </span>
                 {LOCAL && (
-                  <code className="hidden text-xs text-blue-300 sm:block">
-                    {area.branch}
-                  </code>
+                  <code className="hidden text-xs text-blue-300 sm:block">{area.branch}</code>
                 )}
               </button>
 
               {areaId === area.id && (
                 <div className="space-y-2 border-t border-rkmborder p-3">
-                  {area.features.map(item => (
+                  {area.features.map((item) => (
                     <article
                       key={item.id}
                       className="rounded-lg border border-rkmborder bg-rkmbg/50"
@@ -356,9 +341,7 @@ export function RoadmapView() {
                       <button
                         type="button"
                         onClick={() => {
-                          setFeatureId(
-                            featureId === item.id ? '' : item.id
-                          );
+                          setFeatureId(featureId === item.id ? '' : item.id);
                           setEditingHoursId(null);
                         }}
                         className="flex w-full items-center justify-between gap-2 p-3 text-left"
@@ -366,25 +349,23 @@ export function RoadmapView() {
                         <span className="text-sm text-slate-200">
                           {featureId === item.id ? '▾' : '▸'} {item.title}
                         </span>
-                        <span className={`tag ${
-                          LOCAL && completedFeatures[item.id]
-                            ? 'tag-emerald'
-                            : item.state === 'Depois do MVP'
-                              ? 'tag-amber'
-                              : 'tag-slate'
-                        }`}>
-                          {LOCAL && completedFeatures[item.id]
-                            ? 'Concluída'
-                            : item.state}
+                        <span
+                          className={`tag ${
+                            LOCAL && completedFeatures[item.id]
+                              ? 'tag-emerald'
+                              : item.state === 'Depois do MVP'
+                                ? 'tag-amber'
+                                : 'tag-slate'
+                          }`}
+                        >
+                          {LOCAL && completedFeatures[item.id] ? 'Concluída' : item.state}
                         </span>
                       </button>
 
                       {featureId === item.id && (
                         <div className="space-y-3 border-t border-rkmborder p-3">
                           {LOCAL && (
-                            <code className="block text-xs text-blue-300">
-                              {item.branch}
-                            </code>
+                            <code className="block text-xs text-blue-300">{item.branch}</code>
                           )}
 
                           <p className="text-sm text-slate-300">
@@ -416,59 +397,58 @@ export function RoadmapView() {
                           {LOCAL && (
                             <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3">
                               <div className="mb-3 flex items-center justify-between gap-3">
-      <span className="text-xs font-semibold text-amber-300">
-        HORAS · APENAS LOCALHOST
-      </span>
+                                <span className="text-xs font-semibold text-amber-300">
+                                  HORAS · APENAS LOCALHOST
+                                </span>
 
-      <button
-        type="button"
-        disabled={Boolean(completedFeatures[item.id])}
-        onClick={() => setEditingHoursId(
-          editingHoursId === item.id ? null : item.id
-        )}
-        className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {completedFeatures[item.id]
-          ? '🔒 Reabra para editar'
-          : editingHoursId === item.id
-            ? '✓ Fechar edição'
-            : '✎ Editar horas'}
-      </button>
-    </div>
+                                <button
+                                  type="button"
+                                  disabled={Boolean(completedFeatures[item.id])}
+                                  onClick={() =>
+                                    setEditingHoursId(editingHoursId === item.id ? null : item.id)
+                                  }
+                                  className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  {completedFeatures[item.id]
+                                    ? '🔒 Reabra para editar'
+                                    : editingHoursId === item.id
+                                      ? '✓ Fechar edição'
+                                      : '✎ Editar horas'}
+                                </button>
+                              </div>
 
                               <div className="grid gap-3 sm:grid-cols-2">
                                 {['estimated', 'actual'].map((field, index) => (
-          <DurationPicker
-            mode={
-              !completedFeatures[item.id] &&
-              editingHoursId === item.id
-                ? "edit"
-                : "locked"
-            }
-            key={field}
-            label={index === 0 ? 'Estimativa inicial' : 'Tempo real'}
-            minutes={
-              hours[item.id]?.[field] == null ||
-              hours[item.id]?.[field] === ''
-                ? null
-                : Math.round(Number(hours[item.id][field]) * 60)
-            }
-            onChange={value =>
-              recordHours(
-                item.id,
-                field,
-                value === null ? '' : String(value / 60)
-              )
-            }
-          />
-        ))}
+                                  <DurationPicker
+                                    mode={
+                                      !completedFeatures[item.id] && editingHoursId === item.id
+                                        ? 'edit'
+                                        : 'locked'
+                                    }
+                                    key={field}
+                                    label={index === 0 ? 'Estimativa inicial' : 'Tempo real'}
+                                    minutes={
+                                      hours[item.id]?.[field] == null ||
+                                      hours[item.id]?.[field] === ''
+                                        ? null
+                                        : Math.round(Number(hours[item.id][field]) * 60)
+                                    }
+                                    onChange={(value) =>
+                                      recordHours(
+                                        item.id,
+                                        field,
+                                        value === null ? '' : String(value / 60),
+                                      )
+                                    }
+                                  />
+                                ))}
 
                                 <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2 w-full">
                                   Desvio:{' '}
                                   {hours[item.id]?.estimated !== undefined &&
-                                   hours[item.id]?.actual !== undefined &&
-                                   hours[item.id]?.estimated !== '' &&
-                                   hours[item.id]?.actual !== ''
+                                  hours[item.id]?.actual !== undefined &&
+                                  hours[item.id]?.estimated !== '' &&
+                                  hours[item.id]?.actual !== ''
                                     ? `${(
                                         Number(hours[item.id].actual) -
                                         Number(hours[item.id].estimated)

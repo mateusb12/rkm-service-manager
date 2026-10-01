@@ -6,21 +6,32 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
+    "format:roadmap": "prettier --write src/features/roadmap src/utils/DurationPicker.tsx",
+    "lint": "eslint src",
+    "lint:roadmap": "eslint src/features/roadmap src/utils/DurationPicker.tsx"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "react-router-dom": "latest",
     "typescript": "latest",
-    "react-router-dom": "latest"
+    "vite": "latest"
   },
   "devDependencies": {
-    "autoprefixer": "latest",
-    "postcss": "latest",
-    "tailwindcss": "^3.4.17",
     "@types/react": "latest",
-    "@types/react-dom": "latest"
+    "@types/react-dom": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.71.0",
+    "@typescript-eslint/parser": "^8.71.0",
+    "autoprefixer": "latest",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "postcss": "latest",
+    "prettier": "^3.9.9",
+    "tailwindcss": "^3.4.17"
   }
 }
