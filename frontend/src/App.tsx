@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { RoadmapView } from './features/roadmap';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './features/auth';
 import { ServiceEntryView } from './features/service-entry';
@@ -51,7 +52,6 @@ import {
     OperationalPlaceholder,
     CleanSidebar,
     CleanTopBar,
-    RoadmapView,
 } from './app/navigation';
 import {
     IT_CONFIG,

@@ -16,6 +16,3 @@ export {
     OperationalPlaceholder,
 } from './OperationalPlaceholder';
 
-export {
-    RoadmapView,
-} from './RoadmapView';
