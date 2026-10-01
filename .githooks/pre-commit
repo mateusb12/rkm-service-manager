@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+FRONT="$ROOT/frontend"
+
+declare -a prettier_files=()
+declare -a eslint_files=()
+declare -a go_files=()
+declare -a frontend_staged=()
+
+while IFS= read -r -d '' file; do
+  case "$file" in
+    frontend/package-lock.json)
+      ;;
+
+    frontend/*)
+      case "$file" in
+        *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|\
+        *.json|*.css|*.scss|*.html|*.md|*.yaml|*.yml)
+          prettier_files+=("${file#frontend/}")
+          frontend_staged+=("$file")
+          ;;
+      esac
+
+      case "$file" in
+        frontend/src/*.ts|frontend/src/*.tsx)
+          eslint_files+=("${file#frontend/}")
+          ;;
+      esac
+      ;;
+
+    backend/*.go)
+      go_files+=("$file")
+      ;;
+  esac
+done < <(
+  git diff --cached \
+    --name-only \
+    --diff-filter=ACMR \
+    -z
+)
+
+if (( ${#prettier_files[@]} == 0 &&
+      ${#eslint_files[@]} == 0 &&
+      ${#go_files[@]} == 0 )); then
+  echo "✅ Pre-commit: nenhuma verificação necessária."
+  exit 0
+fi
+
+# Prettier e ESLint leem arquivos do working tree.
+# Impedir resultados incorretos quando o conteúdo staged
+# é diferente do conteúdo presente no disco.
+if (( ${#frontend_staged[@]} > 0 )); then
+  if ! git diff --quiet -- "${frontend_staged[@]}"; then
+    echo "❌ Há mudanças não staged em arquivos frontend incluídos no commit."
+    echo "Resolva essa diferença antes de executar as verificações."
+    git diff --name-only -- "${frontend_staged[@]}"
+    exit 1
+  fi
+fi
+
+if (( ${#prettier_files[@]} > 0 )); then
+  echo "🎨 Prettier: ${#prettier_files[@]} arquivo(s)"
+
+  if [[ ! -x "$FRONT/node_modules/.bin/prettier" ]]; then
+    echo "❌ Prettier ausente. Execute npm ci em frontend/."
+    exit 1
+  fi
+
+  (
+    cd "$FRONT"
+    ./node_modules/.bin/prettier \
+      --check "${prettier_files[@]}"
+  )
+fi
+
+if (( ${#eslint_files[@]} > 0 )); then
+  echo "🔍 ESLint: ${#eslint_files[@]} arquivo(s)"
+
+  if [[ ! -x "$FRONT/node_modules/.bin/eslint" ]]; then
+    echo "❌ ESLint ausente. Execute npm ci em frontend/."
+    exit 1
+  fi
+
+  (
+    cd "$FRONT"
+    ./node_modules/.bin/eslint \
+      --max-warnings 0 \
+      "${eslint_files[@]}"
+  )
+fi
+
+if (( ${#go_files[@]} > 0 )); then
+  echo "🐹 gofmt: ${#go_files[@]} arquivo(s)"
+
+  command -v gofmt >/dev/null || {
+    echo "❌ gofmt indisponível."
+    exit 1
+  }
+
+  for file in "${go_files[@]}"; do
+    # Verifica o conteúdo staged, não a cópia do working tree.
+    diff="$(git show ":$file" | gofmt -d)"
+
+    if [[ -n "$diff" ]]; then
+      echo "❌ Formatação Go incorreta: $file"
+      printf '%s\n' "$diff"
+      exit 1
+    fi
+  done
+fi
+
+echo "✅ Pre-commit passou!"
