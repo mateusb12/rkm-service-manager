@@ -3,6 +3,7 @@
  * O módulo é carregado dinamicamente apenas por RoadmapView em localhost + DEV.
  * Nenhum dado é enviado ao backend ou ao cliente.
  */
+import { DurationPicker } from '../../utils/DurationPicker';
 import { useEffect, useState } from 'react';
 
 type Hours = { estimated: string; actual: string };
@@ -44,16 +45,28 @@ export default function RoadmapMetricsDev({ featureId }: { featureId: string }) 
         <span className="tag tag-amber">SÓ LOCALHOST</span>
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
-        <label className="block text-xs text-slate-300">
-          Estimativa inicial (h)
-          <input aria-label="Estimativa inicial em horas" className="rkm-input mt-1" type="number" min="0" step="0.25"
-            placeholder="Ex.: 3" value={hours.estimated} onChange={event => update('estimated', event.target.value)} />
-        </label>
-        <label className="block text-xs text-slate-300">
-          Tempo registrado (h)
-          <input aria-label="Tempo registrado em horas" className="rkm-input mt-1" type="number" min="0" step="0.25"
-            placeholder="Preencher ao concluir" value={hours.actual} onChange={event => update('actual', event.target.value)} />
-        </label>
+        <DurationPicker mode="edit"
+              label="Estimativa inicial"
+              minutes={
+                hours.estimated === ''
+                  ? null
+                  : Math.round(Number(hours.estimated) * 60)
+              }
+              onChange={value =>
+                update('estimated', value === null ? '' : String(value / 60))
+              }
+            />
+        <DurationPicker mode="edit"
+              label="Tempo registrado"
+              minutes={
+                hours.actual === ''
+                  ? null
+                  : Math.round(Number(hours.actual) * 60)
+              }
+              onChange={value =>
+                update('actual', value === null ? '' : String(value / 60))
+              }
+            />
         <div className="rounded-lg border border-rkmborder bg-rkmbg p-3">
           <div className="text-xs text-slate-400">Desvio</div>
           <div className={`mt-2 text-lg font-semibold ${difference === null ? 'text-slate-500' : difference > 0 ? 'text-amber-300' : 'text-emerald-300'}`}>

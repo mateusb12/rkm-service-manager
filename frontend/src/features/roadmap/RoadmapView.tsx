@@ -1,5 +1,6 @@
 // RKM_ROADMAP_COMPACT_V1
 // @ts-nocheck
+import { DurationPicker } from '../../utils/DurationPicker';
 import React, { useState } from 'react';
 
 const COLORS = {
@@ -192,6 +193,8 @@ export function RoadmapView() {
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
   const [hours, setHours] = useState(readHours);
+  // RKM_ROADMAP_MODES_V1
+  const [editingHoursId, setEditingHoursId] = useState(null);
 
   const version = ROADMAP.find(v => v.id === versionId) || ROADMAP[0];
 
@@ -302,9 +305,12 @@ export function RoadmapView() {
                     >
                       <button
                         type="button"
-                        onClick={() => setFeatureId(
-                          featureId === item.id ? '' : item.id
-                        )}
+                        onClick={() => {
+                          setFeatureId(
+                            featureId === item.id ? '' : item.id
+                          );
+                          setEditingHoursId(null);
+                        }}
                         className="flex w-full items-center justify-between gap-2 p-3 text-left"
                       >
                         <span className="text-sm text-slate-200">
@@ -333,31 +339,43 @@ export function RoadmapView() {
 
                           {LOCAL && (
                             <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3">
-                              <div className="mb-3 text-xs font-semibold text-amber-300">
-                                HORAS · APENAS LOCALHOST
-                              </div>
+                              <div className="mb-3 flex items-center justify-between gap-3">
+      <span className="text-xs font-semibold text-amber-300">
+        HORAS · APENAS LOCALHOST
+      </span>
+
+      <button
+        type="button"
+        onClick={() => setEditingHoursId(
+          editingHoursId === item.id ? null : item.id
+        )}
+        className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10"
+      >
+        {editingHoursId === item.id ? '✓ Concluir' : '✎ Editar horas'}
+      </button>
+    </div>
 
                               <div className="grid gap-3 sm:grid-cols-3">
                                 {['estimated', 'actual'].map((field, index) => (
-                                  <label
-                                    key={field}
-                                    className="text-xs text-slate-300"
-                                  >
-                                    {index === 0
-                                      ? 'Estimativa inicial (h)'
-                                      : 'Tempo real (h)'}
-                                    <input
-                                      className="rkm-input mt-1"
-                                      type="number"
-                                      min="0"
-                                      step="0.25"
-                                      value={hours[item.id]?.[field] || ''}
-                                      onChange={e => recordHours(
-                                        item.id, field, e.target.value
-                                      )}
-                                    />
-                                  </label>
-                                ))}
+          <DurationPicker
+            mode={editingHoursId === item.id ? "edit" : "locked"}
+            key={field}
+            label={index === 0 ? 'Estimativa inicial' : 'Tempo real'}
+            minutes={
+              hours[item.id]?.[field] == null ||
+              hours[item.id]?.[field] === ''
+                ? null
+                : Math.round(Number(hours[item.id][field]) * 60)
+            }
+            onChange={value =>
+              recordHours(
+                item.id,
+                field,
+                value === null ? '' : String(value / 60)
+              )
+            }
+          />
+        ))}
 
                                 <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300">
                                   Desvio:{' '}
