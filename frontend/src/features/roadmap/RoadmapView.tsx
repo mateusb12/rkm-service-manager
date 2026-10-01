@@ -355,7 +355,7 @@ export function RoadmapView() {
       </button>
     </div>
 
-                              <div className="grid gap-3 sm:grid-cols-3">
+                              <div className="grid gap-3 sm:grid-cols-2">
                                 {['estimated', 'actual'].map((field, index) => (
           <DurationPicker
             mode={editingHoursId === item.id ? "edit" : "locked"}
@@ -377,7 +377,7 @@ export function RoadmapView() {
           />
         ))}
 
-                                <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300">
+                                <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2 w-full">
                                   Desvio:{' '}
                                   {hours[item.id]?.estimated !== undefined &&
                                    hours[item.id]?.actual !== undefined &&
