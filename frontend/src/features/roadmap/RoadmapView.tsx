@@ -179,10 +179,29 @@ const LOCAL = import.meta.env.DEV &&
 
 const STORAGE_KEY = 'rkm:private-dev-hours';
 
+// RKM_TASK_DONE_DEV_V1
+const TASK_STATUS_KEY = 'rkm:private-dev-task-status';
+
+
 function readHours() {
   if (!LOCAL) return {};
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function readTaskStatuses() {
+  if (!LOCAL) return {};
+
+  try {
+    const value = JSON.parse(
+      localStorage.getItem(TASK_STATUS_KEY) || '{}'
+    );
+
+    return value && typeof value === 'object' &&
+      !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }
@@ -193,13 +212,44 @@ export function RoadmapView() {
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
   const [hours, setHours] = useState(readHours);
+  const [completedFeatures, setCompletedFeatures] =
+    useState(readTaskStatuses);
+
   // RKM_ROADMAP_MODES_V1
   const [editingHoursId, setEditingHoursId] = useState(null);
 
   const version = ROADMAP.find(v => v.id === versionId) || ROADMAP[0];
 
-  const recordHours = (id, field, value) => {
+  const toggleTaskDone = (id) => {
     if (!LOCAL) return;
+
+    const next = { ...completedFeatures };
+
+    if (next[id]) {
+      delete next[id];
+    } else {
+      next[id] = true;
+    }
+
+    try {
+      localStorage.setItem(
+        TASK_STATUS_KEY,
+        JSON.stringify(next)
+      );
+
+      setCompletedFeatures(next);
+
+      if (next[id]) {
+        setEditingHoursId(null);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar status:', error);
+    }
+  };
+
+  const recordHours = (id, field, value) => {
+    // RKM_LOCK_COMPLETED_HOURS_V1
+    if (!LOCAL || completedFeatures[id]) return;
 
     const next = {
       ...hours,
@@ -317,11 +367,15 @@ export function RoadmapView() {
                           {featureId === item.id ? '▾' : '▸'} {item.title}
                         </span>
                         <span className={`tag ${
-                          item.state === 'Depois do MVP'
-                            ? 'tag-amber'
-                            : 'tag-slate'
+                          LOCAL && completedFeatures[item.id]
+                            ? 'tag-emerald'
+                            : item.state === 'Depois do MVP'
+                              ? 'tag-amber'
+                              : 'tag-slate'
                         }`}>
-                          {item.state}
+                          {LOCAL && completedFeatures[item.id]
+                            ? 'Concluída'
+                            : item.state}
                         </span>
                       </button>
 
@@ -338,6 +392,28 @@ export function RoadmapView() {
                           </p>
 
                           {LOCAL && (
+                            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rkmborder bg-rkmcard2/30 p-3">
+                              <span className="text-xs font-medium text-slate-400">
+                                STATUS DE DESENVOLVIMENTO
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => toggleTaskDone(item.id)}
+                                className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                                  completedFeatures[item.id]
+                                    ? 'border-amber-400/40 bg-amber-400/10 text-amber-200 hover:bg-amber-400/20'
+                                    : 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20'
+                                }`}
+                              >
+                                {completedFeatures[item.id]
+                                  ? '↶ Reabrir feature'
+                                  : '✓ Marcar como concluída'}
+                              </button>
+                            </div>
+                          )}
+
+                          {LOCAL && (
                             <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3">
                               <div className="mb-3 flex items-center justify-between gap-3">
       <span className="text-xs font-semibold text-amber-300">
@@ -346,19 +422,29 @@ export function RoadmapView() {
 
       <button
         type="button"
+        disabled={Boolean(completedFeatures[item.id])}
         onClick={() => setEditingHoursId(
           editingHoursId === item.id ? null : item.id
         )}
-        className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10"
+        className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {editingHoursId === item.id ? '✓ Concluir' : '✎ Editar horas'}
+        {completedFeatures[item.id]
+          ? '🔒 Reabra para editar'
+          : editingHoursId === item.id
+            ? '✓ Fechar edição'
+            : '✎ Editar horas'}
       </button>
     </div>
 
                               <div className="grid gap-3 sm:grid-cols-2">
                                 {['estimated', 'actual'].map((field, index) => (
           <DurationPicker
-            mode={editingHoursId === item.id ? "edit" : "locked"}
+            mode={
+              !completedFeatures[item.id] &&
+              editingHoursId === item.id
+                ? "edit"
+                : "locked"
+            }
             key={field}
             label={index === 0 ? 'Estimativa inicial' : 'Tempo real'}
             minutes={

@@ -244,6 +244,10 @@ export function DurationPicker({
         <>
           <div className="grid gap-3 lg:grid-cols-[1fr_148px]">
             <div>
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Duração rápida
+              </div>
+
               <div className="grid grid-cols-3 gap-2">
                 {PRESETS.map(([n, text]) => (
                   <button
@@ -262,40 +266,46 @@ export function DurationPicker({
                 ))}
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  className="rounded-md border border-rkmborder px-2 py-1.5 text-xs"
-                  onClick={() => update((value ?? 0) - 15)}
-                >
-                  −15min
-                </button>
+              {/* RKM_DURATION_FINE_TUNE_V1 */}
+              <div className="mt-3 border-t border-rkmborder pt-3">
+                <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Ajuste fino
+                </div>
 
-                <button
-                  type="button"
-                  className="rounded-md border border-rkmborder px-2 py-1.5 text-xs"
-                  onClick={() => update((value ?? 0) + 15)}
-                >
-                  +15min
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-md border border-rkmborder px-2 py-1.5 text-xs text-blue-300"
-                  onClick={() => setManual(!manual)}
-                >
-                  Personalizar
-                </button>
-
-                {value !== null && (
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    className="ml-auto text-xs text-slate-400"
+                    className="rounded-md border border-rkmborder bg-rkmbg px-2 py-2 text-xs text-slate-300 transition hover:border-blue-400/60"
+                    onClick={() => update((value ?? 0) - 15)}
+                  >
+                    −15min
+                  </button>
+
+                  <button
+                    type="button"
+                    className="rounded-md border border-rkmborder bg-rkmbg px-2 py-2 text-xs text-slate-300 transition hover:border-blue-400/60"
+                    onClick={() => update((value ?? 0) + 15)}
+                  >
+                    +15min
+                  </button>
+
+                  <button
+                    type="button"
+                    className="rounded-md border border-rkmborder bg-rkmbg px-2 py-2 text-xs text-blue-300 transition hover:border-blue-400/60"
+                    onClick={() => setManual(!manual)}
+                  >
+                    Personalizar
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={value === null}
+                    className="rounded-md border border-rkmborder bg-rkmbg px-2 py-2 text-xs text-slate-300 transition hover:border-blue-400/60 disabled:cursor-not-allowed disabled:opacity-35"
                     onClick={() => update(null)}
                   >
                     Limpar
                   </button>
-                )}
+                </div>
               </div>
             </div>
 
