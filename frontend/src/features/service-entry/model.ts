@@ -9,84 +9,83 @@
  */
 
 export const SERVICE_ENTRY_STEPS = [
-    { id: 'receiving', label: 'Recebimento', status: 'Recebido' },
-    { id: 'triage', label: 'Condição e segurança', status: 'Em triagem' },
-    { id: 'disassembly', label: 'Desmontagem', status: 'Aguardando desmontagem' },
-    { id: 'diagnosis', label: 'Diagnóstico e aprovação', status: 'Em diagnóstico' },
-    { id: 'execution', label: 'Execução e qualidade', status: 'Em execução' },
-    { id: 'dispatch', label: 'Expedição', status: 'Pronto para expedição' },
+  { id: 'receiving', label: 'Recebimento', status: 'Recebido' },
+  { id: 'triage', label: 'Condição e segurança', status: 'Em triagem' },
+  { id: 'disassembly', label: 'Desmontagem', status: 'Aguardando desmontagem' },
+  { id: 'diagnosis', label: 'Diagnóstico e aprovação', status: 'Em diagnóstico' },
+  { id: 'execution', label: 'Execução e qualidade', status: 'Em execução' },
+  { id: 'dispatch', label: 'Expedição', status: 'Pronto para expedição' },
 ];
 
 export const createEmptyServiceEntry = () => ({
-    orderType: '',
-    orderNumber: '',
-    previousOrderNumber: '',
-    expectedDeliveryDate: '',
-    urgent: false,
+  orderType: '',
+  orderNumber: '',
+  previousOrderNumber: '',
+  expectedDeliveryDate: '',
+  urgent: false,
 
-    client: '',
-    clientReference: '',
-    requester: '',
-    openingDate: new Date().toISOString().slice(0, 10),
-    invoiceNumber: '',
+  client: '',
+  clientReference: '',
+  requester: '',
+  openingDate: new Date().toISOString().slice(0, 10),
+  invoiceNumber: '',
 
-    serialNumber: '',
-    manufacturer: '',
-    equipment: '',
-    model: '',
-    claimedDefect: '',
+  serialNumber: '',
+  manufacturer: '',
+  equipment: '',
+  model: '',
+  claimedDefect: '',
 
-    shippingNotes: '',
-    equipmentLocation: '',
-    serviceResponsible: '',
-    expertTechnician: '',
+  shippingNotes: '',
+  equipmentLocation: '',
+  serviceResponsible: '',
+  expertTechnician: '',
 
-    hydraulic: true,
-    pneumatic: false,
-    fluidApplication: '',
-    receivedBy: '',
-    deliveredBy: '',
-    arrivalCondition: '',
-    receivedAccessories: '',
-    pressureState: 'Desconhecida',
-    safetyReviewed: false,
-    safeToDisassemble: false,
-    disassemblyOperator: '',
-    disassemblyStartedAt: '',
-    disassemblyComplete: false,
-    disassemblyControlled: false,
-    partsSeparated: false,
-    oilCollected: false,
-    disassemblyNotes: '',
-    partsDisposition: '',
-    diagnosis: '',
-    measurements: '',
-    repairRecommendation: '',
-    approvalRequired: false,
-    approvalStatus: 'Pendente',
-    materialStatus: 'A verificar',
-    approvalReference: '',
-    workPerformed: '',
-    testResult: '',
-    qualityApproved: false,
-    dispatchMethod: '',
-    dispatchReference: '',
-    dispatchNotes: '',
-    dispatched: false,
-    photos: { arrival: [], disassembly: [], diagnosis: [], execution: [], dispatch: [] },
-    currentStep: 0,
+  hydraulic: true,
+  pneumatic: false,
+  fluidApplication: '',
+  receivedBy: '',
+  deliveredBy: '',
+  arrivalCondition: '',
+  receivedAccessories: '',
+  pressureState: 'Desconhecida',
+  safetyReviewed: false,
+  safeToDisassemble: false,
+  disassemblyOperator: '',
+  disassemblyStartedAt: '',
+  disassemblyComplete: false,
+  disassemblyControlled: false,
+  partsSeparated: false,
+  oilCollected: false,
+  disassemblyNotes: '',
+  partsDisposition: '',
+  diagnosis: '',
+  measurements: '',
+  repairRecommendation: '',
+  approvalRequired: false,
+  approvalStatus: 'Pendente',
+  materialStatus: 'A verificar',
+  approvalReference: '',
+  workPerformed: '',
+  testResult: '',
+  qualityApproved: false,
+  dispatchMethod: '',
+  dispatchReference: '',
+  dispatchNotes: '',
+  dispatched: false,
+  photos: { arrival: [], disassembly: [], diagnosis: [], execution: [], dispatch: [] },
+  currentStep: 0,
 });
 
 export const normalizeOrderNumber = (value) => {
-    const clean = String(value || '').trim().toUpperCase();
+  const clean = String(value || '')
+    .trim()
+    .toUpperCase();
 
-    if (!clean) return '';
+  if (!clean) return '';
 
-    return clean.startsWith('OS-')
-        ? clean
-        : `OS-${clean}`;
+  return clean.startsWith('OS-') ? clean : `OS-${clean}`;
 };
 
-export const getFurthestServiceEntryStep = (currentStep, persistedStep = 0) => (
-    Math.max(Number(currentStep) || 0, Number(persistedStep) || 0)
-);
+export const getFurthestServiceEntryStep = (currentStep, persistedStep = 0) =>
+  Math.max(Number(currentStep) || 0, Number(persistedStep) || 0);

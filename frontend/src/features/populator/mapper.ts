@@ -1,207 +1,157 @@
 // @ts-nocheck
 
-import {
-    createEmptyServiceEntry,
-    normalizeOrderNumber,
-} from '../service-entry/model';
-
+import { createEmptyServiceEntry, normalizeOrderNumber } from '../service-entry/model';
 
 export const REQUIRED_POPULATOR_FIELDS = [
-    ['orderType', 'Categoria do equipamento'],
-    ['orderNumber', 'Nº da ordem'],
-    ['client', 'Cliente'],
-    ['equipment', 'Equipamento'],
+  ['orderType', 'Categoria do equipamento'],
+  ['orderNumber', 'Nº da ordem'],
+  ['client', 'Cliente'],
+  ['equipment', 'Equipamento'],
 ];
 
+const normalizeSearchText = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
 
-const normalizeSearchText = value =>
-    String(value || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim()
-        .toLowerCase();
+export const classifyRkmOrderType = (equipment) => {
+  const value = normalizeSearchText(equipment);
 
+  if (value.includes('cilindro')) {
+    return 'Cilindro';
+  }
 
-export const classifyRkmOrderType = equipment => {
-    const value = normalizeSearchText(equipment);
+  if (value.includes('acumulador')) {
+    return 'Acumulador';
+  }
 
-    if (value.includes('cilindro')) {
-        return 'Cilindro';
-    }
+  if (value.includes('bomba')) {
+    return 'Bomba';
+  }
 
-    if (value.includes('acumulador')) {
-        return 'Acumulador';
-    }
+  if (value.includes('motor')) {
+    return 'Motor hidráulico';
+  }
 
-    if (value.includes('bomba')) {
-        return 'Bomba';
-    }
-
-    if (value.includes('motor')) {
-        return 'Motor hidráulico';
-    }
-
-    return 'Outro';
+  return 'Outro';
 };
 
+export const validateMappedServiceEntry = (entry) => {
+  const missing = REQUIRED_POPULATOR_FIELDS.filter(([key]) => !String(entry[key] || '').trim()).map(
+    ([key, label]) => ({
+      key,
+      label,
+    }),
+  );
 
-export const validateMappedServiceEntry = entry => {
-    const missing = REQUIRED_POPULATOR_FIELDS
-        .filter(([key]) => !String(entry[key] || '').trim())
-        .map(([key, label]) => ({
-            key,
-            label,
-        }));
-
-    return {
-        valid: missing.length === 0,
-        missing,
-    };
+  return {
+    valid: missing.length === 0,
+    missing,
+  };
 };
-
 
 const LIZY_STATUS_STEP = {
-    'Aguardando Inspeções': 2,
-    Analisando: 2,
+  'Aguardando Inspeções': 2,
+  Analisando: 2,
 };
 
+export const mapLizyStatusToServiceEntry = (sourceStatus) => {
+  const status = String(sourceStatus || '').trim();
 
-export const mapLizyStatusToServiceEntry = sourceStatus => {
-    const status = String(sourceStatus || '').trim();
-
-    return {
-        status: status || 'Recebido',
-        currentStep: status
-            ? (LIZY_STATUS_STEP[status] ?? 0)
-            : 0,
-    };
+  return {
+    status: status || 'Recebido',
+    currentStep: status ? (LIZY_STATUS_STEP[status] ?? 0) : 0,
+  };
 };
 
+export const mapLizyOrderToServiceEntry = (source, timestamp = new Date().toISOString()) => {
+  const normalizedOrderNumber = normalizeOrderNumber(source.orderNumber);
 
-export const mapLizyOrderToServiceEntry = (
-    source,
-    timestamp = new Date().toISOString(),
-) => {
-    const normalizedOrderNumber =
-        normalizeOrderNumber(source.orderNumber);
+  return {
+    ...createEmptyServiceEntry(),
 
-    return {
-        ...createEmptyServiceEntry(),
+    id: normalizedOrderNumber,
+    orderNumber: normalizedOrderNumber,
 
-        id: normalizedOrderNumber,
-        orderNumber: normalizedOrderNumber,
+    /*
+     * Lizy's "Motor" category is deliberately NOT mapped
+     * directly to Motor hidráulico.
+     *
+     * RKM category is derived conservatively from the
+     * equipment description, while the original Lizy
+     * category remains preserved under sourceMetadata.
+     */
+    orderType: classifyRkmOrderType(source.equipment),
 
-        /*
-         * Lizy's "Motor" category is deliberately NOT mapped
-         * directly to Motor hidráulico.
-         *
-         * RKM category is derived conservatively from the
-         * equipment description, while the original Lizy
-         * category remains preserved under sourceMetadata.
-         */
-        orderType: classifyRkmOrderType(
-            source.equipment,
-        ),
+    openingDate: source.openingDate || '',
 
-        openingDate:
-            source.openingDate || '',
+    expectedDeliveryDate: source.expectedDeliveryDate || '',
 
-        expectedDeliveryDate:
-            source.expectedDeliveryDate || '',
+    urgent: source.urgent === true,
 
-        urgent:
-            source.urgent === true,
+    client: source.client || '',
 
-        client:
-            source.client || '',
+    clientReference: source.clientReference || '',
 
-        clientReference:
-            source.clientReference || '',
+    requester: source.requester || '',
 
-        requester:
-            source.requester || '',
+    invoiceNumber: source.invoiceNumber || '',
 
-        invoiceNumber:
-            source.invoiceNumber || '',
+    serialNumber: source.serialNumber || '',
 
-        serialNumber:
-            source.serialNumber || '',
+    manufacturer: source.manufacturer || '',
 
-        manufacturer:
-            source.manufacturer || '',
+    equipment: source.equipment || '',
 
-        equipment:
-            source.equipment || '',
+    model: source.model || '',
 
-        model:
-            source.model || '',
+    claimedDefect: source.claimedDefect || '',
 
-        claimedDefect:
-            source.claimedDefect || '',
+    /*
+     * Do not inherit createEmptyServiceEntry's hydraulic
+     * default when the Lizy source didn't establish it.
+     */
+    hydraulic: source.hydraulic === true,
 
-        /*
-         * Do not inherit createEmptyServiceEntry's hydraulic
-         * default when the Lizy source didn't establish it.
-         */
-        hydraulic:
-            source.hydraulic === true,
+    pneumatic: source.pneumatic === true,
 
-        pneumatic:
-            source.pneumatic === true,
+    ...mapLizyStatusToServiceEntry(source.sourceStatus),
 
-        ...mapLizyStatusToServiceEntry(source.sourceStatus),
+    createdAt: timestamp,
+    updatedAt: timestamp,
 
-        createdAt: timestamp,
-        updatedAt: timestamp,
+    sourceMetadata: {
+      system: 'lizy',
 
-        sourceMetadata: {
-            system: 'lizy',
+      sourceOrderNumber: source.orderNumber,
 
-            sourceOrderNumber:
-                source.orderNumber,
+      sourceStatus: source.sourceStatus || '',
 
-            sourceStatus:
-                source.sourceStatus || '',
+      sourceOrderKind: source.sourceOrderKind || '',
 
-            sourceOrderKind:
-                source.sourceOrderKind || '',
+      sourceEquipmentCategory: source.sourceEquipmentCategory || '',
 
-            sourceEquipmentCategory:
-                source.sourceEquipmentCategory || '',
+      rkmCategoryOrigin: 'derived-from-equipment-name',
 
-            rkmCategoryOrigin:
-                'derived-from-equipment-name',
+      clientRedacted: source.clientRedacted === true,
 
-            clientRedacted:
-                source.clientRedacted === true,
+      visibleImageCount: source.visibleImageCount ?? null,
 
-            visibleImageCount:
-                source.visibleImageCount ?? null,
+      checklistMarked: [...(source.checklistMarked || [])],
 
-            checklistMarked:
-                [...(source.checklistMarked || [])],
+      checklistUnmarked: [...(source.checklistUnmarked || [])],
 
-            checklistUnmarked:
-                [...(source.checklistUnmarked || [])],
+      unidentifiedChecklistMarks: Number(source.unidentifiedChecklistMarks || 0),
 
-            unidentifiedChecklistMarks:
-                Number(
-                    source.unidentifiedChecklistMarks || 0
-                ),
+      sourceMissing: {
+        empty: [...(source.sourceMissing?.empty || [])],
 
-            sourceMissing: {
-                empty: [
-                    ...(source.sourceMissing?.empty || []),
-                ],
+        notInformed: [...(source.sourceMissing?.notInformed || [])],
+      },
 
-                notInformed: [
-                    ...(source.sourceMissing?.notInformed || []),
-                ],
-            },
-
-            notes: [
-                ...(source.sourceNotes || []),
-            ],
-        },
-    };
+      notes: [...(source.sourceNotes || [])],
+    },
+  };
 };

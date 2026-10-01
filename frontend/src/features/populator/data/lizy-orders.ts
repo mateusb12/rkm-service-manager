@@ -12,751 +12,662 @@
  */
 
 export const LIZY_ORDERS = [
-    {
-        orderNumber: '20265584',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+  {
+    orderNumber: '20265584',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        client: 'RKM HIDRAULICA',
+    client: 'RKM HIDRAULICA',
 
-        openingDate: '2026-09-10',
-        expectedDeliveryDate: '',
-        invoiceNumber: '',
-        serialNumber: '',
-        manufacturer: '',
+    openingDate: '2026-09-10',
+    expectedDeliveryDate: '',
+    invoiceNumber: '',
+    serialNumber: '',
+    manufacturer: '',
 
-        equipment: 'Bloco hidráulico',
-        model: '',
+    equipment: 'Bloco hidráulico',
+    model: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        urgent: false,
-        hydraulic: true,
-        pneumatic: false,
+    urgent: false,
+    hydraulic: true,
+    pneumatic: false,
 
-        visibleImageCount: 1,
+    visibleImageCount: 1,
 
-        checklistMarked: [
-            'Hidráulico',
-            'Apres. Relatório',
-            'Recuperável',
-        ],
+    checklistMarked: ['Hidráulico', 'Apres. Relatório', 'Recuperável'],
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 16,
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 16,
 
-        sourceMissing: {
-            empty: [
-                'expectedDeliveryDate',
-                'invoiceNumber',
-                'model',
-            ],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
-
-        sourceNotes: [
-            'Observação de expedição existe na ficha, mas o conteúdo não foi coletado.',
-        ],
+    sourceMissing: {
+      empty: ['expectedDeliveryDate', 'invoiceNumber', 'model'],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '20265583',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: ['Observação de expedição existe na ficha, mas o conteúdo não foi coletado.'],
+  },
 
-        client: 'RKM HIDRAULICA',
+  {
+    orderNumber: '20265583',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-09-10',
-        expectedDeliveryDate: '',
-        invoiceNumber: '',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'RKM HIDRAULICA',
 
-        equipment: 'Bomba de pistão',
-        model: 'hidraulico',
+    openingDate: '2026-09-10',
+    expectedDeliveryDate: '',
+    invoiceNumber: '',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Bomba de pistão',
+    model: 'hidraulico',
 
-        urgent: false,
-        hydraulic: true,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: true,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Hidráulico',
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Hidráulico', 'Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [
-                'expectedDeliveryDate',
-            ],
-            notInformed: [
-                'invoiceNumber',
-                'manufacturer',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [
-            'Observação de expedição existe na ficha, mas o conteúdo não foi coletado.',
-        ],
+    sourceMissing: {
+      empty: ['expectedDeliveryDate'],
+      notInformed: ['invoiceNumber', 'manufacturer'],
     },
 
-    {
-        orderNumber: '20265582',
-        sourceStatus: 'Analisando',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: ['Observação de expedição existe na ficha, mas o conteúdo não foi coletado.'],
+  },
 
-        client: 'PLANALTO INDUSTRIA',
+  {
+    orderNumber: '20265582',
+    sourceStatus: 'Analisando',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-09-10',
-        expectedDeliveryDate: '',
-        invoiceNumber: '',
-        serialNumber: '',
-        manufacturer: 'planalto',
+    client: 'PLANALTO INDUSTRIA',
 
-        equipment: 'Cilindro hidráulico',
-        model: 'Telescópio',
+    openingDate: '2026-09-10',
+    expectedDeliveryDate: '',
+    invoiceNumber: '',
+    serialNumber: '',
+    manufacturer: 'planalto',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro hidráulico',
+    model: 'Telescópio',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Erro de Montagem',
-            'Falha de Vedação',
-            'Troca de Vedações',
-            'Teste Hidrostático (ISO 10100)',
-            'Recuperável',
-        ],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 16,
+    checklistMarked: [
+      'Erro de Montagem',
+      'Falha de Vedação',
+      'Troca de Vedações',
+      'Teste Hidrostático (ISO 10100)',
+      'Recuperável',
+    ],
 
-        sourceMissing: {
-            empty: [
-                'expectedDeliveryDate',
-            ],
-            notInformed: [
-                'invoiceNumber',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 16,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: ['expectedDeliveryDate'],
+      notInformed: ['invoiceNumber'],
     },
 
-    {
-        orderNumber: '20265581',
-        sourceStatus: 'Analisando',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'PLANALTO INDUSTRIA',
+  {
+    orderNumber: '20265581',
+    sourceStatus: 'Analisando',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-09-10',
-        expectedDeliveryDate: '',
-        invoiceNumber: '',
-        serialNumber: '',
-        manufacturer: 'planalto',
+    client: 'PLANALTO INDUSTRIA',
 
-        equipment: 'Telescópio',
-        model: '',
+    openingDate: '2026-09-10',
+    expectedDeliveryDate: '',
+    invoiceNumber: '',
+    serialNumber: '',
+    manufacturer: 'planalto',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Telescópio',
+    model: '',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Apres. Relatório',
-            'Erro de Montagem',
-            'Falha de Vedação',
-            'Troca de Vedações',
-            'Teste Hidrostático',
-            'Recuperável',
-        ],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 16,
+    checklistMarked: [
+      'Apres. Relatório',
+      'Erro de Montagem',
+      'Falha de Vedação',
+      'Troca de Vedações',
+      'Teste Hidrostático',
+      'Recuperável',
+    ],
 
-        sourceMissing: {
-            empty: [
-                'expectedDeliveryDate',
-            ],
-            notInformed: [
-                'invoiceNumber',
-                'model',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 16,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: ['expectedDeliveryDate'],
+      notInformed: ['invoiceNumber', 'model'],
     },
 
-    {
-        orderNumber: '20265580',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        /*
-         * Client was redacted in the source material available here.
-         * Never replace this with a placeholder business value.
-         */
-        client: '',
-        clientRedacted: true,
+  {
+    orderNumber: '20265580',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-09-10',
-        expectedDeliveryDate: '',
-        invoiceNumber: '',
-        serialNumber: '',
-        manufacturer: '',
+    /*
+     * Client was redacted in the source material available here.
+     * Never replace this with a placeholder business value.
+     */
+    client: '',
+    clientRedacted: true,
 
-        equipment: 'Comando hidráulico',
-        model: '',
+    openingDate: '2026-09-10',
+    expectedDeliveryDate: '',
+    invoiceNumber: '',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: 'troca vedações',
+    equipment: 'Comando hidráulico',
+    model: '',
 
-        urgent: false,
-        hydraulic: true,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: 'troca vedações',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: true,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Hidráulico',
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Hidráulico', 'Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [
-                'expectedDeliveryDate',
-            ],
-            notInformed: [
-                'invoiceNumber',
-                'manufacturer',
-                'model',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [
-            'Cliente omitido porque estava redigido na coleta disponível.',
-        ],
+    sourceMissing: {
+      empty: ['expectedDeliveryDate'],
+      notInformed: ['invoiceNumber', 'manufacturer', 'model'],
     },
 
-    {
-        orderNumber: '2026465',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: ['Cliente omitido porque estava redigido na coleta disponível.'],
+  },
 
-        client: 'RES ENERGY',
+  {
+    orderNumber: '2026465',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-07-06',
-        expectedDeliveryDate: '',
-        invoiceNumber: '',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'RES ENERGY',
 
-        equipment: 'Componente bomba',
-        model: "Bomba d'água",
+    openingDate: '2026-07-06',
+    expectedDeliveryDate: '',
+    invoiceNumber: '',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Componente bomba',
+    model: "Bomba d'água",
 
-        urgent: true,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: null,
+    urgent: true,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Urgente',
-            'Apres. Relatório',
-        ],
+    visibleImageCount: null,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Urgente', 'Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [
-                'expectedDeliveryDate',
-            ],
-            notInformed: [
-                'invoiceNumber',
-                'manufacturer',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: ['expectedDeliveryDate'],
+      notInformed: ['invoiceNumber', 'manufacturer'],
     },
 
-    {
-        orderNumber: '2026445',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'RKM HIDRAULICA',
+  {
+    orderNumber: '2026445',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-06-19',
-        expectedDeliveryDate: '',
-        invoiceNumber: '',
-        serialNumber: '01',
-        manufacturer: 'filtrec',
+    client: 'RKM HIDRAULICA',
 
-        equipment: 'Filtro',
-        model: 'aqq',
+    openingDate: '2026-06-19',
+    expectedDeliveryDate: '',
+    invoiceNumber: '',
+    serialNumber: '01',
+    manufacturer: 'filtrec',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Filtro',
+    model: 'aqq',
 
-        urgent: false,
-        hydraulic: true,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 2,
+    urgent: false,
+    hydraulic: true,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Hidráulico',
-        ],
+    visibleImageCount: 2,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Hidráulico'],
 
-        sourceMissing: {
-            empty: [
-                'expectedDeliveryDate',
-                'invoiceNumber',
-            ],
-            notInformed: [],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: ['expectedDeliveryDate', 'invoiceNumber'],
+      notInformed: [],
     },
 
-    {
-        orderNumber: '2026390',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'GERDAU CAUCAIA',
+  {
+    orderNumber: '2026390',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-21',
-        expectedDeliveryDate: '2026-06-07',
-        invoiceNumber: '44921',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'GERDAU CAUCAIA',
 
-        equipment: 'Cilindro tela',
-        model: 'HIDRÁULICO',
+    openingDate: '2026-05-21',
+    expectedDeliveryDate: '2026-06-07',
+    invoiceNumber: '44921',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro tela',
+    model: 'HIDRÁULICO',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 2,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 2,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: [],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '2026388',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'GERDAU CAUCAIA',
+  {
+    orderNumber: '2026388',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-21',
-        expectedDeliveryDate: '2026-06-07',
-        invoiceNumber: '44921',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'GERDAU CAUCAIA',
 
-        equipment: 'Cilindro tela',
-        model: 'HIDRÁULICO',
+    openingDate: '2026-05-21',
+    expectedDeliveryDate: '2026-06-07',
+    invoiceNumber: '44921',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro tela',
+    model: 'HIDRÁULICO',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 2,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 2,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: [],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '2026387',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'GERDAU CAUCAIA',
+  {
+    orderNumber: '2026387',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-21',
-        expectedDeliveryDate: '2026-06-07',
-        invoiceNumber: '44921',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'GERDAU CAUCAIA',
 
-        equipment: 'Cilindro tela',
-        model: 'HIDRÁULICO',
+    openingDate: '2026-05-21',
+    expectedDeliveryDate: '2026-06-07',
+    invoiceNumber: '44921',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro tela',
+    model: 'HIDRÁULICO',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 2,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 2,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: [],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '2026386',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'GERDAU CAUCAIA',
+  {
+    orderNumber: '2026386',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-21',
-        expectedDeliveryDate: '2026-06-07',
-        invoiceNumber: '44921',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'GERDAU CAUCAIA',
 
-        equipment: 'Cilindro tela',
-        model: 'HIDRÁULICO',
+    openingDate: '2026-05-21',
+    expectedDeliveryDate: '2026-06-07',
+    invoiceNumber: '44921',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro tela',
+    model: 'HIDRÁULICO',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [
-            'Apres. Relatório',
-        ],
+    checklistMarked: [],
 
-        unidentifiedChecklistMarks: 0,
+    checklistUnmarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: [],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '2026385',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'GERDAU CAUCAIA',
+  {
+    orderNumber: '2026385',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-21',
-        expectedDeliveryDate: '2026-06-07',
-        invoiceNumber: '44921',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'GERDAU CAUCAIA',
 
-        equipment: 'Cilindro tela',
-        model: 'HIDRÁULICO',
+    openingDate: '2026-05-21',
+    expectedDeliveryDate: '2026-06-07',
+    invoiceNumber: '44921',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro tela',
+    model: 'HIDRÁULICO',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: [],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '2026384',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'GERDAU CAUCAIA',
+  {
+    orderNumber: '2026384',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-21',
-        expectedDeliveryDate: '2026-06-07',
-        invoiceNumber: '44921',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'GERDAU CAUCAIA',
 
-        equipment: 'Cilindro tela',
-        model: 'HIDRÁULICO',
+    openingDate: '2026-05-21',
+    expectedDeliveryDate: '2026-06-07',
+    invoiceNumber: '44921',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro tela',
+    model: 'HIDRÁULICO',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [
-            'Apres. Relatório',
-        ],
+    checklistMarked: [],
 
-        unidentifiedChecklistMarks: 0,
+    checklistUnmarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: [],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '2026383',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: [],
+  },
 
-        client: 'GERDAU CAUCAIA',
+  {
+    orderNumber: '2026383',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-21',
-        expectedDeliveryDate: '2026-06-07',
-        invoiceNumber: '44921',
-        serialNumber: '',
-        manufacturer: '',
+    client: 'GERDAU CAUCAIA',
 
-        equipment: 'Cilindro de solda',
-        model: 'hidrálico',
+    openingDate: '2026-05-21',
+    expectedDeliveryDate: '2026-06-07',
+    invoiceNumber: '44921',
+    serialNumber: '',
+    manufacturer: '',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Cilindro de solda',
+    model: 'hidrálico',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 1,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 1,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [
-                'manufacturer',
-            ],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [
-            'Grafia do modelo preservada exatamente como na ficha.',
-        ],
+    sourceMissing: {
+      empty: [],
+      notInformed: ['manufacturer'],
     },
 
-    {
-        orderNumber: '2026360',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: ['Grafia do modelo preservada exatamente como na ficha.'],
+  },
 
-        client: 'SIEMENS GAMESA BA',
+  {
+    orderNumber: '2026360',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-11',
-        expectedDeliveryDate: '2026-05-20',
-        invoiceNumber: '114717',
-        serialNumber: '01',
-        manufacturer: 'SIEMENS',
+    client: 'SIEMENS GAMESA BA',
 
-        equipment: 'Bomba',
-        model: 'HIDRÁULICA',
+    openingDate: '2026-05-11',
+    expectedDeliveryDate: '2026-05-20',
+    invoiceNumber: '114717',
+    serialNumber: '01',
+    manufacturer: 'SIEMENS',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Bomba',
+    model: 'HIDRÁULICA',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 2,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [],
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    visibleImageCount: 2,
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [],
-        },
+    checklistMarked: [],
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [
-            'Nenhum item do checklist apareceu marcado na coleta.',
-        ],
+    sourceMissing: {
+      empty: [],
+      notInformed: [],
     },
 
-    {
-        orderNumber: '2026359',
-        sourceStatus: 'Aguardando Inspeções',
-        sourceOrderKind: 'Serviço',
-        sourceEquipmentCategory: 'Motor',
+    sourceNotes: ['Nenhum item do checklist apareceu marcado na coleta.'],
+  },
 
-        client: 'SIEMENS GAMESA BA',
+  {
+    orderNumber: '2026359',
+    sourceStatus: 'Aguardando Inspeções',
+    sourceOrderKind: 'Serviço',
+    sourceEquipmentCategory: 'Motor',
 
-        openingDate: '2026-05-11',
-        expectedDeliveryDate: '2026-05-20',
-        invoiceNumber: '114717',
-        serialNumber: '01',
-        manufacturer: 'SIEMENS',
+    client: 'SIEMENS GAMESA BA',
 
-        equipment: 'Bomba',
-        model: 'HIDRÁULICA',
+    openingDate: '2026-05-11',
+    expectedDeliveryDate: '2026-05-20',
+    invoiceNumber: '114717',
+    serialNumber: '01',
+    manufacturer: 'SIEMENS',
 
-        clientReference: '',
-        requester: '',
-        claimedDefect: '',
+    equipment: 'Bomba',
+    model: 'HIDRÁULICA',
 
-        urgent: false,
-        hydraulic: false,
-        pneumatic: false,
+    clientReference: '',
+    requester: '',
+    claimedDefect: '',
 
-        visibleImageCount: 2,
+    urgent: false,
+    hydraulic: false,
+    pneumatic: false,
 
-        checklistMarked: [
-            'Apres. Relatório',
-        ],
+    visibleImageCount: 2,
 
-        checklistUnmarked: [],
-        unidentifiedChecklistMarks: 0,
+    checklistMarked: ['Apres. Relatório'],
 
-        sourceMissing: {
-            empty: [],
-            notInformed: [],
-        },
+    checklistUnmarked: [],
+    unidentifiedChecklistMarks: 0,
 
-        sourceNotes: [],
+    sourceMissing: {
+      empty: [],
+      notInformed: [],
     },
+
+    sourceNotes: [],
+  },
 ];

@@ -1,338 +1,268 @@
 // @ts-nocheck
 
-import {
-    loadServiceEntries,
-    saveServiceEntries,
-} from '../service-entry/repository';
+import { loadServiceEntries, saveServiceEntries } from '../service-entry/repository';
+
+import { normalizeOrderNumber } from '../service-entry/model';
+
+import { LIZY_ORDERS } from './data/lizy-orders';
 
 import {
-    normalizeOrderNumber,
-} from '../service-entry/model';
-
-import {
-    LIZY_ORDERS,
-} from './data/lizy-orders';
-
-import {
-    mapLizyOrderToServiceEntry,
-    mapLizyStatusToServiceEntry,
-    validateMappedServiceEntry,
+  mapLizyOrderToServiceEntry,
+  mapLizyStatusToServiceEntry,
+  validateMappedServiceEntry,
 } from './mapper';
 
+const orderIdentity = (value) => normalizeOrderNumber(value);
 
-const orderIdentity = value =>
-    normalizeOrderNumber(value);
+const isLizyEntry = (entry) => entry?.sourceMetadata?.system === 'lizy';
 
+const migrateLegacyLizyEntry = (entry) => {
+  const isLegacyLizyEntry =
+    entry?.sourceMetadata?.system === 'lizy' &&
+    entry.status === 'Recebido' &&
+    Number(entry.currentStep) === 0 &&
+    entry.sourceMetadata.sourceStatus;
 
-const isLizyEntry = entry =>
-    entry?.sourceMetadata?.system === 'lizy';
+  if (!isLegacyLizyEntry) {
+    return entry;
+  }
 
-
-const migrateLegacyLizyEntry = entry => {
-    const isLegacyLizyEntry =
-        entry?.sourceMetadata?.system === 'lizy' &&
-        entry.status === 'Recebido' &&
-        Number(entry.currentStep) === 0 &&
-        entry.sourceMetadata.sourceStatus;
-
-    if (!isLegacyLizyEntry) {
-        return entry;
-    }
-
-    return {
-        ...entry,
-        ...mapLizyStatusToServiceEntry(
-            entry.sourceMetadata.sourceStatus,
-        ),
-        updatedAt: new Date().toISOString(),
-    };
+  return {
+    ...entry,
+    ...mapLizyStatusToServiceEntry(entry.sourceMetadata.sourceStatus),
+    updatedAt: new Date().toISOString(),
+  };
 };
 
+export const planLizyPopulation = (existingEntries = loadServiceEntries()) => {
+  const migratedExistingEntries = (existingEntries || []).map(migrateLegacyLizyEntry);
 
-export const planLizyPopulation = (
-    existingEntries = loadServiceEntries(),
-) => {
-    const migratedExistingEntries =
-        (existingEntries || []).map(migrateLegacyLizyEntry);
+  const existingIds = new Set(
+    migratedExistingEntries
+      .map((entry) => orderIdentity(entry.orderNumber || entry.id))
+      .filter(Boolean),
+  );
 
-    const existingIds = new Set(
-        migratedExistingEntries
-            .map(entry =>
-                orderIdentity(
-                    entry.orderNumber || entry.id
-                )
-            )
-            .filter(Boolean)
-    );
+  const datasetIds = new Set();
 
-    const datasetIds = new Set();
+  const entriesToInsert = [];
+  const skippedExisting = [];
+  const invalid = [];
+  const duplicateDatasetRecords = [];
 
-    const entriesToInsert = [];
-    const skippedExisting = [];
-    const invalid = [];
-    const duplicateDatasetRecords = [];
+  const timestamp = new Date().toISOString();
 
-    const timestamp =
-        new Date().toISOString();
+  for (const source of LIZY_ORDERS) {
+    const sourceId = orderIdentity(source.orderNumber);
 
-    for (const source of LIZY_ORDERS) {
-        const sourceId =
-            orderIdentity(source.orderNumber);
+    if (datasetIds.has(sourceId)) {
+      duplicateDatasetRecords.push({
+        orderNumber: sourceId,
+        reason: 'duplicate-in-dataset',
+      });
 
-        if (datasetIds.has(sourceId)) {
-            duplicateDatasetRecords.push({
-                orderNumber: sourceId,
-                reason: 'duplicate-in-dataset',
-            });
-
-            continue;
-        }
-
-        datasetIds.add(sourceId);
-
-        const entry =
-            mapLizyOrderToServiceEntry(
-                source,
-                timestamp,
-            );
-
-        const validation =
-            validateMappedServiceEntry(entry);
-
-        if (!validation.valid) {
-            invalid.push({
-                orderNumber: sourceId,
-                missing: validation.missing,
-                source,
-            });
-
-            continue;
-        }
-
-        if (existingIds.has(sourceId)) {
-            skippedExisting.push({
-                orderNumber: sourceId,
-            });
-
-            continue;
-        }
-
-        entriesToInsert.push(entry);
-        existingIds.add(sourceId);
+      continue;
     }
 
-    return {
-        source: 'lizy',
+    datasetIds.add(sourceId);
 
-        totalSourceRecords:
-            LIZY_ORDERS.length,
+    const entry = mapLizyOrderToServiceEntry(source, timestamp);
 
-        /*
-         * Full current Service Entry base.
-         *
-         * This is intentionally different from skippedExisting:
-         *
-         * existingEntries
-         *   = every OS already stored
-         *
-         * skippedExisting
-         *   = source Lizy OS that collided with the current base
-         */
-        existingEntries: migratedExistingEntries,
+    const validation = validateMappedServiceEntry(entry);
 
-        entriesToInsert,
-        skippedExisting,
-        invalid,
-        duplicateDatasetRecords,
+    if (!validation.valid) {
+      invalid.push({
+        orderNumber: sourceId,
+        missing: validation.missing,
+        source,
+      });
 
-        nextEntries: [
-            ...entriesToInsert,
-            ...migratedExistingEntries,
-        ],
-    };
+      continue;
+    }
+
+    if (existingIds.has(sourceId)) {
+      skippedExisting.push({
+        orderNumber: sourceId,
+      });
+
+      continue;
+    }
+
+    entriesToInsert.push(entry);
+    existingIds.add(sourceId);
+  }
+
+  return {
+    source: 'lizy',
+
+    totalSourceRecords: LIZY_ORDERS.length,
+
+    /*
+     * Full current Service Entry base.
+     *
+     * This is intentionally different from skippedExisting:
+     *
+     * existingEntries
+     *   = every OS already stored
+     *
+     * skippedExisting
+     *   = source Lizy OS that collided with the current base
+     */
+    existingEntries: migratedExistingEntries,
+
+    entriesToInsert,
+    skippedExisting,
+    invalid,
+    duplicateDatasetRecords,
+
+    nextEntries: [...entriesToInsert, ...migratedExistingEntries],
+  };
 };
-
 
 export const populateLizyServiceEntries = () => {
-    const existingEntries =
-        loadServiceEntries();
+  const existingEntries = loadServiceEntries();
 
-    const plan =
-        planLizyPopulation(existingEntries);
+  const plan = planLizyPopulation(existingEntries);
 
-    if (
-        plan.duplicateDatasetRecords.length > 0
-    ) {
-        return {
-            ...plan,
-            persisted: false,
-            persistenceReason:
-                'dataset-has-duplicates',
-        };
-    }
-
-    const existingEntriesChanged = plan.existingEntries.some((entry, index) => {
-        const previous = existingEntries[index];
-        return JSON.stringify(entry) !== JSON.stringify(previous);
-    });
-
-    if (plan.entriesToInsert.length === 0 && !existingEntriesChanged) {
-        return {
-            ...plan,
-            persisted: true,
-            persistenceReason:
-                'nothing-to-insert',
-        };
-    }
-
-    const persisted =
-        saveServiceEntries(
-            plan.nextEntries
-        );
-
+  if (plan.duplicateDatasetRecords.length > 0) {
     return {
-        ...plan,
-        persisted,
-        persistenceReason:
-            persisted
-                ? 'saved'
-                : 'storage-error',
+      ...plan,
+      persisted: false,
+      persistenceReason: 'dataset-has-duplicates',
     };
-};
+  }
 
+  const existingEntriesChanged = plan.existingEntries.some((entry, index) => {
+    const previous = existingEntries[index];
+    return JSON.stringify(entry) !== JSON.stringify(previous);
+  });
+
+  if (plan.entriesToInsert.length === 0 && !existingEntriesChanged) {
+    return {
+      ...plan,
+      persisted: true,
+      persistenceReason: 'nothing-to-insert',
+    };
+  }
+
+  const persisted = saveServiceEntries(plan.nextEntries);
+
+  return {
+    ...plan,
+    persisted,
+    persistenceReason: persisted ? 'saved' : 'storage-error',
+  };
+};
 
 export const overwriteLizyServiceEntries = () => {
-    const existingEntries = loadServiceEntries();
-    const existingById = new Map(
-        existingEntries.map(entry => [
-            orderIdentity(entry.orderNumber || entry.id),
-            entry,
-        ])
-    );
-    const timestamp = new Date().toISOString();
-    const sourceIds = new Set();
-    const overwrittenIds = new Set();
-    const invalid = [];
-    const replacementById = new Map();
+  const existingEntries = loadServiceEntries();
+  const existingById = new Map(
+    existingEntries.map((entry) => [orderIdentity(entry.orderNumber || entry.id), entry]),
+  );
+  const timestamp = new Date().toISOString();
+  const sourceIds = new Set();
+  const overwrittenIds = new Set();
+  const invalid = [];
+  const replacementById = new Map();
 
-    for (const source of LIZY_ORDERS) {
-        const sourceId = orderIdentity(source.orderNumber);
+  for (const source of LIZY_ORDERS) {
+    const sourceId = orderIdentity(source.orderNumber);
 
-        if (sourceIds.has(sourceId)) continue;
-        sourceIds.add(sourceId);
+    if (sourceIds.has(sourceId)) continue;
+    sourceIds.add(sourceId);
 
-        const mapped = mapLizyOrderToServiceEntry(source, timestamp);
-        const validation = validateMappedServiceEntry(mapped);
+    const mapped = mapLizyOrderToServiceEntry(source, timestamp);
+    const validation = validateMappedServiceEntry(mapped);
 
-        if (!validation.valid) {
-            invalid.push({
-                orderNumber: sourceId,
-                missing: validation.missing,
-                source,
-            });
-            continue;
-        }
-
-        const existing = existingById.get(sourceId);
-
-        if (existing && isLizyEntry(existing)) {
-            replacementById.set(sourceId, {
-                ...mapped,
-                id: existing.id || sourceId,
-                createdAt: existing.createdAt || mapped.createdAt,
-                photos: existing.photos || mapped.photos,
-            });
-            overwrittenIds.add(sourceId);
-            continue;
-        }
-
-        if (!existing) {
-            replacementById.set(sourceId, mapped);
-        }
+    if (!validation.valid) {
+      invalid.push({
+        orderNumber: sourceId,
+        missing: validation.missing,
+        source,
+      });
+      continue;
     }
 
-    const nextEntries = existingEntries.map(entry => {
-        const id = orderIdentity(entry.orderNumber || entry.id);
-        return replacementById.get(id) || entry;
-    });
+    const existing = existingById.get(sourceId);
 
-    for (const [id, entry] of replacementById) {
-        if (!existingById.has(id)) nextEntries.unshift(entry);
+    if (existing && isLizyEntry(existing)) {
+      replacementById.set(sourceId, {
+        ...mapped,
+        id: existing.id || sourceId,
+        createdAt: existing.createdAt || mapped.createdAt,
+        photos: existing.photos || mapped.photos,
+      });
+      overwrittenIds.add(sourceId);
+      continue;
     }
 
-    const persisted = saveServiceEntries(nextEntries);
+    if (!existing) {
+      replacementById.set(sourceId, mapped);
+    }
+  }
 
-    return {
-        persisted,
-        overwritten: overwrittenIds.size,
-        inserted: [...replacementById.keys()]
-            .filter(id => !existingById.has(id)).length,
-        invalid,
-        persistenceReason: persisted ? 'overwritten' : 'storage-error',
-    };
+  const nextEntries = existingEntries.map((entry) => {
+    const id = orderIdentity(entry.orderNumber || entry.id);
+    return replacementById.get(id) || entry;
+  });
+
+  for (const [id, entry] of replacementById) {
+    if (!existingById.has(id)) nextEntries.unshift(entry);
+  }
+
+  const persisted = saveServiceEntries(nextEntries);
+
+  return {
+    persisted,
+    overwritten: overwrittenIds.size,
+    inserted: [...replacementById.keys()].filter((id) => !existingById.has(id)).length,
+    invalid,
+    persistenceReason: persisted ? 'overwritten' : 'storage-error',
+  };
 };
-
 
 export const deleteLizyServiceEntries = () => {
-    const existingEntries = loadServiceEntries();
-    const lizyEntries = existingEntries.filter(isLizyEntry);
-    const nextEntries = existingEntries.filter(entry => !isLizyEntry(entry));
-    const persisted = saveServiceEntries(nextEntries);
+  const existingEntries = loadServiceEntries();
+  const lizyEntries = existingEntries.filter(isLizyEntry);
+  const nextEntries = existingEntries.filter((entry) => !isLizyEntry(entry));
+  const persisted = saveServiceEntries(nextEntries);
 
-    return {
-        persisted,
-        deleted: lizyEntries.length,
-        persistenceReason: persisted ? 'deleted' : 'storage-error',
-    };
+  return {
+    persisted,
+    deleted: lizyEntries.length,
+    persistenceReason: persisted ? 'deleted' : 'storage-error',
+  };
 };
 
+export const formatLizyPopulationReport = (report) => {
+  const lines = [
+    'RKM — LIZY POPULATOR',
+    '',
+    `Fonte: Lizy`,
+    `Registros na fonte: ${report.totalSourceRecords}`,
+    '',
+    `Inseridas: ${report.entriesToInsert.length}`,
+    `Já existentes: ${report.skippedExisting.length}`,
+    `Inválidas: ${report.invalid.length}`,
+    `Duplicadas no dataset: ${report.duplicateDatasetRecords.length}`,
+    `Persistido: ${report.persisted ? 'sim' : 'não'}`,
+  ];
 
-export const formatLizyPopulationReport = report => {
-    const lines = [
-        'RKM — LIZY POPULATOR',
-        '',
-        `Fonte: Lizy`,
-        `Registros na fonte: ${report.totalSourceRecords}`,
-        '',
-        `Inseridas: ${report.entriesToInsert.length}`,
-        `Já existentes: ${report.skippedExisting.length}`,
-        `Inválidas: ${report.invalid.length}`,
-        `Duplicadas no dataset: ${report.duplicateDatasetRecords.length}`,
-        `Persistido: ${report.persisted ? 'sim' : 'não'}`,
-    ];
+  if (report.invalid.length) {
+    lines.push('', 'Inválidas:');
 
-    if (report.invalid.length) {
-        lines.push(
-            '',
-            'Inválidas:',
-        );
-
-        for (const item of report.invalid) {
-            lines.push(
-                `  ${item.orderNumber}: ${
-                    item.missing
-                        .map(field => field.label)
-                        .join(', ')
-                }`
-            );
-        }
+    for (const item of report.invalid) {
+      lines.push(`  ${item.orderNumber}: ${item.missing.map((field) => field.label).join(', ')}`);
     }
+  }
 
-    if (report.skippedExisting.length) {
-        lines.push(
-            '',
-            'Já existentes:',
-        );
+  if (report.skippedExisting.length) {
+    lines.push('', 'Já existentes:');
 
-        for (
-            const item
-            of report.skippedExisting
-        ) {
-            lines.push(
-                `  ${item.orderNumber}`
-            );
-        }
+    for (const item of report.skippedExisting) {
+      lines.push(`  ${item.orderNumber}`);
     }
+  }
 
-    return lines.join('\n');
+  return lines.join('\n');
 };
