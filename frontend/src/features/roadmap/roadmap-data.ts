@@ -51,7 +51,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/clientes',
             status: 'planned',
             acceptance:
-              'Selecionar um cliente existente por CNPJ, razão social ou nome fantasia; cadastrar quando ainda não existir.',
+              'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.\nConsegue vincular o cliente encontrado à nova OS.',
           },
           {
             id: 'pcp-nota-fiscal',
@@ -59,7 +59,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/nota-fiscal',
             status: 'planned',
             acceptance:
-              'Permitir informar a nota fiscal ou indicar explicitamente que não se aplica.',
+              'Durante o recebimento, o PCP consegue registrar a nota fiscal ou indicar N/A.\nA informação permanece vinculada à OS.',
           },
           {
             id: 'pcp-numeracao',
@@ -67,7 +67,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/numeracao-os',
             status: 'planned',
             acceptance:
-              'Toda OS salva recebe um número único, persistente e não editável manualmente.',
+              'Ao criar uma OS, o sistema gera automaticamente um número único.\nO número permite identificar e consultar a OS posteriormente.',
           },
           {
             id: 'pcp-abertura',
@@ -75,7 +75,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/abertura-os',
             status: 'planned',
             acceptance:
-              'Criar e consultar uma OS vinculada ao cliente, com data de entrada e referência da NF.',
+              'O PCP consegue registrar a entrada de uma peça, identificando o cliente e o equipamento.\nA OS criada fica disponível para a etapa de peritagem.',
           },
           {
             id: 'pcp-fotos',

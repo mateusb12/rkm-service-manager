@@ -58,22 +58,22 @@ const ROADMAP = [
           feature(
             'pcp/clientes',
             'Cadastro e busca de clientes',
-            'Selecionar por CNPJ, razão social ou nome fantasia.',
+            'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.\nConsegue vincular o cliente encontrado à nova OS.',
           ),
           feature(
             'pcp/nota-fiscal',
             'Nota fiscal ou N/A',
-            'Registrar a nota fiscal ou marcar não aplicável.',
+            'Durante o recebimento, o PCP consegue registrar a nota fiscal ou indicar N/A.\nA informação permanece vinculada à OS.',
           ),
           feature(
             'pcp/numeracao-os',
             'Numeração automática da OS',
-            'Gerar identificador único ao salvar.',
+            'Ao criar uma OS, o sistema gera automaticamente um número único.\nO número permite identificar e consultar a OS posteriormente.',
           ),
           feature(
             'pcp/abertura-os',
             'Abertura mínima da OS',
-            'Criar e consultar uma OS vinculada ao cliente.',
+            'O PCP consegue registrar a entrada de uma peça, identificando o cliente e o equipamento.\nA OS criada fica disponível para a etapa de peritagem.',
           ),
           feature(
             'pcp/fotografias',
@@ -368,9 +368,19 @@ export function RoadmapView() {
                             <code className="block text-xs text-blue-300">{item.branch}</code>
                           )}
 
-                          <p className="text-sm text-slate-300">
-                            <strong>Pronto quando:</strong> {item.acceptance}
-                          </p>
+                          <div className="text-sm text-slate-300">
+                            {/* RKM_ACCEPTANCE_BULLETS_V1 */}
+                            <strong className="mb-1 block">Pronto quando:</strong>
+                            {item.acceptance.includes('\n') ? (
+                              <ul className="ml-5 list-disc space-y-1">
+                                {item.acceptance.split('\n').map((criterion, index) => (
+                                  <li key={index}>{criterion}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <span>{item.acceptance}</span>
+                            )}
+                          </div>
 
                           {LOCAL && (
                             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rkmborder bg-rkmcard2/30 p-3">
