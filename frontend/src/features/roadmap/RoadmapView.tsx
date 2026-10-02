@@ -1,9 +1,7 @@
 // RKM_ROADMAP_COMPACT_V1
 // @ts-nocheck
-import { DurationPicker } from '../../utils/DurationPicker';
-import React, { useEffect, useState } from 'react';
-// RKM_FUNCTION_POINTS_DEV_V1
-import { FunctionPointsDev } from './FunctionPointsDev';
+import React, { useState } from 'react';
+const RoadmapMetricsDev = React.lazy(() => import('./RoadmapMetricsDev'));
 
 const COLORS = {
   V1: {
@@ -182,30 +180,8 @@ const LOCAL =
   typeof window !== 'undefined' &&
   ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
-const STORAGE_KEY = 'rkm:private-dev-hours';
-const BRANCH_STORAGE_KEY = 'rkm:private-dev-branches';
-
 // RKM_TASK_DONE_DEV_V1
 const TASK_STATUS_KEY = 'rkm:private-dev-task-status';
-
-function readHours() {
-  if (!LOCAL) return {};
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
-
-function readBranches() {
-  if (!LOCAL) return {};
-  try {
-    const value = JSON.parse(localStorage.getItem(BRANCH_STORAGE_KEY) || '{}');
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  } catch {
-    return {};
-  }
-}
 
 function readTaskStatuses() {
   if (!LOCAL) return {};
@@ -219,125 +195,11 @@ function readTaskStatuses() {
   }
 }
 
-const WAKATIME_RETRY_MS = 30 * 1000;
-
-function WakatimeCountdown({ nextAt }) {
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-
-    return () => window.clearInterval(timer);
-  }, []);
-
-  if (!nextAt) return 'Aguardando sincronização...';
-
-  const remaining = Math.max(0, Math.ceil((nextAt - now) / 1000));
-
-  if (remaining === 0) {
-    return 'Atualizando em instantes...';
-  }
-
-  const minutes = Math.floor(remaining / 60);
-  const seconds = String(remaining % 60).padStart(2, '0');
-
-  return `Próxima consulta em ${minutes}m${seconds}s`;
-}
-
 export function RoadmapView() {
   const [versionId, setVersionId] = useState('V1');
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
-  const [hours, setHours] = useState(readHours);
-  const [branches, setBranches] = useState(readBranches);
-  const [branchDraft, setBranchDraft] = useState('');
   const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);
-
-  const [wakatimeHours, setWakatimeHours] = useState({});
-  const [nextWakatimeSyncAt, setNextWakatimeSyncAt] = useState(null);
-  const activeBranch = branches[featureId] || `features/${featureId}`;
-
-  useEffect(() => {
-    if (!LOCAL || !featureId) return;
-
-    let cancelled = false;
-    let timer;
-
-    async function refresh() {
-      setWakatimeHours((previous) => ({
-        ...previous,
-        [featureId]: {
-          ...previous[featureId],
-          loading: true,
-          error: '',
-        },
-      }));
-
-      try {
-        const response = await fetch(`/__dev/wakatime?branch=${encodeURIComponent(activeBranch)}`);
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Falha ao consultar WakaTime.');
-        }
-
-        const seconds = Number(result.totalSeconds);
-        const nextAt = Number(result.nextRefreshAt);
-
-        if (!Number.isFinite(seconds) || seconds < 0) {
-          throw new Error('Tempo retornado é inválido.');
-        }
-
-        if (!Number.isFinite(nextAt) || nextAt <= 0) {
-          throw new Error('Validade do cache não informada.');
-        }
-
-        if (cancelled) return;
-
-        setWakatimeHours((previous) => ({
-          ...previous,
-          [featureId]: {
-            loading: false,
-            error: '',
-            minutes: Math.round(seconds / 60),
-            editors: Array.isArray(result.editors) ? result.editors : [],
-          },
-        }));
-
-        setNextWakatimeSyncAt(nextAt);
-
-        timer = window.setTimeout(refresh, Math.max(1000, nextAt - Date.now() + 250));
-      } catch (error) {
-        if (cancelled) return;
-
-        setWakatimeHours((previous) => ({
-          ...previous,
-          [featureId]: {
-            ...previous[featureId],
-            loading: false,
-            error: error instanceof Error ? error.message : 'WakaTime indisponível.',
-          },
-        }));
-
-        const retryAt = Date.now() + WAKATIME_RETRY_MS;
-        setNextWakatimeSyncAt(retryAt);
-
-        timer = window.setTimeout(refresh, WAKATIME_RETRY_MS);
-      }
-    }
-
-    setNextWakatimeSyncAt(null);
-    refresh();
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [featureId, activeBranch]);
-
-  // RKM_ROADMAP_MODES_V1
-  const [editingHoursId, setEditingHoursId] = useState(null);
 
   const version = ROADMAP.find((v) => v.id === versionId) || ROADMAP[0];
 
@@ -356,40 +218,8 @@ export function RoadmapView() {
       localStorage.setItem(TASK_STATUS_KEY, JSON.stringify(next));
 
       setCompletedFeatures(next);
-
-      if (next[id]) {
-        setEditingHoursId(null);
-      }
     } catch (error) {
       console.error('Erro ao salvar status:', error);
-    }
-  };
-
-  const recordHours = (id, field, value) => {
-    // RKM_LOCK_COMPLETED_HOURS_V1
-    if (!LOCAL || completedFeatures[id]) return;
-
-    const next = {
-      ...hours,
-      [id]: { ...hours[id], [field]: value },
-    };
-
-    setHours(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  };
-
-  const saveBranch = (id) => {
-    if (!LOCAL) return;
-    const branch = branchDraft.trim();
-    if (!branch) return;
-
-    const next = { ...branches, [id]: branch };
-    try {
-      localStorage.setItem(BRANCH_STORAGE_KEY, JSON.stringify(next));
-      setBranches(next);
-      setEditingHoursId(null);
-    } catch (error) {
-      console.error('Erro ao salvar branch:', error);
     }
   };
 
@@ -480,7 +310,6 @@ export function RoadmapView() {
                         type="button"
                         onClick={() => {
                           setFeatureId(featureId === item.id ? '' : item.id);
-                          setEditingHoursId(null);
                         }}
                         className="flex w-full items-center justify-between gap-2 p-3 text-left"
                       >
@@ -543,150 +372,13 @@ export function RoadmapView() {
                           )}
 
                           {LOCAL && (
-                            <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3">
-                              <div className="mb-3 flex items-center justify-between gap-3">
-                                <span className="text-xs font-semibold text-amber-300">
-                                  HORAS · APENAS LOCALHOST
-                                </span>
-
-                                <button
-                                  type="button"
-                                  disabled={Boolean(completedFeatures[item.id])}
-                                  onClick={() => {
-                                    if (editingHoursId === item.id) {
-                                      setEditingHoursId(null);
-                                    } else {
-                                      setBranchDraft(branches[item.id] || item.branch);
-                                      setEditingHoursId(item.id);
-                                    }
-                                  }}
-                                  className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  {completedFeatures[item.id]
-                                    ? '🔒 Reabra para editar'
-                                    : editingHoursId === item.id
-                                      ? '✓ Concluir'
-                                      : '✎ Editar'}
-                                </button>
-                              </div>
-
-                              <div className="mb-3 border-t border-amber-400/20 pt-3">
-                                <FunctionPointsDev
-                                  featureId={item.id}
-                                  editable={
-                                    !completedFeatures[item.id] && editingHoursId === item.id
-                                  }
-                                />
-                              </div>
-
-                              {editingHoursId === item.id && (
-                                <div className="mb-3 flex flex-wrap items-end gap-2">
-                                  <label className="min-w-0 flex-1 text-xs text-slate-400">
-                                    Branch WakaTime
-                                    <input
-                                      value={branchDraft}
-                                      onChange={(event) => setBranchDraft(event.target.value)}
-                                      onKeyDown={(event) => {
-                                        if (event.key === 'Enter') saveBranch(item.id);
-                                      }}
-                                      className="mt-1 w-full rounded-md border border-rkmborder bg-rkmcard2 px-3 py-2 text-sm text-slate-200"
-                                      placeholder={item.branch}
-                                    />
-                                  </label>
-                                  <button
-                                    type="button"
-                                    onClick={() => saveBranch(item.id)}
-                                    className="rounded-md border border-sky-400/30 px-3 py-2 text-xs font-medium text-sky-200 hover:bg-sky-400/10"
-                                  >
-                                    Salvar branch
-                                  </button>
-                                </div>
-                              )}
-
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                <DurationPicker
-                                  label="Estimativa inicial"
-                                  mode={
-                                    !completedFeatures[item.id] && editingHoursId === item.id
-                                      ? 'edit'
-                                      : 'locked'
-                                  }
-                                  minutes={
-                                    hours[item.id]?.estimated == null ||
-                                    hours[item.id]?.estimated === ''
-                                      ? null
-                                      : Math.round(Number(hours[item.id].estimated) * 60)
-                                  }
-                                  onChange={(value) =>
-                                    recordHours(
-                                      item.id,
-                                      'estimated',
-                                      value === null ? '' : String(value / 60),
-                                    )
-                                  }
-                                />
-
-                                <div className="space-y-2">
-                                  <DurationPicker
-                                    label="Tempo real · WakaTime"
-                                    mode="locked"
-                                    minutes={wakatimeHours[item.id]?.minutes ?? null}
-                                    onChange={() => undefined}
-                                  >
-                                    {wakatimeHours[item.id]?.editors?.length > 0 && (
-                                      <ul className="list-disc space-y-1 pl-5 text-xs text-slate-400">
-                                        {wakatimeHours[item.id].editors.map((editor) => {
-                                          const seconds = Math.round(editor.totalSeconds);
-                                          const minutes = Math.floor(seconds / 60);
-                                          const remainder = seconds % 60;
-
-                                          return (
-                                            <li key={editor.name}>
-                                              <span className="text-slate-300">{editor.name}</span>
-                                              {' — '}
-                                              {minutes > 0 ? `${minutes}min ` : ''}
-                                              {remainder}s
-                                            </li>
-                                          );
-                                        })}
-                                      </ul>
-                                    )}
-                                  </DurationPicker>
-
-                                  <p
-                                    role="status"
-                                    className={`text-xs ${
-                                      wakatimeHours[item.id]?.error
-                                        ? 'text-rose-300'
-                                        : 'text-slate-400'
-                                    }`}
-                                  >
-                                    {wakatimeHours[item.id]?.error ||
-                                      (wakatimeHours[item.id]?.loading ? (
-                                        'Sincronizando com WakaTime...'
-                                      ) : (
-                                        <WakatimeCountdown nextAt={nextWakatimeSyncAt} />
-                                      ))}
-                                  </p>
-                                </div>
-
-                                <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2 w-full">
-                                  Desvio:{' '}
-                                  {hours[item.id]?.estimated !== undefined &&
-                                  hours[item.id]?.estimated !== '' &&
-                                  wakatimeHours[item.id]?.minutes != null
-                                    ? `${(
-                                        wakatimeHours[item.id].minutes / 60 -
-                                        Number(hours[item.id].estimated)
-                                      ).toFixed(2)} h`
-                                    : '—'}
-                                </div>
-                              </div>
-
-                              <p className="mt-2 text-xs text-slate-500">
-                                Estimativa local. Tempo real por projeto e branch via WakaTime.
-                              </p>
-                            </div>
+                            <React.Suspense fallback={null}>
+                              <RoadmapMetricsDev
+                                featureId={item.id}
+                                defaultBranch={item.branch}
+                                completed={Boolean(completedFeatures[item.id])}
+                              />
+                            </React.Suspense>
                           )}
                         </div>
                       )}
