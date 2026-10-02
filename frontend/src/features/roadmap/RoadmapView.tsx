@@ -2,6 +2,7 @@
 // @ts-nocheck
 import React, { useState } from 'react';
 const RoadmapMetricsDev = React.lazy(() => import('./RoadmapMetricsDev'));
+const RoadmapWorklogDev = React.lazy(() => import('./RoadmapWorklogDev'));
 
 const COLORS = {
   V1: {
@@ -348,6 +349,12 @@ export function RoadmapView() {
                               <span>{item.acceptance}</span>
                             )}
                           </div>
+
+                          {LOCAL && (
+                            <React.Suspense fallback={null}>
+                              <RoadmapWorklogDev featureId={item.id} />
+                            </React.Suspense>
+                          )}
 
                           {LOCAL && (
                             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rkmborder bg-rkmcard2/30 p-3">
