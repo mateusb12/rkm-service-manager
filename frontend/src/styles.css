@@ -2825,3 +2825,30 @@ html:not(.dark) .app-shell .service-entry-delete {
     width: 20px;
   }
 }
+
+/* RKM — Slider personalizado de pontos de função */
+.rkm-pf-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #0f2138;
+  background: #38bdf8;
+  box-shadow: 0 0 0 1px #38bdf8;
+  cursor: pointer;
+}
+
+.rkm-pf-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 3px solid #0f2138;
+  background: #38bdf8;
+  box-shadow: 0 0 0 1px #38bdf8;
+  cursor: pointer;
+}
+
+.rkm-pf-slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

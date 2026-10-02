@@ -2,6 +2,8 @@
 // @ts-nocheck
 import { DurationPicker } from '../../utils/DurationPicker';
 import React, { useState } from 'react';
+// RKM_FUNCTION_POINTS_DEV_V1
+import { FunctionPointsDev } from './FunctionPointsDev';
 
 const COLORS = {
   V1: {
@@ -425,6 +427,10 @@ export function RoadmapView() {
                                       ? '✓ Fechar edição'
                                       : '✎ Editar horas'}
                                 </button>
+                              </div>
+
+                              <div className="mb-3 border-t border-amber-400/20 pt-3">
+                                <FunctionPointsDev featureId={item.id} />
                               </div>
 
                               <div className="grid gap-3 sm:grid-cols-2">
