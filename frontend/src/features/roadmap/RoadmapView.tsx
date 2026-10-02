@@ -208,6 +208,31 @@ function readTaskStatuses() {
   }
 }
 
+const WAKATIME_RETRY_MS = 30 * 1000;
+
+function WakatimeCountdown({ nextAt }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  if (!nextAt) return 'Aguardando sincronização...';
+
+  const remaining = Math.max(0, Math.ceil((nextAt - now) / 1000));
+
+  if (remaining === 0) {
+    return 'Atualizando em instantes...';
+  }
+
+  const minutes = Math.floor(remaining / 60);
+  const seconds = String(remaining % 60).padStart(2, '0');
+
+  return `Próxima consulta em ${minutes}m${seconds}s`;
+}
+
 export function RoadmapView() {
   const [versionId, setVersionId] = useState('V1');
   const [areaId, setAreaId] = useState('pcp');
@@ -216,11 +241,13 @@ export function RoadmapView() {
   const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);
 
   const [wakatimeHours, setWakatimeHours] = useState({});
+  const [nextWakatimeSyncAt, setNextWakatimeSyncAt] = useState(null);
 
   useEffect(() => {
     if (!LOCAL || !featureId) return;
 
     let cancelled = false;
+    let timer;
 
     async function refresh() {
       setWakatimeHours((previous) => ({
@@ -243,42 +270,56 @@ export function RoadmapView() {
         }
 
         const seconds = Number(result.totalSeconds);
+        const nextAt = Number(result.nextRefreshAt);
 
         if (!Number.isFinite(seconds) || seconds < 0) {
-          throw new Error('Resposta de tempo inválida.');
+          throw new Error('Tempo retornado é inválido.');
         }
 
-        if (!cancelled) {
-          setWakatimeHours((previous) => ({
-            ...previous,
-            [featureId]: {
-              loading: false,
-              error: '',
-              minutes: Math.round(seconds / 60),
-            },
-          }));
+        if (!Number.isFinite(nextAt) || nextAt <= 0) {
+          throw new Error('Validade do cache não informada.');
         }
+
+        if (cancelled) return;
+
+        setWakatimeHours((previous) => ({
+          ...previous,
+          [featureId]: {
+            loading: false,
+            error: '',
+            minutes: Math.round(seconds / 60),
+            editors: Array.isArray(result.editors) ? result.editors : [],
+          },
+        }));
+
+        setNextWakatimeSyncAt(nextAt);
+
+        timer = window.setTimeout(refresh, Math.max(1000, nextAt - Date.now() + 250));
       } catch (error) {
-        if (!cancelled) {
-          setWakatimeHours((previous) => ({
-            ...previous,
-            [featureId]: {
-              loading: false,
-              error: error instanceof Error ? error.message : 'WakaTime indisponível.',
-              minutes: null,
-            },
-          }));
-        }
+        if (cancelled) return;
+
+        setWakatimeHours((previous) => ({
+          ...previous,
+          [featureId]: {
+            ...previous[featureId],
+            loading: false,
+            error: error instanceof Error ? error.message : 'WakaTime indisponível.',
+          },
+        }));
+
+        const retryAt = Date.now() + WAKATIME_RETRY_MS;
+        setNextWakatimeSyncAt(retryAt);
+
+        timer = window.setTimeout(refresh, WAKATIME_RETRY_MS);
       }
     }
 
+    setNextWakatimeSyncAt(null);
     refresh();
-
-    const interval = window.setInterval(refresh, 300000);
 
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      window.clearTimeout(timer);
     };
   }, [featureId]);
 
@@ -529,7 +570,26 @@ export function RoadmapView() {
                                     mode="locked"
                                     minutes={wakatimeHours[item.id]?.minutes ?? null}
                                     onChange={() => undefined}
-                                  />
+                                  >
+                                    {wakatimeHours[item.id]?.editors?.length > 0 && (
+                                      <ul className="list-disc space-y-1 pl-5 text-xs text-slate-400">
+                                        {wakatimeHours[item.id].editors.map((editor) => {
+                                          const seconds = Math.round(editor.totalSeconds);
+                                          const minutes = Math.floor(seconds / 60);
+                                          const remainder = seconds % 60;
+
+                                          return (
+                                            <li key={editor.name}>
+                                              <span className="text-slate-300">{editor.name}</span>
+                                              {' — '}
+                                              {minutes > 0 ? `${minutes}min ` : ''}
+                                              {remainder}s
+                                            </li>
+                                          );
+                                        })}
+                                      </ul>
+                                    )}
+                                  </DurationPicker>
 
                                   <p
                                     role="status"
@@ -540,9 +600,11 @@ export function RoadmapView() {
                                     }`}
                                   >
                                     {wakatimeHours[item.id]?.error ||
-                                      (wakatimeHours[item.id]?.loading
-                                        ? 'Sincronizando com WakaTime...'
-                                        : 'Atualização automática a cada 5 minutos.')}
+                                      (wakatimeHours[item.id]?.loading ? (
+                                        'Sincronizando com WakaTime...'
+                                      ) : (
+                                        <WakatimeCountdown nextAt={nextWakatimeSyncAt} />
+                                      ))}
                                   </p>
                                 </div>
 
