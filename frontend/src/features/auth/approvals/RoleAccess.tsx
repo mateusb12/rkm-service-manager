@@ -1,11 +1,11 @@
 // @ts-nocheck
 import React, { useEffect, useState } from 'react';
 
-import { Field, Select, TextArea } from '../../shared/ui/form-controls';
+import { Field, Select, TextArea } from '../../../shared/ui/form-controls';
 
-import { AlertBox } from '../../shared/ui/feedback';
+import { AlertBox } from '../../../shared/ui/feedback';
 
-import { ROLES, mockUsers } from './model';
+import { ROLES, mockUsers } from '../security/roles';
 
 /* ============================================================
    BLOCO 2A — Solicitações de autorização (somente criação)
@@ -26,16 +26,16 @@ export const AUTH_CRITICALITY = ['Baixa', 'Média', 'Alta', 'Crítica'];
 export const AUTH_STATUSES = ['Pendente', 'Aprovado', 'Reprovado', 'Ajuste solicitado'];
 /* Mapa: tipo de solicitação → perfil responsável pela decisão */
 export const REQUEST_TYPE_TO_APPROVER = {
-  'Validação técnica': 'supervisor',
-  'Liberação para prosseguir': 'supervisor',
-  'Dúvida técnica': 'supervisor',
-  'Condição insegura': 'supervisor',
-  'Rastreabilidade insuficiente': 'supervisor',
-  'NC / retrabalho': 'supervisor',
-  'Evidência pendente': 'quality',
-  'Validação da Qualidade': 'quality',
+  'Validação técnica': 'admin',
+  'Liberação para prosseguir': 'admin',
+  'Dúvida técnica': 'admin',
+  'Condição insegura': 'admin',
+  'Rastreabilidade insuficiente': 'admin',
+  'NC / retrabalho': 'admin',
+  'Evidência pendente': 'admin',
+  'Validação da Qualidade': 'admin',
   'Fechamento PCP': 'pcp',
-  Outro: 'supervisor',
+  Outro: 'admin',
 };
 /* Tag visual de status de autorização */
 export const AuthStatusTag = ({ status }) => {
@@ -119,7 +119,7 @@ export const AuthRequestButton = ({
   size = 'sm',
   label = 'Solicitar autorização',
 }) => {
-  if (activeRole !== 'operator') return null;
+  if (activeRole !== 'mechanic') return null;
   return React.createElement(
     'button',
     {
@@ -863,8 +863,7 @@ export const filterByApprover = (requests, role) => {
 };
 export const canDecideRequest = (req, activeRole) => {
   if (!req || req.status !== 'Pendente') return false;
-  if (activeRole === 'operator') return false;
-  return activeRole === req.assignedApproverRole || activeRole === 'admin';
+  return activeRole === 'admin' || (activeRole === 'pcp' && req.assignedApproverRole === 'pcp');
 };
 export const decisionButtonsFor = (req) => {
   if (req.assignedApproverRole === 'pcp') {
@@ -1181,7 +1180,8 @@ export const AuthDecisionModal = ({
     }
   }, [open, request, decision]);
   if (!open || !request) return null;
-  const canDecide = activeRole === request.assignedApproverRole || activeRole === 'admin';
+  const canDecide =
+    activeRole === 'admin' || (activeRole === 'pcp' && request.assignedApproverRole === 'pcp');
   const handleConfirm = () => {
     if (!canDecide) {
       setError('Seu perfil não possui permissão para decidir esta solicitação.');

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 import { SIDEBAR_ITEMS, SIDEBAR_STATUS_LABEL } from './config';
 
-import { ROLES, mockUsers } from '../../features/role-access';
+import { ROLES, mockUsers } from '../../features/auth';
 
 import { SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
 
@@ -20,7 +20,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
     Ferramentas: true,
   });
 
-  const items = SIDEBAR_ITEMS.filter((it) => it.roles.includes(activeRole || 'admin'));
+  const items = SIDEBAR_ITEMS.filter((it) => it.roles.includes(activeRole || ''));
 
   const user = mockUsers.find((u) => u.id === activeUser) || mockUsers[0];
   const role = ROLES.find((r) => r.key === activeRole) || ROLES[0];

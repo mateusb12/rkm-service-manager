@@ -28,3 +28,39 @@ func TestPasswordHash(t *testing.T) {
 		t.Fatal("expected wrong password to fail")
 	}
 }
+
+func TestFourRoles(t *testing.T) {
+	expected := map[string]string{
+		"admin":      "Admin",
+		"mechanic":   "Mecânico",
+		"pcp":        "PCP",
+		"commercial": "Comercial",
+	}
+
+	if len(rolePermissions) != len(expected) {
+		t.Fatalf("expected 4 roles, got %d", len(rolePermissions))
+	}
+
+	for role, label := range expected {
+		if _, ok := rolePermissions[role]; !ok {
+			t.Fatalf("role missing: %s", role)
+		}
+		if roleLabels[role] != label {
+			t.Fatalf("wrong label for %s", role)
+		}
+	}
+}
+
+func TestDevCredentialsUnavailableInProduction(t *testing.T) {
+	server := &AuthServer{env: "production"}
+	req := httptest.NewRequest(
+		http.MethodGet, "/api/auth/dev-credentials", nil,
+	)
+	recorder := httptest.NewRecorder()
+
+	server.handleDevCredentials(recorder, req)
+
+	if recorder.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", recorder.Code)
+	}
+}

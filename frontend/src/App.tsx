@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { RoadmapView } from './features/roadmap';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useAuth } from './features/auth';
 import { ServiceEntryView } from './features/service-entry';
 import { PopulatorView } from './features/populator';
 import { MyBenchView } from './features/bench';
@@ -10,6 +9,7 @@ import { initialRecordIT002, computeAlertsIT002 } from './features/its/it002';
 import { initialRecord, computeAlerts } from './features/its/it001';
 
 import {
+  useAuth,
   mockUsers,
   buildApprovalHistoryEntry,
   AuthRequestModal,
@@ -19,7 +19,7 @@ import {
   QualityAuthQueue,
   PCPAuthQueue,
   AuthDecisionModal,
-} from './features/role-access';
+} from './features/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   viewFromPath,
@@ -628,8 +628,8 @@ const App = () => {
   const [view, setView] = useState(() => viewFromPath(location.pathname));
   const [clients, setClients] = useState(() => INITIAL_CLIENTS.map((client) => ({ ...client })));
   const [activeIT, setActiveIT] = useState('IT001');
-  const activeUser = authenticatedUser?.id || 'u5';
-  const activeRole = authenticatedUser?.role || 'admin';
+  const activeUser = authenticatedUser?.id || '';
+  const activeRole = authenticatedUser?.role || '';
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('rkm-theme') === 'dark');
   const [topBarVisible, setTopBarVisible] = useState(true);
   const topBarTimeout = useRef(null);
@@ -860,6 +860,16 @@ const App = () => {
   const closeAuthModal = () => setAuthModal({ open: false, context: null });
   const closeDecisionModal = () => setDecisionModal({ open: false, request: null, decision: '' });
   const renderView = () => {
+    const route = SIDEBAR_ITEMS.find((item) => item.key === view);
+
+    if (route && !route.roles.includes(activeRole)) {
+      return React.createElement(
+        'main',
+        { className: 'p-6 text-slate-300' },
+        'Você não tem permissão para acessar esta página.',
+      );
+    }
+
     if (view === 'pcp-clients') {
       return React.createElement(ClientsView, { clients, setClients });
     }
@@ -964,7 +974,7 @@ const App = () => {
       });
     }
     if (view === 'authHistory') {
-      if (activeRole === 'operator') {
+      if (activeRole === 'mechanic') {
         return React.createElement(
           'div',
           { className: 'p-4 md:p-6 space-y-5' },

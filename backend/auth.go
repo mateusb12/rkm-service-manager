@@ -28,15 +28,26 @@ const (
 )
 
 var rolePermissions = map[string][]string{
-	"admin":      {"*"},
-	"operator":   {"service.view_assigned", "service.edit_assigned", "authorization.request", "dashboard.mybench"},
-	"supervisor": {"service.view_technical", "authorization.decide_technical", "dashboard.supervisor", "service.export"},
-	"quality":    {"service.view_quality", "authorization.decide_quality", "evidence.view", "dashboard.quality"},
-	"pcp":        {"service.view_status", "service.close_administrative", "dashboard.pcp"},
+	"admin": {"*"},
+	"mechanic": {
+		"service.view_assigned",
+		"service.edit_assigned",
+		"authorization.request",
+		"dashboard.mybench",
+	},
+	"pcp": {
+		"service.view_status",
+		"service.close_administrative",
+		"dashboard.pcp",
+	},
+	"commercial": {"dashboard.view"},
 }
 
 var roleLabels = map[string]string{
-	"admin": "Admin", "operator": "Operador / Técnico", "supervisor": "Supervisor", "quality": "Qualidade", "pcp": "PCP",
+	"admin":      "Admin",
+	"mechanic":   "Mecânico",
+	"pcp":        "PCP",
+	"commercial": "Comercial",
 }
 
 type AuthServer struct {
@@ -135,11 +146,14 @@ UPDATE users SET name='Osmar Lamarck' WHERE email='admin@rkm.com.br' AND role='a
 
 func (s *AuthServer) seedUsers() error {
 	users := []struct{ id, email, name, role, password string }{
-		{"u5", "admin@rkm.com.br", "Osmar Lamarck", "admin", env("DUMMY_PASSWORD_ADMIN", "Rkm@123456")},
-		{"u1", "operador@rkm.com.br", "Carlos M.", "operator", env("DUMMY_PASSWORD_OPERATOR", "Rkm@123456")},
-		{"u2", "supervisor@rkm.com.br", "Jeferson N.", "supervisor", env("DUMMY_PASSWORD_SUPERVISOR", "Rkm@123456")},
-		{"u3", "qualidade@rkm.com.br", "Qualidade RKM", "quality", env("DUMMY_PASSWORD_QUALITY", "Rkm@123456")},
-		{"u4", "pcp@rkm.com.br", "PCP RKM", "pcp", env("DUMMY_PASSWORD_PCP", "Rkm@123456")},
+		{"u5", "admin@rkm.com.br", "Osmar Lamarck",
+			"admin", env("DUMMY_PASSWORD_ADMIN", "Rkm@123456")},
+		{"u1", "mecanico@rkm.com.br", "Carlos M.",
+			"mechanic", env("DUMMY_PASSWORD_MECHANIC", "Rkm@123456")},
+		{"u4", "pcp@rkm.com.br", "PCP RKM",
+			"pcp", env("DUMMY_PASSWORD_PCP", "Rkm@123456")},
+		{"u7", "comercial@rkm.com.br", "Comercial RKM",
+			"commercial", env("DUMMY_PASSWORD_COMMERCIAL", "Rkm@123456")},
 	}
 	for _, user := range users {
 		hash, err := hashPassword(user.password)
@@ -285,19 +299,40 @@ func (s *AuthServer) handleMe(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, user)
 }
 
-func (s *AuthServer) handleDevCredentials(w http.ResponseWriter, r *http.Request) {
+func (s *AuthServer) handleDevCredentials(
+	w http.ResponseWriter, r *http.Request,
+) {
+	if s.env != "development" {
+		http.NotFound(w, r)
+		return
+	}
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	type credential struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 		Role     string `json:"role"`
 		Label    string `json:"label"`
 	}
-	passwords := map[string]string{"admin": env("DUMMY_PASSWORD_ADMIN", "Rkm@123456"), "operator": env("DUMMY_PASSWORD_OPERATOR", "Rkm@123456"), "supervisor": env("DUMMY_PASSWORD_SUPERVISOR", "Rkm@123456"), "quality": env("DUMMY_PASSWORD_QUALITY", "Rkm@123456"), "pcp": env("DUMMY_PASSWORD_PCP", "Rkm@123456")}
-	emails := map[string]string{"admin": "admin@rkm.com.br", "operator": "operador@rkm.com.br", "supervisor": "supervisor@rkm.com.br", "quality": "qualidade@rkm.com.br", "pcp": "pcp@rkm.com.br"}
-	result := make([]credential, 0, len(emails))
-	for _, role := range []string{"admin", "operator", "supervisor", "quality", "pcp"} {
-		result = append(result, credential{emails[role], passwords[role], role, roleLabels[role]})
+
+	result := []credential{
+		{"admin@rkm.com.br",
+			env("DUMMY_PASSWORD_ADMIN", "Rkm@123456"),
+			"admin", "Admin"},
+		{"mecanico@rkm.com.br",
+			env("DUMMY_PASSWORD_MECHANIC", "Rkm@123456"),
+			"mechanic", "Mecânico"},
+		{"pcp@rkm.com.br",
+			env("DUMMY_PASSWORD_PCP", "Rkm@123456"),
+			"pcp", "PCP"},
+		{"comercial@rkm.com.br",
+			env("DUMMY_PASSWORD_COMMERCIAL", "Rkm@123456"),
+			"commercial", "Comercial"},
 	}
+
 	writeJSON(w, http.StatusOK, result)
 }
 
@@ -339,7 +374,12 @@ func (s *AuthServer) findUser(email string) (authUser, string, bool) {
 	if err != nil {
 		return authUser{}, "", false
 	}
-	user.RoleLabel, user.Permissions = roleLabels[user.Role], rolePermissions[user.Role]
+	permissions, allowed := rolePermissions[user.Role]
+	if !allowed {
+		return authUser{}, "", false
+	}
+	user.RoleLabel = roleLabels[user.Role]
+	user.Permissions = permissions
 	return user, hash, true
 }
 
@@ -349,7 +389,12 @@ func (s *AuthServer) findUserByID(id string) (authUser, bool) {
 	if err != nil {
 		return authUser{}, false
 	}
-	user.RoleLabel, user.Permissions = roleLabels[user.Role], rolePermissions[user.Role]
+	permissions, allowed := rolePermissions[user.Role]
+	if !allowed {
+		return authUser{}, false
+	}
+	user.RoleLabel = roleLabels[user.Role]
+	user.Permissions = permissions
 	return user, true
 }
 

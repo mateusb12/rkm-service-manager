@@ -1,10 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import {
-  AUTH_REFRESH_INTERVAL_MS,
-  BACKEND_HEALTH_CHECK_INTERVAL_MS,
-  DEFAULT_DEV_CREDENTIALS,
-} from './constants';
+import { AUTH_REFRESH_INTERVAL_MS, BACKEND_HEALTH_CHECK_INTERVAL_MS } from './constants';
 
 import {
   checkBackendHealth,
@@ -26,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [backendOnline, setBackendOnline] = useState(false);
 
-  const [devCredentials, setDevCredentials] = useState<DevCredential[]>(DEFAULT_DEV_CREDENTIALS);
+  const [devCredentials, setDevCredentials] = useState<DevCredential[]>([]);
 
   const refresh = async () => {
     const refreshedUser = await refreshSession();
