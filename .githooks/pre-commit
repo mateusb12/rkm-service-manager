@@ -115,4 +115,13 @@ if (( ${#go_files[@]} > 0 )); then
   done
 fi
 
+
+if (( ${#go_files[@]} > 0 )); then
+  echo "🔍 RKM-GO-001: nomenclatura"
+  (
+    cd "$ROOT/backend"
+    go run ./tools/naminglint
+  ) || exit 1
+fi
+
 echo "✅ Pre-commit passou!"

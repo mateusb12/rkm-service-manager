@@ -1,27 +1,59 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"log"
-	"os"
+	"net/http"
+	"rkm-service-manager/backend/internal/features/auth"
+	"rkm-service-manager/backend/internal/shared/config"
+	"rkm-service-manager/backend/internal/shared/database"
+	"rkm-service-manager/backend/internal/shared/httpx"
 )
 
-func main() {
-	server, err := NewAuthServer()
-	if err != nil {
-		log.Fatal(err)
+func newHandler(db *sql.DB) (http.Handler, error) {
+	authModule, authInitError := auth.New(db)
+	if authInitError != nil {
+		return nil, authInitError
 	}
-	defer server.db.Close()
 
-	port := env("PORT", "8787")
-	log.Printf("RKM backend listening on :%s", port)
-	if err := server.httpServer().ListenAndServe(); err != nil && err.Error() != "http: Server closed" {
-		panic(err)
-	}
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/health", httpx.Health)
+	mux.HandleFunc("/api", httpx.API)
+	mux.HandleFunc("/api/health", httpx.Health)
+
+	authModule.Register(mux)
+
+	mux.Handle("/", httpx.FrontendHandler(
+		config.Env("WEB_DIR", "public"),
+	))
+
+	return httpx.WithCORS(mux), nil
 }
 
-func env(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
+func main() {
+	db, databaseOpenError := database.Open()
+	if databaseOpenError != nil {
+		log.Fatal(databaseOpenError)
 	}
-	return fallback
+	defer db.Close()
+
+	handler, handlerInitError := newHandler(db)
+	if handlerInitError != nil {
+		log.Fatal(handlerInitError)
+	}
+
+	port := config.Env("PORT", "8787")
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: handler,
+	}
+
+	log.Printf("RKM backend listening on :%s", port)
+
+	if listenError := server.ListenAndServe(); listenError != nil &&
+		!errors.Is(listenError, http.ErrServerClosed) {
+		log.Fatal(listenError)
+	}
 }

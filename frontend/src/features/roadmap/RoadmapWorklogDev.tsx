@@ -26,6 +26,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Reorganização de auth em security e approvals, atualização dos imports/exports e correções encontradas nas validações de formatação, lint e build.',
     },
     {
+      category: 'Transversal',
+      description:
+        'Refatoração do backend Go para arquitetura vertical (internal/features e internal/shared), separação das responsabilidades de autenticação, criação das regras RKM-GO-001 e RKM-GO-002, renomeação de 164 referências e validação dos quatro cargos por testes e smoke tests.',
+    },
+    {
       category: 'Ambiente',
       description:
         'Diagnóstico e recuperação da integração WakaTime após recriação do frontend, reutilizando a configuração existente no Linux.',
