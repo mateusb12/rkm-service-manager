@@ -183,6 +183,7 @@ const LOCAL =
   ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
 const STORAGE_KEY = 'rkm:private-dev-hours';
+const BRANCH_STORAGE_KEY = 'rkm:private-dev-branches';
 
 // RKM_TASK_DONE_DEV_V1
 const TASK_STATUS_KEY = 'rkm:private-dev-task-status';
@@ -191,6 +192,16 @@ function readHours() {
   if (!LOCAL) return {};
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function readBranches() {
+  if (!LOCAL) return {};
+  try {
+    const value = JSON.parse(localStorage.getItem(BRANCH_STORAGE_KEY) || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }
@@ -238,10 +249,13 @@ export function RoadmapView() {
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
   const [hours, setHours] = useState(readHours);
+  const [branches, setBranches] = useState(readBranches);
+  const [branchDraft, setBranchDraft] = useState('');
   const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);
 
   const [wakatimeHours, setWakatimeHours] = useState({});
   const [nextWakatimeSyncAt, setNextWakatimeSyncAt] = useState(null);
+  const activeBranch = branches[featureId] || `features/${featureId}`;
 
   useEffect(() => {
     if (!LOCAL || !featureId) return;
@@ -260,8 +274,7 @@ export function RoadmapView() {
       }));
 
       try {
-        const branch = `features/${featureId}`;
-        const response = await fetch(`/__dev/wakatime?branch=${encodeURIComponent(branch)}`);
+        const response = await fetch(`/__dev/wakatime?branch=${encodeURIComponent(activeBranch)}`);
 
         const result = await response.json();
 
@@ -321,7 +334,7 @@ export function RoadmapView() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [featureId]);
+  }, [featureId, activeBranch]);
 
   // RKM_ROADMAP_MODES_V1
   const [editingHoursId, setEditingHoursId] = useState(null);
@@ -363,6 +376,21 @@ export function RoadmapView() {
 
     setHours(next);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  };
+
+  const saveBranch = (id) => {
+    if (!LOCAL) return;
+    const branch = branchDraft.trim();
+    if (!branch) return;
+
+    const next = { ...branches, [id]: branch };
+    try {
+      localStorage.setItem(BRANCH_STORAGE_KEY, JSON.stringify(next));
+      setBranches(next);
+      setEditingHoursId(null);
+    } catch (error) {
+      console.error('Erro ao salvar branch:', error);
+    }
   };
 
   return (
@@ -524,22 +552,56 @@ export function RoadmapView() {
                                 <button
                                   type="button"
                                   disabled={Boolean(completedFeatures[item.id])}
-                                  onClick={() =>
-                                    setEditingHoursId(editingHoursId === item.id ? null : item.id)
-                                  }
+                                  onClick={() => {
+                                    if (editingHoursId === item.id) {
+                                      setEditingHoursId(null);
+                                    } else {
+                                      setBranchDraft(branches[item.id] || item.branch);
+                                      setEditingHoursId(item.id);
+                                    }
+                                  }}
                                   className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                   {completedFeatures[item.id]
                                     ? '🔒 Reabra para editar'
                                     : editingHoursId === item.id
-                                      ? '✓ Fechar edição'
-                                      : '✎ Editar horas'}
+                                      ? '✓ Concluir'
+                                      : '✎ Editar'}
                                 </button>
                               </div>
 
                               <div className="mb-3 border-t border-amber-400/20 pt-3">
-                                <FunctionPointsDev featureId={item.id} />
+                                <FunctionPointsDev
+                                  featureId={item.id}
+                                  editable={
+                                    !completedFeatures[item.id] && editingHoursId === item.id
+                                  }
+                                />
                               </div>
+
+                              {editingHoursId === item.id && (
+                                <div className="mb-3 flex flex-wrap items-end gap-2">
+                                  <label className="min-w-0 flex-1 text-xs text-slate-400">
+                                    Branch WakaTime
+                                    <input
+                                      value={branchDraft}
+                                      onChange={(event) => setBranchDraft(event.target.value)}
+                                      onKeyDown={(event) => {
+                                        if (event.key === 'Enter') saveBranch(item.id);
+                                      }}
+                                      className="mt-1 w-full rounded-md border border-rkmborder bg-rkmcard2 px-3 py-2 text-sm text-slate-200"
+                                      placeholder={item.branch}
+                                    />
+                                  </label>
+                                  <button
+                                    type="button"
+                                    onClick={() => saveBranch(item.id)}
+                                    className="rounded-md border border-sky-400/30 px-3 py-2 text-xs font-medium text-sky-200 hover:bg-sky-400/10"
+                                  >
+                                    Salvar branch
+                                  </button>
+                                </div>
+                              )}
 
                               <div className="grid gap-3 sm:grid-cols-2">
                                 <DurationPicker

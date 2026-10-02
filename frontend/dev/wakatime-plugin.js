@@ -44,7 +44,13 @@ export function wakatimeDevPlugin() {
         const url = new URL(req.url || '/', 'http://localhost');
         const branch = url.searchParams.get('branch');
 
-        if (!branch || !/^features\/[a-z0-9][a-z0-9/_-]*$/i.test(branch)) {
+        if (
+          !branch ||
+          !/^[a-z0-9][a-z0-9._/-]*$/i.test(branch) ||
+          branch.includes('..') ||
+          branch.includes('//') ||
+          branch.endsWith('/')
+        ) {
           send(400, { error: 'Branch inválida.' });
           return;
         }
