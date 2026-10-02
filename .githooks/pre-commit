@@ -71,8 +71,12 @@ if (( ${#prettier_files[@]} > 0 )); then
   (
     cd "$FRONT"
     ./node_modules/.bin/prettier \
-      --check "${prettier_files[@]}"
+      --write "${prettier_files[@]}"
   )
+
+  # Atualizar somente arquivos que já estavam staged.
+  # O guard anterior impede partial staging.
+  git add -- "${frontend_staged[@]}"
 fi
 
 if (( ${#eslint_files[@]} > 0 )); then

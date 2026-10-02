@@ -1,4 +1,6 @@
 const AW_API_BASE = import.meta.env.VITE_AW_API_BASE || 'http://127.0.0.1:5600/api/0';
+const CHATGPT_CACHE_PREFIX = 'rkm:roadmap:chatgpt-activity:v1:';
+const CHATGPT_CACHE_TTL_MS = 5 * 60 * 1000;
 
 type AwBucket = {
   type?: string;
@@ -11,13 +13,39 @@ type AwEvent = {
   duration?: number;
   data?: {
     url?: string;
+    title?: string;
   };
 };
 
 export type ChatGptActivity = {
   totalSeconds: number;
   eventCount: number;
+  nextRefreshAt: number;
 };
+
+type CachedChatGptActivity = Omit<ChatGptActivity, 'nextRefreshAt'> & { cachedAt: number };
+
+function readChatGptCache(key: string): CachedChatGptActivity | null {
+  try {
+    const value = sessionStorage.getItem(key);
+    if (!value) return null;
+
+    const cached = JSON.parse(value) as CachedChatGptActivity;
+    const isValid =
+      Number.isFinite(cached.cachedAt) &&
+      Number.isFinite(cached.totalSeconds) &&
+      Number.isFinite(cached.eventCount);
+
+    if (!isValid || Date.now() - cached.cachedAt >= CHATGPT_CACHE_TTL_MS) {
+      sessionStorage.removeItem(key);
+      return null;
+    }
+
+    return cached;
+  } catch {
+    return null;
+  }
+}
 
 async function awGet<T>(path: string): Promise<T> {
   const response = await fetch(`${AW_API_BASE}${path}`, {
@@ -56,8 +84,14 @@ function isChatGptUrl(value: string | undefined) {
   }
 }
 
-/** Soma a duração dos eventos do navegador em páginas do ChatGPT no intervalo informado. */
+function eventMatchesBranch(title: string | undefined, branch: string) {
+  return (title || '').trim().toLowerCase() === branch.trim().toLowerCase();
+}
+
+/** Soma eventos do ChatGPT cujo título corresponde à branch no intervalo informado. */
 export async function getChatGptActivity(
+  branch: string,
+  forceRefresh = false,
   start: Date = new Date(2026, 8, 1),
   end: Date = new Date(),
 ): Promise<ChatGptActivity> {
@@ -66,6 +100,21 @@ export async function getChatGptActivity(
 
   if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs >= endMs) {
     throw new Error('Intervalo de consulta do ActivityWatch inválido.');
+  }
+  if (!branch.trim()) {
+    throw new Error('Branch para consulta do ChatGPT não informada.');
+  }
+
+  const cacheKey = `${CHATGPT_CACHE_PREFIX}${start.toISOString().slice(0, 10)}:${branch.trim().toLowerCase()}`;
+  if (!forceRefresh) {
+    const cached = readChatGptCache(cacheKey);
+    if (cached) {
+      return {
+        totalSeconds: cached.totalSeconds,
+        eventCount: cached.eventCount,
+        nextRefreshAt: cached.cachedAt + CHATGPT_CACHE_TTL_MS,
+      };
+    }
   }
 
   const buckets = await awGet<Record<string, AwBucket>>('/buckets/');
@@ -77,7 +126,6 @@ export async function getChatGptActivity(
     start: start.toISOString(),
     end: end.toISOString(),
   });
-
   const eventResults = await Promise.allSettled(
     bucketIds.map((bucketId) =>
       awGet<AwEvent[]>(`/buckets/${encodeURIComponent(bucketId)}/events?${period}`),
@@ -96,7 +144,8 @@ export async function getChatGptActivity(
 
   for (const events of eventLists) {
     for (const event of events) {
-      if (!isChatGptUrl(event.data?.url)) continue;
+      if (!isChatGptUrl(event.data?.url) || !eventMatchesBranch(event.data?.title, branch))
+        continue;
 
       const timestamp = Date.parse(event.timestamp || '');
       const duration = Number(event.duration);
@@ -113,5 +162,13 @@ export async function getChatGptActivity(
     }
   }
 
-  return { totalSeconds, eventCount };
+  const cachedAt = Date.now();
+  try {
+    const cachedValue: CachedChatGptActivity = { totalSeconds, eventCount, cachedAt };
+    sessionStorage.setItem(cacheKey, JSON.stringify(cachedValue));
+  } catch {
+    // A indisponibilidade do storage não deve impedir a consulta ao ActivityWatch.
+  }
+
+  return { totalSeconds, eventCount, nextRefreshAt: cachedAt + CHATGPT_CACHE_TTL_MS };
 }

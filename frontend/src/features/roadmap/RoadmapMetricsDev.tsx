@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { DurationPicker } from '../../utils/DurationPicker';
 import { FunctionPointsDev } from './FunctionPointsDev';
@@ -18,6 +18,7 @@ type WakatimeEntry = {
   loading?: boolean;
   error?: string;
   minutes?: number | null;
+  totalSeconds?: number;
   editors?: EditorTime[];
 };
 
@@ -48,7 +49,6 @@ function readBranches() {
 }
 
 const WAKATIME_RETRY_MS = 30 * 1000;
-const CHATGPT_REFRESH_MS = 5 * 60 * 1000;
 
 function formatActivityDuration(seconds: number) {
   const roundedSeconds = Math.round(seconds);
@@ -92,10 +92,23 @@ export default function RoadmapMetricsDev({
   const [wakatimeHours, setWakatimeHours] = useState<Record<string, WakatimeEntry>>({});
   const [chatGptActivity, setChatGptActivity] = useState<Record<string, ChatGptEntry>>({});
   const [nextWakatimeSyncAt, setNextWakatimeSyncAt] = useState<number | null>(null);
+  const [manualRefreshKey, setManualRefreshKey] = useState(0);
+  const handledManualRefresh = useRef(0);
 
   const activeBranch = branches[featureId] || defaultBranch;
   const editors = wakatimeHours[featureId]?.editors ?? [];
   const chatGptEntry = chatGptActivity[featureId];
+  const wakatimeSeconds = wakatimeHours[featureId]?.totalSeconds;
+  const totalTrackedSeconds =
+    wakatimeSeconds == null ? null : wakatimeSeconds + (chatGptEntry?.totalSeconds ?? 0);
+  const totalTrackedMinutes =
+    totalTrackedSeconds == null ? null : Math.round(totalTrackedSeconds / 60);
+  const activityRows: Array<{ name: string; seconds?: number; chatGpt?: boolean }> = [
+    ...editors.map((editor) => ({ name: editor.name, seconds: editor.totalSeconds })),
+    ...(chatGptEntry
+      ? [{ name: 'ChatGPT', seconds: chatGptEntry.totalSeconds, chatGpt: true }]
+      : []),
+  ].sort((first, second) => (second.seconds ?? -1) - (first.seconds ?? -1));
 
   useEffect(() => {
     if (completed) setEditing(false);
@@ -107,22 +120,25 @@ export default function RoadmapMetricsDev({
     let cancelled = false;
     let timer: number | undefined;
     let chatGptTimer: number | undefined;
+    const forceRefresh = manualRefreshKey !== handledManualRefresh.current;
+    handledManualRefresh.current = manualRefreshKey;
 
-    async function refreshChatGpt() {
+    async function refreshChatGpt(force = false) {
       setChatGptActivity((previous) => ({
         ...previous,
         [featureId]: { ...previous[featureId], loading: true, error: '' },
       }));
 
       try {
-        const result = await getChatGptActivity();
+        const result = await getChatGptActivity(activeBranch, force);
         if (cancelled) return;
 
         setChatGptActivity((previous) => ({
           ...previous,
           [featureId]: { loading: false, totalSeconds: result.totalSeconds },
         }));
-        chatGptTimer = window.setTimeout(refreshChatGpt, CHATGPT_REFRESH_MS);
+        const delay = Math.max(1000, result.nextRefreshAt - Date.now() + 250);
+        chatGptTimer = window.setTimeout(refreshChatGpt, delay);
       } catch (error) {
         if (cancelled) return;
 
@@ -137,7 +153,7 @@ export default function RoadmapMetricsDev({
       }
     }
 
-    async function refresh() {
+    async function refresh(force = false) {
       setWakatimeHours((previous) => ({
         ...previous,
         [featureId]: {
@@ -148,7 +164,9 @@ export default function RoadmapMetricsDev({
       }));
 
       try {
-        const response = await fetch(`/__dev/wakatime?branch=${encodeURIComponent(activeBranch)}`);
+        const query = new URLSearchParams({ branch: activeBranch });
+        if (force) query.set('refresh', '1');
+        const response = await fetch(`/__dev/wakatime?${query}`);
 
         const result = await response.json();
 
@@ -175,6 +193,7 @@ export default function RoadmapMetricsDev({
             loading: false,
             error: '',
             minutes: Math.round(seconds / 60),
+            totalSeconds: seconds,
             editors: Array.isArray(result.editors) ? result.editors : [],
           },
         }));
@@ -202,15 +221,15 @@ export default function RoadmapMetricsDev({
     }
 
     setNextWakatimeSyncAt(null);
-    void refreshChatGpt();
-    refresh();
+    void refreshChatGpt(forceRefresh);
+    refresh(forceRefresh);
 
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
       window.clearTimeout(chatGptTimer);
     };
-  }, [featureId, activeBranch]);
+  }, [featureId, activeBranch, manualRefreshKey]);
 
   const recordHours = (id: string, field: 'estimated', value: string) => {
     // RKM_LOCK_COMPLETED_HOURS_V1
@@ -244,21 +263,46 @@ export default function RoadmapMetricsDev({
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="text-xs font-semibold text-amber-300">HORAS · APENAS LOCALHOST</span>
 
-        <button
-          type="button"
-          disabled={Boolean(completed)}
-          onClick={() => {
-            if (editing) {
-              setEditing(false);
-            } else {
-              setBranchDraft(branches[featureId] || defaultBranch);
-              setEditing(true);
-            }
-          }}
-          className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {completed ? '🔒 Reabra para editar' : editing ? '✓ Concluir' : '✎ Editar'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setManualRefreshKey((key) => key + 1)}
+            disabled={Boolean(wakatimeHours[featureId]?.loading || chatGptEntry?.loading)}
+            title="Atualizar tempos agora"
+            aria-label="Atualizar tempos agora"
+            className="rounded-md border border-amber-400/30 p-1.5 text-amber-200 hover:bg-amber-400/10 disabled:cursor-wait disabled:opacity-60"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 20 20"
+              fill="none"
+              className={`h-4 w-4 ${wakatimeHours[featureId]?.loading || chatGptEntry?.loading ? 'animate-spin' : ''}`}
+            >
+              <path
+                d="M16.5 6.5V3.75m0 0h-2.75m2.75 0-2.1 2.1a6 6 0 1 0 1.3 5.9"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            disabled={Boolean(completed)}
+            onClick={() => {
+              if (editing) {
+                setEditing(false);
+              } else {
+                setBranchDraft(branches[featureId] || defaultBranch);
+                setEditing(true);
+              }
+            }}
+            className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {completed ? '🔒 Reabra para editar' : editing ? '✓ Concluir' : '✎ Editar'}
+          </button>
+        </div>
       </div>
 
       <div className="mb-3 border-t border-amber-400/20 pt-3">
@@ -305,38 +349,29 @@ export default function RoadmapMetricsDev({
 
         <div className="space-y-2">
           <DurationPicker
-            label="Tempo real · WakaTime"
+            label="Tempo real · WakaTime + ChatGPT"
             mode="locked"
-            minutes={wakatimeHours[featureId]?.minutes ?? null}
+            minutes={totalTrackedMinutes}
             onChange={() => undefined}
           >
-            {(editors.length > 0 || chatGptEntry) && (
+            {activityRows.length > 0 && (
               <ul className="list-disc space-y-1 pl-5 text-xs text-slate-400">
-                <li title={chatGptEntry?.error || undefined}>
-                  <span className="text-slate-300">ChatGPT</span>
-                  {' — '}
-                  {chatGptEntry?.loading
-                    ? 'consultando...'
-                    : chatGptEntry?.totalSeconds != null
-                      ? formatActivityDuration(chatGptEntry.totalSeconds)
-                      : chatGptEntry?.error
-                        ? 'indisponível'
-                        : '—'}
-                </li>
-                {editors.map((editor) => {
-                  const seconds = Math.round(editor.totalSeconds);
-                  const minutes = Math.floor(seconds / 60);
-                  const remainder = seconds % 60;
-
-                  return (
-                    <li key={editor.name}>
-                      <span className="text-slate-300">{editor.name}</span>
-                      {' — '}
-                      {minutes > 0 ? `${minutes}min ` : ''}
-                      {remainder}s
-                    </li>
-                  );
-                })}
+                {activityRows.map((row) => (
+                  <li
+                    key={row.name}
+                    title={row.chatGpt ? chatGptEntry?.error || undefined : undefined}
+                  >
+                    <span className="text-slate-300">{row.name}</span>
+                    {' — '}
+                    {row.chatGpt && chatGptEntry?.loading
+                      ? 'consultando...'
+                      : row.seconds != null
+                        ? formatActivityDuration(row.seconds)
+                        : row.chatGpt && chatGptEntry?.error
+                          ? 'indisponível'
+                          : '—'}
+                  </li>
+                ))}
               </ul>
             )}
           </DurationPicker>
@@ -360,17 +395,14 @@ export default function RoadmapMetricsDev({
           Desvio:{' '}
           {hours[featureId]?.estimated !== undefined &&
           hours[featureId]?.estimated !== '' &&
-          wakatimeHours[featureId]?.minutes != null
-            ? `${(
-                wakatimeHours[featureId].minutes / 60 -
-                Number(hours[featureId].estimated)
-              ).toFixed(2)} h`
+          totalTrackedSeconds != null
+            ? `${(totalTrackedSeconds / 3600 - Number(hours[featureId].estimated)).toFixed(2)} h`
             : '—'}
         </div>
       </div>
 
       <p className="mt-2 text-xs text-slate-500">
-        Estimativa local. WakaTime por projeto/branch; ChatGPT geral desde 01/09/2026.
+        Estimativa local. WakaTime e ChatGPT por branch desde 01/09/2026.
       </p>
     </div>
   );

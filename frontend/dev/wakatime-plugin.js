@@ -85,10 +85,11 @@ export function wakatimeDevPlugin() {
         }
 
         const cacheKey = [branch, project, timezone, start, today].join('|');
+        const forceRefresh = url.searchParams.get('refresh') === '1';
 
         const cached = cache.get(cacheKey);
 
-        if (cached && Date.now() - cached.at < cacheTtlMs) {
+        if (!forceRefresh && cached && Date.now() - cached.at < cacheTtlMs) {
           send(200, {
             ...cached.data,
             nextRefreshAt: cached.at + cacheTtlMs,
