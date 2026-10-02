@@ -19,9 +19,13 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "4173:4173"
+      - "127.0.0.1:4173:4173"
     environment:
       BACKEND_URL: http://backend:8787
+      WAKATIME_API_KEY: ${WAKATIME_API_KEY:-}
+      WAKATIME_PROJECT: ${WAKATIME_PROJECT:-rkm-service-manager}
+      WAKATIME_START_DATE: ${WAKATIME_START_DATE:-2026-09-01}
+      WAKATIME_TIMEZONE: ${WAKATIME_TIMEZONE:-America/Fortaleza}
     volumes:
       - ./frontend:/app
       - ./.git:/app/.git:ro

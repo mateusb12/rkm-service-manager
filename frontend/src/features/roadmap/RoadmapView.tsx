@@ -1,7 +1,7 @@
 // RKM_ROADMAP_COMPACT_V1
 // @ts-nocheck
 import { DurationPicker } from '../../utils/DurationPicker';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // RKM_FUNCTION_POINTS_DEV_V1
 import { FunctionPointsDev } from './FunctionPointsDev';
 
@@ -214,6 +214,73 @@ export function RoadmapView() {
   const [featureId, setFeatureId] = useState('pcp/clientes');
   const [hours, setHours] = useState(readHours);
   const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);
+
+  const [wakatimeHours, setWakatimeHours] = useState({});
+
+  useEffect(() => {
+    if (!LOCAL || !featureId) return;
+
+    let cancelled = false;
+
+    async function refresh() {
+      setWakatimeHours((previous) => ({
+        ...previous,
+        [featureId]: {
+          ...previous[featureId],
+          loading: true,
+          error: '',
+        },
+      }));
+
+      try {
+        const branch = `features/${featureId}`;
+        const response = await fetch(`/__dev/wakatime?branch=${encodeURIComponent(branch)}`);
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Falha ao consultar WakaTime.');
+        }
+
+        const seconds = Number(result.totalSeconds);
+
+        if (!Number.isFinite(seconds) || seconds < 0) {
+          throw new Error('Resposta de tempo inválida.');
+        }
+
+        if (!cancelled) {
+          setWakatimeHours((previous) => ({
+            ...previous,
+            [featureId]: {
+              loading: false,
+              error: '',
+              minutes: Math.round(seconds / 60),
+            },
+          }));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setWakatimeHours((previous) => ({
+            ...previous,
+            [featureId]: {
+              loading: false,
+              error: error instanceof Error ? error.message : 'WakaTime indisponível.',
+              minutes: null,
+            },
+          }));
+        }
+      }
+    }
+
+    refresh();
+
+    const interval = window.setInterval(refresh, 300000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [featureId]);
 
   // RKM_ROADMAP_MODES_V1
   const [editingHoursId, setEditingHoursId] = useState(null);
@@ -434,39 +501,58 @@ export function RoadmapView() {
                               </div>
 
                               <div className="grid gap-3 sm:grid-cols-2">
-                                {['estimated', 'actual'].map((field, index) => (
+                                <DurationPicker
+                                  label="Estimativa inicial"
+                                  mode={
+                                    !completedFeatures[item.id] && editingHoursId === item.id
+                                      ? 'edit'
+                                      : 'locked'
+                                  }
+                                  minutes={
+                                    hours[item.id]?.estimated == null ||
+                                    hours[item.id]?.estimated === ''
+                                      ? null
+                                      : Math.round(Number(hours[item.id].estimated) * 60)
+                                  }
+                                  onChange={(value) =>
+                                    recordHours(
+                                      item.id,
+                                      'estimated',
+                                      value === null ? '' : String(value / 60),
+                                    )
+                                  }
+                                />
+
+                                <div className="space-y-2">
                                   <DurationPicker
-                                    mode={
-                                      !completedFeatures[item.id] && editingHoursId === item.id
-                                        ? 'edit'
-                                        : 'locked'
-                                    }
-                                    key={field}
-                                    label={index === 0 ? 'Estimativa inicial' : 'Tempo real'}
-                                    minutes={
-                                      hours[item.id]?.[field] == null ||
-                                      hours[item.id]?.[field] === ''
-                                        ? null
-                                        : Math.round(Number(hours[item.id][field]) * 60)
-                                    }
-                                    onChange={(value) =>
-                                      recordHours(
-                                        item.id,
-                                        field,
-                                        value === null ? '' : String(value / 60),
-                                      )
-                                    }
+                                    label="Tempo real · WakaTime"
+                                    mode="locked"
+                                    minutes={wakatimeHours[item.id]?.minutes ?? null}
+                                    onChange={() => undefined}
                                   />
-                                ))}
+
+                                  <p
+                                    role="status"
+                                    className={`text-xs ${
+                                      wakatimeHours[item.id]?.error
+                                        ? 'text-rose-300'
+                                        : 'text-slate-400'
+                                    }`}
+                                  >
+                                    {wakatimeHours[item.id]?.error ||
+                                      (wakatimeHours[item.id]?.loading
+                                        ? 'Sincronizando com WakaTime...'
+                                        : 'Atualização automática a cada 5 minutos.')}
+                                  </p>
+                                </div>
 
                                 <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2 w-full">
                                   Desvio:{' '}
                                   {hours[item.id]?.estimated !== undefined &&
-                                  hours[item.id]?.actual !== undefined &&
                                   hours[item.id]?.estimated !== '' &&
-                                  hours[item.id]?.actual !== ''
+                                  wakatimeHours[item.id]?.minutes != null
                                     ? `${(
-                                        Number(hours[item.id].actual) -
+                                        wakatimeHours[item.id].minutes / 60 -
                                         Number(hours[item.id].estimated)
                                       ).toFixed(2)} h`
                                     : '—'}
@@ -474,7 +560,7 @@ export function RoadmapView() {
                               </div>
 
                               <p className="mt-2 text-xs text-slate-500">
-                                Dados locais. Integração WakaTime posteriormente.
+                                Estimativa local. Tempo real por projeto e branch via WakaTime.
                               </p>
                             </div>
                           )}
