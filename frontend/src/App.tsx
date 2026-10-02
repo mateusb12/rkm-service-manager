@@ -38,6 +38,7 @@ import {
   EvidencesView,
   SummaryView,
 } from './features/service-workflow';
+import { ClientsView } from './features/pcp/clients';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -857,6 +858,10 @@ const App = () => {
   const closeAuthModal = () => setAuthModal({ open: false, context: null });
   const closeDecisionModal = () => setDecisionModal({ open: false, request: null, decision: '' });
   const renderView = () => {
+    if (view === 'pcp-clients') {
+      return React.createElement(ClientsView);
+    }
+
     if (view === 'populator') {
       return React.createElement(PopulatorView);
     }
