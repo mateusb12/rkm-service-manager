@@ -9,13 +9,13 @@ const COLORS = {
     dot: 'bg-emerald-400 text-emerald-950',
     border: 'border-emerald-400',
     glow: 'shadow-[0_0_15px_3px_rgba(52,211,153,.35)]',
-    name: 'Entrada',
+    name: 'Básico',
   },
   V1: {
     dot: 'bg-blue-400 text-blue-950',
     border: 'border-blue-400',
     glow: 'shadow-[0_0_15px_3px_rgba(96,165,250,.35)]',
-    name: 'Planejamento',
+    name: 'Peritagem',
   },
   V2: {
     dot: 'bg-amber-300 text-amber-950',
@@ -27,13 +27,13 @@ const COLORS = {
     dot: 'bg-slate-500 text-white',
     border: 'border-slate-400',
     glow: 'shadow-[0_0_15px_3px_rgba(148,163,184,.3)]',
-    name: 'Gestão',
+    name: 'Relatórios',
   },
   V4: {
     dot: 'bg-violet-400 text-violet-950',
     border: 'border-violet-400',
     glow: 'shadow-[0_0_15px_3px_rgba(167,139,250,.35)]',
-    name: 'Escala',
+    name: 'Gestão',
   },
 };
 
@@ -49,8 +49,8 @@ const feature = (id, title, acceptance, state = 'Planejada', completedAcceptance
 const ROADMAP = [
   {
     id: 'V0',
-    title: 'Entrada e diagnóstico',
-    description: 'Da chegada da peça à peritagem inicial.',
+    title: 'Sistema básico',
+    description: 'Abrir, acompanhar e finalizar uma OS do começo ao fim.',
     areas: [
       {
         id: 'pcp',
@@ -65,38 +65,87 @@ const ROADMAP = [
             [0, 1],
           ),
           feature(
-            'pcp/nota-fiscal',
-            'Nota fiscal ou N/A',
-            'Durante o recebimento, o PCP consegue registrar a nota fiscal ou indicar N/A.\nA informação permanece vinculada à OS.',
+            'pcp/abertura-os',
+            'Abertura mínima da OS',
+            'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
           ),
           feature(
             'pcp/numeracao-os',
             'Numeração automática da OS',
-            'Ao criar uma OS, o sistema gera automaticamente um número único.\nO número permite identificar e consultar a OS posteriormente.',
+            'Ao abrir uma OS, o sistema gera automaticamente um número único.\nO número permite localizar a ordem posteriormente.',
           ),
           feature(
-            'pcp/abertura-os',
-            'Abertura mínima da OS',
-            'O PCP consegue registrar a entrada de uma peça, identificando o cliente e o equipamento.\nA OS criada fica disponível para a etapa de peritagem.',
+            'pcp/nota-fiscal',
+            'Nota fiscal ou N/A',
+            'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\nO documento permanece associado à OS.',
           ),
           feature(
             'pcp/fotografias',
-            'Fotografias',
-            'Reservar espaço. Upload será implementado depois.',
-            'Depois do MVP',
+            'Fotografias básicas',
+            'É possível adicionar fotografias à OS no recebimento ou posteriormente.\nAs imagens ficam disponíveis para compor o relatório final.',
+          ),
+          feature(
+            'pcp/fila',
+            'Acompanhamento mínimo',
+            'O PCP consegue consultar as OS abertas e identificar a etapa ou situação atual de cada uma.',
           ),
         ],
       },
       {
-        id: 'oficina',
-        title: 'Oficina · Peritagem',
+        id: 'peritagem-minima',
+        title: 'Oficina · Peritagem mínima',
         branch: 'features/oficina-peritagem',
         features: [
-          feature('oficina/bancadas', 'Bancadas', 'Identificar bancada livre ou ocupada.'),
           feature(
-            'oficina/inspecao',
-            'Inspeção inicial',
-            'Classificar equipamento e registrar análise.',
+            'oficina/identificacao-minima',
+            'Identificação mínima',
+            'A oficina registra o tipo do equipamento, a bancada e o responsável com o mínimo necessário para seguir o fluxo.',
+          ),
+          feature(
+            'oficina/diagnostico-minimo',
+            'Diagnóstico simples',
+            'O mecânico registra o diagnóstico inicial em texto livre.\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
+          ),
+        ],
+      },
+      {
+        id: 'comercial-minimo',
+        title: 'Comercial · Orçamento mínimo',
+        branch: 'features/comercial-orcamento',
+        features: [
+          feature(
+            'comercial/orcamento-minimo',
+            'Orçamento operacional',
+            'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+          ),
+        ],
+      },
+      {
+        id: 'execucao-minima',
+        title: 'Oficina · Execução mínima',
+        branch: 'features/oficina-execucao',
+        features: [
+          feature(
+            'oficina/execucao-minima',
+            'Andamento e conclusão',
+            'A oficina consegue registrar que o serviço está em execução e informar sua conclusão sem depender de checklist detalhado.',
+          ),
+        ],
+      },
+      {
+        id: 'finalizacao',
+        title: 'Finalização',
+        branch: 'features/finalizacao-os',
+        features: [
+          feature(
+            'finalizacao/encerramento',
+            'Saída e encerramento',
+            'A OS pode ser finalizada e registrar a saída do material, preservando os dados produzidos ao longo do serviço.',
+          ),
+          feature(
+            'finalizacao/relatorio-pdf',
+            'Relatório final em PDF',
+            'O sistema gera um relatório final em PDF com os principais dados da OS, diagnóstico, serviço executado e fotografias vinculadas.',
           ),
         ],
       },
@@ -104,74 +153,183 @@ const ROADMAP = [
   },
   {
     id: 'V1',
-    title: 'Planejamento e execução',
-    description: 'Responsáveis, prioridades e etapas.',
+    title: 'Peritagem detalhada',
+    description: 'Registrar a inspeção e o diagnóstico com mais detalhes.',
     areas: [
       {
-        id: 'planejamento',
-        title: 'PCP · Planejamento',
-        branch: 'features/pcp-planejamento',
+        id: 'peritagem',
+        title: 'Oficina · Peritagem',
+        branch: 'features/peritagem-estruturada',
         features: [
-          feature('pcp/fila', 'Fila de OS', 'Visualizar ordens abertas.'),
-          feature('pcp/prazos', 'Prazos e prioridade', 'Acompanhar prazos e prioridades.'),
-        ],
-      },
-      {
-        id: 'execucao',
-        title: 'Oficina · Execução',
-        branch: 'features/oficina-execucao',
-        features: [
-          feature('oficina/etapas', 'Etapas produtivas', 'Atualizar status por etapa.'),
-          feature('oficina/proxima-acao', 'Próximo passo', 'Identificar a próxima ação.'),
+          feature(
+            'oficina/tipos-equipamento',
+            'Tipos de equipamento',
+            'A inspeção diferencia cilindro, bomba, motor hidráulico, unidade hidráulica, comando e outros tipos definidos com a RKM.',
+          ),
+          feature(
+            'oficina/checklists',
+            'Checklists por tipo',
+            'Cada tipo de equipamento apresenta somente os componentes e verificações aplicáveis àquela peritagem.',
+          ),
+          feature(
+            'oficina/componentes',
+            'Componentes e condição',
+            'O mecânico registra a condição dos componentes inspecionados e informa quando há necessidade de recuperação ou substituição.',
+          ),
+          feature(
+            'oficina/medidas',
+            'Medidas e materiais',
+            'Quando aplicável, a peritagem registra medidas, diâmetros, materiais e demais informações técnicas necessárias.',
+          ),
+          feature(
+            'oficina/bancadas',
+            'Bancadas estruturadas',
+            'Visualizar bancadas livres ou ocupadas e identificar qual OS está associada a cada bancada.',
+          ),
+          feature(
+            'oficina/diagnostico-estruturado',
+            'Diagnóstico estruturado',
+            'O diagnóstico consolida as informações da inspeção sem perder a possibilidade de observações técnicas livres.',
+          ),
         ],
       },
     ],
   },
   {
     id: 'V2',
-    title: 'Controle e liberação',
-    description: 'Evidências, pendências e validação.',
+    title: 'Acompanhamento e aprovações',
+    description: 'Saber onde a OS está, quem é responsável, o que falta e quem aprovou.',
     areas: [
       {
-        id: 'controle',
-        title: 'Controle técnico',
-        branch: 'features/controle-tecnico',
+        id: 'fluxo',
+        title: 'Fluxo operacional',
+        branch: 'features/rastreabilidade-aprovacoes',
         features: [
-          feature('controle/evidencias', 'Evidências', 'Vincular evidências à OS.'),
-          feature('controle/pendencias', 'Pendências', 'Registrar motivo e responsável.'),
-          feature('controle/liberacao', 'Liberação', 'Registrar validação técnica.'),
+          feature(
+            'oficina/etapas',
+            'Etapas e histórico',
+            'Cada mudança de etapa fica registrada e a situação atual da OS permanece claramente identificada.',
+          ),
+          feature(
+            'oficina/proxima-acao',
+            'Próxima ação e responsável',
+            'O sistema mostra o que precisa acontecer agora e quem é responsável pela próxima ação.',
+          ),
+          feature(
+            'controle/pendencias',
+            'Pendências e motivo de parada',
+            'Uma OS parada pode registrar o motivo da pendência, desde quando está parada e quem precisa agir.',
+          ),
+          feature(
+            'pcp/prazos',
+            'Prazo e prioridade',
+            'Registrar prazo previsto, prioridade e identificar atrasos durante o acompanhamento da OS.',
+          ),
+          feature(
+            'controle/liberacao',
+            'Aprovações e liberações',
+            'Registrar decisões de aprovação ou liberação com responsável e momento da decisão.',
+          ),
+          feature(
+            'oficina/nao-aplicavel',
+            'Etapa não aplicável',
+            'Uma etapa que não se aplica ao serviço pode ser explicitamente ignorada sem interromper o fluxo.',
+          ),
+          feature(
+            'cobertura/auditoria',
+            'Rastreabilidade de alterações',
+            'Consultar as ações relevantes realizadas na OS, incluindo responsável e etapa correspondente.',
+          ),
         ],
       },
     ],
   },
   {
     id: 'V3',
-    title: 'Gestão operacional',
-    description: 'Filas, gargalos e atrasos.',
+    title: 'Fotos e relatórios',
+    description: 'Guardar fotos, anexos e resultados dos testes e melhorar o relatório final.',
     areas: [
       {
-        id: 'gestao',
-        title: 'Gestão',
-        branch: 'features/gestao-operacional',
+        id: 'evidencias',
+        title: 'Evidências técnicas',
+        branch: 'features/evidencias-documentacao',
         features: [
-          feature('gestao/capacidade', 'Capacidade por setor', 'Visualizar carga de trabalho.'),
-          feature('gestao/historico', 'Histórico operacional', 'Consultar evolução das OS.'),
+          feature(
+            'controle/evidencias',
+            'Evidências por etapa',
+            'Fotos e demais evidências podem ser vinculadas à etapa do serviço em que foram produzidas.',
+          ),
+          feature(
+            'controle/testes',
+            'Resultados de testes',
+            'Registrar resultados e observações dos testes realizados antes da liberação do equipamento.',
+          ),
+          feature(
+            'documentos/anexos',
+            'Anexos e documentos',
+            'Arquivos relevantes podem ser associados à OS sem transformar o recebimento inicial em uma etapa burocrática.',
+          ),
+          feature(
+            'documentos/relatorio-tecnico',
+            'Relatório técnico enriquecido',
+            'O relatório final incorpora peritagem estruturada, evidências selecionadas, resultados de testes e informações relevantes da execução.',
+          ),
         ],
       },
     ],
   },
   {
     id: 'V4',
-    title: 'Cobertura validada',
-    description: 'Fluxo completo utilizado pela RKM.',
+    title: 'Gestão e automações',
+    description: 'Acompanhar atrasos, capacidade, indicadores e avisos da operação.',
     areas: [
       {
-        id: 'escala',
-        title: 'Cobertura da oficina',
-        branch: 'features/cobertura-oficina',
+        id: 'gestao',
+        title: 'Gestão operacional',
+        branch: 'features/gestao-operacional',
         features: [
-          feature('cobertura/ponta-a-ponta', 'Fluxo completo', 'Acompanhar até a finalização.'),
-          feature('cobertura/aceite', 'Aceite da RKM', 'Validar funcionalidades com o cliente.'),
+          feature(
+            'gestao/capacidade',
+            'Capacidade por setor',
+            'Visualizar carga de trabalho e distribuição das OS entre setores e responsáveis.',
+          ),
+          feature(
+            'gestao/atrasos',
+            'Atrasos e gargalos',
+            'Identificar ordens atrasadas, itens parados e pontos recorrentes de gargalo.',
+          ),
+          feature(
+            'gestao/indicadores',
+            'Indicadores operacionais',
+            'Consolidar tempos, volumes e demais indicadores úteis para acompanhar a operação.',
+          ),
+          feature(
+            'gestao/historico',
+            'Consulta histórica',
+            'Consultar a evolução operacional das OS e utilizar o histórico como apoio à gestão.',
+          ),
+        ],
+      },
+      {
+        id: 'automacao',
+        title: 'Avisos e automações',
+        branch: 'features/automacao-operacional',
+        features: [
+          feature(
+            'automacao/avisos-internos',
+            'Avisos internos',
+            'O sistema destaca situações que exigem atenção sem depender, nesta etapa, de integrações externas de mensageria.',
+          ),
+          feature(
+            'rh/treinamentos',
+            'Treinamentos próximos do vencimento',
+            'Exibir avisos de treinamentos de funcionários próximos do vencimento conforme as regras definidas com a RKM.',
+          ),
+          feature(
+            'cobertura/aceite',
+            'Validação consolidada com a RKM',
+            'Revisar o uso real do sistema com a equipe e consolidar ajustes necessários para a operação estabilizada.',
+          ),
         ],
       },
     ],
