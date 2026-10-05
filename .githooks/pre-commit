@@ -71,8 +71,12 @@ if (( ${#prettier_files[@]} > 0 )); then
   (
     cd "$FRONT"
     ./node_modules/.bin/prettier \
-      --check "${prettier_files[@]}"
+      --write "${prettier_files[@]}"
   )
+
+  # Atualizar somente arquivos que já estavam staged.
+  # O guard anterior impede partial staging.
+  git add -- "${frontend_staged[@]}"
 fi
 
 if (( ${#eslint_files[@]} > 0 )); then
@@ -109,6 +113,15 @@ if (( ${#go_files[@]} > 0 )); then
       exit 1
     fi
   done
+fi
+
+
+if (( ${#go_files[@]} > 0 )); then
+  echo "🔍 RKM-GO-001: nomenclatura"
+  (
+    cd "$ROOT/backend"
+    go run ./tools/naminglint
+  ) || exit 1
 fi
 
 echo "✅ Pre-commit passou!"

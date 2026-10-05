@@ -9,19 +9,25 @@ services:
       APP_ENV: development
       PORT: 8787
       DB_PATH: /data/rkm.db
+      DEV_METRICS_DB_PATH: /dev-data/rkm-dev.db
       ACCESS_TTL: 15m
       SESSION_TTL: 8h
       SESSION_ABSOLUTE_TTL: 168h
       COOKIE_SECURE: "false"
     volumes:
       - rkm_data:/data
+      - rkm_dev_data:/dev-data
 
   frontend:
     build: ./frontend
     ports:
-      - "4173:4173"
+      - "127.0.0.1:4173:4173"
     environment:
       BACKEND_URL: http://backend:8787
+      WAKATIME_API_KEY: ${WAKATIME_API_KEY:-}
+      WAKATIME_PROJECT: ${WAKATIME_PROJECT:-rkm-service-manager}
+      WAKATIME_START_DATE: ${WAKATIME_START_DATE:-2026-09-01}
+      WAKATIME_TIMEZONE: ${WAKATIME_TIMEZONE:-America/Fortaleza}
     volumes:
       - ./frontend:/app
       - ./.git:/app/.git:ro
@@ -32,3 +38,4 @@ services:
 volumes:
   frontend_node_modules:
   rkm_data:
+  rkm_dev_data:

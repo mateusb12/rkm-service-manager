@@ -5,11 +5,7 @@ import React, { useState } from 'react';
 import { IT_CONFIG } from './registry';
 import { setIn } from './path';
 
-import {
-  AuthRequestButton,
-  StepAuthorizationHistory,
-  getStepAuthorizationState,
-} from '../role-access';
+import { AuthRequestButton, StepAuthorizationHistory, getStepAuthorizationState } from '../auth';
 
 import { AlertBox } from '../../shared/ui/feedback';
 
@@ -280,7 +276,7 @@ export const ITForm = ({
                 },
                 a.msg,
               ),
-              activeRole === 'operator' &&
+              activeRole === 'mechanic' &&
                 React.createElement(
                   'div',
                   { className: 'flex justify-end pr-1' },

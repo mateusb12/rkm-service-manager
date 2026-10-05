@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React from 'react';
 
-import { MyAuthRequestsList, mockUsers, userById } from '../role-access';
+import { MyAuthRequestsList, mockUsers, userById } from '../auth';
 
 import { LizyReferenceCard, SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
 

@@ -1,100 +1,195 @@
 // RKM_ROADMAP_COMPACT_V1
 // @ts-nocheck
-import { DurationPicker } from '../../utils/DurationPicker';
 import React, { useState } from 'react';
-// RKM_FUNCTION_POINTS_DEV_V1
-import { FunctionPointsDev } from './FunctionPointsDev';
+
+import {
+  freezeFeatureMetric,
+  listPersistedFeatureMetrics,
+  unlockFeatureMetric,
+  type FeatureMetricDraft,
+} from './dev-feature-metrics-service';
+const RoadmapMetricsDev = React.lazy(() => import('./RoadmapMetricsDev'));
+const RoadmapWorklogDev = React.lazy(() => import('./RoadmapWorklogDev'));
 
 const COLORS = {
-  V1: {
+  V0: {
     dot: 'bg-emerald-400 text-emerald-950',
     border: 'border-emerald-400',
     glow: 'shadow-[0_0_15px_3px_rgba(52,211,153,.35)]',
-    name: 'Entrada',
+    name: 'Básico',
   },
-  V2: {
+  V1: {
     dot: 'bg-blue-400 text-blue-950',
     border: 'border-blue-400',
     glow: 'shadow-[0_0_15px_3px_rgba(96,165,250,.35)]',
-    name: 'Planejamento',
+    name: 'Peritagem',
   },
-  V3: {
+  V2: {
     dot: 'bg-amber-300 text-amber-950',
     border: 'border-amber-300',
     glow: 'shadow-[0_0_15px_3px_rgba(252,211,77,.35)]',
     name: 'Controle',
   },
-  V4: {
+  V3: {
     dot: 'bg-slate-500 text-white',
     border: 'border-slate-400',
     glow: 'shadow-[0_0_15px_3px_rgba(148,163,184,.3)]',
-    name: 'Gestão',
+    name: 'Relatórios',
   },
-  V5: {
+  V4: {
     dot: 'bg-violet-400 text-violet-950',
     border: 'border-violet-400',
     glow: 'shadow-[0_0_15px_3px_rgba(167,139,250,.35)]',
-    name: 'Escala',
+    name: 'Avisos',
   },
 };
 
-const feature = (id, title, acceptance, state = 'Planejada') => ({
+const feature = (id, title, acceptance, state = 'Planejada', completedAcceptanceCriteria = []) => ({
   id,
   title,
   acceptance,
   state,
+  completedAcceptanceCriteria,
   branch: `features/${id}`,
 });
 
 const ROADMAP = [
   {
-    id: 'V1',
-    title: 'Entrada e diagnóstico',
-    description: 'Da chegada da peça à peritagem inicial.',
+    id: 'V0',
+    title: 'Sistema básico',
+    description: 'Abrir, acompanhar e finalizar uma OS do começo ao fim.',
     areas: [
       {
         id: 'pcp',
-        title: 'PCP · Recebimento',
-        branch: 'features/pcp-recebimento',
+        title: 'PCP',
+        objective: 'Receber a peça, abrir a OS com o básico e acompanhar seu andamento.',
         features: [
           feature(
             'pcp/clientes',
             'Cadastro e busca de clientes',
-            'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.\nConsegue vincular o cliente encontrado à nova OS.',
-          ),
-          feature(
-            'pcp/nota-fiscal',
-            'Nota fiscal ou N/A',
-            'Durante o recebimento, o PCP consegue registrar a nota fiscal ou indicar N/A.\nA informação permanece vinculada à OS.',
-          ),
-          feature(
-            'pcp/numeracao-os',
-            'Numeração automática da OS',
-            'Ao criar uma OS, o sistema gera automaticamente um número único.\nO número permite identificar e consultar a OS posteriormente.',
+            'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
+            'Planejada',
+            [0, 1],
           ),
           feature(
             'pcp/abertura-os',
             'Abertura mínima da OS',
-            'O PCP consegue registrar a entrada de uma peça, identificando o cliente e o equipamento.\nA OS criada fica disponível para a etapa de peritagem.',
+            'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
+          ),
+          feature(
+            'pcp/numeracao-os',
+            'Numeração automática da OS',
+            'Ao abrir uma OS, o sistema gera automaticamente um número único.\nO número permite localizar a ordem posteriormente.',
+          ),
+          feature(
+            'pcp/nota-fiscal',
+            'Nota fiscal ou N/A',
+            'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\nO documento permanece associado à OS.',
           ),
           feature(
             'pcp/fotografias',
-            'Fotografias',
-            'Reservar espaço. Upload será implementado depois.',
-            'Depois do MVP',
+            'Fotografias básicas',
+            'É possível adicionar fotografias à OS no recebimento ou posteriormente.\nAs imagens ficam disponíveis para compor o relatório final.',
+          ),
+          feature(
+            'pcp/fila',
+            'Acompanhamento mínimo',
+            'O PCP consegue consultar as OS abertas e identificar a etapa ou situação atual de cada uma.',
           ),
         ],
       },
       {
         id: 'oficina',
-        title: 'Oficina · Peritagem',
-        branch: 'features/oficina-peritagem',
+        title: 'Oficina',
+        objective: 'Identificar o equipamento, registrar o diagnóstico e concluir o serviço.',
         features: [
-          feature('oficina/bancadas', 'Bancadas', 'Identificar bancada livre ou ocupada.'),
           feature(
-            'oficina/inspecao',
-            'Inspeção inicial',
-            'Classificar equipamento e registrar análise.',
+            'oficina/identificacao-minima',
+            'Identificação mínima',
+            'A oficina registra o tipo do equipamento, a bancada e o responsável com o mínimo necessário para seguir o fluxo.',
+          ),
+          feature(
+            'oficina/diagnostico-minimo',
+            'Diagnóstico simples',
+            'O mecânico registra o diagnóstico inicial em texto livre.\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
+          ),
+          feature(
+            'oficina/execucao-minima',
+            'Andamento e conclusão',
+            'A oficina consegue registrar que o serviço está em execução e informar sua conclusão sem depender de checklist detalhado.',
+          ),
+        ],
+      },
+      {
+        id: 'comercial',
+        title: 'Comercial',
+        objective: 'Montar o orçamento e registrar a decisão sobre o serviço.',
+        features: [
+          feature(
+            'comercial/orcamento-minimo',
+            'Orçamento operacional',
+            'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+          ),
+        ],
+      },
+      {
+        id: 'finalizacao',
+        title: 'Finalização',
+        objective: 'Encerrar a OS e gerar o relatório final para o cliente.',
+        features: [
+          feature(
+            'finalizacao/encerramento',
+            'Saída e encerramento',
+            'A OS pode ser finalizada e registrar a saída do material, preservando os dados produzidos ao longo do serviço.',
+          ),
+          feature(
+            'finalizacao/relatorio-pdf',
+            'Relatório final em PDF',
+            'O sistema gera um relatório final em PDF com os principais dados da OS, diagnóstico, serviço executado e fotografias vinculadas.',
+          ),
+        ],
+      },
+    ],
+  },
+  {
+    id: 'V1',
+    title: 'Peritagem detalhada',
+    description: 'Registrar a inspeção e o diagnóstico com mais detalhes.',
+    areas: [
+      {
+        id: 'oficina',
+        title: 'Oficina',
+        objective: 'Fazer uma peritagem completa, com componentes, medidas e informações técnicas.',
+        features: [
+          feature(
+            'oficina/tipos-equipamento',
+            'Tipos de equipamento',
+            'A inspeção diferencia cilindro, bomba, motor hidráulico, unidade hidráulica, comando e outros tipos definidos com a RKM.',
+          ),
+          feature(
+            'oficina/checklists',
+            'Checklists por tipo',
+            'Cada tipo de equipamento apresenta somente os componentes e verificações aplicáveis àquela peritagem.',
+          ),
+          feature(
+            'oficina/componentes',
+            'Componentes e condição',
+            'O mecânico registra a condição dos componentes e informa quando é necessário recuperar ou substituir uma peça.',
+          ),
+          feature(
+            'oficina/medidas',
+            'Medidas e materiais',
+            'Quando necessário, registrar medidas, diâmetros, materiais e outras informações técnicas.',
+          ),
+          feature(
+            'oficina/bancadas',
+            'Bancadas',
+            'Visualizar bancadas livres ou ocupadas e identificar qual OS está em cada bancada.',
+          ),
+          feature(
+            'oficina/diagnostico-estruturado',
+            'Diagnóstico detalhado',
+            'O diagnóstico reúne as informações da inspeção e permite observações técnicas livres.',
           ),
         ],
       },
@@ -102,74 +197,135 @@ const ROADMAP = [
   },
   {
     id: 'V2',
-    title: 'Planejamento e execução',
-    description: 'Responsáveis, prioridades e etapas.',
+    title: 'Acompanhamento e aprovações',
+    description: 'Saber onde a OS está, quem é responsável, o que falta e quem aprovou.',
     areas: [
       {
-        id: 'planejamento',
-        title: 'PCP · Planejamento',
-        branch: 'features/pcp-planejamento',
+        id: 'pcp',
+        title: 'PCP',
+        objective: 'Acompanhar prazos e prioridades das OS.',
         features: [
-          feature('pcp/fila', 'Fila de OS', 'Visualizar ordens abertas.'),
-          feature('pcp/prazos', 'Prazos e prioridade', 'Acompanhar prazos e prioridades.'),
+          feature(
+            'pcp/prazos',
+            'Prazo e prioridade',
+            'Registrar prazo previsto, prioridade e identificar atrasos durante o acompanhamento da OS.',
+          ),
         ],
       },
       {
-        id: 'execucao',
-        title: 'Oficina · Execução',
-        branch: 'features/oficina-execucao',
+        id: 'oficina',
+        title: 'Oficina',
+        objective: 'Atualizar as etapas e deixar claro o próximo passo do serviço.',
         features: [
-          feature('oficina/etapas', 'Etapas produtivas', 'Atualizar status por etapa.'),
-          feature('oficina/proxima-acao', 'Próximo passo', 'Identificar a próxima ação.'),
+          feature(
+            'oficina/etapas',
+            'Etapas e histórico',
+            'Cada mudança de etapa fica registrada e a situação atual da OS permanece identificada.',
+          ),
+          feature(
+            'oficina/proxima-acao',
+            'Próxima ação e responsável',
+            'O sistema mostra o que precisa acontecer agora e quem é responsável pela próxima ação.',
+          ),
+          feature(
+            'oficina/nao-aplicavel',
+            'Etapa não aplicável',
+            'Uma etapa que não se aplica ao serviço pode ser ignorada sem interromper o fluxo.',
+          ),
+        ],
+      },
+      {
+        id: 'controle',
+        title: 'Controle',
+        objective: 'Registrar pendências, aprovações e o histórico das alterações.',
+        features: [
+          feature(
+            'controle/pendencias',
+            'Pendências e motivo de parada',
+            'Uma OS parada pode registrar o motivo, desde quando está parada e quem precisa agir.',
+          ),
+          feature(
+            'controle/liberacao',
+            'Aprovações e liberações',
+            'Registrar decisões de aprovação ou liberação, quem decidiu e quando.',
+          ),
+          feature(
+            'controle/auditoria',
+            'Histórico de alterações',
+            'Consultar as principais alterações feitas na OS, com responsável e etapa correspondente.',
+          ),
         ],
       },
     ],
   },
   {
     id: 'V3',
-    title: 'Controle e liberação',
-    description: 'Evidências, pendências e validação.',
+    title: 'Fotos e relatórios',
+    description: 'Guardar fotos, anexos e resultados dos testes e melhorar o relatório final.',
     areas: [
       {
-        id: 'controle',
-        title: 'Controle técnico',
-        branch: 'features/controle-tecnico',
+        id: 'oficina',
+        title: 'Oficina',
+        objective: 'Registrar fotos e resultados dos testes durante o serviço.',
         features: [
-          feature('controle/evidencias', 'Evidências', 'Vincular evidências à OS.'),
-          feature('controle/pendencias', 'Pendências', 'Registrar motivo e responsável.'),
-          feature('controle/liberacao', 'Liberação', 'Registrar validação técnica.'),
+          feature(
+            'oficina/evidencias',
+            'Fotos por etapa',
+            'Fotos e outras evidências podem ser registradas na etapa do serviço em que foram produzidas.',
+          ),
+          feature(
+            'oficina/testes',
+            'Resultados de testes',
+            'Registrar resultados e observações dos testes realizados antes da liberação do equipamento.',
+          ),
+        ],
+      },
+      {
+        id: 'finalizacao',
+        title: 'Finalização',
+        objective: 'Organizar anexos e gerar um relatório técnico mais completo.',
+        features: [
+          feature(
+            'finalizacao/anexos',
+            'Anexos e documentos',
+            'Arquivos importantes podem ser associados à OS.',
+          ),
+          feature(
+            'finalizacao/relatorio-tecnico',
+            'Relatório técnico completo',
+            'O relatório final reúne peritagem, fotos, testes e informações importantes da execução.',
+          ),
         ],
       },
     ],
   },
   {
     id: 'V4',
-    title: 'Gestão operacional',
-    description: 'Filas, gargalos e atrasos.',
+    title: 'Avisos',
+    description: 'Destacar situações que precisam de atenção.',
     areas: [
       {
-        id: 'gestao',
-        title: 'Gestão',
-        branch: 'features/gestao-operacional',
+        id: 'pcp',
+        title: 'PCP',
+        objective: 'Avisar sobre atrasos e pendências das OS.',
         features: [
-          feature('gestao/capacidade', 'Capacidade por setor', 'Visualizar carga de trabalho.'),
-          feature('gestao/historico', 'Histórico operacional', 'Consultar evolução das OS.'),
+          feature(
+            'pcp/avisos',
+            'Atrasos e pendências',
+            'O PCP consegue identificar OS atrasadas, paradas ou com pendências que precisam de atenção.',
+          ),
         ],
       },
-    ],
-  },
-  {
-    id: 'V5',
-    title: 'Cobertura validada',
-    description: 'Fluxo completo utilizado pela RKM.',
-    areas: [
       {
-        id: 'escala',
-        title: 'Cobertura da oficina',
-        branch: 'features/cobertura-oficina',
+        id: 'admin',
+        title: 'Administração',
+        objective: 'Avisar sobre treinamentos próximos do vencimento.',
         features: [
-          feature('cobertura/ponta-a-ponta', 'Fluxo completo', 'Acompanhar até a finalização.'),
-          feature('cobertura/aceite', 'Aceite da RKM', 'Validar funcionalidades com o cliente.'),
+          feature(
+            'admin/treinamentos',
+            'Treinamentos próximos do vencimento',
+            'Exibir avisos quando treinamentos de funcionários estiverem próximos do vencimento, conforme as regras definidas com a RKM.',
+          ),
         ],
       },
     ],
@@ -182,79 +338,125 @@ const LOCAL =
   typeof window !== 'undefined' &&
   ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
-const STORAGE_KEY = 'rkm:private-dev-hours';
-
-// RKM_TASK_DONE_DEV_V1
-const TASK_STATUS_KEY = 'rkm:private-dev-task-status';
-
-function readHours() {
-  if (!LOCAL) return {};
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
-
-function readTaskStatuses() {
-  if (!LOCAL) return {};
-
-  try {
-    const value = JSON.parse(localStorage.getItem(TASK_STATUS_KEY) || '{}');
-
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  } catch {
-    return {};
-  }
-}
-
 export function RoadmapView() {
-  const [versionId, setVersionId] = useState('V1');
+  const [versionId, setVersionId] = useState('V0');
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
-  const [hours, setHours] = useState(readHours);
-  const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);
+  const [completedFeatures, setCompletedFeatures] = useState<Record<string, boolean>>({});
+  const [taskStatusLoaded, setTaskStatusLoaded] = useState(false);
+  const [taskStatusPending, setTaskStatusPending] = useState<Record<string, boolean>>({});
+  const [taskStatusError, setTaskStatusError] = useState('');
+  const [featureMetricDrafts, setFeatureMetricDrafts] = useState<
+    Record<string, FeatureMetricDraft>
+  >({});
 
-  // RKM_ROADMAP_MODES_V1
-  const [editingHoursId, setEditingHoursId] = useState(null);
+  React.useEffect(() => {
+    if (!LOCAL) {
+      setTaskStatusLoaded(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    void listPersistedFeatureMetrics()
+      .then((metrics) => {
+        if (cancelled) return;
+
+        const persistedCompleted = Object.fromEntries(
+          metrics.filter((metric) => metric.locked).map((metric) => [metric.featureId, true]),
+        );
+
+        setCompletedFeatures(persistedCompleted);
+        setTaskStatusLoaded(true);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+
+        console.error('Erro ao carregar status DEV:', error);
+
+        setTaskStatusError(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível carregar o status das features.',
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const version = ROADMAP.find((v) => v.id === versionId) || ROADMAP[0];
 
-  const toggleTaskDone = (id) => {
-    if (!LOCAL) return;
+  const handleLiveMetricChange = React.useCallback(
+    (id: string, metric: FeatureMetricDraft | null) => {
+      setFeatureMetricDrafts((previous) => {
+        if (!metric) {
+          if (!previous[id]) {
+            return previous;
+          }
 
-    const next = { ...completedFeatures };
+          const next = { ...previous };
+          delete next[id];
 
-    if (next[id]) {
-      delete next[id];
-    } else {
-      next[id] = true;
+          return next;
+        }
+
+        return {
+          ...previous,
+          [id]: metric,
+        };
+      });
+    },
+    [],
+  );
+
+  const toggleTaskDone = async (item: { id: string; branch: string }) => {
+    if (!LOCAL || !taskStatusLoaded || taskStatusPending[item.id]) {
+      return;
     }
+
+    setTaskStatusError('');
+
+    setTaskStatusPending((previous) => ({
+      ...previous,
+      [item.id]: true,
+    }));
 
     try {
-      localStorage.setItem(TASK_STATUS_KEY, JSON.stringify(next));
+      if (completedFeatures[item.id]) {
+        await unlockFeatureMetric(item.id);
+      } else {
+        const metric = featureMetricDrafts[item.id];
 
-      setCompletedFeatures(next);
+        if (!metric) {
+          throw new Error('Aguarde as métricas atuais carregarem antes de concluir a feature.');
+        }
 
-      if (next[id]) {
-        setEditingHoursId(null);
+        await freezeFeatureMetric(metric);
       }
+
+      setCompletedFeatures((previous) => {
+        const next = { ...previous };
+
+        if (next[item.id]) {
+          delete next[item.id];
+        } else {
+          next[item.id] = true;
+        }
+
+        return next;
+      });
     } catch (error) {
-      console.error('Erro ao salvar status:', error);
+      setTaskStatusError(
+        error instanceof Error ? error.message : 'Não foi possível alterar o status da feature.',
+      );
+    } finally {
+      setTaskStatusPending((previous) => ({
+        ...previous,
+        [item.id]: false,
+      }));
     }
-  };
-
-  const recordHours = (id, field, value) => {
-    // RKM_LOCK_COMPLETED_HOURS_V1
-    if (!LOCAL || completedFeatures[id]) return;
-
-    const next = {
-      ...hours,
-      [id]: { ...hours[id], [field]: value },
-    };
-
-    setHours(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   };
 
   return (
@@ -318,7 +520,7 @@ export function RoadmapView() {
           {version.areas.map((area) => (
             <section
               key={area.id}
-              className="overflow-hidden rounded-xl border border-rkmborder bg-rkmcard2/30"
+              className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
             >
               <button
                 type="button"
@@ -328,23 +530,25 @@ export function RoadmapView() {
                 <span className="text-sm font-semibold text-slate-100">
                   {areaId === area.id ? '▾' : '▸'} {area.title}
                 </span>
-                {LOCAL && (
-                  <code className="hidden text-xs text-blue-300 sm:block">{area.branch}</code>
-                )}
               </button>
 
               {areaId === area.id && (
                 <div className="space-y-2 border-t border-rkmborder p-3">
+                  <p className="px-2 pb-1 text-sm text-slate-400">{area.objective}</p>
+
                   {area.features.map((item) => (
                     <article
                       key={item.id}
-                      className="rounded-lg border border-rkmborder bg-rkmbg/50"
+                      className={`rounded-lg border transition ${
+                        LOCAL && completedFeatures[item.id]
+                          ? 'border-emerald-400/20 bg-emerald-400/[0.025]'
+                          : 'border-rkmborder bg-rkmbg/50'
+                      }`}
                     >
                       <button
                         type="button"
                         onClick={() => {
                           setFeatureId(featureId === item.id ? '' : item.id);
-                          setEditingHoursId(null);
                         }}
                         className="flex w-full items-center justify-between gap-2 p-3 text-left"
                       >
@@ -375,14 +579,37 @@ export function RoadmapView() {
                             <strong className="mb-1 block">Pronto quando:</strong>
                             {item.acceptance.includes('\n') ? (
                               <ul className="ml-5 list-disc space-y-1">
-                                {item.acceptance.split('\n').map((criterion, index) => (
-                                  <li key={index}>{criterion}</li>
-                                ))}
+                                {item.acceptance.split('\n').map((criterion, index) => {
+                                  const completed =
+                                    item.completedAcceptanceCriteria.includes(index);
+
+                                  return (
+                                    <li
+                                      key={index}
+                                      className={
+                                        completed ? 'list-none text-emerald-300' : undefined
+                                      }
+                                    >
+                                      {completed && (
+                                        <span className="mr-2 font-semibold" aria-hidden="true">
+                                          ✓
+                                        </span>
+                                      )}
+                                      {criterion}
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             ) : (
                               <span>{item.acceptance}</span>
                             )}
                           </div>
+
+                          {LOCAL && (
+                            <React.Suspense fallback={null}>
+                              <RoadmapWorklogDev featureId={item.id} />
+                            </React.Suspense>
+                          )}
 
                           {LOCAL && (
                             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rkmborder bg-rkmcard2/30 p-3">
@@ -392,91 +619,38 @@ export function RoadmapView() {
 
                               <button
                                 type="button"
-                                onClick={() => toggleTaskDone(item.id)}
-                                className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                                onClick={() => void toggleTaskDone(item)}
+                                disabled={!taskStatusLoaded || Boolean(taskStatusPending[item.id])}
+                                className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-wait disabled:opacity-60 ${
                                   completedFeatures[item.id]
                                     ? 'border-amber-400/40 bg-amber-400/10 text-amber-200 hover:bg-amber-400/20'
                                     : 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20'
                                 }`}
                               >
-                                {completedFeatures[item.id]
-                                  ? '↶ Reabrir feature'
-                                  : '✓ Marcar como concluída'}
+                                {!taskStatusLoaded
+                                  ? 'Carregando...'
+                                  : taskStatusPending[item.id]
+                                    ? 'Salvando...'
+                                    : completedFeatures[item.id]
+                                      ? '↶ Reabrir feature'
+                                      : '✓ Marcar como concluída'}
                               </button>
                             </div>
                           )}
 
-                          {LOCAL && (
-                            <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3">
-                              <div className="mb-3 flex items-center justify-between gap-3">
-                                <span className="text-xs font-semibold text-amber-300">
-                                  HORAS · APENAS LOCALHOST
-                                </span>
+                          {LOCAL && taskStatusError && (
+                            <p className="text-xs text-rose-300">{taskStatusError}</p>
+                          )}
 
-                                <button
-                                  type="button"
-                                  disabled={Boolean(completedFeatures[item.id])}
-                                  onClick={() =>
-                                    setEditingHoursId(editingHoursId === item.id ? null : item.id)
-                                  }
-                                  className="rounded-md border border-amber-400/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-400/10 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  {completedFeatures[item.id]
-                                    ? '🔒 Reabra para editar'
-                                    : editingHoursId === item.id
-                                      ? '✓ Fechar edição'
-                                      : '✎ Editar horas'}
-                                </button>
-                              </div>
-
-                              <div className="mb-3 border-t border-amber-400/20 pt-3">
-                                <FunctionPointsDev featureId={item.id} />
-                              </div>
-
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                {['estimated', 'actual'].map((field, index) => (
-                                  <DurationPicker
-                                    mode={
-                                      !completedFeatures[item.id] && editingHoursId === item.id
-                                        ? 'edit'
-                                        : 'locked'
-                                    }
-                                    key={field}
-                                    label={index === 0 ? 'Estimativa inicial' : 'Tempo real'}
-                                    minutes={
-                                      hours[item.id]?.[field] == null ||
-                                      hours[item.id]?.[field] === ''
-                                        ? null
-                                        : Math.round(Number(hours[item.id][field]) * 60)
-                                    }
-                                    onChange={(value) =>
-                                      recordHours(
-                                        item.id,
-                                        field,
-                                        value === null ? '' : String(value / 60),
-                                      )
-                                    }
-                                  />
-                                ))}
-
-                                <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2 w-full">
-                                  Desvio:{' '}
-                                  {hours[item.id]?.estimated !== undefined &&
-                                  hours[item.id]?.actual !== undefined &&
-                                  hours[item.id]?.estimated !== '' &&
-                                  hours[item.id]?.actual !== ''
-                                    ? `${(
-                                        Number(hours[item.id].actual) -
-                                        Number(hours[item.id].estimated)
-                                      ).toFixed(2)} h`
-                                    : '—'}
-                                </div>
-                              </div>
-
-                              <p className="mt-2 text-xs text-slate-500">
-                                Dados locais. Integração WakaTime posteriormente.
-                              </p>
-                            </div>
+                          {LOCAL && taskStatusLoaded && (
+                            <React.Suspense fallback={null}>
+                              <RoadmapMetricsDev
+                                featureId={item.id}
+                                defaultBranch={item.branch}
+                                completed={Boolean(completedFeatures[item.id])}
+                                onLiveMetricChange={handleLiveMetricChange}
+                              />
+                            </React.Suspense>
                           )}
                         </div>
                       )}

@@ -25,7 +25,13 @@ function isClientes(id: string) {
   return id === 'pcp-clientes' || id === 'pcp/clientes';
 }
 
-export function FunctionPointsDev({ featureId }: { featureId: string }) {
+export function FunctionPointsDev({
+  featureId,
+  editable = false,
+}: {
+  featureId: string;
+  editable?: boolean;
+}) {
   const [points, setPoints] = useState<number | null>(() => {
     const stored = readPoints();
 
@@ -94,7 +100,8 @@ export function FunctionPointsDev({ featureId }: { featureId: string }) {
             step={1}
             value={points ?? 0}
             onChange={(event) => update(event.target.value)}
-            className="rkm-pf-slider h-2 w-full cursor-pointer appearance-none rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
+            disabled={!editable}
+            className={`rkm-pf-slider h-2 w-full appearance-none rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400 ${editable ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}
             style={{
               background: `linear-gradient(to right, #38bdf8 ${progress}%, #1e3550 ${progress}%)`,
             }}

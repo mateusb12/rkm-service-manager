@@ -10,7 +10,7 @@
 
 export const SERVICE_ENTRY_STEPS = [
   { id: 'receiving', label: 'Recebimento', status: 'Recebido' },
-  { id: 'triage', label: 'Condição e segurança', status: 'Em triagem' },
+  { id: 'triage', label: 'Identificação e segurança', status: 'Em triagem' },
   { id: 'disassembly', label: 'Desmontagem', status: 'Aguardando desmontagem' },
   { id: 'diagnosis', label: 'Diagnóstico e aprovação', status: 'Em diagnóstico' },
   { id: 'execution', label: 'Execução e qualidade', status: 'Em execução' },

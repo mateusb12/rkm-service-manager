@@ -369,8 +369,8 @@ export const initialRecordIT002 = () => ({
   },
   rolePermissions: {},
   visibility: {
-    visibleToRoles: ['admin', 'supervisor', 'quality', 'pcp', 'operator'],
-    editableByRoles: ['admin', 'operator'],
+    visibleToRoles: ['admin', 'mechanic', 'pcp'],
+    editableByRoles: ['admin', 'mechanic'],
   },
   authorizationRequests: [],
   approvalHistory: [],

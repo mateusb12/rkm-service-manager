@@ -2,8 +2,8 @@ import { useState, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { Tooltip } from '../../Tooltip';
-import { formatCommitDate } from '../../utils/formatCommitDate';
+import { Tooltip } from '../../../Tooltip';
+import { formatCommitDate } from '../../../utils/formatCommitDate';
 
 import {
   BUILD_COMMIT,
@@ -153,7 +153,7 @@ export function LoginPage() {
               </div>
               <span className="tag tag-amber">RKM</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {devCredentials.map((credential) => (
                 <button
                   key={credential.email}

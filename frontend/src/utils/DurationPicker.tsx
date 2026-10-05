@@ -1,5 +1,5 @@
 // RKM_DURATION_PICKER_V5
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 type Mode = 'locked' | 'edit';
 
@@ -8,6 +8,7 @@ type Props = {
   minutes: number | null;
   onChange: (minutes: number | null) => void;
   mode?: Mode;
+  children?: ReactNode;
 };
 
 const PRESETS = [
@@ -187,7 +188,7 @@ function DurationClock({ minutes }: { minutes: number | null }) {
   );
 }
 
-export function DurationPicker({ label, minutes, onChange, mode = 'locked' }: Props) {
+export function DurationPicker({ label, minutes, onChange, mode = 'locked', children }: Props) {
   const [manual, setManual] = useState(false);
 
   useEffect(() => {
@@ -207,6 +208,8 @@ export function DurationPicker({ label, minutes, onChange, mode = 'locked' }: Pr
         <span className="text-xs text-slate-400">{label}</span>
         <strong className="text-sm tabular-nums text-blue-300">{formatDuration(value)}</strong>
       </div>
+
+      {children && <div className="mt-2">{children}</div>}
 
       {mode === 'edit' && (
         <>
