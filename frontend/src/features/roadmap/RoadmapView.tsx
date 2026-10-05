@@ -308,7 +308,11 @@ export function RoadmapView() {
                   {area.features.map((item) => (
                     <article
                       key={item.id}
-                      className="rounded-lg border border-rkmborder bg-rkmbg/50"
+                      className={`rounded-lg border transition ${
+                        LOCAL && completedFeatures[item.id]
+                          ? 'border-emerald-400/20 bg-emerald-400/[0.025]'
+                          : 'border-rkmborder bg-rkmbg/50'
+                      }`}
                     >
                       <button
                         type="button"
