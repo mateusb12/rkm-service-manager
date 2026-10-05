@@ -9,12 +9,14 @@ services:
       APP_ENV: development
       PORT: 8787
       DB_PATH: /data/rkm.db
+      DEV_METRICS_DB_PATH: /dev-data/rkm-dev.db
       ACCESS_TTL: 15m
       SESSION_TTL: 8h
       SESSION_ABSOLUTE_TTL: 168h
       COOKIE_SECURE: "false"
     volumes:
       - rkm_data:/data
+      - rkm_dev_data:/dev-data
 
   frontend:
     build: ./frontend
@@ -36,3 +38,4 @@ services:
 volumes:
   frontend_node_modules:
   rkm_data:
+  rkm_dev_data:

@@ -30,6 +30,7 @@ func TestFrontendHandlerDoesNotServeAppForAPIBase(
 
 	handler, handlerInitError := newHandler(
 		databaseConnection,
+		nil,
 	)
 	if handlerInitError != nil {
 		test.Fatal(handlerInitError)

@@ -1,6 +1,13 @@
 // RKM_ROADMAP_COMPACT_V1
 // @ts-nocheck
 import React, { useState } from 'react';
+
+import {
+  freezeFeatureMetric,
+  listPersistedFeatureMetrics,
+  unlockFeatureMetric,
+  type FeatureMetricDraft,
+} from './dev-feature-metrics-service';
 const RoadmapMetricsDev = React.lazy(() => import('./RoadmapMetricsDev'));
 const RoadmapWorklogDev = React.lazy(() => import('./RoadmapWorklogDev'));
 
@@ -331,46 +338,124 @@ const LOCAL =
   typeof window !== 'undefined' &&
   ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
-// RKM_TASK_DONE_DEV_V1
-const TASK_STATUS_KEY = 'rkm:private-dev-task-status';
-
-function readTaskStatuses() {
-  if (!LOCAL) return {};
-
-  try {
-    const value = JSON.parse(localStorage.getItem(TASK_STATUS_KEY) || '{}');
-
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  } catch {
-    return {};
-  }
-}
-
 export function RoadmapView() {
   const [versionId, setVersionId] = useState('V0');
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
-  const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);
+  const [completedFeatures, setCompletedFeatures] = useState<Record<string, boolean>>({});
+  const [taskStatusLoaded, setTaskStatusLoaded] = useState(false);
+  const [taskStatusPending, setTaskStatusPending] = useState<Record<string, boolean>>({});
+  const [taskStatusError, setTaskStatusError] = useState('');
+  const [featureMetricDrafts, setFeatureMetricDrafts] = useState<
+    Record<string, FeatureMetricDraft>
+  >({});
+
+  React.useEffect(() => {
+    if (!LOCAL) {
+      setTaskStatusLoaded(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    void listPersistedFeatureMetrics()
+      .then((metrics) => {
+        if (cancelled) return;
+
+        const persistedCompleted = Object.fromEntries(
+          metrics.filter((metric) => metric.locked).map((metric) => [metric.featureId, true]),
+        );
+
+        setCompletedFeatures(persistedCompleted);
+        setTaskStatusLoaded(true);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+
+        console.error('Erro ao carregar status DEV:', error);
+
+        setTaskStatusError(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível carregar o status das features.',
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const version = ROADMAP.find((v) => v.id === versionId) || ROADMAP[0];
 
-  const toggleTaskDone = (id) => {
-    if (!LOCAL) return;
+  const handleLiveMetricChange = React.useCallback(
+    (id: string, metric: FeatureMetricDraft | null) => {
+      setFeatureMetricDrafts((previous) => {
+        if (!metric) {
+          if (!previous[id]) {
+            return previous;
+          }
 
-    const next = { ...completedFeatures };
+          const next = { ...previous };
+          delete next[id];
 
-    if (next[id]) {
-      delete next[id];
-    } else {
-      next[id] = true;
+          return next;
+        }
+
+        return {
+          ...previous,
+          [id]: metric,
+        };
+      });
+    },
+    [],
+  );
+
+  const toggleTaskDone = async (item: { id: string; branch: string }) => {
+    if (!LOCAL || !taskStatusLoaded || taskStatusPending[item.id]) {
+      return;
     }
 
-    try {
-      localStorage.setItem(TASK_STATUS_KEY, JSON.stringify(next));
+    setTaskStatusError('');
 
-      setCompletedFeatures(next);
+    setTaskStatusPending((previous) => ({
+      ...previous,
+      [item.id]: true,
+    }));
+
+    try {
+      if (completedFeatures[item.id]) {
+        await unlockFeatureMetric(item.id);
+      } else {
+        const metric = featureMetricDrafts[item.id];
+
+        if (!metric) {
+          throw new Error('Aguarde as métricas atuais carregarem antes de concluir a feature.');
+        }
+
+        await freezeFeatureMetric(metric);
+      }
+
+      setCompletedFeatures((previous) => {
+        const next = { ...previous };
+
+        if (next[item.id]) {
+          delete next[item.id];
+        } else {
+          next[item.id] = true;
+        }
+
+        return next;
+      });
     } catch (error) {
-      console.error('Erro ao salvar status:', error);
+      setTaskStatusError(
+        error instanceof Error ? error.message : 'Não foi possível alterar o status da feature.',
+      );
+    } finally {
+      setTaskStatusPending((previous) => ({
+        ...previous,
+        [item.id]: false,
+      }));
     }
   };
 
@@ -534,26 +619,36 @@ export function RoadmapView() {
 
                               <button
                                 type="button"
-                                onClick={() => toggleTaskDone(item.id)}
-                                className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                                onClick={() => void toggleTaskDone(item)}
+                                disabled={!taskStatusLoaded || Boolean(taskStatusPending[item.id])}
+                                className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-wait disabled:opacity-60 ${
                                   completedFeatures[item.id]
                                     ? 'border-amber-400/40 bg-amber-400/10 text-amber-200 hover:bg-amber-400/20'
                                     : 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20'
                                 }`}
                               >
-                                {completedFeatures[item.id]
-                                  ? '↶ Reabrir feature'
-                                  : '✓ Marcar como concluída'}
+                                {!taskStatusLoaded
+                                  ? 'Carregando...'
+                                  : taskStatusPending[item.id]
+                                    ? 'Salvando...'
+                                    : completedFeatures[item.id]
+                                      ? '↶ Reabrir feature'
+                                      : '✓ Marcar como concluída'}
                               </button>
                             </div>
                           )}
 
-                          {LOCAL && (
+                          {LOCAL && taskStatusError && (
+                            <p className="text-xs text-rose-300">{taskStatusError}</p>
+                          )}
+
+                          {LOCAL && taskStatusLoaded && (
                             <React.Suspense fallback={null}>
                               <RoadmapMetricsDev
                                 featureId={item.id}
                                 defaultBranch={item.branch}
                                 completed={Boolean(completedFeatures[item.id])}
+                                onLiveMetricChange={handleLiveMetricChange}
                               />
                             </React.Suspense>
                           )}

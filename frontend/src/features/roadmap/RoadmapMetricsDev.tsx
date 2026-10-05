@@ -1,104 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { DurationPicker } from '../../utils/DurationPicker';
 import { FunctionPointsDev } from './FunctionPointsDev';
 import { getChatGptActivity } from './chatgpt-activity-service';
+import {
+  getPersistedFeatureMetric,
+  readBranches,
+  type ChatGptEntry,
+  type FeatureMetricDraft,
+  type WakatimeEntry,
+} from './dev-feature-metrics-service';
 
 type RoadmapMetricsDevProps = {
   featureId: string;
   defaultBranch: string;
   completed: boolean;
+  onLiveMetricChange: (featureId: string, metric: FeatureMetricDraft | null) => void;
 };
 
 type HoursMap = Record<string, { estimated?: string; actual?: string }>;
 type BranchMap = Record<string, string>;
-type EditorTime = { name: string; totalSeconds: number };
-
-type WakatimeEntry = {
-  loading?: boolean;
-  error?: string;
-  minutes?: number | null;
-  totalSeconds?: number;
-  editors?: EditorTime[];
-};
-
-type ChatGptEntry = {
-  loading?: boolean;
-  error?: string;
-  totalSeconds?: number;
-};
-
 const STORAGE_KEY = 'rkm:private-dev-hours';
-const BRANCH_STORAGE_KEY = 'rkm:private-dev-branches';
-const METRICS_STORAGE_KEY = 'rkm:private-dev-metrics:v1';
-
-type MetricsSnapshot = {
-  wakatime: Record<string, WakatimeEntry>;
-  chatGpt: Record<string, ChatGptEntry>;
-};
-
-function readMetricsSnapshot(): MetricsSnapshot {
-  try {
-    const value = JSON.parse(localStorage.getItem(METRICS_STORAGE_KEY) || '{}');
-
-    const wakatime =
-      value?.wakatime && typeof value.wakatime === 'object' && !Array.isArray(value.wakatime)
-        ? value.wakatime
-        : {};
-
-    const chatGpt =
-      value?.chatGpt && typeof value.chatGpt === 'object' && !Array.isArray(value.chatGpt)
-        ? value.chatGpt
-        : {};
-
-    return { wakatime, chatGpt };
-  } catch {
-    return { wakatime: {}, chatGpt: {} };
-  }
-}
-
-function writeMetricsSnapshot(
-  featureId: string,
-  wakatimeEntry?: WakatimeEntry,
-  chatGptEntry?: ChatGptEntry,
-) {
-  try {
-    const snapshot = readMetricsSnapshot();
-
-    if (wakatimeEntry) {
-      snapshot.wakatime[featureId] = {
-        ...wakatimeEntry,
-        loading: false,
-        error: '',
-      };
-    }
-
-    if (chatGptEntry) {
-      snapshot.chatGpt[featureId] = {
-        ...chatGptEntry,
-        loading: false,
-        error: '',
-      };
-    }
-
-    localStorage.setItem(METRICS_STORAGE_KEY, JSON.stringify(snapshot));
-  } catch {
-    // Métricas DEV continuam funcionando mesmo sem storage.
-  }
-}
 
 function readHours() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
-
-function readBranches() {
-  try {
-    const value = JSON.parse(localStorage.getItem(BRANCH_STORAGE_KEY) || '{}');
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }
@@ -140,23 +66,23 @@ export default function RoadmapMetricsDev({
   featureId,
   defaultBranch,
   completed,
+  onLiveMetricChange,
 }: RoadmapMetricsDevProps) {
   const [hours, setHours] = useState<HoursMap>(readHours);
   const [branches, setBranches] = useState<BranchMap>(readBranches);
   const [branchDraft, setBranchDraft] = useState('');
   const [editing, setEditing] = useState(false);
-  const [wakatimeHours, setWakatimeHours] = useState<Record<string, WakatimeEntry>>(
-    () => readMetricsSnapshot().wakatime,
-  );
-  const [chatGptActivity, setChatGptActivity] = useState<Record<string, ChatGptEntry>>(
-    () => readMetricsSnapshot().chatGpt,
-  );
+  const [wakatimeHours, setWakatimeHours] = useState<Record<string, WakatimeEntry>>({});
+  const [chatGptActivity, setChatGptActivity] = useState<Record<string, ChatGptEntry>>({});
   const [nextWakatimeSyncAt, setNextWakatimeSyncAt] = useState<number | null>(null);
   const [manualRefreshKey, setManualRefreshKey] = useState(0);
   const handledManualRefresh = useRef(0);
 
   const activeBranch = branches[featureId] || defaultBranch;
-  const editors = wakatimeHours[featureId]?.editors ?? [];
+  const editors = useMemo(
+    () => wakatimeHours[featureId]?.editors ?? [],
+    [featureId, wakatimeHours],
+  );
   const chatGptEntry = chatGptActivity[featureId];
   const wakatimeSeconds = wakatimeHours[featureId]?.totalSeconds;
   const totalTrackedSeconds =
@@ -171,8 +97,99 @@ export default function RoadmapMetricsDev({
   ].sort((first, second) => (second.seconds ?? -1) - (first.seconds ?? -1));
 
   useEffect(() => {
+    if (
+      completed ||
+      !featureId ||
+      wakatimeSeconds == null ||
+      !Number.isFinite(wakatimeSeconds) ||
+      wakatimeSeconds < 0
+    ) {
+      onLiveMetricChange(featureId, null);
+      return;
+    }
+
+    const chatGptSeconds = chatGptEntry?.totalSeconds ?? 0;
+
+    if (!Number.isFinite(chatGptSeconds) || chatGptSeconds < 0) {
+      onLiveMetricChange(featureId, null);
+      return;
+    }
+
+    onLiveMetricChange(featureId, {
+      featureId,
+      branch: activeBranch,
+      wakatimeSeconds,
+      chatGptSeconds,
+      editors,
+    });
+  }, [
+    activeBranch,
+    chatGptEntry?.totalSeconds,
+    completed,
+    editors,
+    featureId,
+    onLiveMetricChange,
+    wakatimeSeconds,
+  ]);
+
+  useEffect(() => {
     if (completed) setEditing(false);
   }, [completed]);
+
+  useEffect(() => {
+    if (!completed || !featureId) return;
+
+    let cancelled = false;
+    const requestAbortController = new AbortController();
+
+    void getPersistedFeatureMetric(featureId, requestAbortController.signal)
+      .then((metric) => {
+        if (cancelled || !metric || !metric.locked) {
+          return;
+        }
+
+        const nextWakatimeEntry: WakatimeEntry = {
+          loading: false,
+          error: '',
+          minutes: Math.round(metric.wakatimeSeconds / 60),
+          totalSeconds: metric.wakatimeSeconds,
+          editors: metric.editors,
+        };
+
+        const nextChatGptEntry: ChatGptEntry = {
+          loading: false,
+          error: '',
+          totalSeconds: metric.chatGptSeconds,
+        };
+
+        setBranches((previous) => ({
+          ...previous,
+          [featureId]: metric.branch,
+        }));
+
+        setWakatimeHours((previous) => ({
+          ...previous,
+          [featureId]: nextWakatimeEntry,
+        }));
+
+        setChatGptActivity((previous) => ({
+          ...previous,
+          [featureId]: nextChatGptEntry,
+        }));
+      })
+      .catch((error) => {
+        if (cancelled || error instanceof DOMException) {
+          return;
+        }
+
+        console.error('Erro ao carregar métrica congelada:', error);
+      });
+
+    return () => {
+      cancelled = true;
+      requestAbortController.abort();
+    };
+  }, [featureId, completed]);
 
   useEffect(() => {
     if (!featureId || completed) {
@@ -216,8 +233,6 @@ export default function RoadmapMetricsDev({
           ...previous,
           [featureId]: nextChatGptEntry,
         }));
-
-        writeMetricsSnapshot(featureId, undefined, nextChatGptEntry);
 
         const delay = Math.max(1000, result.nextRefreshAt - Date.now() + 250);
         chatGptTimer = window.setTimeout(refreshChatGpt, delay);
@@ -287,8 +302,6 @@ export default function RoadmapMetricsDev({
           ...previous,
           [featureId]: nextWakatimeEntry,
         }));
-
-        writeMetricsSnapshot(featureId, nextWakatimeEntry);
 
         setNextWakatimeSyncAt(nextAt);
 

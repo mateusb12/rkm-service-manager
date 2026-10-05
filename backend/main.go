@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"rkm-service-manager/backend/internal/features/auth"
 	"rkm-service-manager/backend/internal/features/clients"
+	"rkm-service-manager/backend/internal/features/devmetrics"
 	"rkm-service-manager/backend/internal/shared/config"
 	"rkm-service-manager/backend/internal/shared/database"
 	"rkm-service-manager/backend/internal/shared/httpx"
@@ -15,6 +16,7 @@ import (
 
 func newHandler(
 	databaseConnection *gorm.DB,
+	devMetricsDatabase *gorm.DB,
 ) (http.Handler, error) {
 	authModule, authInitError := auth.New(databaseConnection)
 	if authInitError != nil {
@@ -29,6 +31,22 @@ func newHandler(
 		return nil, clientsInitError
 	}
 
+	var devMetricsModule *devmetrics.Module
+
+	if devMetricsDatabase != nil {
+		initializedDevMetricsModule, devMetricsInitError :=
+			devmetrics.New(
+				devMetricsDatabase,
+				authModule,
+			)
+
+		if devMetricsInitError != nil {
+			return nil, devMetricsInitError
+		}
+
+		devMetricsModule = initializedDevMetricsModule
+	}
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/health", httpx.Health)
@@ -37,6 +55,10 @@ func newHandler(
 
 	authModule.Register(mux)
 	clientsModule.Register(mux)
+
+	if devMetricsModule != nil {
+		devMetricsModule.Register(mux)
+	}
 
 	mux.Handle(
 		"/",
@@ -60,7 +82,37 @@ func main() {
 	}
 	defer sqlDatabase.Close()
 
-	handler, handlerInitError := newHandler(databaseConnection)
+	var devMetricsDatabase *gorm.DB
+
+	if config.Env("APP_ENV", "development") == "development" {
+		devMetricsConnection, devMetricsOpenError :=
+			database.OpenPath(
+				config.Env(
+					"DEV_METRICS_DB_PATH",
+					"backend/rkm-dev.db",
+				),
+			)
+
+		if devMetricsOpenError != nil {
+			log.Fatal(devMetricsOpenError)
+		}
+
+		devMetricsSQLDatabase, devMetricsPoolError :=
+			devMetricsConnection.DB()
+
+		if devMetricsPoolError != nil {
+			log.Fatal(devMetricsPoolError)
+		}
+
+		defer devMetricsSQLDatabase.Close()
+
+		devMetricsDatabase = devMetricsConnection
+	}
+
+	handler, handlerInitError := newHandler(
+		databaseConnection,
+		devMetricsDatabase,
+	)
 	if handlerInitError != nil {
 		log.Fatal(handlerInitError)
 	}
