@@ -37,7 +37,7 @@ func OpenPath(databasePath string) (*gorm.DB, error) {
 
 	databaseConnection, openError := gorm.Open(
 		sqlite.Open(dataSourceName),
-		&gorm.Config{},
+		&gorm.Config{TranslateError: true},
 	)
 	if openError != nil {
 		return nil, openError

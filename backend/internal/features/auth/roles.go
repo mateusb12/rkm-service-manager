@@ -1,5 +1,7 @@
 package auth
 
+import "rkm-service-manager/backend/internal/shared/permissions"
+
 var rolePermissions = map[string][]string{
 	"admin": {"*"},
 	"mechanic": {
@@ -12,6 +14,8 @@ var rolePermissions = map[string][]string{
 		"service.view_status",
 		"service.close_administrative",
 		"dashboard.pcp",
+		permissions.ClientsView,
+		permissions.ClientsManage,
 	},
 	"commercial": {"dashboard.view"},
 }

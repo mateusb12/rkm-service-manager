@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"rkm-service-manager/backend/internal/features/auth"
+	"rkm-service-manager/backend/internal/features/clients"
 	"rkm-service-manager/backend/internal/shared/config"
 	"rkm-service-manager/backend/internal/shared/database"
 	"rkm-service-manager/backend/internal/shared/httpx"
@@ -20,6 +21,14 @@ func newHandler(
 		return nil, authInitError
 	}
 
+	clientsModule, clientsInitError := clients.New(
+		databaseConnection,
+		authModule,
+	)
+	if clientsInitError != nil {
+		return nil, clientsInitError
+	}
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/health", httpx.Health)
@@ -27,6 +36,7 @@ func newHandler(
 	mux.HandleFunc("/api/health", httpx.Health)
 
 	authModule.Register(mux)
+	clientsModule.Register(mux)
 
 	mux.Handle(
 		"/",
