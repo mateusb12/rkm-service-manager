@@ -5,31 +5,31 @@ const RoadmapMetricsDev = React.lazy(() => import('./RoadmapMetricsDev'));
 const RoadmapWorklogDev = React.lazy(() => import('./RoadmapWorklogDev'));
 
 const COLORS = {
-  V1: {
+  V0: {
     dot: 'bg-emerald-400 text-emerald-950',
     border: 'border-emerald-400',
     glow: 'shadow-[0_0_15px_3px_rgba(52,211,153,.35)]',
     name: 'Entrada',
   },
-  V2: {
+  V1: {
     dot: 'bg-blue-400 text-blue-950',
     border: 'border-blue-400',
     glow: 'shadow-[0_0_15px_3px_rgba(96,165,250,.35)]',
     name: 'Planejamento',
   },
-  V3: {
+  V2: {
     dot: 'bg-amber-300 text-amber-950',
     border: 'border-amber-300',
     glow: 'shadow-[0_0_15px_3px_rgba(252,211,77,.35)]',
     name: 'Controle',
   },
-  V4: {
+  V3: {
     dot: 'bg-slate-500 text-white',
     border: 'border-slate-400',
     glow: 'shadow-[0_0_15px_3px_rgba(148,163,184,.3)]',
     name: 'Gestão',
   },
-  V5: {
+  V4: {
     dot: 'bg-violet-400 text-violet-950',
     border: 'border-violet-400',
     glow: 'shadow-[0_0_15px_3px_rgba(167,139,250,.35)]',
@@ -48,7 +48,7 @@ const feature = (id, title, acceptance, state = 'Planejada', completedAcceptance
 
 const ROADMAP = [
   {
-    id: 'V1',
+    id: 'V0',
     title: 'Entrada e diagnóstico',
     description: 'Da chegada da peça à peritagem inicial.',
     areas: [
@@ -103,7 +103,7 @@ const ROADMAP = [
     ],
   },
   {
-    id: 'V2',
+    id: 'V1',
     title: 'Planejamento e execução',
     description: 'Responsáveis, prioridades e etapas.',
     areas: [
@@ -128,7 +128,7 @@ const ROADMAP = [
     ],
   },
   {
-    id: 'V3',
+    id: 'V2',
     title: 'Controle e liberação',
     description: 'Evidências, pendências e validação.',
     areas: [
@@ -145,7 +145,7 @@ const ROADMAP = [
     ],
   },
   {
-    id: 'V4',
+    id: 'V3',
     title: 'Gestão operacional',
     description: 'Filas, gargalos e atrasos.',
     areas: [
@@ -161,7 +161,7 @@ const ROADMAP = [
     ],
   },
   {
-    id: 'V5',
+    id: 'V4',
     title: 'Cobertura validada',
     description: 'Fluxo completo utilizado pela RKM.',
     areas: [
@@ -200,7 +200,7 @@ function readTaskStatuses() {
 }
 
 export function RoadmapView() {
-  const [versionId, setVersionId] = useState('V1');
+  const [versionId, setVersionId] = useState('V0');
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
   const [completedFeatures, setCompletedFeatures] = useState(readTaskStatuses);

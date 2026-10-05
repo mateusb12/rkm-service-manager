@@ -33,11 +33,11 @@ export interface RoadmapVersion {
 
 export const ROADMAP: RoadmapVersion[] = [
   {
-    id: 'V1',
+    id: 'V0',
     title: 'Entrada e diagnóstico',
     objective: 'Registrar a chegada da peça e permitir a peritagem inicial, com uma OS rastreável.',
     status: 'inProgress',
-    checkpoint: 'versions/v1',
+    checkpoint: 'versions/v0',
     areas: [
       {
         id: 'pcp',
@@ -113,11 +113,11 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
   },
   {
-    id: 'V2',
+    id: 'V1',
     title: 'Planejamento e execução',
     objective: 'Tornar visíveis as prioridades, os responsáveis e a evolução do serviço.',
     status: 'planned',
-    checkpoint: 'versions/v2',
+    checkpoint: 'versions/v1',
     areas: [
       {
         id: 'planejamento',
@@ -173,11 +173,11 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
   },
   {
-    id: 'V3',
+    id: 'V2',
     title: 'Evidências e liberação',
     objective: 'Documentar a execução e permitir a validação técnica antes da liberação.',
     status: 'planned',
-    checkpoint: 'versions/v3',
+    checkpoint: 'versions/v2',
     areas: [
       {
         id: 'controle',
@@ -211,11 +211,11 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
   },
   {
-    id: 'V4',
+    id: 'V3',
     title: 'Gestão da oficina',
     objective: 'Acompanhar filas, atrasos, capacidade e histórico para apoiar decisões.',
     status: 'planned',
-    checkpoint: 'versions/v4',
+    checkpoint: 'versions/v3',
     areas: [
       {
         id: 'gestao',
@@ -249,11 +249,11 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
   },
   {
-    id: 'V5',
+    id: 'V4',
     title: 'Cobertura validada',
     objective: 'Consolidar o fluxo da oficina efetivamente utilizado e validado com a RKM.',
     status: 'planned',
-    checkpoint: 'versions/v5',
+    checkpoint: 'versions/v4',
     areas: [
       {
         id: 'cobertura',
