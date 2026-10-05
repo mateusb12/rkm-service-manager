@@ -51,7 +51,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/clientes',
             status: 'planned',
             acceptance:
-              'O PCP consegue cadastrar e consultar clientes.\\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
+              'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
           },
           {
             id: 'pcp-abertura',
@@ -59,7 +59,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/abertura-os',
             status: 'planned',
             acceptance:
-              'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
+              'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
           },
           {
             id: 'pcp-numeracao',
@@ -67,7 +67,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/numeracao-os',
             status: 'planned',
             acceptance:
-              'Ao abrir uma OS, o sistema gera automaticamente um número único.\\nO número permite localizar a ordem posteriormente.',
+              'Ao abrir uma OS, o sistema gera automaticamente um número único.\nO número permite localizar a ordem posteriormente.',
           },
           {
             id: 'pcp-nota-fiscal',
@@ -75,7 +75,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/nota-fiscal',
             status: 'planned',
             acceptance:
-              'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\\nO documento permanece associado à OS.',
+              'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\nO documento permanece associado à OS.',
           },
           {
             id: 'pcp-fotos',
@@ -83,7 +83,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/fotografias',
             status: 'planned',
             acceptance:
-              'É possível adicionar fotografias à OS no recebimento ou posteriormente.\\nAs imagens ficam disponíveis para compor o relatório final.',
+              'É possível adicionar fotografias à OS no recebimento ou posteriormente.\nAs imagens ficam disponíveis para compor o relatório final.',
           },
           {
             id: 'pcp-fila',
@@ -115,7 +115,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/oficina/diagnostico-minimo',
             status: 'planned',
             acceptance:
-              'O mecânico registra o diagnóstico inicial em texto livre.\\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
+              'O mecânico registra o diagnóstico inicial em texto livre.\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
           },
           {
             id: 'oficina-execucao-minima',
@@ -139,7 +139,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/comercial/orcamento-minimo',
             status: 'planned',
             acceptance:
-              'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+              'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
           },
         ],
       },

@@ -60,29 +60,29 @@ const ROADMAP = [
           feature(
             'pcp/clientes',
             'Cadastro e busca de clientes',
-            'O PCP consegue cadastrar e consultar clientes.\\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
+            'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
             'Planejada',
             [0, 1],
           ),
           feature(
             'pcp/abertura-os',
             'Abertura mínima da OS',
-            'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
+            'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
           ),
           feature(
             'pcp/numeracao-os',
             'Numeração automática da OS',
-            'Ao abrir uma OS, o sistema gera automaticamente um número único.\\nO número permite localizar a ordem posteriormente.',
+            'Ao abrir uma OS, o sistema gera automaticamente um número único.\nO número permite localizar a ordem posteriormente.',
           ),
           feature(
             'pcp/nota-fiscal',
             'Nota fiscal ou N/A',
-            'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\\nO documento permanece associado à OS.',
+            'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\nO documento permanece associado à OS.',
           ),
           feature(
             'pcp/fotografias',
             'Fotografias básicas',
-            'É possível adicionar fotografias à OS no recebimento ou posteriormente.\\nAs imagens ficam disponíveis para compor o relatório final.',
+            'É possível adicionar fotografias à OS no recebimento ou posteriormente.\nAs imagens ficam disponíveis para compor o relatório final.',
           ),
           feature(
             'pcp/fila',
@@ -104,7 +104,7 @@ const ROADMAP = [
           feature(
             'oficina/diagnostico-minimo',
             'Diagnóstico simples',
-            'O mecânico registra o diagnóstico inicial em texto livre.\\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
+            'O mecânico registra o diagnóstico inicial em texto livre.\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
           ),
           feature(
             'oficina/execucao-minima',
@@ -121,7 +121,7 @@ const ROADMAP = [
           feature(
             'comercial/orcamento-minimo',
             'Orçamento operacional',
-            'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+            'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
           ),
         ],
       },
