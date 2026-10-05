@@ -21,6 +21,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Integração do CRUD de clientes com a API persistente: remoção dos dados demonstrativos e do estado global no App, carregamento dos clientes a partir do backend, cadastro, edição e exclusão persistentes, tratamento de loading e erros, compartilhamento da infraestrutura HTTP/CSRF com autenticação e validação ponta a ponta até o SQLite do volume Docker.',
     },
     {
+      category: 'Produto',
+      description:
+        'Integração da busca de clientes à abertura da OS: substituição do campo livre por um combobox com dropdown inicial, pesquisa server-side por CNPJ, razão social ou nome fantasia, debounce de 250 ms, seleção explícita do cliente, navegação por teclado e estados de carregamento, ausência de resultados e erro.',
+    },
+    {
       category: 'Transversal',
       description:
         'Revisão dos cinco cargos anteriores para Admin, Mecânico, PCP e Comercial, com ajustes de permissões, navegação, ITs e regras de aprovação.',

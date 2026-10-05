@@ -26,8 +26,11 @@ async function throwClientServiceError(response: Response, fallbackCode: string)
   throw new ClientServiceError(errorPayload?.error || fallbackCode, errorPayload?.fields || {});
 }
 
-export async function listClients(): Promise<Client[]> {
-  const response = await apiRequest('/clients');
+export async function listClients(searchTerm = ''): Promise<Client[]> {
+  const normalizedSearchTerm = searchTerm.trim();
+  const query = normalizedSearchTerm ? `?search=${encodeURIComponent(normalizedSearchTerm)}` : '';
+
+  const response = await apiRequest(`/clients${query}`);
 
   if (!response.ok) {
     await throwClientServiceError(response, 'clients_query_failed');

@@ -62,7 +62,7 @@ const ROADMAP = [
             'Cadastro e busca de clientes',
             'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.\nConsegue vincular o cliente encontrado à nova OS.',
             'Planejada',
-            [0],
+            [0, 1],
           ),
           feature(
             'pcp/nota-fiscal',

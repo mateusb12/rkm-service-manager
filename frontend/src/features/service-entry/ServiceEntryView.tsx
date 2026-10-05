@@ -14,6 +14,8 @@ import { Field, TextArea, TextInput, Toggle } from '../../shared/ui/form-control
 
 import { LizyReferenceCard, SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
 
+import { ClientSelector } from '../pcp/clients';
+
 const SERVICE_ENTRY_PHOTO_DB = 'rkm-service-entry-photo-store-v1';
 
 const openServiceEntryPhotoDb = () =>
@@ -843,10 +845,10 @@ export const ServiceEntryView = () => {
               description="Origem da ordem e referência administrativa."
             >
               <Field label="Cliente" required className="md:col-span-2">
-                <TextInput
+                <ClientSelector
                   value={form.client}
-                  onChange={(value) => set('client', value)}
-                  placeholder="Nome ou razão social"
+                  onSelect={(client) => set('client', client.nomeFantasia)}
+                  onClear={() => set('client', '')}
                 />
               </Field>
 
