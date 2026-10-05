@@ -37,11 +37,12 @@ const COLORS = {
   },
 };
 
-const feature = (id, title, acceptance, state = 'Planejada') => ({
+const feature = (id, title, acceptance, state = 'Planejada', completedAcceptanceCriteria = []) => ({
   id,
   title,
   acceptance,
   state,
+  completedAcceptanceCriteria,
   branch: `features/${id}`,
 });
 
@@ -60,6 +61,8 @@ const ROADMAP = [
             'pcp/clientes',
             'Cadastro e busca de clientes',
             'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.\nConsegue vincular o cliente encontrado à nova OS.',
+            'Planejada',
+            [0],
           ),
           feature(
             'pcp/nota-fiscal',
@@ -341,9 +344,26 @@ export function RoadmapView() {
                             <strong className="mb-1 block">Pronto quando:</strong>
                             {item.acceptance.includes('\n') ? (
                               <ul className="ml-5 list-disc space-y-1">
-                                {item.acceptance.split('\n').map((criterion, index) => (
-                                  <li key={index}>{criterion}</li>
-                                ))}
+                                {item.acceptance.split('\n').map((criterion, index) => {
+                                  const completed =
+                                    item.completedAcceptanceCriteria.includes(index);
+
+                                  return (
+                                    <li
+                                      key={index}
+                                      className={
+                                        completed ? 'list-none text-emerald-300' : undefined
+                                      }
+                                    >
+                                      {completed && (
+                                        <span className="mr-2 font-semibold" aria-hidden="true">
+                                          ✓
+                                        </span>
+                                      )}
+                                      {criterion}
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             ) : (
                               <span>{item.acceptance}</span>
