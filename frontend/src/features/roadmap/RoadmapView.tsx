@@ -55,6 +55,7 @@ const ROADMAP = [
       {
         id: 'pcp',
         title: 'PCP',
+        objective: 'Receber a peça, abrir a OS com o básico e acompanhar seu andamento.',
         features: [
           feature(
             'pcp/clientes',
@@ -93,6 +94,7 @@ const ROADMAP = [
       {
         id: 'oficina',
         title: 'Oficina',
+        objective: 'Identificar o equipamento, registrar o diagnóstico e concluir o serviço.',
         features: [
           feature(
             'oficina/identificacao-minima',
@@ -114,6 +116,7 @@ const ROADMAP = [
       {
         id: 'comercial',
         title: 'Comercial',
+        objective: 'Montar o orçamento e registrar a decisão sobre o serviço.',
         features: [
           feature(
             'comercial/orcamento-minimo',
@@ -125,6 +128,7 @@ const ROADMAP = [
       {
         id: 'finalizacao',
         title: 'Finalização',
+        objective: 'Encerrar a OS e gerar o relatório final para o cliente.',
         features: [
           feature(
             'finalizacao/encerramento',
@@ -148,6 +152,7 @@ const ROADMAP = [
       {
         id: 'oficina',
         title: 'Oficina',
+        objective: 'Fazer uma peritagem completa, com componentes, medidas e informações técnicas.',
         features: [
           feature(
             'oficina/tipos-equipamento',
@@ -191,6 +196,7 @@ const ROADMAP = [
       {
         id: 'pcp',
         title: 'PCP',
+        objective: 'Acompanhar prazos e prioridades das OS.',
         features: [
           feature(
             'pcp/prazos',
@@ -202,6 +208,7 @@ const ROADMAP = [
       {
         id: 'oficina',
         title: 'Oficina',
+        objective: 'Atualizar as etapas e deixar claro o próximo passo do serviço.',
         features: [
           feature(
             'oficina/etapas',
@@ -223,6 +230,7 @@ const ROADMAP = [
       {
         id: 'controle',
         title: 'Controle',
+        objective: 'Registrar pendências, aprovações e o histórico das alterações.',
         features: [
           feature(
             'controle/pendencias',
@@ -251,6 +259,7 @@ const ROADMAP = [
       {
         id: 'oficina',
         title: 'Oficina',
+        objective: 'Registrar fotos e resultados dos testes durante o serviço.',
         features: [
           feature(
             'oficina/evidencias',
@@ -267,6 +276,7 @@ const ROADMAP = [
       {
         id: 'finalizacao',
         title: 'Finalização',
+        objective: 'Organizar anexos e gerar um relatório técnico mais completo.',
         features: [
           feature(
             'finalizacao/anexos',
@@ -290,6 +300,7 @@ const ROADMAP = [
       {
         id: 'pcp',
         title: 'PCP',
+        objective: 'Receber avisos sobre situações que precisam de atenção.',
         features: [
           feature(
             'pcp/avisos',
@@ -301,6 +312,7 @@ const ROADMAP = [
       {
         id: 'gestao',
         title: 'Gestão',
+        objective: 'Acompanhar capacidade, atrasos, gargalos e indicadores.',
         features: [
           feature(
             'gestao/capacidade',
@@ -327,6 +339,7 @@ const ROADMAP = [
       {
         id: 'admin',
         title: 'Administração',
+        objective: 'Acompanhar treinamentos próximos do vencimento.',
         features: [
           feature(
             'admin/treinamentos',
@@ -463,6 +476,8 @@ export function RoadmapView() {
 
               {areaId === area.id && (
                 <div className="space-y-2 border-t border-rkmborder p-3">
+                  <p className="px-2 pb-1 text-sm text-slate-400">{area.objective}</p>
+
                   {area.features.map((item) => (
                     <article
                       key={item.id}

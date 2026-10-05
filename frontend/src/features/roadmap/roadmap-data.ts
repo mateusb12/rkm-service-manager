@@ -16,6 +16,7 @@ export interface RoadmapFeature {
 export interface RoadmapArea {
   id: string;
   title: string;
+  objective: string;
   owner: string;
   features: RoadmapFeature[];
 }
@@ -42,6 +43,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'pcp',
         title: 'PCP',
         owner: 'PCP',
+        objective: 'Receber a peça, abrir a OS com o básico e acompanhar seu andamento.',
         features: [
           {
             id: 'pcp-clientes',
@@ -97,6 +99,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'oficina',
         title: 'Oficina',
         owner: 'Oficina',
+        objective: 'Identificar o equipamento, registrar o diagnóstico e concluir o serviço.',
         features: [
           {
             id: 'oficina-identificacao-minima',
@@ -128,6 +131,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'comercial',
         title: 'Comercial',
         owner: 'Comercial',
+        objective: 'Montar o orçamento e registrar a decisão sobre o serviço.',
         features: [
           {
             id: 'comercial-orcamento-minimo',
@@ -143,6 +147,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'finalizacao',
         title: 'Finalização',
         owner: 'PCP e Comercial',
+        objective: 'Encerrar a OS e gerar o relatório final para o cliente.',
         features: [
           {
             id: 'finalizacao-encerramento',
@@ -175,6 +180,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'oficina',
         title: 'Oficina',
         owner: 'Oficina',
+        objective: 'Fazer uma peritagem completa, com componentes, medidas e informações técnicas.',
         features: [
           {
             id: 'oficina-tipos-equipamento',
@@ -239,6 +245,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'pcp',
         title: 'PCP',
         owner: 'PCP',
+        objective: 'Acompanhar prazos e prioridades das OS.',
         features: [
           {
             id: 'pcp-prazos',
@@ -254,6 +261,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'oficina',
         title: 'Oficina',
         owner: 'Oficina',
+        objective: 'Atualizar as etapas e deixar claro o próximo passo do serviço.',
         features: [
           {
             id: 'execucao-etapas',
@@ -285,6 +293,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'controle',
         title: 'Controle',
         owner: 'Admin',
+        objective: 'Registrar pendências, aprovações e o histórico das alterações.',
         features: [
           {
             id: 'controle-pendencias',
@@ -324,6 +333,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'oficina',
         title: 'Oficina',
         owner: 'Oficina',
+        objective: 'Registrar fotos e resultados dos testes durante o serviço.',
         features: [
           {
             id: 'controle-evidencias',
@@ -347,6 +357,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'finalizacao',
         title: 'Finalização',
         owner: 'PCP e Comercial',
+        objective: 'Organizar anexos e gerar um relatório técnico mais completo.',
         features: [
           {
             id: 'documentos-anexos',
@@ -378,6 +389,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'pcp',
         title: 'PCP',
         owner: 'PCP',
+        objective: 'Receber avisos sobre situações que precisam de atenção.',
         features: [
           {
             id: 'automacao-avisos-internos',
@@ -392,6 +404,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'gestao',
         title: 'Gestão',
         owner: 'Admin',
+        objective: 'Acompanhar capacidade, atrasos, gargalos e indicadores.',
         features: [
           {
             id: 'gestao-capacidade',
@@ -429,6 +442,7 @@ export const ROADMAP: RoadmapVersion[] = [
         id: 'admin',
         title: 'Administração',
         owner: 'Admin',
+        objective: 'Acompanhar treinamentos próximos do vencimento.',
         features: [
           {
             id: 'rh-treinamentos',
