@@ -273,12 +273,12 @@ export const ServiceEntryView = () => {
   const validateStep = () => {
     const requiredByStep = {
       0: [
-        ['orderType', 'Categoria do equipamento'],
-        ['orderNumber', 'Nº da ordem'],
+        ['orderNumber', 'Nº da OS'],
         ['client', 'Cliente'],
-        ['equipment', 'Equipamento'],
       ],
       1: [
+        ['orderType', 'Categoria do equipamento'],
+        ['equipment', 'Equipamento'],
         ['receivedBy', 'Responsável pelo recebimento'],
         ['arrivalCondition', 'Condição de chegada'],
       ],
@@ -297,8 +297,6 @@ export const ServiceEntryView = () => {
       .filter(([key]) => !String(form[key] || '').trim())
       .map(([, label]) => label);
 
-    if (step === 1 && (form.photos.arrival || []).length === 0)
-      missing.push('ao menos uma foto da chegada');
     if (
       step === 1 &&
       ((form.pressureState !== 'Aliviada/verificada' && form.pressureState !== 'Não aplicável') ||
@@ -398,7 +396,7 @@ export const ServiceEntryView = () => {
   const addPhotos = async (category, files) => {
     const orderId = form.id || normalizeOrderNumber(form.orderNumber);
     if (!orderId) {
-      setError('Preencha e salve os dados da OS antes de anexar fotos.');
+      setError('Informe o número da OS antes de anexar fotos.');
       return;
     }
     try {
@@ -612,7 +610,7 @@ export const ServiceEntryView = () => {
                       <td>{entry.client}</td>
 
                       <td>
-                        <div>{entry.equipment}</div>
+                        <div>{entry.equipment || 'A identificar'}</div>
                         <small>
                           {entry.manufacturer}
                           {entry.model ? ` · ${entry.model}` : ''}
@@ -765,8 +763,60 @@ export const ServiceEntryView = () => {
         {step === 0 && (
           <>
             <ServiceEntrySection
-              title="Dados da ordem"
-              description="Registre o que é conhecido na entrada. Dados ainda indisponíveis podem ser complementados depois."
+              title="Recebimento PCP"
+              description="Registre somente o necessário para abrir a OS. A identificação técnica fica para a oficina."
+            >
+              <Field label="Cliente" required className="md:col-span-2">
+                <ClientSelector
+                  value={form.client}
+                  onSelect={(client) => set('client', client.nomeFantasia)}
+                  onClear={() => set('client', '')}
+                />
+              </Field>
+
+              <Field
+                label="Nº da OS"
+                required
+                hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}
+              >
+                <TextInput
+                  value={form.orderNumber}
+                  onChange={(value) => set('orderNumber', value)}
+                  placeholder="Ex.: 2541"
+                  disabled={!!form.id}
+                />
+              </Field>
+
+              <Field
+                label="Nota fiscal / documento"
+                className="md:col-span-2"
+                hint="Opcional — informe o número da NF quando houver. Você também pode usar N/A para registrar ausência de documento."
+              >
+                <TextInput
+                  value={form.invoiceNumber}
+                  onChange={(value) => set('invoiceNumber', value)}
+                  placeholder="Número da NF, N/A ou deixe em branco"
+                />
+              </Field>
+
+              <div className="md:col-span-3">
+                <ServiceEntryPhotoField
+                  label="Fotos da peça"
+                  hint="Opcional no recebimento — pode ser adicionada depois, se necessário."
+                  photos={form.photos.arrival}
+                  onFiles={(files) => addPhotos('arrival', files)}
+                  onRemove={(photo) => removePhoto('arrival', photo)}
+                />
+              </div>
+            </ServiceEntrySection>
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <ServiceEntrySection
+              title="Identificação inicial"
+              description="A oficina identifica o tipo de peça antes da avaliação e desmontagem."
             >
               <Field label="Categoria do equipamento" required className="md:col-span-3">
                 <div
@@ -791,118 +841,6 @@ export const ServiceEntryView = () => {
                 </div>
               </Field>
 
-              <Field
-                label="Nº da ordem"
-                required
-                hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}
-              >
-                <TextInput
-                  value={form.orderNumber}
-                  onChange={(value) => set('orderNumber', value)}
-                  placeholder="Ex.: 2541"
-                  disabled={!!form.id}
-                />
-              </Field>
-
-              <Field label="Nº da ordem anterior">
-                <TextInput
-                  value={form.previousOrderNumber}
-                  onChange={(value) => set('previousOrderNumber', value)}
-                  placeholder="Opcional"
-                />
-              </Field>
-
-              <Field label="Data de abertura">
-                <TextInput
-                  type="date"
-                  value={form.openingDate}
-                  onChange={(value) => set('openingDate', value)}
-                />
-              </Field>
-
-              <Field
-                label="Data prevista de entrega"
-                hint="Opcional — deixe em branco quando não houver prazo informado."
-              >
-                <TextInput
-                  type="date"
-                  value={form.expectedDeliveryDate}
-                  onChange={(value) => set('expectedDeliveryDate', value)}
-                />
-              </Field>
-
-              <Field label="Prioridade">
-                <Toggle
-                  checked={form.urgent}
-                  onChange={(value) => set('urgent', value)}
-                  label="Atendimento urgente"
-                />
-              </Field>
-            </ServiceEntrySection>
-
-            <ServiceEntrySection
-              title="Cliente e solicitação"
-              description="Origem da ordem e referência administrativa."
-            >
-              <Field label="Cliente" required className="md:col-span-2">
-                <ClientSelector
-                  value={form.client}
-                  onSelect={(client) => set('client', client.nomeFantasia)}
-                  onClear={() => set('client', '')}
-                />
-              </Field>
-
-              <Field label="Referência do cliente">
-                <TextInput
-                  value={form.clientReference}
-                  onChange={(value) => set('clientReference', value)}
-                  placeholder="Pedido, chamado, referência..."
-                />
-              </Field>
-
-              <Field label="Solicitante">
-                <TextInput
-                  value={form.requester}
-                  onChange={(value) => set('requester', value)}
-                  placeholder="Pessoa responsável"
-                />
-              </Field>
-
-              <Field
-                label="Nº da nota"
-                hint="Opcional — não use N.I.; deixe em branco quando não houver documento informado."
-              >
-                <TextInput
-                  value={form.invoiceNumber}
-                  onChange={(value) => set('invoiceNumber', value)}
-                  placeholder="NF / documento de entrada"
-                />
-              </Field>
-            </ServiceEntrySection>
-
-            <ServiceEntrySection
-              title="Equipamento"
-              description="Identificação técnica inicial do item recebido."
-            >
-              <Field label="Nº de série">
-                <TextInput
-                  value={form.serialNumber}
-                  onChange={(value) => set('serialNumber', value)}
-                  placeholder="Número de série"
-                />
-              </Field>
-
-              <Field
-                label="Fabricante"
-                hint="Opcional — deixe em branco quando o fabricante não estiver identificado."
-              >
-                <TextInput
-                  value={form.manufacturer}
-                  onChange={(value) => set('manufacturer', value)}
-                  placeholder="Ex.: Parker, HYDAC..."
-                />
-              </Field>
-
               <Field label="Equipamento" required className="md:col-span-2">
                 <TextInput
                   value={form.equipment}
@@ -910,94 +848,8 @@ export const ServiceEntryView = () => {
                   placeholder="Descrição do equipamento"
                 />
               </Field>
-
-              <Field
-                label="Modelo"
-                hint="Opcional — deixe em branco quando o modelo não estiver identificado."
-              >
-                <TextInput
-                  value={form.model}
-                  onChange={(value) => set('model', value)}
-                  placeholder="Modelo"
-                />
-              </Field>
-
-              <Field label="Tipo">
-                <div className="service-entry-type-options">
-                  <Toggle
-                    checked={form.hydraulic}
-                    onChange={(value) => set('hydraulic', value)}
-                    label="Hidráulico"
-                  />
-
-                  <Toggle
-                    checked={form.pneumatic}
-                    onChange={(value) => set('pneumatic', value)}
-                    label="Pneumático"
-                  />
-                </div>
-              </Field>
-
-              <Field label="Fluido / aplicação" className="md:col-span-2">
-                <TextInput
-                  value={form.fluidApplication}
-                  onChange={(value) => set('fluidApplication', value)}
-                  placeholder="Fluido utilizado e aplicação"
-                />
-              </Field>
-
-              <Field label="Defeito alegado" className="md:col-span-3">
-                <TextArea
-                  rows={3}
-                  value={form.claimedDefect}
-                  onChange={(value) => set('claimedDefect', value)}
-                  placeholder="Descreva o problema relatado pelo cliente..."
-                />
-              </Field>
             </ServiceEntrySection>
 
-            <ServiceEntrySection
-              title="Atendimento e logística"
-              description="Responsáveis e informações de movimentação do equipamento."
-            >
-              <Field label="Localização do equipamento">
-                <TextInput
-                  value={form.equipmentLocation}
-                  onChange={(value) => set('equipmentLocation', value)}
-                  placeholder="Bancada, setor, área..."
-                />
-              </Field>
-
-              <Field label="Responsável pelo atendimento">
-                <TextInput
-                  value={form.serviceResponsible}
-                  onChange={(value) => set('serviceResponsible', value)}
-                  placeholder="Responsável RKM"
-                />
-              </Field>
-
-              <Field label="Técnico perito">
-                <TextInput
-                  value={form.expertTechnician}
-                  onChange={(value) => set('expertTechnician', value)}
-                  placeholder="Técnico responsável"
-                />
-              </Field>
-
-              <Field label="Observações de expedição" className="md:col-span-3">
-                <TextArea
-                  rows={3}
-                  value={form.shippingNotes}
-                  onChange={(value) => set('shippingNotes', value)}
-                  placeholder="Transporte, acondicionamento, retirada, entrega..."
-                />
-              </Field>
-            </ServiceEntrySection>
-          </>
-        )}
-
-        {step === 1 && (
-          <>
             <ServiceEntrySection
               title="Condição da chegada"
               description="Registre a cadeia de recebimento e o estado da peça antes de qualquer abertura."
@@ -1038,15 +890,6 @@ export const ServiceEntryView = () => {
                   placeholder="Conexões, válvulas, peças soltas, embalagem..."
                 />
               </Field>
-              <div className="md:col-span-3">
-                <ServiceEntryPhotoField
-                  label="Fotos da chegada *"
-                  hint="Fotografe a peça inteira, plaqueta/série, avarias e acessórios ainda como recebidos."
-                  photos={form.photos.arrival}
-                  onFiles={(files) => addPhotos('arrival', files)}
-                  onRemove={(photo) => removePhoto('arrival', photo)}
-                />
-              </div>
             </ServiceEntrySection>
             <ServiceEntrySection
               title="Triagem de segurança"
