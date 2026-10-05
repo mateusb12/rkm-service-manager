@@ -60,7 +60,7 @@ const ROADMAP = [
           feature(
             'pcp/clientes',
             'Cadastro e busca de clientes',
-            'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.\nConsegue vincular o cliente encontrado à nova OS.',
+            'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
             'Planejada',
             [0, 1],
           ),
