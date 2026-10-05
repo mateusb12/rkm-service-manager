@@ -54,35 +54,34 @@ const ROADMAP = [
     areas: [
       {
         id: 'pcp',
-        title: 'PCP · Recebimento',
-        branch: 'features/pcp-recebimento',
+        title: 'PCP',
         features: [
           feature(
             'pcp/clientes',
             'Cadastro e busca de clientes',
-            'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
+            'O PCP consegue cadastrar e consultar clientes.\\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
             'Planejada',
             [0, 1],
           ),
           feature(
             'pcp/abertura-os',
             'Abertura mínima da OS',
-            'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
+            'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
           ),
           feature(
             'pcp/numeracao-os',
             'Numeração automática da OS',
-            'Ao abrir uma OS, o sistema gera automaticamente um número único.\nO número permite localizar a ordem posteriormente.',
+            'Ao abrir uma OS, o sistema gera automaticamente um número único.\\nO número permite localizar a ordem posteriormente.',
           ),
           feature(
             'pcp/nota-fiscal',
             'Nota fiscal ou N/A',
-            'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\nO documento permanece associado à OS.',
+            'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\\nO documento permanece associado à OS.',
           ),
           feature(
             'pcp/fotografias',
             'Fotografias básicas',
-            'É possível adicionar fotografias à OS no recebimento ou posteriormente.\nAs imagens ficam disponíveis para compor o relatório final.',
+            'É possível adicionar fotografias à OS no recebimento ou posteriormente.\\nAs imagens ficam disponíveis para compor o relatório final.',
           ),
           feature(
             'pcp/fila',
@@ -92,9 +91,8 @@ const ROADMAP = [
         ],
       },
       {
-        id: 'peritagem-minima',
-        title: 'Oficina · Peritagem mínima',
-        branch: 'features/oficina-peritagem',
+        id: 'oficina',
+        title: 'Oficina',
         features: [
           feature(
             'oficina/identificacao-minima',
@@ -104,27 +102,8 @@ const ROADMAP = [
           feature(
             'oficina/diagnostico-minimo',
             'Diagnóstico simples',
-            'O mecânico registra o diagnóstico inicial em texto livre.\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
+            'O mecânico registra o diagnóstico inicial em texto livre.\\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
           ),
-        ],
-      },
-      {
-        id: 'comercial-minimo',
-        title: 'Comercial · Orçamento mínimo',
-        branch: 'features/comercial-orcamento',
-        features: [
-          feature(
-            'comercial/orcamento-minimo',
-            'Orçamento operacional',
-            'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
-          ),
-        ],
-      },
-      {
-        id: 'execucao-minima',
-        title: 'Oficina · Execução mínima',
-        branch: 'features/oficina-execucao',
-        features: [
           feature(
             'oficina/execucao-minima',
             'Andamento e conclusão',
@@ -133,9 +112,19 @@ const ROADMAP = [
         ],
       },
       {
+        id: 'comercial',
+        title: 'Comercial',
+        features: [
+          feature(
+            'comercial/orcamento-minimo',
+            'Orçamento operacional',
+            'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+          ),
+        ],
+      },
+      {
         id: 'finalizacao',
         title: 'Finalização',
-        branch: 'features/finalizacao-os',
         features: [
           feature(
             'finalizacao/encerramento',
@@ -157,9 +146,8 @@ const ROADMAP = [
     description: 'Registrar a inspeção e o diagnóstico com mais detalhes.',
     areas: [
       {
-        id: 'peritagem',
-        title: 'Oficina · Peritagem',
-        branch: 'features/peritagem-estruturada',
+        id: 'oficina',
+        title: 'Oficina',
         features: [
           feature(
             'oficina/tipos-equipamento',
@@ -174,22 +162,22 @@ const ROADMAP = [
           feature(
             'oficina/componentes',
             'Componentes e condição',
-            'O mecânico registra a condição dos componentes inspecionados e informa quando há necessidade de recuperação ou substituição.',
+            'O mecânico registra a condição dos componentes e informa quando é necessário recuperar ou substituir uma peça.',
           ),
           feature(
             'oficina/medidas',
             'Medidas e materiais',
-            'Quando aplicável, a peritagem registra medidas, diâmetros, materiais e demais informações técnicas necessárias.',
+            'Quando necessário, registrar medidas, diâmetros, materiais e outras informações técnicas.',
           ),
           feature(
             'oficina/bancadas',
-            'Bancadas estruturadas',
-            'Visualizar bancadas livres ou ocupadas e identificar qual OS está associada a cada bancada.',
+            'Bancadas',
+            'Visualizar bancadas livres ou ocupadas e identificar qual OS está em cada bancada.',
           ),
           feature(
             'oficina/diagnostico-estruturado',
-            'Diagnóstico estruturado',
-            'O diagnóstico consolida as informações da inspeção sem perder a possibilidade de observações técnicas livres.',
+            'Diagnóstico detalhado',
+            'O diagnóstico reúne as informações da inspeção e permite observações técnicas livres.',
           ),
         ],
       },
@@ -201,14 +189,24 @@ const ROADMAP = [
     description: 'Saber onde a OS está, quem é responsável, o que falta e quem aprovou.',
     areas: [
       {
-        id: 'fluxo',
-        title: 'Fluxo operacional',
-        branch: 'features/rastreabilidade-aprovacoes',
+        id: 'pcp',
+        title: 'PCP',
+        features: [
+          feature(
+            'pcp/prazos',
+            'Prazo e prioridade',
+            'Registrar prazo previsto, prioridade e identificar atrasos durante o acompanhamento da OS.',
+          ),
+        ],
+      },
+      {
+        id: 'oficina',
+        title: 'Oficina',
         features: [
           feature(
             'oficina/etapas',
             'Etapas e histórico',
-            'Cada mudança de etapa fica registrada e a situação atual da OS permanece claramente identificada.',
+            'Cada mudança de etapa fica registrada e a situação atual da OS permanece identificada.',
           ),
           feature(
             'oficina/proxima-acao',
@@ -216,29 +214,30 @@ const ROADMAP = [
             'O sistema mostra o que precisa acontecer agora e quem é responsável pela próxima ação.',
           ),
           feature(
+            'oficina/nao-aplicavel',
+            'Etapa não aplicável',
+            'Uma etapa que não se aplica ao serviço pode ser ignorada sem interromper o fluxo.',
+          ),
+        ],
+      },
+      {
+        id: 'controle',
+        title: 'Controle',
+        features: [
+          feature(
             'controle/pendencias',
             'Pendências e motivo de parada',
-            'Uma OS parada pode registrar o motivo da pendência, desde quando está parada e quem precisa agir.',
-          ),
-          feature(
-            'pcp/prazos',
-            'Prazo e prioridade',
-            'Registrar prazo previsto, prioridade e identificar atrasos durante o acompanhamento da OS.',
+            'Uma OS parada pode registrar o motivo, desde quando está parada e quem precisa agir.',
           ),
           feature(
             'controle/liberacao',
             'Aprovações e liberações',
-            'Registrar decisões de aprovação ou liberação com responsável e momento da decisão.',
+            'Registrar decisões de aprovação ou liberação, quem decidiu e quando.',
           ),
           feature(
-            'oficina/nao-aplicavel',
-            'Etapa não aplicável',
-            'Uma etapa que não se aplica ao serviço pode ser explicitamente ignorada sem interromper o fluxo.',
-          ),
-          feature(
-            'cobertura/auditoria',
-            'Rastreabilidade de alterações',
-            'Consultar as ações relevantes realizadas na OS, incluindo responsável e etapa correspondente.',
+            'controle/auditoria',
+            'Histórico de alterações',
+            'Consultar as principais alterações feitas na OS, com responsável e etapa correspondente.',
           ),
         ],
       },
@@ -250,29 +249,34 @@ const ROADMAP = [
     description: 'Guardar fotos, anexos e resultados dos testes e melhorar o relatório final.',
     areas: [
       {
-        id: 'evidencias',
-        title: 'Evidências técnicas',
-        branch: 'features/evidencias-documentacao',
+        id: 'oficina',
+        title: 'Oficina',
         features: [
           feature(
-            'controle/evidencias',
-            'Evidências por etapa',
-            'Fotos e demais evidências podem ser vinculadas à etapa do serviço em que foram produzidas.',
+            'oficina/evidencias',
+            'Fotos por etapa',
+            'Fotos e outras evidências podem ser registradas na etapa do serviço em que foram produzidas.',
           ),
           feature(
-            'controle/testes',
+            'oficina/testes',
             'Resultados de testes',
             'Registrar resultados e observações dos testes realizados antes da liberação do equipamento.',
           ),
+        ],
+      },
+      {
+        id: 'finalizacao',
+        title: 'Finalização',
+        features: [
           feature(
-            'documentos/anexos',
+            'finalizacao/anexos',
             'Anexos e documentos',
-            'Arquivos relevantes podem ser associados à OS sem transformar o recebimento inicial em uma etapa burocrática.',
+            'Arquivos importantes podem ser associados à OS.',
           ),
           feature(
-            'documentos/relatorio-tecnico',
-            'Relatório técnico enriquecido',
-            'O relatório final incorpora peritagem estruturada, evidências selecionadas, resultados de testes e informações relevantes da execução.',
+            'finalizacao/relatorio-tecnico',
+            'Relatório técnico completo',
+            'O relatório final reúne peritagem, fotos, testes e informações importantes da execução.',
           ),
         ],
       },
@@ -284,14 +288,24 @@ const ROADMAP = [
     description: 'Acompanhar atrasos, capacidade, indicadores e avisos da operação.',
     areas: [
       {
+        id: 'pcp',
+        title: 'PCP',
+        features: [
+          feature(
+            'pcp/avisos',
+            'Avisos internos',
+            'O sistema destaca situações da operação que precisam de atenção.',
+          ),
+        ],
+      },
+      {
         id: 'gestao',
-        title: 'Gestão operacional',
-        branch: 'features/gestao-operacional',
+        title: 'Gestão',
         features: [
           feature(
             'gestao/capacidade',
             'Capacidade por setor',
-            'Visualizar carga de trabalho e distribuição das OS entre setores e responsáveis.',
+            'Visualizar a carga de trabalho e a distribuição das OS entre setores e responsáveis.',
           ),
           feature(
             'gestao/atrasos',
@@ -300,35 +314,24 @@ const ROADMAP = [
           ),
           feature(
             'gestao/indicadores',
-            'Indicadores operacionais',
-            'Consolidar tempos, volumes e demais indicadores úteis para acompanhar a operação.',
+            'Indicadores',
+            'Acompanhar tempos, volumes e outros indicadores importantes da operação.',
           ),
           feature(
             'gestao/historico',
-            'Consulta histórica',
-            'Consultar a evolução operacional das OS e utilizar o histórico como apoio à gestão.',
+            'Histórico',
+            'Consultar a evolução das OS e usar o histórico como apoio à gestão.',
           ),
         ],
       },
       {
-        id: 'automacao',
-        title: 'Avisos e automações',
-        branch: 'features/automacao-operacional',
+        id: 'admin',
+        title: 'Administração',
         features: [
           feature(
-            'automacao/avisos-internos',
-            'Avisos internos',
-            'O sistema destaca situações que exigem atenção sem depender, nesta etapa, de integrações externas de mensageria.',
-          ),
-          feature(
-            'rh/treinamentos',
+            'admin/treinamentos',
             'Treinamentos próximos do vencimento',
-            'Exibir avisos de treinamentos de funcionários próximos do vencimento conforme as regras definidas com a RKM.',
-          ),
-          feature(
-            'cobertura/aceite',
-            'Validação consolidada com a RKM',
-            'Revisar o uso real do sistema com a equipe e consolidar ajustes necessários para a operação estabilizada.',
+            'Exibir avisos de treinamentos de funcionários próximos do vencimento.',
           ),
         ],
       },
@@ -456,9 +459,6 @@ export function RoadmapView() {
                 <span className="text-sm font-semibold text-slate-100">
                   {areaId === area.id ? '▾' : '▸'} {area.title}
                 </span>
-                {LOCAL && (
-                  <code className="hidden text-xs text-blue-300 sm:block">{area.branch}</code>
-                )}
               </button>
 
               {areaId === area.id && (

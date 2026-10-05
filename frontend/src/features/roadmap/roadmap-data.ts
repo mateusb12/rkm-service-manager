@@ -17,7 +17,6 @@ export interface RoadmapArea {
   id: string;
   title: string;
   owner: string;
-  branch: string;
   features: RoadmapFeature[];
 }
 
@@ -41,9 +40,8 @@ export const ROADMAP: RoadmapVersion[] = [
     areas: [
       {
         id: 'pcp',
-        title: 'PCP · Recebimento',
+        title: 'PCP',
         owner: 'PCP',
-        branch: 'features/pcp-recebimento',
         features: [
           {
             id: 'pcp-clientes',
@@ -51,7 +49,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/clientes',
             status: 'planned',
             acceptance:
-              'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
+              'O PCP consegue cadastrar e consultar clientes.\\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
           },
           {
             id: 'pcp-abertura',
@@ -59,7 +57,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/abertura-os',
             status: 'planned',
             acceptance:
-              'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
+              'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
           },
           {
             id: 'pcp-numeracao',
@@ -67,7 +65,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/numeracao-os',
             status: 'planned',
             acceptance:
-              'Ao abrir uma OS, o sistema gera automaticamente um número único.\nO número permite localizar a ordem posteriormente.',
+              'Ao abrir uma OS, o sistema gera automaticamente um número único.\\nO número permite localizar a ordem posteriormente.',
           },
           {
             id: 'pcp-nota-fiscal',
@@ -75,7 +73,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/nota-fiscal',
             status: 'planned',
             acceptance:
-              'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\nO documento permanece associado à OS.',
+              'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\\nO documento permanece associado à OS.',
           },
           {
             id: 'pcp-fotos',
@@ -83,7 +81,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/pcp/fotografias',
             status: 'planned',
             acceptance:
-              'É possível adicionar fotografias à OS no recebimento ou posteriormente.\nAs imagens ficam disponíveis para compor o relatório final.',
+              'É possível adicionar fotografias à OS no recebimento ou posteriormente.\\nAs imagens ficam disponíveis para compor o relatório final.',
           },
           {
             id: 'pcp-fila',
@@ -96,10 +94,9 @@ export const ROADMAP: RoadmapVersion[] = [
         ],
       },
       {
-        id: 'peritagem-minima',
-        title: 'Oficina · Peritagem mínima',
+        id: 'oficina',
+        title: 'Oficina',
         owner: 'Oficina',
-        branch: 'features/oficina-peritagem',
         features: [
           {
             id: 'oficina-identificacao-minima',
@@ -115,32 +112,8 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/oficina/diagnostico-minimo',
             status: 'planned',
             acceptance:
-              'O mecânico registra o diagnóstico inicial em texto livre.\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
+              'O mecânico registra o diagnóstico inicial em texto livre.\\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
           },
-        ],
-      },
-      {
-        id: 'comercial-minimo',
-        title: 'Comercial · Orçamento mínimo',
-        owner: 'Comercial',
-        branch: 'features/comercial-orcamento',
-        features: [
-          {
-            id: 'comercial-orcamento-minimo',
-            title: 'Orçamento operacional',
-            branch: 'features/comercial/orcamento-minimo',
-            status: 'planned',
-            acceptance:
-              'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
-          },
-        ],
-      },
-      {
-        id: 'execucao-minima',
-        title: 'Oficina · Execução mínima',
-        owner: 'Oficina',
-        branch: 'features/oficina-execucao',
-        features: [
           {
             id: 'oficina-execucao-minima',
             title: 'Andamento e conclusão',
@@ -152,10 +125,24 @@ export const ROADMAP: RoadmapVersion[] = [
         ],
       },
       {
+        id: 'comercial',
+        title: 'Comercial',
+        owner: 'Comercial',
+        features: [
+          {
+            id: 'comercial-orcamento-minimo',
+            title: 'Orçamento operacional',
+            branch: 'features/comercial/orcamento-minimo',
+            status: 'planned',
+            acceptance:
+              'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+          },
+        ],
+      },
+      {
         id: 'finalizacao',
         title: 'Finalização',
         owner: 'PCP e Comercial',
-        branch: 'features/finalizacao-os',
         features: [
           {
             id: 'finalizacao-encerramento',
@@ -185,10 +172,9 @@ export const ROADMAP: RoadmapVersion[] = [
     checkpoint: 'versions/v1',
     areas: [
       {
-        id: 'peritagem',
-        title: 'Oficina · Peritagem',
+        id: 'oficina',
+        title: 'Oficina',
         owner: 'Oficina',
-        branch: 'features/peritagem-estruturada',
         features: [
           {
             id: 'oficina-tipos-equipamento',
@@ -204,7 +190,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/oficina/checklists',
             status: 'planned',
             acceptance:
-              'Cada tipo de equipamento apresenta somente os componentes e verificações aplicáveis àquela peritagem.',
+              'Cada tipo de equipamento apresenta somente os componentes e verificações aplicáveis.',
           },
           {
             id: 'oficina-componentes',
@@ -212,7 +198,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/oficina/componentes',
             status: 'planned',
             acceptance:
-              'O mecânico registra a condição dos componentes inspecionados e informa necessidade de recuperação ou substituição.',
+              'O mecânico registra a condição dos componentes e informa quando é necessário recuperar ou substituir uma peça.',
           },
           {
             id: 'oficina-medidas',
@@ -220,23 +206,23 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/oficina/medidas',
             status: 'planned',
             acceptance:
-              'Quando aplicável, a peritagem registra medidas, diâmetros, materiais e demais informações técnicas necessárias.',
+              'Quando necessário, registrar medidas, diâmetros, materiais e outras informações técnicas.',
           },
           {
             id: 'oficina-bancadas',
-            title: 'Bancadas estruturadas',
+            title: 'Bancadas',
             branch: 'features/oficina/bancadas',
             status: 'planned',
             acceptance:
-              'Visualizar bancadas livres ou ocupadas e identificar qual OS está associada a cada bancada.',
+              'Visualizar bancadas livres ou ocupadas e identificar qual OS está em cada bancada.',
           },
           {
             id: 'oficina-diagnostico-estruturado',
-            title: 'Diagnóstico estruturado',
+            title: 'Diagnóstico detalhado',
             branch: 'features/oficina/diagnostico-estruturado',
             status: 'planned',
             acceptance:
-              'O diagnóstico consolida as informações da inspeção sem perder a possibilidade de observações técnicas livres.',
+              'O diagnóstico reúne as informações da inspeção e permite observações técnicas livres.',
           },
         ],
       },
@@ -250,10 +236,24 @@ export const ROADMAP: RoadmapVersion[] = [
     checkpoint: 'versions/v2',
     areas: [
       {
-        id: 'fluxo',
-        title: 'Fluxo operacional',
-        owner: 'PCP, Oficina e gestão',
-        branch: 'features/rastreabilidade-aprovacoes',
+        id: 'pcp',
+        title: 'PCP',
+        owner: 'PCP',
+        features: [
+          {
+            id: 'pcp-prazos',
+            title: 'Prazo e prioridade',
+            branch: 'features/pcp/prazos',
+            status: 'planned',
+            acceptance:
+              'Registrar prazo previsto, prioridade e identificar atrasos durante o acompanhamento da OS.',
+          },
+        ],
+      },
+      {
+        id: 'oficina',
+        title: 'Oficina',
+        owner: 'Oficina',
         features: [
           {
             id: 'execucao-etapas',
@@ -261,7 +261,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/oficina/etapas',
             status: 'planned',
             acceptance:
-              'Cada mudança de etapa fica registrada e a situação atual da OS permanece claramente identificada.',
+              'Cada mudança de etapa fica registrada e a situação atual da OS permanece identificada.',
           },
           {
             id: 'execucao-proxima-acao',
@@ -272,44 +272,42 @@ export const ROADMAP: RoadmapVersion[] = [
               'O sistema mostra o que precisa acontecer agora e quem é responsável pela próxima ação.',
           },
           {
+            id: 'execucao-nao-aplicavel',
+            title: 'Etapa não aplicável',
+            branch: 'features/oficina/nao-aplicavel',
+            status: 'planned',
+            acceptance:
+              'Uma etapa que não se aplica ao serviço pode ser ignorada sem interromper o fluxo.',
+          },
+        ],
+      },
+      {
+        id: 'controle',
+        title: 'Controle',
+        owner: 'Admin',
+        features: [
+          {
             id: 'controle-pendencias',
             title: 'Pendências e motivo de parada',
             branch: 'features/controle/pendencias',
             status: 'planned',
             acceptance:
-              'Uma OS parada pode registrar o motivo da pendência, desde quando está parada e quem precisa agir.',
-          },
-          {
-            id: 'pcp-prazos',
-            title: 'Prazo e prioridade',
-            branch: 'features/pcp/prazos',
-            status: 'planned',
-            acceptance:
-              'Registrar prazo previsto, prioridade e identificar atrasos durante o acompanhamento da OS.',
+              'Uma OS parada pode registrar o motivo, desde quando está parada e quem precisa agir.',
           },
           {
             id: 'controle-liberacao',
             title: 'Aprovações e liberações',
             branch: 'features/controle/liberacao',
             status: 'planned',
-            acceptance:
-              'Registrar decisões de aprovação ou liberação com responsável e momento da decisão.',
-          },
-          {
-            id: 'execucao-nao-aplicavel',
-            title: 'Etapa não aplicável',
-            branch: 'features/oficina/nao-aplicavel',
-            status: 'planned',
-            acceptance:
-              'Uma etapa que não se aplica ao serviço pode ser explicitamente ignorada sem interromper o fluxo.',
+            acceptance: 'Registrar decisões de aprovação ou liberação, quem decidiu e quando.',
           },
           {
             id: 'cobertura-auditoria',
-            title: 'Rastreabilidade de alterações',
-            branch: 'features/cobertura/auditoria',
+            title: 'Histórico de alterações',
+            branch: 'features/controle/auditoria',
             status: 'planned',
             acceptance:
-              'Consultar as ações relevantes realizadas na OS, incluindo responsável e etapa correspondente.',
+              'Consultar as principais alterações feitas na OS, com responsável e etapa correspondente.',
           },
         ],
       },
@@ -323,42 +321,47 @@ export const ROADMAP: RoadmapVersion[] = [
     checkpoint: 'versions/v3',
     areas: [
       {
-        id: 'evidencias',
-        title: 'Evidências técnicas',
-        owner: 'Oficina e controle técnico',
-        branch: 'features/evidencias-documentacao',
+        id: 'oficina',
+        title: 'Oficina',
+        owner: 'Oficina',
         features: [
           {
             id: 'controle-evidencias',
-            title: 'Evidências por etapa',
-            branch: 'features/controle/evidencias',
+            title: 'Fotos por etapa',
+            branch: 'features/oficina/evidencias',
             status: 'planned',
             acceptance:
-              'Fotos e demais evidências podem ser vinculadas à etapa do serviço em que foram produzidas.',
+              'Fotos e outras evidências podem ser registradas na etapa do serviço em que foram produzidas.',
           },
           {
             id: 'controle-testes',
             title: 'Resultados de testes',
-            branch: 'features/controle/testes',
+            branch: 'features/oficina/testes',
             status: 'planned',
             acceptance:
               'Registrar resultados e observações dos testes realizados antes da liberação do equipamento.',
           },
+        ],
+      },
+      {
+        id: 'finalizacao',
+        title: 'Finalização',
+        owner: 'PCP e Comercial',
+        features: [
           {
             id: 'documentos-anexos',
             title: 'Anexos e documentos',
-            branch: 'features/documentos/anexos',
+            branch: 'features/finalizacao/anexos',
             status: 'planned',
-            acceptance:
-              'Arquivos relevantes podem ser associados à OS sem transformar o recebimento inicial em uma etapa burocrática.',
+            acceptance: 'Arquivos importantes podem ser associados à OS.',
           },
           {
             id: 'documentos-relatorio-tecnico',
-            title: 'Relatório técnico enriquecido',
-            branch: 'features/documentos/relatorio-tecnico',
+            title: 'Relatório técnico completo',
+            branch: 'features/finalizacao/relatorio-tecnico',
             status: 'planned',
             acceptance:
-              'O relatório final incorpora peritagem estruturada, evidências selecionadas, resultados de testes e informações relevantes da execução.',
+              'O relatório final reúne peritagem, fotos, testes e informações importantes da execução.',
           },
         ],
       },
@@ -372,10 +375,23 @@ export const ROADMAP: RoadmapVersion[] = [
     checkpoint: 'versions/v4',
     areas: [
       {
+        id: 'pcp',
+        title: 'PCP',
+        owner: 'PCP',
+        features: [
+          {
+            id: 'automacao-avisos-internos',
+            title: 'Avisos internos',
+            branch: 'features/pcp/avisos',
+            status: 'planned',
+            acceptance: 'O sistema destaca situações da operação que precisam de atenção.',
+          },
+        ],
+      },
+      {
         id: 'gestao',
-        title: 'Gestão operacional',
-        owner: 'PCP e gestão',
-        branch: 'features/gestao-operacional',
+        title: 'Gestão',
+        owner: 'Admin',
         features: [
           {
             id: 'gestao-capacidade',
@@ -383,7 +399,7 @@ export const ROADMAP: RoadmapVersion[] = [
             branch: 'features/gestao/capacidade',
             status: 'planned',
             acceptance:
-              'Visualizar carga de trabalho e distribuição das OS entre setores e responsáveis.',
+              'Visualizar a carga de trabalho e a distribuição das OS entre setores e responsáveis.',
           },
           {
             id: 'gestao-atrasos',
@@ -395,51 +411,31 @@ export const ROADMAP: RoadmapVersion[] = [
           },
           {
             id: 'gestao-indicadores',
-            title: 'Indicadores operacionais',
+            title: 'Indicadores',
             branch: 'features/gestao/indicadores',
             status: 'planned',
-            acceptance:
-              'Consolidar tempos, volumes e demais indicadores úteis para acompanhar a operação.',
+            acceptance: 'Acompanhar tempos, volumes e outros indicadores importantes da operação.',
           },
           {
             id: 'gestao-historico',
-            title: 'Consulta histórica',
+            title: 'Histórico',
             branch: 'features/gestao/historico',
             status: 'planned',
-            acceptance:
-              'Consultar a evolução operacional das OS e utilizar o histórico como apoio à gestão.',
+            acceptance: 'Consultar a evolução das OS e usar o histórico como apoio à gestão.',
           },
         ],
       },
       {
-        id: 'automacao',
-        title: 'Avisos e automações',
-        owner: 'RKM e desenvolvimento',
-        branch: 'features/automacao-operacional',
+        id: 'admin',
+        title: 'Administração',
+        owner: 'Admin',
         features: [
-          {
-            id: 'automacao-avisos-internos',
-            title: 'Avisos internos',
-            branch: 'features/automacao/avisos-internos',
-            status: 'planned',
-            acceptance:
-              'O sistema destaca situações que exigem atenção sem depender, nesta etapa, de integrações externas de mensageria.',
-          },
           {
             id: 'rh-treinamentos',
             title: 'Treinamentos próximos do vencimento',
-            branch: 'features/rh/treinamentos',
+            branch: 'features/admin/treinamentos',
             status: 'planned',
-            acceptance:
-              'Exibir avisos de treinamentos de funcionários próximos do vencimento conforme as regras definidas com a RKM.',
-          },
-          {
-            id: 'cobertura-validacao',
-            title: 'Validação consolidada com a RKM',
-            branch: 'features/cobertura/aceite',
-            status: 'planned',
-            acceptance:
-              'Revisar o uso real do sistema com a equipe e consolidar ajustes necessários para a operação estabilizada.',
+            acceptance: 'Exibir avisos de treinamentos de funcionários próximos do vencimento.',
           },
         ],
       },
