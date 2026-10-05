@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 	"net/http"
@@ -9,10 +8,14 @@ import (
 	"rkm-service-manager/backend/internal/shared/config"
 	"rkm-service-manager/backend/internal/shared/database"
 	"rkm-service-manager/backend/internal/shared/httpx"
+
+	"gorm.io/gorm"
 )
 
-func newHandler(db *sql.DB) (http.Handler, error) {
-	authModule, authInitError := auth.New(db)
+func newHandler(
+	databaseConnection *gorm.DB,
+) (http.Handler, error) {
+	authModule, authInitError := auth.New(databaseConnection)
 	if authInitError != nil {
 		return nil, authInitError
 	}
@@ -25,35 +28,50 @@ func newHandler(db *sql.DB) (http.Handler, error) {
 
 	authModule.Register(mux)
 
-	mux.Handle("/", httpx.FrontendHandler(
-		config.Env("WEB_DIR", "public"),
-	))
+	mux.Handle(
+		"/",
+		httpx.FrontendHandler(
+			config.Env("WEB_DIR", "public"),
+		),
+	)
 
 	return httpx.WithCORS(mux), nil
 }
 
 func main() {
-	db, databaseOpenError := database.Open()
+	databaseConnection, databaseOpenError := database.Open()
 	if databaseOpenError != nil {
 		log.Fatal(databaseOpenError)
 	}
-	defer db.Close()
 
-	handler, handlerInitError := newHandler(db)
+	sqlDatabase, poolError := databaseConnection.DB()
+	if poolError != nil {
+		log.Fatal(poolError)
+	}
+	defer sqlDatabase.Close()
+
+	handler, handlerInitError := newHandler(databaseConnection)
 	if handlerInitError != nil {
 		log.Fatal(handlerInitError)
 	}
 
 	port := config.Env("PORT", "8787")
+
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: handler,
 	}
 
-	log.Printf("RKM backend listening on :%s", port)
+	log.Printf(
+		"RKM backend listening on :%s",
+		port,
+	)
 
 	if listenError := server.ListenAndServe(); listenError != nil &&
-		!errors.Is(listenError, http.ErrServerClosed) {
+		!errors.Is(
+			listenError,
+			http.ErrServerClosed,
+		) {
 		log.Fatal(listenError)
 	}
 }

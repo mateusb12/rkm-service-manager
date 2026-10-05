@@ -1,14 +1,15 @@
 package auth
 
 import (
-	"database/sql"
 	"net/http"
 	"rkm-service-manager/backend/internal/shared/config"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Module struct {
-	db          *sql.DB
+	database    *gorm.DB
 	env         string
 	accessTTL   time.Duration
 	sessionTTL  time.Duration
@@ -16,18 +17,25 @@ type Module struct {
 	secure      bool
 }
 
-func New(db *sql.DB) (*Module, error) {
+func New(databaseConnection *gorm.DB) (*Module, error) {
+	environment := config.Env("APP_ENV", "development")
+
+	secureDefault := "false"
+	if environment == "production" {
+		secureDefault = "true"
+	}
+
 	module := &Module{
-		db:          db,
-		env:         config.Env("APP_ENV", "development"),
+		database:    databaseConnection,
+		env:         environment,
 		accessTTL:   config.EnvDuration("ACCESS_TTL", 15*time.Minute),
 		sessionTTL:  config.EnvDuration("SESSION_TTL", 8*time.Hour),
 		absoluteTTL: config.EnvDuration("SESSION_ABSOLUTE_TTL", 7*24*time.Hour),
-		secure:      config.Env("COOKIE_SECURE", "false") == "true",
+		secure:      config.Env("COOKIE_SECURE", secureDefault) == "true",
 	}
 
-	if schemaError := module.initDB(); schemaError != nil {
-		return nil, schemaError
+	if migrationError := module.migrate(); migrationError != nil {
+		return nil, migrationError
 	}
 
 	if seedError := module.seedUsers(); seedError != nil {

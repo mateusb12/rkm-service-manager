@@ -31,6 +31,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Refatoração do backend Go para arquitetura vertical (internal/features e internal/shared), separação das responsabilidades de autenticação, criação das regras RKM-GO-001 e RKM-GO-002, renomeação de 164 referências e validação dos quatro cargos por testes e smoke tests.',
     },
     {
+      category: 'Transversal',
+      description:
+        'Migração da persistência do backend para GORM sobre SQLite, com models de usuários e sessões, compatibilidade com o banco existente e hardening da autenticação: correção do cookie de refresh, revogação de sessão no logout, rotação protegida contra reutilização, tratamento seguro de tokens e Argon2, testes do ciclo completo e validação no volume persistido do Docker.',
+    },
+    {
       category: 'Ambiente',
       description:
         'Diagnóstico e recuperação da integração WakaTime após recriação do frontend, reutilizando a configuração existente no Linux.',

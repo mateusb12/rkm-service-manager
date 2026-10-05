@@ -3,89 +3,137 @@ package auth
 import (
 	"rkm-service-manager/backend/internal/shared/config"
 	"time"
+
+	"gorm.io/gorm/clause"
 )
 
-func (module *Module) initDB() error {
-	_, schemaError := module.db.Exec(`
-CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
-  name TEXT NOT NULL,
-  role TEXT NOT NULL,
-  password_hash TEXT NOT NULL,
-  active INTEGER NOT NULL DEFAULT 1,
-  created_at INTEGER NOT NULL
-);
-CREATE TABLE IF NOT EXISTS sessions (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id),
-  access_hash TEXT NOT NULL UNIQUE,
-  refresh_hash TEXT NOT NULL UNIQUE,
-  created_at INTEGER NOT NULL,
-  last_used_at INTEGER NOT NULL,
-  access_expires_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL,
-  absolute_expires_at INTEGER NOT NULL,
-  revoked_at INTEGER
-);
-CREATE INDEX IF NOT EXISTS idx_sessions_access ON sessions(access_hash);
-CREATE INDEX IF NOT EXISTS idx_sessions_refresh ON sessions(refresh_hash);
-UPDATE users SET name='Osmar Lamarck' WHERE email='admin@rkm.com.br' AND role='admin';
-`)
-	return schemaError
+func (module *Module) migrate() error {
+	migrationError := module.database.AutoMigrate(
+		&userModel{},
+		&sessionModel{},
+	)
+	if migrationError != nil {
+		return migrationError
+	}
+
+	return module.database.
+		Model(&userModel{}).
+		Where(
+			"email = ? AND role = ?",
+			"admin@rkm.com.br",
+			"admin",
+		).
+		Update("name", "Osmar Lamarck").
+		Error
 }
 
 func (module *Module) seedUsers() error {
-	users := []struct{ id, email, name, role, password string }{
-		{"u5", "admin@rkm.com.br", "Osmar Lamarck",
-			"admin", config.Env("DUMMY_PASSWORD_ADMIN", "Rkm@123456")},
-		{"u1", "mecanico@rkm.com.br", "Carlos M.",
-			"mechanic", config.Env("DUMMY_PASSWORD_MECHANIC", "Rkm@123456")},
-		{"u4", "pcp@rkm.com.br", "PCP RKM",
-			"pcp", config.Env("DUMMY_PASSWORD_PCP", "Rkm@123456")},
-		{"u7", "comercial@rkm.com.br", "Comercial RKM",
-			"commercial", config.Env("DUMMY_PASSWORD_COMMERCIAL", "Rkm@123456")},
+	type seedUser struct {
+		ID       string
+		Email    string
+		Name     string
+		Role     string
+		Password string
 	}
+
+	users := []seedUser{
+		{
+			ID:       "u5",
+			Email:    "admin@rkm.com.br",
+			Name:     "Osmar Lamarck",
+			Role:     "admin",
+			Password: config.Env("DUMMY_PASSWORD_ADMIN", "Rkm@123456"),
+		},
+		{
+			ID:       "u1",
+			Email:    "mecanico@rkm.com.br",
+			Name:     "Carlos M.",
+			Role:     "mechanic",
+			Password: config.Env("DUMMY_PASSWORD_MECHANIC", "Rkm@123456"),
+		},
+		{
+			ID:       "u4",
+			Email:    "pcp@rkm.com.br",
+			Name:     "PCP RKM",
+			Role:     "pcp",
+			Password: config.Env("DUMMY_PASSWORD_PCP", "Rkm@123456"),
+		},
+		{
+			ID:       "u7",
+			Email:    "comercial@rkm.com.br",
+			Name:     "Comercial RKM",
+			Role:     "commercial",
+			Password: config.Env("DUMMY_PASSWORD_COMMERCIAL", "Rkm@123456"),
+		},
+	}
+
 	for _, user := range users {
-		hash, hashError := hashPassword(user.password)
+		passwordHash, hashError := hashPassword(user.Password)
 		if hashError != nil {
 			return hashError
 		}
-		_, insertError := module.db.Exec(`INSERT INTO users(id,email,name,role,password_hash,created_at) VALUES(?,?,?,?,?,?) ON CONFLICT(email) DO NOTHING`, user.id, user.email, user.name, user.role, hash, time.Now().Unix())
+
+		storedUser := userModel{
+			ID:           user.ID,
+			Email:        user.Email,
+			Name:         user.Name,
+			Role:         user.Role,
+			PasswordHash: passwordHash,
+			Active:       true,
+			CreatedAt:    time.Now().Unix(),
+		}
+
+		insertError := module.database.
+			Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "email"}},
+				DoNothing: true,
+			}).
+			Create(&storedUser).
+			Error
+
 		if insertError != nil {
 			return insertError
 		}
 	}
+
 	return nil
 }
 
-func (module *Module) findUser(email string) (authUser, string, bool) {
-	var user authUser
-	var hash string
-	queryError := module.db.QueryRow(`SELECT id,email,name,role,password_hash FROM users WHERE email=? AND active=1`, email).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &hash)
+func (module *Module) findUser(
+	email string,
+) (authUser, string, bool) {
+	var storedUser userModel
+
+	queryError := module.database.
+		Where("email = ? AND active = ?", email, true).
+		First(&storedUser).
+		Error
+
 	if queryError != nil {
 		return authUser{}, "", false
 	}
-	permissions, allowed := rolePermissions[user.Role]
+
+	user, allowed := toAuthUser(storedUser)
 	if !allowed {
 		return authUser{}, "", false
 	}
-	user.RoleLabel = roleLabels[user.Role]
-	user.Permissions = permissions
-	return user, hash, true
+
+	return user, storedUser.PasswordHash, true
 }
 
-func (module *Module) findUserByID(id string) (authUser, bool) {
-	var user authUser
-	queryError := module.db.QueryRow(`SELECT id,email,name,role FROM users WHERE id=? AND active=1`, id).Scan(&user.ID, &user.Email, &user.Name, &user.Role)
+func (module *Module) findUserByID(
+	userID string,
+) (authUser, bool) {
+	var storedUser userModel
+
+	queryError := module.database.
+		Where("id = ? AND active = ?", userID, true).
+		First(&storedUser).
+		Error
+
 	if queryError != nil {
 		return authUser{}, false
 	}
-	permissions, allowed := rolePermissions[user.Role]
-	if !allowed {
-		return authUser{}, false
-	}
-	user.RoleLabel = roleLabels[user.Role]
-	user.Permissions = permissions
-	return user, true
+
+	return toAuthUser(storedUser)
 }

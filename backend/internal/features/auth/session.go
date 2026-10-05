@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -15,78 +16,292 @@ const (
 	csrfCookie    = "rkm_csrf"
 )
 
-type session struct {
-	ID          string
-	UserID      string
-	AccessHash  string
-	RefreshHash string
-	CreatedAt   time.Time
-	LastUsedAt  time.Time
-	ExpiresAt   time.Time
-	AbsoluteAt  time.Time
+type sessionTokens struct {
+	Access  string
+	Refresh string
+	CSRF    string
 }
 
-func (module *Module) startSession(writer http.ResponseWriter, user authUser) error {
-	now := time.Now()
-	access, refresh, csrf := randomToken(), randomToken(), randomToken()
-	expires := now.Add(module.sessionTTL)
-	absolute := now.Add(module.absoluteTTL)
-	accessExpires := now.Add(module.accessTTL)
-	_, sessionInsertError := module.db.Exec(`INSERT INTO sessions(id,user_id,access_hash,refresh_hash,created_at,last_used_at,access_expires_at,expires_at,absolute_expires_at) VALUES(?,?,?,?,?,?,?,?,?)`, randomToken(), user.ID, sha256Hex(access), sha256Hex(refresh), now.Unix(), now.Unix(), accessExpires.Unix(), expires.Unix(), absolute.Unix())
-	if sessionInsertError == nil {
-		module.setCookies(writer, access, refresh, csrf, accessExpires, expires, absolute)
+func generateSessionTokens() (sessionTokens, error) {
+	accessToken, accessTokenError := randomToken()
+	if accessTokenError != nil {
+		return sessionTokens{}, fmt.Errorf(
+			"generate access token: %w",
+			accessTokenError,
+		)
 	}
-	return sessionInsertError
+
+	refreshToken, refreshTokenError := randomToken()
+	if refreshTokenError != nil {
+		return sessionTokens{}, fmt.Errorf(
+			"generate refresh token: %w",
+			refreshTokenError,
+		)
+	}
+
+	csrfToken, csrfTokenError := randomToken()
+	if csrfTokenError != nil {
+		return sessionTokens{}, fmt.Errorf(
+			"generate csrf token: %w",
+			csrfTokenError,
+		)
+	}
+
+	return sessionTokens{
+		Access:  accessToken,
+		Refresh: refreshToken,
+		CSRF:    csrfToken,
+	}, nil
 }
 
-func (module *Module) authenticatedUser(request *http.Request) (authUser, bool) {
+func (module *Module) startSession(
+	writer http.ResponseWriter,
+	user authUser,
+) error {
+	now := time.Now()
+
+	tokens, tokenGenerationError := generateSessionTokens()
+	if tokenGenerationError != nil {
+		return tokenGenerationError
+	}
+
+	sessionID, sessionIDError := randomToken()
+	if sessionIDError != nil {
+		return sessionIDError
+	}
+
+	refreshExpires := now.Add(module.sessionTTL)
+	absoluteExpires := now.Add(module.absoluteTTL)
+	accessExpires := now.Add(module.accessTTL)
+
+	storedSession := sessionModel{
+		ID:                sessionID,
+		UserID:            user.ID,
+		AccessHash:        sha256Hex(tokens.Access),
+		RefreshHash:       sha256Hex(tokens.Refresh),
+		CreatedAt:         now.Unix(),
+		LastUsedAt:        now.Unix(),
+		AccessExpiresAt:   accessExpires.Unix(),
+		ExpiresAt:         refreshExpires.Unix(),
+		AbsoluteExpiresAt: absoluteExpires.Unix(),
+	}
+
+	createError := module.database.
+		Create(&storedSession).
+		Error
+
+	if createError != nil {
+		return createError
+	}
+
+	module.setCookies(
+		writer,
+		tokens.Access,
+		tokens.Refresh,
+		tokens.CSRF,
+		accessExpires,
+		refreshExpires,
+		absoluteExpires,
+	)
+
+	return nil
+}
+
+func (module *Module) authenticatedUser(
+	request *http.Request,
+) (authUser, bool) {
 	cookie, cookieError := request.Cookie(accessCookie)
 	if cookieError != nil {
 		return authUser{}, false
 	}
-	var userID string
-	var accessExpires, absolute, revoked, lastUsed int64
-	sessionQueryError := module.db.QueryRow(`SELECT user_id,access_expires_at,absolute_expires_at,COALESCE(revoked_at,0),last_used_at FROM sessions WHERE access_hash=?`, sha256Hex(cookie.Value)).Scan(&userID, &accessExpires, &absolute, &revoked, &lastUsed)
-	now := time.Now()
-	if sessionQueryError != nil || revoked != 0 || now.After(time.Unix(accessExpires, 0)) || now.After(time.Unix(absolute, 0)) {
+
+	var storedSession sessionModel
+
+	sessionQueryError := module.database.
+		Where(
+			"access_hash = ? AND revoked_at IS NULL",
+			sha256Hex(cookie.Value),
+		).
+		First(&storedSession).
+		Error
+
+	if sessionQueryError != nil {
 		return authUser{}, false
 	}
-	if now.Sub(time.Unix(lastUsed, 0)) > time.Minute {
-		_, _ = module.db.Exec(`UPDATE sessions SET last_used_at=? WHERE access_hash=?`, now.Unix(), sha256Hex(cookie.Value))
+
+	now := time.Now()
+
+	if now.After(time.Unix(storedSession.AccessExpiresAt, 0)) ||
+		now.After(time.Unix(storedSession.AbsoluteExpiresAt, 0)) {
+		return authUser{}, false
 	}
-	return module.findUserByID(userID)
+
+	if now.Sub(time.Unix(storedSession.LastUsedAt, 0)) > time.Minute {
+		module.database.
+			Model(&sessionModel{}).
+			Where("id = ?", storedSession.ID).
+			Update("last_used_at", now.Unix())
+	}
+
+	return module.findUserByID(storedSession.UserID)
 }
 
-func (module *Module) validCSRF(request *http.Request) bool {
+func (module *Module) revokeSession(
+	request *http.Request,
+) error {
+	now := time.Now().Unix()
+
+	if refresh, cookieError := request.Cookie(refreshCookie); cookieError == nil {
+		updateResult := module.database.
+			Model(&sessionModel{}).
+			Where(
+				"refresh_hash = ? AND revoked_at IS NULL",
+				sha256Hex(refresh.Value),
+			).
+			Update("revoked_at", now)
+
+		if updateResult.Error != nil {
+			return updateResult.Error
+		}
+
+		if updateResult.RowsAffected > 0 {
+			return nil
+		}
+	}
+
+	if access, cookieError := request.Cookie(accessCookie); cookieError == nil {
+		return module.database.
+			Model(&sessionModel{}).
+			Where(
+				"access_hash = ? AND revoked_at IS NULL",
+				sha256Hex(access.Value),
+			).
+			Update("revoked_at", now).
+			Error
+	}
+
+	return nil
+}
+
+func (module *Module) validCSRF(
+	request *http.Request,
+) bool {
 	cookie, cookieError := request.Cookie(csrfCookie)
-	return cookieError == nil && cookie.Value != "" && subtle.ConstantTimeCompare([]byte(cookie.Value), []byte(request.Header.Get("X-CSRF-Token"))) == 1
+
+	return cookieError == nil &&
+		cookie.Value != "" &&
+		subtle.ConstantTimeCompare(
+			[]byte(cookie.Value),
+			[]byte(request.Header.Get("X-CSRF-Token")),
+		) == 1
 }
 
-func (module *Module) setCookies(writer http.ResponseWriter, access, refresh, csrf string, accessExpires, refreshExpires, absolute time.Time) {
-	module.cookie(writer, accessCookie, access, accessExpires, true, "/")
-	module.cookie(writer, refreshCookie, refresh, refreshExpires, true, "/api/auth")
-	module.cookie(writer, csrfCookie, csrf, absolute, false, "/")
+func (module *Module) setCookies(
+	writer http.ResponseWriter,
+	access string,
+	refresh string,
+	csrf string,
+	accessExpires time.Time,
+	refreshExpires time.Time,
+	absoluteExpires time.Time,
+) {
+	module.cookie(
+		writer,
+		accessCookie,
+		access,
+		accessExpires,
+		true,
+		"/",
+	)
+
+	module.cookie(
+		writer,
+		refreshCookie,
+		refresh,
+		refreshExpires,
+		true,
+		"/api/auth",
+	)
+
+	module.cookie(
+		writer,
+		csrfCookie,
+		csrf,
+		absoluteExpires,
+		false,
+		"/",
+	)
 }
 
-func (module *Module) clearCookies(writer http.ResponseWriter) {
-	for _, name := range []string{accessCookie, refreshCookie, csrfCookie} {
-		module.cookie(writer, name, "", time.Unix(0, 0), name != csrfCookie, "/")
+func (module *Module) clearCookies(
+	writer http.ResponseWriter,
+) {
+	expired := time.Unix(0, 0)
+
+	module.cookie(
+		writer,
+		accessCookie,
+		"",
+		expired,
+		true,
+		"/",
+	)
+
+	module.cookie(
+		writer,
+		refreshCookie,
+		"",
+		expired,
+		true,
+		"/api/auth",
+	)
+
+	module.cookie(
+		writer,
+		csrfCookie,
+		"",
+		expired,
+		false,
+		"/",
+	)
+}
+
+func (module *Module) cookie(
+	writer http.ResponseWriter,
+	name string,
+	value string,
+	expires time.Time,
+	httpOnly bool,
+	path string,
+) {
+	maxAge := int(time.Until(expires).Seconds())
+	if !expires.After(time.Now()) {
+		maxAge = -1
 	}
+
+	http.SetCookie(writer, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Path:     path,
+		Expires:  expires,
+		MaxAge:   maxAge,
+		HttpOnly: httpOnly,
+		Secure:   module.secure,
+		SameSite: http.SameSiteLaxMode,
+	})
 }
 
-func (module *Module) cookie(writer http.ResponseWriter, name, value string, expires time.Time, httpOnly bool, path string) {
-	http.SetCookie(writer, &http.Cookie{Name: name, Value: value, Path: path, Expires: expires, MaxAge: int(time.Until(expires).Seconds()), HttpOnly: httpOnly, Secure: module.secure, SameSite: http.SameSiteLaxMode})
-}
-
-func randomToken() string {
+func randomToken() (string, error) {
 	tokenBytes := make([]byte, 32)
+
 	if _, randomReadError := rand.Read(tokenBytes); randomReadError != nil {
-		panic(randomReadError)
+		return "", randomReadError
 	}
-	return hex.EncodeToString(tokenBytes)
+
+	return hex.EncodeToString(tokenBytes), nil
 }
 
 func sha256Hex(value string) string {
-	sum := sha256.Sum256([]byte(value))
-	return hex.EncodeToString(sum[:])
+	hash := sha256.Sum256([]byte(value))
+	return hex.EncodeToString(hash[:])
 }
