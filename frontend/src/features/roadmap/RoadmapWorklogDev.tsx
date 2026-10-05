@@ -16,6 +16,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Implementação do backend persistente de clientes com GORM e SQLite: cadastro, consulta individual, listagem e busca por CNPJ, razão social ou nome fantasia, edição e exclusão, com validações, CNPJ único, controle de acesso para Admin e PCP, proteção CSRF e testes automatizados e em container.',
     },
     {
+      category: 'Produto',
+      description:
+        'Integração do CRUD de clientes com a API persistente: remoção dos dados demonstrativos e do estado global no App, carregamento dos clientes a partir do backend, cadastro, edição e exclusão persistentes, tratamento de loading e erros, compartilhamento da infraestrutura HTTP/CSRF com autenticação e validação ponta a ponta até o SQLite do volume Docker.',
+    },
+    {
       category: 'Transversal',
       description:
         'Revisão dos cinco cargos anteriores para Admin, Mecânico, PCP e Comercial, com ajustes de permissões, navegação, ITs e regras de aprovação.',

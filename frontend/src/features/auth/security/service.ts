@@ -1,29 +1,9 @@
-import { AUTH_API_BASE_PATH } from './constants';
+import { apiRequest, csrfHeaders } from '../../../shared/api/http';
 
 import type { AuthUser, DevCredential } from './types';
 
-const getCsrfToken = (): string =>
-  document.cookie
-    .split('; ')
-    .find((value) => value.startsWith('rkm_csrf='))
-    ?.split('=')[1] || '';
-
-const request = (path: string, options: RequestInit = {}): Promise<Response> =>
-  fetch(`${AUTH_API_BASE_PATH}${path}`, {
-    credentials: 'include',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  });
-
-const csrfHeaders = (): HeadersInit => ({
-  'X-CSRF-Token': getCsrfToken(),
-});
-
 export async function login(email: string, password: string): Promise<AuthUser> {
-  const response = await request('/auth/login', {
+  const response = await apiRequest('/auth/login', {
     method: 'POST',
     body: JSON.stringify({
       email,
@@ -41,14 +21,14 @@ export async function login(email: string, password: string): Promise<AuthUser> 
 }
 
 export async function logout(): Promise<void> {
-  await request('/auth/logout', {
+  await apiRequest('/auth/logout', {
     method: 'POST',
     headers: csrfHeaders(),
   });
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
-  const response = await request('/auth/me');
+  const response = await apiRequest('/auth/me');
 
   if (!response.ok) {
     return null;
@@ -58,7 +38,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 export async function refreshSession(): Promise<AuthUser> {
-  const response = await request('/auth/refresh', {
+  const response = await apiRequest('/auth/refresh', {
     method: 'POST',
     headers: csrfHeaders(),
   });
@@ -71,7 +51,7 @@ export async function refreshSession(): Promise<AuthUser> {
 }
 
 export async function getDevCredentials(): Promise<DevCredential[]> {
-  const response = await request('/auth/dev-credentials');
+  const response = await apiRequest('/auth/dev-credentials');
 
   if (!response.ok) {
     throw new Error('dev_credentials_unavailable');
@@ -82,7 +62,7 @@ export async function getDevCredentials(): Promise<DevCredential[]> {
 
 export async function checkBackendHealth(): Promise<boolean> {
   try {
-    const response = await request('/health');
+    const response = await apiRequest('/health');
 
     return response.ok;
   } catch {

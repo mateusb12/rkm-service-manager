@@ -1,5 +1,3 @@
-export const AUTH_API_BASE_PATH = '/api';
-
 export const AUTH_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 
 export const BACKEND_HEALTH_CHECK_INTERVAL_MS = 5 * 1000;

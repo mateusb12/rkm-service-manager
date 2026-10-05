@@ -15,33 +15,6 @@ export const EMPTY_CLIENT: ClientInput = {
   nomeFantasia: '',
 };
 
-export const INITIAL_CLIENTS: Client[] = [
-  {
-    id: 1,
-    cnpj: '10203040000150',
-    razaoSocial: 'Metalúrgica Atlântico Ltda.',
-    nomeFantasia: 'Metal Atlântico',
-  },
-  {
-    id: 2,
-    cnpj: '20304050000160',
-    razaoSocial: 'Indústria Hidráulica Nordeste Ltda.',
-    nomeFantasia: 'HidroNordeste',
-  },
-  {
-    id: 3,
-    cnpj: '30405060000170',
-    razaoSocial: 'Comercial de Equipamentos Fortaleza Ltda.',
-    nomeFantasia: 'EquipFort',
-  },
-  {
-    id: 4,
-    cnpj: '40506070000180',
-    razaoSocial: 'Serviços Industriais Ceará Ltda.',
-    nomeFantasia: 'SIC Industrial',
-  },
-];
-
 export const onlyDigits = (value: string) => value.replace(/\D/g, '');
 
 export function formatCnpj(value: string): string {
@@ -61,31 +34,23 @@ export function normalizeText(value: string): string {
     .trim();
 }
 
-export function validateClient(
-  input: ClientInput,
-  clients: Client[],
-  editingId: number | null,
-): ClientErrors {
-  const errors: ClientErrors = {};
-  const cnpj = onlyDigits(input.cnpj);
+export function validateClient(clientInput: ClientInput): ClientErrors {
+  const validationErrors: ClientErrors = {};
+  const normalizedCnpj = onlyDigits(clientInput.cnpj);
 
-  if (!cnpj) {
-    errors.cnpj = 'Informe o CNPJ.';
-  } else if (cnpj.length !== 14) {
-    errors.cnpj = 'O CNPJ deve conter 14 dígitos.';
-  } else if (
-    clients.some((client) => client.id !== editingId && onlyDigits(client.cnpj) === cnpj)
-  ) {
-    errors.cnpj = 'Este CNPJ já está cadastrado.';
+  if (!normalizedCnpj) {
+    validationErrors.cnpj = 'Informe o CNPJ.';
+  } else if (normalizedCnpj.length !== 14) {
+    validationErrors.cnpj = 'O CNPJ deve conter 14 dígitos.';
   }
 
-  if (!input.razaoSocial.trim()) {
-    errors.razaoSocial = 'Informe a razão social.';
+  if (!clientInput.razaoSocial.trim()) {
+    validationErrors.razaoSocial = 'Informe a razão social.';
   }
 
-  if (!input.nomeFantasia.trim()) {
-    errors.nomeFantasia = 'Informe o nome fantasia.';
+  if (!clientInput.nomeFantasia.trim()) {
+    validationErrors.nomeFantasia = 'Informe o nome fantasia.';
   }
 
-  return errors;
+  return validationErrors;
 }

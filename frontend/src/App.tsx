@@ -39,7 +39,6 @@ import {
   SummaryView,
 } from './features/service-workflow';
 import { ClientsView } from './features/pcp/clients';
-import { INITIAL_CLIENTS } from './features/pcp/clients/clientModel';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -626,7 +625,6 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [view, setView] = useState(() => viewFromPath(location.pathname));
-  const [clients, setClients] = useState(() => INITIAL_CLIENTS.map((client) => ({ ...client })));
   const [activeIT, setActiveIT] = useState('IT001');
   const activeUser = authenticatedUser?.id || '';
   const activeRole = authenticatedUser?.role || '';
@@ -871,7 +869,7 @@ const App = () => {
     }
 
     if (view === 'pcp-clients') {
-      return React.createElement(ClientsView, { clients, setClients });
+      return React.createElement(ClientsView);
     }
 
     if (view === 'populator') {

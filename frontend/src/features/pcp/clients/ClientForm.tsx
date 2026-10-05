@@ -10,11 +10,12 @@ import {
   type ClientInput,
 } from './clientModel';
 
+import { ClientServiceError } from './service';
+
 type Props = {
   client?: Client;
-  clients: Client[];
   onCancel: () => void;
-  onSave: (data: ClientInput, id: number | null) => void;
+  onSave: (clientInput: ClientInput, clientId: number | null) => Promise<void>;
 };
 
 const fields: {
@@ -43,8 +44,8 @@ const fields: {
   },
 ];
 
-export function ClientForm({ client, clients, onCancel, onSave }: Props) {
-  const [data, setData] = useState<ClientInput>(() =>
+export function ClientForm({ client, onCancel, onSave }: Props) {
+  const [clientInput, setClientInput] = useState<ClientInput>(() =>
     client
       ? {
           cnpj: formatCnpj(client.cnpj),
@@ -54,41 +55,78 @@ export function ClientForm({ client, clients, onCancel, onSave }: Props) {
       : { ...EMPTY_CLIENT },
   );
 
-  const [errors, setErrors] = useState<ClientErrors>({});
+  const [validationErrors, setValidationErrors] = useState<ClientErrors>({});
+  const [submissionErrorMessage, setSubmissionErrorMessage] = useState('');
+  const [savingClient, setSavingClient] = useState(false);
 
-  const editing = Boolean(client);
+  const editingClient = Boolean(client);
 
-  function change(key: keyof ClientInput, value: string) {
-    setData((previous) => ({
-      ...previous,
+  function changeClientField(key: keyof ClientInput, value: string) {
+    setClientInput((previousClientInput) => ({
+      ...previousClientInput,
       [key]: key === 'cnpj' ? formatCnpj(value) : value,
     }));
 
-    setErrors((previous) => ({
-      ...previous,
+    setValidationErrors((previousValidationErrors) => ({
+      ...previousValidationErrors,
       [key]: undefined,
     }));
+
+    setSubmissionErrorMessage('');
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submitClient(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const id = client?.id ?? null;
-    const validation = validateClient(data, clients, id);
+    const clientId = client?.id ?? null;
+    const currentValidationErrors = validateClient(clientInput);
 
-    if (Object.values(validation).some(Boolean)) {
-      setErrors(validation);
+    if (Object.values(currentValidationErrors).some(Boolean)) {
+      setValidationErrors(currentValidationErrors);
       return;
     }
 
-    onSave(
-      {
-        cnpj: onlyDigits(data.cnpj),
-        razaoSocial: data.razaoSocial.trim(),
-        nomeFantasia: data.nomeFantasia.trim(),
-      },
-      id,
-    );
+    setSavingClient(true);
+    setSubmissionErrorMessage('');
+
+    try {
+      await onSave(
+        {
+          cnpj: onlyDigits(clientInput.cnpj),
+          razaoSocial: clientInput.razaoSocial.trim(),
+          nomeFantasia: clientInput.nomeFantasia.trim(),
+        },
+        clientId,
+      );
+    } catch (caughtError) {
+      if (caughtError instanceof ClientServiceError) {
+        const serviceValidationErrors: ClientErrors = {
+          ...caughtError.fieldErrors,
+        };
+
+        if (caughtError.errorCode === 'cnpj_already_exists') {
+          serviceValidationErrors.cnpj = 'Este CNPJ já está cadastrado.';
+        }
+
+        if (Object.values(serviceValidationErrors).some(Boolean)) {
+          setValidationErrors(serviceValidationErrors);
+          return;
+        }
+
+        if (caughtError.errorCode === 'permission_denied') {
+          setSubmissionErrorMessage('Você não tem permissão para alterar clientes.');
+          return;
+        }
+      }
+
+      setSubmissionErrorMessage(
+        editingClient
+          ? 'Não foi possível salvar as alterações do cliente.'
+          : 'Não foi possível cadastrar o cliente.',
+      );
+    } finally {
+      setSavingClient(false);
+    }
   }
 
   return (
@@ -98,12 +136,15 @@ export function ClientForm({ client, clients, onCancel, onSave }: Props) {
           type="button"
           className="text-sm text-blue-400 hover:text-blue-300 focus-visible:underline"
           onClick={onCancel}
+          disabled={savingClient}
         >
           ← Clientes
         </button>
+
         <span className="mx-2 text-slate-500">/</span>
+
         <span className="text-sm text-slate-300">
-          {editing ? 'Editar cliente' : 'Novo cliente'}
+          {editingClient ? 'Editar cliente' : 'Novo cliente'}
         </span>
       </nav>
 
@@ -111,20 +152,32 @@ export function ClientForm({ client, clients, onCancel, onSave }: Props) {
         <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">
           PCP · CLIENTES
         </p>
+
         <h1 className="mt-2 text-2xl font-semibold text-slate-100">
-          {editing ? client?.nomeFantasia || 'Editar cliente' : 'Novo cliente'}
+          {editingClient ? client?.nomeFantasia || 'Editar cliente' : 'Novo cliente'}
         </h1>
+
         <p className="mt-2 text-sm text-slate-400">
-          {editing
+          {editingClient
             ? 'Atualize os dados cadastrais deste cliente.'
             : 'Preencha os dados para cadastrar um cliente.'}
         </p>
       </header>
 
-      <form onSubmit={submit} noValidate>
+      {submissionErrorMessage && (
+        <div
+          role="alert"
+          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+        >
+          {submissionErrorMessage}
+        </div>
+      )}
+
+      <form onSubmit={submitClient} noValidate>
         <section className="rkm-card overflow-hidden">
           <div className="border-b border-rkmborder p-5 md:px-6">
             <h2 className="font-semibold text-slate-100">Informações da empresa</h2>
+
             <p className="mt-1 text-sm text-slate-400">
               Identificação básica para utilização no PCP.
             </p>
@@ -132,7 +185,7 @@ export function ClientForm({ client, clients, onCancel, onSave }: Props) {
 
           <div className="grid gap-5 p-5 md:grid-cols-2 md:p-6">
             {fields.map((field) => {
-              const error = errors[field.key];
+              const fieldError = validationErrors[field.key];
               const inputId = `client-${field.key}`;
 
               return (
@@ -155,20 +208,21 @@ export function ClientForm({ client, clients, onCancel, onSave }: Props) {
                     className={
                       'rkm-input zenit-field ' +
                       'focus-visible:ring-2 focus-visible:ring-blue-400/30 ' +
-                      (error ? '!border-rose-500' : '')
+                      (fieldError ? '!border-rose-500' : '')
                     }
-                    value={data[field.key]}
+                    value={clientInput[field.key]}
                     placeholder={field.placeholder}
                     maxLength={field.maxLength}
                     inputMode={field.key === 'cnpj' ? 'numeric' : 'text'}
-                    aria-invalid={Boolean(error)}
-                    aria-describedby={error ? `${inputId}-error` : undefined}
-                    onChange={(event) => change(field.key, event.target.value)}
+                    aria-invalid={Boolean(fieldError)}
+                    aria-describedby={fieldError ? `${inputId}-error` : undefined}
+                    disabled={savingClient}
+                    onChange={(event) => changeClientField(field.key, event.target.value)}
                   />
 
-                  {error && (
+                  {fieldError && (
                     <p id={`${inputId}-error`} role="alert" className="mt-2 text-xs text-rose-400">
-                      {error}
+                      {fieldError}
                     </p>
                   )}
                 </div>
@@ -178,18 +232,24 @@ export function ClientForm({ client, clients, onCancel, onSave }: Props) {
 
           <div className="border-t border-rkmborder p-4 md:px-6">
             <p className="text-xs text-slate-500">
-              * Campos obrigatórios. O CNPJ é verificado por tamanho e duplicidade nesta etapa.
+              * Campos obrigatórios. O CNPJ é verificado por tamanho nesta etapa; duplicidade é
+              validada pelo sistema ao salvar.
             </p>
           </div>
         </section>
 
         <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button type="button" className="btn btn-ghost justify-center" onClick={onCancel}>
+          <button
+            type="button"
+            className="btn btn-ghost justify-center"
+            onClick={onCancel}
+            disabled={savingClient}
+          >
             Cancelar
           </button>
 
-          <button type="submit" className="btn btn-primary justify-center">
-            {editing ? 'Salvar alterações' : 'Salvar cliente'}
+          <button type="submit" className="btn btn-primary justify-center" disabled={savingClient}>
+            {savingClient ? 'Salvando...' : editingClient ? 'Salvar alterações' : 'Salvar cliente'}
           </button>
         </div>
       </form>
