@@ -30,6 +30,62 @@ type ChatGptEntry = {
 
 const STORAGE_KEY = 'rkm:private-dev-hours';
 const BRANCH_STORAGE_KEY = 'rkm:private-dev-branches';
+const METRICS_STORAGE_KEY = 'rkm:private-dev-metrics:v1';
+
+type MetricsSnapshot = {
+  wakatime: Record<string, WakatimeEntry>;
+  chatGpt: Record<string, ChatGptEntry>;
+};
+
+function readMetricsSnapshot(): MetricsSnapshot {
+  try {
+    const value = JSON.parse(localStorage.getItem(METRICS_STORAGE_KEY) || '{}');
+
+    const wakatime =
+      value?.wakatime && typeof value.wakatime === 'object' && !Array.isArray(value.wakatime)
+        ? value.wakatime
+        : {};
+
+    const chatGpt =
+      value?.chatGpt && typeof value.chatGpt === 'object' && !Array.isArray(value.chatGpt)
+        ? value.chatGpt
+        : {};
+
+    return { wakatime, chatGpt };
+  } catch {
+    return { wakatime: {}, chatGpt: {} };
+  }
+}
+
+function writeMetricsSnapshot(
+  featureId: string,
+  wakatimeEntry?: WakatimeEntry,
+  chatGptEntry?: ChatGptEntry,
+) {
+  try {
+    const snapshot = readMetricsSnapshot();
+
+    if (wakatimeEntry) {
+      snapshot.wakatime[featureId] = {
+        ...wakatimeEntry,
+        loading: false,
+        error: '',
+      };
+    }
+
+    if (chatGptEntry) {
+      snapshot.chatGpt[featureId] = {
+        ...chatGptEntry,
+        loading: false,
+        error: '',
+      };
+    }
+
+    localStorage.setItem(METRICS_STORAGE_KEY, JSON.stringify(snapshot));
+  } catch {
+    // Métricas DEV continuam funcionando mesmo sem storage.
+  }
+}
 
 function readHours() {
   try {
@@ -89,8 +145,12 @@ export default function RoadmapMetricsDev({
   const [branches, setBranches] = useState<BranchMap>(readBranches);
   const [branchDraft, setBranchDraft] = useState('');
   const [editing, setEditing] = useState(false);
-  const [wakatimeHours, setWakatimeHours] = useState<Record<string, WakatimeEntry>>({});
-  const [chatGptActivity, setChatGptActivity] = useState<Record<string, ChatGptEntry>>({});
+  const [wakatimeHours, setWakatimeHours] = useState<Record<string, WakatimeEntry>>(
+    () => readMetricsSnapshot().wakatime,
+  );
+  const [chatGptActivity, setChatGptActivity] = useState<Record<string, ChatGptEntry>>(
+    () => readMetricsSnapshot().chatGpt,
+  );
   const [nextWakatimeSyncAt, setNextWakatimeSyncAt] = useState<number | null>(null);
   const [manualRefreshKey, setManualRefreshKey] = useState(0);
   const handledManualRefresh = useRef(0);
@@ -115,28 +175,50 @@ export default function RoadmapMetricsDev({
   }, [completed]);
 
   useEffect(() => {
-    if (!featureId) return;
+    if (!featureId || completed) {
+      setNextWakatimeSyncAt(null);
+      return;
+    }
 
     let cancelled = false;
     let timer: number | undefined;
     let chatGptTimer: number | undefined;
+    const requestAbortController = new AbortController();
     const forceRefresh = manualRefreshKey !== handledManualRefresh.current;
     handledManualRefresh.current = manualRefreshKey;
 
     async function refreshChatGpt(force = false) {
+      if (cancelled || requestAbortController.signal.aborted) {
+        return;
+      }
+
       setChatGptActivity((previous) => ({
         ...previous,
         [featureId]: { ...previous[featureId], loading: true, error: '' },
       }));
 
       try {
-        const result = await getChatGptActivity(activeBranch, force);
+        const result = await getChatGptActivity(
+          activeBranch,
+          force,
+          undefined,
+          undefined,
+          requestAbortController.signal,
+        );
         if (cancelled) return;
+
+        const nextChatGptEntry: ChatGptEntry = {
+          loading: false,
+          totalSeconds: result.totalSeconds,
+        };
 
         setChatGptActivity((previous) => ({
           ...previous,
-          [featureId]: { loading: false, totalSeconds: result.totalSeconds },
+          [featureId]: nextChatGptEntry,
         }));
+
+        writeMetricsSnapshot(featureId, undefined, nextChatGptEntry);
+
         const delay = Math.max(1000, result.nextRefreshAt - Date.now() + 250);
         chatGptTimer = window.setTimeout(refreshChatGpt, delay);
       } catch (error) {
@@ -154,6 +236,10 @@ export default function RoadmapMetricsDev({
     }
 
     async function refresh(force = false) {
+      if (cancelled || requestAbortController.signal.aborted) {
+        return;
+      }
+
       setWakatimeHours((previous) => ({
         ...previous,
         [featureId]: {
@@ -166,7 +252,9 @@ export default function RoadmapMetricsDev({
       try {
         const query = new URLSearchParams({ branch: activeBranch });
         if (force) query.set('refresh', '1');
-        const response = await fetch(`/__dev/wakatime?${query}`);
+        const response = await fetch(`/__dev/wakatime?${query}`, {
+          signal: requestAbortController.signal,
+        });
 
         const result = await response.json();
 
@@ -187,16 +275,20 @@ export default function RoadmapMetricsDev({
 
         if (cancelled) return;
 
+        const nextWakatimeEntry: WakatimeEntry = {
+          loading: false,
+          error: '',
+          minutes: Math.round(seconds / 60),
+          totalSeconds: seconds,
+          editors: Array.isArray(result.editors) ? result.editors : [],
+        };
+
         setWakatimeHours((previous) => ({
           ...previous,
-          [featureId]: {
-            loading: false,
-            error: '',
-            minutes: Math.round(seconds / 60),
-            totalSeconds: seconds,
-            editors: Array.isArray(result.editors) ? result.editors : [],
-          },
+          [featureId]: nextWakatimeEntry,
         }));
+
+        writeMetricsSnapshot(featureId, nextWakatimeEntry);
 
         setNextWakatimeSyncAt(nextAt);
 
@@ -226,10 +318,11 @@ export default function RoadmapMetricsDev({
 
     return () => {
       cancelled = true;
+      requestAbortController.abort();
       window.clearTimeout(timer);
       window.clearTimeout(chatGptTimer);
     };
-  }, [featureId, activeBranch, manualRefreshKey]);
+  }, [featureId, activeBranch, completed, manualRefreshKey]);
 
   const recordHours = (id: string, field: 'estimated', value: string) => {
     // RKM_LOCK_COMPLETED_HOURS_V1
@@ -267,7 +360,9 @@ export default function RoadmapMetricsDev({
           <button
             type="button"
             onClick={() => setManualRefreshKey((key) => key + 1)}
-            disabled={Boolean(wakatimeHours[featureId]?.loading || chatGptEntry?.loading)}
+            disabled={Boolean(
+              completed || wakatimeHours[featureId]?.loading || chatGptEntry?.loading,
+            )}
             title="Atualizar tempos agora"
             aria-label="Atualizar tempos agora"
             className="rounded-md border border-amber-400/30 p-1.5 text-amber-200 hover:bg-amber-400/10 disabled:cursor-wait disabled:opacity-60"
@@ -363,7 +458,7 @@ export default function RoadmapMetricsDev({
                   >
                     <span className="text-slate-300">{row.name}</span>
                     {' — '}
-                    {row.chatGpt && chatGptEntry?.loading
+                    {!completed && row.chatGpt && chatGptEntry?.loading
                       ? 'consultando...'
                       : row.seconds != null
                         ? formatActivityDuration(row.seconds)
@@ -379,15 +474,21 @@ export default function RoadmapMetricsDev({
           <p
             role="status"
             className={`text-xs ${
-              wakatimeHours[featureId]?.error ? 'text-rose-300' : 'text-slate-400'
+              completed
+                ? 'text-emerald-300'
+                : wakatimeHours[featureId]?.error
+                  ? 'text-rose-300'
+                  : 'text-slate-400'
             }`}
           >
-            {wakatimeHours[featureId]?.error ||
-              (wakatimeHours[featureId]?.loading ? (
-                'Sincronizando com WakaTime...'
-              ) : (
-                <WakatimeCountdown nextAt={nextWakatimeSyncAt} />
-              ))}
+            {completed
+              ? 'Congelado — feature concluída.'
+              : wakatimeHours[featureId]?.error ||
+                (wakatimeHours[featureId]?.loading ? (
+                  'Sincronizando com WakaTime...'
+                ) : (
+                  <WakatimeCountdown nextAt={nextWakatimeSyncAt} />
+                ))}
           </p>
         </div>
 

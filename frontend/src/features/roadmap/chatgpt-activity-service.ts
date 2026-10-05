@@ -47,9 +47,12 @@ function readChatGptCache(key: string): CachedChatGptActivity | null {
   }
 }
 
-async function awGet<T>(path: string): Promise<T> {
+async function awGet<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const timeoutSignal = AbortSignal.timeout(15000);
+  const requestSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+
   const response = await fetch(`${AW_API_BASE}${path}`, {
-    signal: AbortSignal.timeout(15000),
+    signal: requestSignal,
   });
 
   if (!response.ok) {
@@ -94,6 +97,7 @@ export async function getChatGptActivity(
   forceRefresh = false,
   start: Date = new Date(2026, 8, 1),
   end: Date = new Date(),
+  signal?: AbortSignal,
 ): Promise<ChatGptActivity> {
   const startMs = start.getTime();
   const endMs = end.getTime();
@@ -117,7 +121,12 @@ export async function getChatGptActivity(
     }
   }
 
-  const buckets = await awGet<Record<string, AwBucket>>('/buckets/');
+  signal?.throwIfAborted();
+
+  const buckets = await awGet<Record<string, AwBucket>>('/buckets/', signal);
+
+  signal?.throwIfAborted();
+
   const bucketIds = Object.entries(buckets)
     .filter(([bucketId, bucket]) => isBrowserBucket(bucketId, bucket))
     .map(([bucketId]) => bucketId);
@@ -128,9 +137,11 @@ export async function getChatGptActivity(
   });
   const eventResults = await Promise.allSettled(
     bucketIds.map((bucketId) =>
-      awGet<AwEvent[]>(`/buckets/${encodeURIComponent(bucketId)}/events?${period}`),
+      awGet<AwEvent[]>(`/buckets/${encodeURIComponent(bucketId)}/events?${period}`, signal),
     ),
   );
+  signal?.throwIfAborted();
+
   const eventLists = eventResults.flatMap((result) =>
     result.status === 'fulfilled' ? [result.value] : [],
   );
