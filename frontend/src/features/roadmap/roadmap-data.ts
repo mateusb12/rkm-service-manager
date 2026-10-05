@@ -380,76 +380,40 @@ export const ROADMAP: RoadmapVersion[] = [
   },
   {
     id: 'V4',
-    title: 'Gestão e automações',
-    objective: 'Acompanhar atrasos, capacidade, indicadores e avisos da operação.',
+    title: 'Avisos',
+    objective: 'Destacar situações que precisam de atenção.',
     status: 'planned',
     checkpoint: 'versions/v4',
     areas: [
       {
         id: 'pcp',
         title: 'PCP',
+        objective: 'Avisar sobre atrasos e pendências das OS.',
         owner: 'PCP',
-        objective: 'Receber avisos sobre situações que precisam de atenção.',
         features: [
           {
-            id: 'automacao-avisos-internos',
-            title: 'Avisos internos',
+            id: 'pcp-avisos',
+            title: 'Atrasos e pendências',
             branch: 'features/pcp/avisos',
             status: 'planned',
-            acceptance: 'O sistema destaca situações da operação que precisam de atenção.',
-          },
-        ],
-      },
-      {
-        id: 'gestao',
-        title: 'Gestão',
-        owner: 'Admin',
-        objective: 'Acompanhar capacidade, atrasos, gargalos e indicadores.',
-        features: [
-          {
-            id: 'gestao-capacidade',
-            title: 'Capacidade por setor',
-            branch: 'features/gestao/capacidade',
-            status: 'planned',
             acceptance:
-              'Visualizar a carga de trabalho e a distribuição das OS entre setores e responsáveis.',
-          },
-          {
-            id: 'gestao-atrasos',
-            title: 'Atrasos e gargalos',
-            branch: 'features/gestao/atrasos',
-            status: 'planned',
-            acceptance:
-              'Identificar ordens atrasadas, itens parados e pontos recorrentes de gargalo.',
-          },
-          {
-            id: 'gestao-indicadores',
-            title: 'Indicadores',
-            branch: 'features/gestao/indicadores',
-            status: 'planned',
-            acceptance: 'Acompanhar tempos, volumes e outros indicadores importantes da operação.',
-          },
-          {
-            id: 'gestao-historico',
-            title: 'Histórico',
-            branch: 'features/gestao/historico',
-            status: 'planned',
-            acceptance: 'Consultar a evolução das OS e usar o histórico como apoio à gestão.',
+              'O PCP consegue identificar OS atrasadas, paradas ou com pendências que precisam de atenção.',
           },
         ],
       },
       {
         id: 'admin',
         title: 'Administração',
+        objective: 'Avisar sobre treinamentos próximos do vencimento.',
         owner: 'Admin',
-        objective: 'Acompanhar treinamentos próximos do vencimento.',
         features: [
           {
-            id: 'rh-treinamentos',
+            id: 'admin-treinamentos',
             title: 'Treinamentos próximos do vencimento',
             branch: 'features/admin/treinamentos',
             status: 'planned',
-            acceptance: 'Exibir avisos de treinamentos de funcionários próximos do vencimento.',
+            acceptance:
+              'Exibir avisos quando treinamentos de funcionários estiverem próximos do vencimento, conforme as regras definidas com a RKM.',
           },
         ],
       },

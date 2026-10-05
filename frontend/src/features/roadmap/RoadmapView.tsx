@@ -33,7 +33,7 @@ const COLORS = {
     dot: 'bg-violet-400 text-violet-950',
     border: 'border-violet-400',
     glow: 'shadow-[0_0_15px_3px_rgba(167,139,250,.35)]',
-    name: 'Gestão',
+    name: 'Avisos',
   },
 };
 
@@ -294,57 +294,30 @@ const ROADMAP = [
   },
   {
     id: 'V4',
-    title: 'Gestão e automações',
-    description: 'Acompanhar atrasos, capacidade, indicadores e avisos da operação.',
+    title: 'Avisos',
+    description: 'Destacar situações que precisam de atenção.',
     areas: [
       {
         id: 'pcp',
         title: 'PCP',
-        objective: 'Receber avisos sobre situações que precisam de atenção.',
+        objective: 'Avisar sobre atrasos e pendências das OS.',
         features: [
           feature(
             'pcp/avisos',
-            'Avisos internos',
-            'O sistema destaca situações da operação que precisam de atenção.',
-          ),
-        ],
-      },
-      {
-        id: 'gestao',
-        title: 'Gestão',
-        objective: 'Acompanhar capacidade, atrasos, gargalos e indicadores.',
-        features: [
-          feature(
-            'gestao/capacidade',
-            'Capacidade por setor',
-            'Visualizar a carga de trabalho e a distribuição das OS entre setores e responsáveis.',
-          ),
-          feature(
-            'gestao/atrasos',
-            'Atrasos e gargalos',
-            'Identificar ordens atrasadas, itens parados e pontos recorrentes de gargalo.',
-          ),
-          feature(
-            'gestao/indicadores',
-            'Indicadores',
-            'Acompanhar tempos, volumes e outros indicadores importantes da operação.',
-          ),
-          feature(
-            'gestao/historico',
-            'Histórico',
-            'Consultar a evolução das OS e usar o histórico como apoio à gestão.',
+            'Atrasos e pendências',
+            'O PCP consegue identificar OS atrasadas, paradas ou com pendências que precisam de atenção.',
           ),
         ],
       },
       {
         id: 'admin',
         title: 'Administração',
-        objective: 'Acompanhar treinamentos próximos do vencimento.',
+        objective: 'Avisar sobre treinamentos próximos do vencimento.',
         features: [
           feature(
             'admin/treinamentos',
             'Treinamentos próximos do vencimento',
-            'Exibir avisos de treinamentos de funcionários próximos do vencimento.',
+            'Exibir avisos quando treinamentos de funcionários estiverem próximos do vencimento, conforme as regras definidas com a RKM.',
           ),
         ],
       },
@@ -462,7 +435,7 @@ export function RoadmapView() {
           {version.areas.map((area) => (
             <section
               key={area.id}
-              className="overflow-hidden rounded-xl border border-rkmborder bg-rkmcard2/30"
+              className="overflow-hidden rounded-xl border border-rkmborder bg-[#35291f]/50"
             >
               <button
                 type="button"
