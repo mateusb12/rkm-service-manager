@@ -435,7 +435,7 @@ export function RoadmapView() {
           {version.areas.map((area) => (
             <section
               key={area.id}
-              className="overflow-hidden rounded-xl border border-rkmborder bg-[#35291f]/50"
+              className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
             >
               <button
                 type="button"
