@@ -36,7 +36,7 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'pcp/abertura-os',
             'Entrada e abertura da OS',
-            'O PCP consegue abrir uma OS com o cliente selecionado e os dados disponíveis na chegada.\nO sistema gera automaticamente um número único para a OS.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.',
+            'O PCP consegue abrir uma OS com o cliente selecionado e registrar o equipamento ou material recebido com os dados disponíveis na chegada.\nO sistema gera automaticamente um número único para a OS.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.',
           ),
           feature(
             'pcp/fila',
@@ -255,7 +255,7 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'pcp/indicadores',
             'Gargalos e indicadores',
-            'A gestão consegue visualizar tempos das etapas, pontos de acúmulo e outros indicadores definidos a partir do uso real do sistema.',
+            'A gestão consegue comparar o prazo previsto com o tempo efetivamente decorrido.\nConsegue visualizar há quanto tempo a OS está na etapa atual.\nO sistema ajuda a identificar pontos de acúmulo e gargalos da operação.',
           ),
         ],
       },
