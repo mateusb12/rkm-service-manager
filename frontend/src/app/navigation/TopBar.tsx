@@ -3,8 +3,14 @@
 import React from 'react';
 
 import { SIDEBAR_ITEMS } from './config';
+import {
+  LOCAL_DEVELOPMENT_AVAILABLE,
+  toggleLocalDevelopment,
+  useLocalDevelopment,
+} from '../../shared/dev/local-development';
 
 export const CleanTopBar = ({ view, darkMode, onToggleDarkMode, onHide }) => {
+  const localDevelopmentEnabled = useLocalDevelopment();
   const labels = {
     dashboard: 'Painel',
     mybench: 'Minha Bancada',
@@ -29,6 +35,47 @@ export const CleanTopBar = ({ view, darkMode, onToggleDarkMode, onHide }) => {
         'div',
         { className: 'text-base font-semibold text-slate-100 truncate' },
         SIDEBAR_ITEMS.find((item) => item.key === view)?.label || labels[view] || 'Operações',
+      ),
+    ),
+    React.createElement(
+      'button',
+      {
+        ...(LOCAL_DEVELOPMENT_AVAILABLE
+          ? {
+              onClick: toggleLocalDevelopment,
+              className: `btn btn-ghost ${localDevelopmentEnabled ? 'text-emerald-300' : 'text-slate-500'}`,
+              title: localDevelopmentEnabled
+                ? 'Ocultar recursos de desenvolvimento'
+                : 'Mostrar recursos de desenvolvimento',
+              'aria-label': localDevelopmentEnabled
+                ? 'Ocultar recursos de desenvolvimento'
+                : 'Mostrar recursos de desenvolvimento',
+            }
+          : { style: { display: 'none' } }),
+      },
+      React.createElement(
+        'svg',
+        {
+          width: '28',
+          height: '18',
+          viewBox: '0 0 28 18',
+          fill: 'none',
+          'aria-hidden': 'true',
+        },
+        React.createElement('rect', {
+          x: '1',
+          y: '2',
+          width: '26',
+          height: '14',
+          rx: '7',
+          fill: localDevelopmentEnabled ? '#10b981' : '#475569',
+        }),
+        React.createElement('circle', {
+          cx: localDevelopmentEnabled ? '20' : '8',
+          cy: '9',
+          r: '5',
+          fill: '#f8fafc',
+        }),
       ),
     ),
     React.createElement(

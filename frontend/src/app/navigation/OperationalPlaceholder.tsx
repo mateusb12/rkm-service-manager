@@ -4,10 +4,12 @@ import React from 'react';
 
 import { SIDEBAR_STATUS_LABEL } from './config';
 
-import { SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
+import { useLocalDevelopment } from '../../shared/dev/local-development';
 
-export const OperationalPlaceholder = ({ item }) =>
-  React.createElement(
+export const OperationalPlaceholder = ({ item }) => {
+  const showDevGuides = useLocalDevelopment();
+
+  return React.createElement(
     'div',
     { className: 'p-4 md:p-6' },
     React.createElement(
@@ -36,7 +38,7 @@ export const OperationalPlaceholder = ({ item }) =>
             item.description || '',
           ),
         ),
-        SHOW_DEV_GUIDES &&
+        showDevGuides &&
           React.createElement(
             'span',
             { className: `sidebar-progress sidebar-progress-${item.status}` },
@@ -44,7 +46,7 @@ export const OperationalPlaceholder = ({ item }) =>
           ),
       ),
 
-      SHOW_DEV_GUIDES &&
+      showDevGuides &&
         item.source &&
         React.createElement(
           'div',
@@ -70,3 +72,4 @@ export const OperationalPlaceholder = ({ item }) =>
       ),
     ),
   );
+};

@@ -8,6 +8,7 @@ import {
   unlockFeatureMetric,
   type FeatureMetricDraft,
 } from './dev-feature-metrics-service';
+import { useLocalDevelopment } from '../../shared/dev/local-development';
 const RoadmapMetricsDev = React.lazy(() => import('./RoadmapMetricsDev'));
 const RoadmapWorklogDev = React.lazy(() => import('./RoadmapWorklogDev'));
 
@@ -337,13 +338,8 @@ const ROADMAP = [
   },
 ];
 
-// Métricas exclusivamente para desenvolvimento em localhost.
-const LOCAL =
-  import.meta.env.DEV &&
-  typeof window !== 'undefined' &&
-  ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
-
 export function RoadmapView() {
+  const localDevelopmentEnabled = useLocalDevelopment();
   const [versionId, setVersionId] = useState('V0');
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('pcp/clientes');
@@ -356,7 +352,7 @@ export function RoadmapView() {
   >({});
 
   React.useEffect(() => {
-    if (!LOCAL) {
+    if (!localDevelopmentEnabled) {
       setTaskStatusLoaded(true);
       return;
     }
@@ -389,7 +385,7 @@ export function RoadmapView() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [localDevelopmentEnabled]);
 
   const version = ROADMAP.find((v) => v.id === versionId) || ROADMAP[0];
 
@@ -417,7 +413,7 @@ export function RoadmapView() {
   );
 
   const toggleTaskDone = async (item: { id: string; branch: string }) => {
-    if (!LOCAL || !taskStatusLoaded || taskStatusPending[item.id]) {
+    if (!localDevelopmentEnabled || !taskStatusLoaded || taskStatusPending[item.id]) {
       return;
     }
 
@@ -514,7 +510,7 @@ export function RoadmapView() {
           <span className="text-xs font-bold text-blue-300">{version.id}</span>
           <h2 className="mt-2 text-xl font-semibold text-slate-100">{version.title}</h2>
           <p className="mt-1 text-sm text-slate-400">{version.description}</p>
-          {LOCAL && (
+          {localDevelopmentEnabled && (
             <code className="mt-2 block text-xs text-blue-300">
               versions/{version.id.toLowerCase()}
             </code>
@@ -545,7 +541,7 @@ export function RoadmapView() {
                     <article
                       key={item.id}
                       className={`rounded-lg border transition ${
-                        LOCAL && completedFeatures[item.id]
+                        localDevelopmentEnabled && completedFeatures[item.id]
                           ? 'border-emerald-400/20 bg-emerald-400/[0.025]'
                           : 'border-rkmborder bg-rkmbg/50'
                       }`}
@@ -562,20 +558,22 @@ export function RoadmapView() {
                         </span>
                         <span
                           className={`tag ${
-                            LOCAL && completedFeatures[item.id]
+                            localDevelopmentEnabled && completedFeatures[item.id]
                               ? 'tag-emerald'
                               : item.state === 'Depois do MVP'
                                 ? 'tag-amber'
                                 : 'tag-slate'
                           }`}
                         >
-                          {LOCAL && completedFeatures[item.id] ? 'Concluída' : item.state}
+                          {localDevelopmentEnabled && completedFeatures[item.id]
+                            ? 'Concluída'
+                            : item.state}
                         </span>
                       </button>
 
                       {featureId === item.id && (
                         <div className="space-y-3 border-t border-rkmborder p-3">
-                          {LOCAL && (
+                          {localDevelopmentEnabled && (
                             <code className="block text-xs text-blue-300">{item.branch}</code>
                           )}
 
@@ -632,13 +630,13 @@ export function RoadmapView() {
                             </div>
                           </div>
 
-                          {LOCAL && (
+                          {localDevelopmentEnabled && (
                             <React.Suspense fallback={null}>
                               <RoadmapWorklogDev featureId={item.id} />
                             </React.Suspense>
                           )}
 
-                          {LOCAL && (
+                          {localDevelopmentEnabled && (
                             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rkmborder bg-rkmcard2/30 p-3">
                               <span className="text-xs font-medium text-slate-400">
                                 STATUS DE DESENVOLVIMENTO
@@ -665,11 +663,11 @@ export function RoadmapView() {
                             </div>
                           )}
 
-                          {LOCAL && taskStatusError && (
+                          {localDevelopmentEnabled && taskStatusError && (
                             <p className="text-xs text-rose-300">{taskStatusError}</p>
                           )}
 
-                          {LOCAL && taskStatusLoaded && (
+                          {localDevelopmentEnabled && taskStatusLoaded && (
                             <React.Suspense fallback={null}>
                               <RoadmapMetricsDev
                                 featureId={item.id}

@@ -6,9 +6,10 @@ import { SIDEBAR_ITEMS, SIDEBAR_STATUS_LABEL } from './config';
 
 import { ROLES, mockUsers } from '../../features/auth';
 
-import { SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
+import { useLocalDevelopment } from '../../shared/dev/local-development';
 
 export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }) => {
+  const showDevGuides = useLocalDevelopment();
   const [collapsed, setCollapsed] = useState(false);
 
   const [openGroups, setOpenGroups] = useState({
@@ -141,7 +142,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
                     key: it.key,
                     onClick: () => setView(it.key),
                     className: 'sidebar-item ' + (view === it.key ? 'sidebar-item-active' : ''),
-                    title: SHOW_DEV_GUIDES
+                    title: showDevGuides
                       ? `${it.label} — ${SIDEBAR_STATUS_LABEL[it.status]}`
                       : it.label,
                   },
@@ -171,7 +172,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
                     it.label,
                   ),
 
-                  SHOW_DEV_GUIDES &&
+                  showDevGuides &&
                     React.createElement(
                       'span',
                       {

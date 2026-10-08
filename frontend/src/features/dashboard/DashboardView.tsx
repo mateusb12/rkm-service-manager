@@ -3,7 +3,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { loadServiceEntries } from '../service-entry/repository';
 import { mapServiceEntryToDashboardService } from './model';
 import { PriorityTag, StatusTag } from '../../shared/ui/tags';
-import { LizyReferenceCard, SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
+import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
+import { useLocalDevelopment } from '../../shared/dev/local-development';
 
 const KPICard = ({ label, value, hint, accent, icon }) => (
   <div className="rkm-card kpi-card">
@@ -17,6 +18,7 @@ const KPICard = ({ label, value, hint, accent, icon }) => (
 );
 
 export const DashboardView = ({ onOpenServiceEntry }) => {
+  const showDevGuides = useLocalDevelopment();
   const [entries, setEntries] = useState(() => loadServiceEntries());
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      {SHOW_DEV_GUIDES && (
+      {showDevGuides && (
         <LizyReferenceCard
           source="Serviços → Desmontagem"
           detail="Referência para visão geral das OS, status, técnico responsável e andamento operacional."

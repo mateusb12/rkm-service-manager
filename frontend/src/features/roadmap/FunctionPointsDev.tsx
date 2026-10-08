@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'rkm:private-dev-function-points';
+import { isLocalDevelopmentEnabled, useLocalDevelopment } from '../../shared/dev/local-development';
 
-const LOCAL =
-  import.meta.env.DEV &&
-  typeof window !== 'undefined' &&
-  ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+const STORAGE_KEY = 'rkm:private-dev-function-points';
 
 type PointsMap = Record<string, number | null>;
 
 function readPoints(): PointsMap {
-  if (!LOCAL) return {};
+  if (!isLocalDevelopmentEnabled()) return {};
 
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -32,6 +29,7 @@ export function FunctionPointsDev({
   featureId: string;
   editable?: boolean;
 }) {
+  const localDevelopmentEnabled = useLocalDevelopment();
   const [points, setPoints] = useState<number | null>(() => {
     const stored = readPoints();
 
@@ -44,7 +42,7 @@ export function FunctionPointsDev({
   });
 
   useEffect(() => {
-    if (!LOCAL || !isClientes(featureId)) return;
+    if (!localDevelopmentEnabled || !isClientes(featureId)) return;
 
     const stored = readPoints();
 
@@ -55,9 +53,9 @@ export function FunctionPointsDev({
         console.error('Falha ao inicializar PF:', error);
       }
     }
-  }, [featureId]);
+  }, [featureId, localDevelopmentEnabled]);
 
-  if (!LOCAL) return null;
+  if (!localDevelopmentEnabled) return null;
 
   const sliderMax = Math.max(100, Math.ceil((points ?? 0) / 50) * 50);
   const progress = ((points ?? 0) / sliderMax) * 100;

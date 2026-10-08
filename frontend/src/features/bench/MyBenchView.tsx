@@ -3,7 +3,8 @@ import React from 'react';
 
 import { MyAuthRequestsList, mockUsers, userById } from '../auth';
 
-import { LizyReferenceCard, SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
+import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
+import { useLocalDevelopment } from '../../shared/dev/local-development';
 
 import { PriorityTag, StatusTag } from '../../shared/ui/tags';
 
@@ -236,6 +237,7 @@ export const MyBenchView = ({
   onOpenEvidence,
   onOpenSummary,
 }) => {
+  const showDevGuides = useLocalDevelopment();
   const user = userById(activeUser) || mockUsers[0];
 
   const mine = services.filter(
@@ -247,7 +249,7 @@ export const MyBenchView = ({
     { className: 'p-4 md:p-6 space-y-5' },
 
     typeof LizyReferenceCard !== 'undefined' &&
-      SHOW_DEV_GUIDES &&
+      showDevGuides &&
       React.createElement(LizyReferenceCard, {
         source: 'Serviços → Desmontagem',
         detail:

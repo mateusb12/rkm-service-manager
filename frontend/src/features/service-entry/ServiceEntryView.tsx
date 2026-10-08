@@ -12,7 +12,8 @@ import { loadServiceEntries, saveServiceEntries } from './repository';
 
 import { Field, TextArea, TextInput, Toggle } from '../../shared/ui/form-controls';
 
-import { LizyReferenceCard, SHOW_DEV_GUIDES } from '../../shared/dev/lizy-reference';
+import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
+import { useLocalDevelopment } from '../../shared/dev/local-development';
 
 import { ClientSelector } from '../pcp/clients';
 
@@ -239,6 +240,7 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
 };
 
 export const ServiceEntryView = () => {
+  const showDevGuides = useLocalDevelopment();
   const [form, setForm] = useState(() => createEmptyServiceEntry());
   const [entries, setEntries] = useState(() => loadServiceEntries());
   const [step, setStep] = useState(0);
@@ -517,7 +519,7 @@ export const ServiceEntryView = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-5 service-entry-page">
-      {SHOW_DEV_GUIDES && (
+      {showDevGuides && (
         <LizyReferenceCard
           source="Serviços → Desmontagem → Criar Ordem"
           detail="Fluxo operacional da chegada à expedição; fotos e registros ficam salvos localmente neste navegador."
@@ -537,7 +539,7 @@ export const ServiceEntryView = () => {
         </div>
 
         <div className="service-entry-hero-controls">
-          {SHOW_DEV_GUIDES && (
+          {showDevGuides && (
             <button
               type="button"
               className="btn btn-ghost service-entry-demo-fill"

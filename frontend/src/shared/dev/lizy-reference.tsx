@@ -1,7 +1,5 @@
 import React from 'react';
 
-export const SHOW_DEV_GUIDES = import.meta.env.DEV;
-
 export const LizyReferenceCard = ({ source, detail }) =>
   React.createElement(
     'div',
