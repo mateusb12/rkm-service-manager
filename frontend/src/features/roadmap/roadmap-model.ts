@@ -20,3 +20,15 @@ export type RoadmapVersion = {
   description: string;
   areas: RoadmapArea[];
 };
+
+export type RoadmapAreaProjection = {
+  id: string;
+  title: string;
+  versions: {
+    id: string;
+    title: string;
+    description: string;
+    objective: string;
+    features: RoadmapFeature[];
+  }[];
+};

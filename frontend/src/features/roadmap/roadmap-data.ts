@@ -1,4 +1,4 @@
-import type { RoadmapFeature, RoadmapVersion } from './roadmap-model';
+import type { RoadmapAreaProjection, RoadmapFeature, RoadmapVersion } from './roadmap-model';
 
 const feature = (
   id: string,
@@ -293,3 +293,29 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
   },
 ];
+
+export function getAreaProjections(roadmap: RoadmapVersion[]): RoadmapAreaProjection[] {
+  const projections = new Map<string, RoadmapAreaProjection>();
+
+  roadmap.forEach((version) => {
+    version.areas.forEach((area) => {
+      const projection = projections.get(area.id) ?? {
+        id: area.id,
+        title: area.title,
+        versions: [],
+      };
+
+      projection.versions.push({
+        id: version.id,
+        title: version.title,
+        description: version.description,
+        objective: area.objective,
+        features: area.features,
+      });
+
+      projections.set(area.id, projection);
+    });
+  });
+
+  return Array.from(projections.values());
+}
