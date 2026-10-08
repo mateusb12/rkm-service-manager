@@ -23,7 +23,7 @@ const COLORS = {
     dot: 'bg-blue-400 text-blue-950',
     border: 'border-blue-400',
     glow: 'shadow-[0_0_15px_3px_rgba(96,165,250,.35)]',
-    name: 'Peritagem',
+    name: 'Detalhamento',
   },
   V2: {
     dot: 'bg-amber-300 text-amber-950',
@@ -35,13 +35,13 @@ const COLORS = {
     dot: 'bg-slate-500 text-white',
     border: 'border-slate-400',
     glow: 'shadow-[0_0_15px_3px_rgba(148,163,184,.3)]',
-    name: 'Relatórios',
+    name: 'Rastreabilidade',
   },
   V4: {
     dot: 'bg-violet-400 text-violet-950',
     border: 'border-violet-400',
     glow: 'shadow-[0_0_15px_3px_rgba(167,139,250,.35)]',
-    name: 'Avisos',
+    name: 'Gestão',
   },
 };
 

@@ -19,12 +19,12 @@ export const ROADMAP: RoadmapVersion[] = [
   {
     id: 'V0',
     title: 'Sistema básico',
-    description: 'Abrir, acompanhar e finalizar uma OS do começo ao fim.',
+    description: 'Receber, acompanhar e finalizar uma OS do começo ao fim.',
     areas: [
       {
         id: 'pcp',
         title: 'PCP',
-        objective: 'Receber a peça, abrir a OS com o básico e acompanhar seu andamento.',
+        objective: 'Receber a peça, abrir a OS e acompanhar sua situação atual.',
         features: [
           feature(
             'pcp/clientes',
@@ -35,246 +35,227 @@ export const ROADMAP: RoadmapVersion[] = [
           ),
           feature(
             'pcp/abertura-os',
-            'Abertura mínima da OS',
-            'O PCP consegue abrir uma OS com o cliente selecionado e somente os dados disponíveis na chegada.\nA ausência de nota fiscal ou fotografia não bloqueia a abertura.',
-          ),
-          feature(
-            'pcp/numeracao-os',
-            'Numeração automática da OS',
-            'Ao abrir uma OS, o sistema gera automaticamente um número único.\nO número permite localizar a ordem posteriormente.',
-          ),
-          feature(
-            'pcp/nota-fiscal',
-            'Nota fiscal ou N/A',
-            'O PCP pode registrar a nota fiscal, indicar N/A ou complementar a informação posteriormente.\nO documento permanece associado à OS.',
-          ),
-          feature(
-            'pcp/fotografias',
-            'Fotografias básicas',
-            'É possível adicionar fotografias à OS no recebimento ou posteriormente.\nAs imagens ficam disponíveis para compor o relatório final.',
+            'Entrada e abertura da OS',
+            'O PCP consegue abrir uma OS com o cliente selecionado e os dados disponíveis na chegada.\nO sistema gera automaticamente um número único para a OS.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.',
           ),
           feature(
             'pcp/fila',
-            'Acompanhamento mínimo',
-            'O PCP consegue consultar as OS abertas e identificar a etapa ou situação atual de cada uma.',
+            'Acompanhamento das OS',
+            'O PCP consegue consultar e localizar as OS em andamento.\nConsegue identificar a situação atual, com quem a OS está, se o serviço já começou e qual é a previsão informada.',
           ),
         ],
       },
       {
         id: 'oficina',
         title: 'Oficina',
-        objective: 'Identificar o equipamento, registrar o diagnóstico e concluir o serviço.',
+        objective: 'Organizar onde o serviço acontece e registrar seu andamento básico.',
         features: [
           feature(
-            'oficina/identificacao-minima',
-            'Identificação mínima',
-            'A oficina registra o tipo do equipamento, a bancada e o responsável com o mínimo necessário para seguir o fluxo.',
+            'oficina/bancadas',
+            'Cadastro de bancadas',
+            'É possível cadastrar, editar e consultar as bancadas da oficina.\nFuncionários podem ser vinculados às bancadas.\nÉ possível identificar bancadas livres ou ocupadas e a OS atendida quando houver.',
           ),
           feature(
             'oficina/diagnostico-minimo',
-            'Diagnóstico simples',
-            'O mecânico registra o diagnóstico inicial em texto livre.\nA OS pode ser encaminhada para orçamento sem exigir checklist técnico detalhado.',
+            'Peritagem básica',
+            'A oficina identifica o equipamento e registra um diagnóstico inicial em texto livre.\nA OS consegue seguir para orçamento sem exigir uma peritagem técnica detalhada.',
           ),
           feature(
             'oficina/execucao-minima',
-            'Andamento e conclusão',
-            'A oficina consegue registrar que o serviço está em execução e informar sua conclusão sem depender de checklist detalhado.',
+            'Andamento do serviço',
+            'A oficina consegue indicar que o serviço ainda não começou, está em execução ou foi concluído.\nÉ possível registrar o que está sendo feito, o responsável atual e o próximo passo necessário.',
           ),
         ],
       },
       {
         id: 'comercial',
         title: 'Comercial',
-        objective: 'Montar o orçamento e registrar a decisão sobre o serviço.',
+        objective: 'Definir preços e registrar o orçamento necessário para o serviço continuar.',
         features: [
           feature(
+            'comercial/tabela-precos',
+            'Tabela de preços',
+            'O comercial consegue cadastrar e consultar itens e serviços utilizados na formação do orçamento, com seus respectivos valores.',
+          ),
+          feature(
             'comercial/orcamento-minimo',
-            'Orçamento operacional',
-            'O comercial registra a descrição do serviço, valores necessários e total do orçamento.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+            'Orçamento',
+            'O comercial monta o orçamento da OS utilizando os serviços e valores aplicáveis.\nO orçamento registra a descrição do que será feito, os valores e o total.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
           ),
         ],
       },
       {
         id: 'finalizacao',
         title: 'Finalização',
-        objective: 'Encerrar a OS e gerar o relatório final para o cliente.',
+        objective: 'Encerrar a OS e gerar o documento básico do serviço realizado.',
         features: [
           feature(
             'finalizacao/encerramento',
             'Saída e encerramento',
-            'A OS pode ser finalizada e registrar a saída do material, preservando os dados produzidos ao longo do serviço.',
+            'A OS pode ser finalizada e registrar a saída do material, preservando as informações produzidas ao longo do serviço.',
           ),
           feature(
             'finalizacao/relatorio-pdf',
-            'Relatório final em PDF',
-            'O sistema gera um relatório final em PDF com os principais dados da OS, diagnóstico, serviço executado e fotografias vinculadas.',
+            'Relatório básico em PDF',
+            'O sistema gera um PDF com os principais dados da OS, cliente, equipamento, diagnóstico e serviço executado.\nFotos e anexos não são obrigatórios nesta versão.',
           ),
         ],
       },
     ],
   },
+
   {
     id: 'V1',
-    title: 'Peritagem detalhada',
-    description: 'Registrar a inspeção e o diagnóstico com mais detalhes.',
-    areas: [
-      {
-        id: 'oficina',
-        title: 'Oficina',
-        objective: 'Fazer uma peritagem completa, com componentes, medidas e informações técnicas.',
-        features: [
-          feature(
-            'oficina/tipos-equipamento',
-            'Tipos de equipamento',
-            'A inspeção diferencia cilindro, bomba, motor hidráulico, unidade hidráulica, comando e outros tipos definidos com a RKM.',
-          ),
-          feature(
-            'oficina/checklists',
-            'Checklists por tipo',
-            'Cada tipo de equipamento apresenta somente os componentes e verificações aplicáveis àquela peritagem.',
-          ),
-          feature(
-            'oficina/componentes',
-            'Componentes e condição',
-            'O mecânico registra a condição dos componentes e informa quando é necessário recuperar ou substituir uma peça.',
-          ),
-          feature(
-            'oficina/medidas',
-            'Medidas e materiais',
-            'Quando necessário, registrar medidas, diâmetros, materiais e outras informações técnicas.',
-          ),
-          feature(
-            'oficina/bancadas',
-            'Bancadas',
-            'Visualizar bancadas livres ou ocupadas e identificar qual OS está em cada bancada.',
-          ),
-          feature(
-            'oficina/diagnostico-estruturado',
-            'Diagnóstico detalhado',
-            'O diagnóstico reúne as informações da inspeção e permite observações técnicas livres.',
-          ),
-        ],
-      },
-    ],
-  },
-  {
-    id: 'V2',
-    title: 'Acompanhamento e aprovações',
-    description: 'Saber onde a OS está, quem é responsável, o que falta e quem aprovou.',
+    title: 'Detalhamento',
+    description: 'Aprofundar a peritagem e organizar melhor prazos e prioridades.',
     areas: [
       {
         id: 'pcp',
         title: 'PCP',
-        objective: 'Acompanhar prazos e prioridades das OS.',
+        objective: 'Organizar melhor o que precisa ser atendido primeiro.',
         features: [
           feature(
             'pcp/prazos',
             'Prazo e prioridade',
-            'Registrar prazo previsto, prioridade e identificar atrasos durante o acompanhamento da OS.',
+            'O PCP consegue definir a prioridade da OS e trabalhar com prazos de forma mais estruturada.\nEssas informações ficam disponíveis durante o acompanhamento.',
           ),
         ],
       },
       {
         id: 'oficina',
         title: 'Oficina',
-        objective: 'Atualizar as etapas e deixar claro o próximo passo do serviço.',
+        objective: 'Registrar a peritagem de acordo com o tipo de equipamento.',
         features: [
           feature(
-            'oficina/etapas',
-            'Etapas e histórico',
-            'Cada mudança de etapa fica registrada e a situação atual da OS permanece identificada.',
+            'oficina/checklists',
+            'Peritagem por tipo de equipamento',
+            'A inspeção diferencia cilindro, bomba, motor hidráulico, unidade hidráulica, comando e outros tipos definidos com a RKM.\nCada tipo apresenta os componentes e verificações que fazem sentido para aquela peritagem.',
           ),
           feature(
-            'oficina/proxima-acao',
-            'Próxima ação e responsável',
-            'O sistema mostra o que precisa acontecer agora e quem é responsável pela próxima ação.',
+            'oficina/componentes',
+            'Componentes e medidas',
+            'O mecânico registra a condição dos componentes e informa quando é necessário recuperar ou substituir uma peça.\nQuando necessário, registra medidas, diâmetros, materiais e demais informações técnicas.',
           ),
           feature(
-            'oficina/nao-aplicavel',
-            'Etapa não aplicável',
-            'Uma etapa que não se aplica ao serviço pode ser ignorada sem interromper o fluxo.',
-          ),
-        ],
-      },
-      {
-        id: 'controle',
-        title: 'Controle',
-        objective: 'Registrar pendências, aprovações e o histórico das alterações.',
-        features: [
-          feature(
-            'controle/pendencias',
-            'Pendências e motivo de parada',
-            'Uma OS parada pode registrar o motivo, desde quando está parada e quem precisa agir.',
-          ),
-          feature(
-            'controle/liberacao',
-            'Aprovações e liberações',
-            'Registrar decisões de aprovação ou liberação, quem decidiu e quando.',
-          ),
-          feature(
-            'controle/auditoria',
-            'Histórico de alterações',
-            'Consultar as principais alterações feitas na OS, com responsável e etapa correspondente.',
+            'oficina/diagnostico-estruturado',
+            'Diagnóstico detalhado',
+            'O diagnóstico reúne as informações da peritagem e permite complementar o resultado com observações técnicas.',
           ),
         ],
       },
     ],
   },
+
   {
-    id: 'V3',
-    title: 'Fotos e relatórios',
-    description: 'Guardar fotos, anexos e resultados dos testes e melhorar o relatório final.',
+    id: 'V2',
+    title: 'Controle',
+    description: 'Registrar pendências, exceções e decisões que afetam o andamento da OS.',
     areas: [
+      {
+        id: 'pcp',
+        title: 'PCP',
+        objective: 'Entender por que uma OS está parada e quem precisa agir.',
+        features: [
+          feature(
+            'controle/pendencias',
+            'Pendências e motivo de parada',
+            'Uma OS parada pode registrar o motivo, desde quando está parada e quem precisa agir para que o serviço continue.',
+          ),
+        ],
+      },
       {
         id: 'oficina',
         title: 'Oficina',
-        objective: 'Registrar fotos e resultados dos testes durante o serviço.',
+        objective: 'Dar mais controle ao fluxo sem tornar todas as etapas obrigatórias.',
+        features: [
+          feature(
+            'oficina/nao-aplicavel',
+            'Etapas flexíveis',
+            'Uma etapa que não se aplica ao serviço pode ser marcada como não aplicável sem interromper o fluxo da OS.',
+          ),
+          feature(
+            'controle/liberacao',
+            'Aprovações e liberações',
+            'É possível registrar decisões de aprovação ou liberação, incluindo quem tomou a decisão e quando ela ocorreu.',
+          ),
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'V3',
+    title: 'Rastreabilidade',
+    description: 'Guardar o histórico e as evidências produzidas durante o serviço.',
+    areas: [
+      {
+        id: 'pcp',
+        title: 'PCP',
+        objective: 'Consultar o que aconteceu com a OS ao longo do tempo.',
+        features: [
+          feature(
+            'controle/auditoria',
+            'Histórico da OS',
+            'É possível consultar as principais mudanças ocorridas na OS, incluindo etapa, responsável e momento da alteração.',
+          ),
+        ],
+      },
+      {
+        id: 'oficina',
+        title: 'Oficina',
+        objective: 'Guardar fotos, evidências e resultados produzidos durante a execução.',
         features: [
           feature(
             'oficina/evidencias',
-            'Fotos por etapa',
+            'Fotos e evidências por etapa',
             'Fotos e outras evidências podem ser registradas na etapa do serviço em que foram produzidas.',
           ),
           feature(
             'oficina/testes',
             'Resultados de testes',
-            'Registrar resultados e observações dos testes realizados antes da liberação do equipamento.',
+            'É possível registrar resultados e observações dos testes realizados antes da liberação do equipamento.',
           ),
         ],
       },
       {
         id: 'finalizacao',
         title: 'Finalização',
-        objective: 'Organizar anexos e gerar um relatório técnico mais completo.',
+        objective: 'Reunir a documentação do serviço em uma entrega técnica mais completa.',
         features: [
           feature(
             'finalizacao/anexos',
             'Anexos e documentos',
-            'Arquivos importantes podem ser associados à OS.',
+            'Arquivos importantes podem ser associados à OS e consultados junto das demais informações do serviço.',
           ),
           feature(
             'finalizacao/relatorio-tecnico',
             'Relatório técnico completo',
-            'O relatório final reúne peritagem, fotos, testes e informações importantes da execução.',
+            'O relatório final reúne peritagem, medidas, fotos, testes, anexos e demais informações relevantes registradas durante o serviço.',
           ),
         ],
       },
     ],
   },
+
   {
     id: 'V4',
-    title: 'Avisos',
-    description: 'Destacar situações que precisam de atenção.',
+    title: 'Gestão e avisos',
+    description: 'Destacar atrasos, gargalos e situações que precisam de atenção.',
     areas: [
       {
         id: 'pcp',
         title: 'PCP',
-        objective: 'Avisar sobre atrasos e pendências das OS.',
+        objective: 'Enxergar problemas da operação sem precisar procurar OS por OS.',
         features: [
           feature(
             'pcp/avisos',
-            'Atrasos e pendências',
+            'Atrasos e OS paradas',
             'O PCP consegue identificar OS atrasadas, paradas ou com pendências que precisam de atenção.',
+          ),
+          feature(
+            'pcp/indicadores',
+            'Gargalos e indicadores',
+            'A gestão consegue visualizar tempos das etapas, pontos de acúmulo e outros indicadores definidos a partir do uso real do sistema.',
           ),
         ],
       },
@@ -286,7 +267,7 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'admin/treinamentos',
             'Treinamentos próximos do vencimento',
-            'Exibir avisos quando treinamentos de funcionários estiverem próximos do vencimento, conforme as regras definidas com a RKM.',
+            'O sistema exibe avisos quando treinamentos de funcionários estiverem próximos do vencimento, conforme as regras definidas com a RKM.',
           ),
         ],
       },
