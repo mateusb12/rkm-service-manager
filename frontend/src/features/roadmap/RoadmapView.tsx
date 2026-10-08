@@ -53,6 +53,11 @@ const feature = (id, title, acceptance, state = 'Planejada', completedAcceptance
   branch: `features/${id}`,
 });
 
+// RKM_FEATURE_IMAGES_V1
+const FEATURE_IMAGES = {
+  'pcp/clientes': '/assets/cadastro-e-busca-de-clientes.png',
+};
+
 const ROADMAP = [
   {
     id: 'V0',
@@ -471,7 +476,7 @@ export function RoadmapView() {
         </p>
 
         <div className="relative mt-6 grid grid-cols-5 gap-1 sm:gap-3">
-          <div className="pointer-events-none absolute left-[10%] right-[10%] top-5 h-px bg-blue-400/50" />
+          <div className="pointer-events-none absolute left-[10%] right-[10%] top-[29px] h-px bg-blue-400/50" />
 
           {ROADMAP.map((v) => {
             const c = COLORS[v.id];
@@ -574,35 +579,57 @@ export function RoadmapView() {
                             <code className="block text-xs text-blue-300">{item.branch}</code>
                           )}
 
-                          <div className="text-sm text-slate-300">
-                            {/* RKM_ACCEPTANCE_BULLETS_V1 */}
-                            <strong className="mb-1 block">Pronto quando:</strong>
-                            {item.acceptance.includes('\n') ? (
-                              <ul className="ml-5 list-disc space-y-1">
-                                {item.acceptance.split('\n').map((criterion, index) => {
-                                  const completed =
-                                    item.completedAcceptanceCriteria.includes(index);
-
-                                  return (
-                                    <li
-                                      key={index}
-                                      className={
-                                        completed ? 'list-none text-emerald-300' : undefined
-                                      }
-                                    >
-                                      {completed && (
-                                        <span className="mr-2 font-semibold" aria-hidden="true">
-                                          ✓
-                                        </span>
-                                      )}
-                                      {criterion}
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                            ) : (
-                              <span>{item.acceptance}</span>
+                          <div className="space-y-4">
+                            {FEATURE_IMAGES[item.id] && (
+                              <div className="flex justify-start pl-2">
+                                <div
+                                  className="
+                                    flex h-[104px] w-[104px] items-center justify-center
+                                    rounded-xl border border-sky-400/30
+                                    bg-sky-400/[0.05] p-3
+                                    shadow-[0_0_24px_rgba(56,189,248,0.08)]
+                                  "
+                                >
+                                  <img
+                                    src={FEATURE_IMAGES[item.id]}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="h-full w-full object-contain"
+                                  />
+                                </div>
+                              </div>
                             )}
+
+                            <div className="text-sm text-slate-300">
+                              {/* RKM_ACCEPTANCE_BULLETS_V1 */}
+                              <strong className="mb-1 block">Pronto quando:</strong>
+                              {item.acceptance.includes('\n') ? (
+                                <ul className="ml-5 list-disc space-y-1">
+                                  {item.acceptance.split('\n').map((criterion, index) => {
+                                    const completed =
+                                      item.completedAcceptanceCriteria.includes(index);
+
+                                    return (
+                                      <li
+                                        key={index}
+                                        className={
+                                          completed ? 'list-none text-emerald-300' : undefined
+                                        }
+                                      >
+                                        {completed && (
+                                          <span className="mr-2 font-semibold" aria-hidden="true">
+                                            ✓
+                                          </span>
+                                        )}
+                                        {criterion}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              ) : (
+                                <span>{item.acceptance}</span>
+                              )}
+                            </div>
                           </div>
 
                           {LOCAL && (
