@@ -3,25 +3,32 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      args:
+        VITE_COMMIT_SHA: ${VITE_COMMIT_SHA:-unknown}
     ports:
-      - "8787:8787"
+      - "127.0.0.1:${RKM_HOST_PORT:-8787}:8787"
+    expose:
+      - "8787"
     environment:
-      APP_ENV: development
-      PORT: 8787
+      APP_ENV: ${APP_ENV:-production}
+      PORT: "8787"
       DB_PATH: /data/rkm.db
       DEV_METRICS_DB_PATH: /dev-data/rkm-dev.db
       ACCESS_TTL: 15m
       SESSION_TTL: 8h
       SESSION_ABSOLUTE_TTL: 168h
-      COOKIE_SECURE: "false"
+      COOKIE_SECURE: "${COOKIE_SECURE:-true}"
     volumes:
       - rkm_data:/data
       - rkm_dev_data:/dev-data
+    restart: unless-stopped
 
   frontend:
+    profiles:
+      - dev
     build: ./frontend
     ports:
-      - "127.0.0.1:4173:4173"
+      - "127.0.0.1:${RKM_FRONTEND_PORT:-4173}:4173"
     environment:
       BACKEND_URL: http://backend:8787
       WAKATIME_API_KEY: ${WAKATIME_API_KEY:-}
