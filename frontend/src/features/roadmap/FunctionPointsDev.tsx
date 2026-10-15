@@ -1,22 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { isLocalDevelopmentEnabled, useLocalDevelopment } from '../../shared/dev/local-development';
-
-const STORAGE_KEY = 'rkm:private-dev-function-points';
-
-type PointsMap = Record<string, number | null>;
-
-function readPoints(): PointsMap {
-  if (!isLocalDevelopmentEnabled()) return {};
-
-  try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  } catch {
-    return {};
-  }
-}
+import { useLocalDevelopment } from '../../shared/dev/local-development';
+import { getPersistedFeatureMetric, saveFeatureSettings } from './dev-feature-metrics-service';
 
 function isClientes(id: string) {
   return id === 'pcp-clientes' || id === 'pcp/clientes';
@@ -30,29 +15,27 @@ export function FunctionPointsDev({
   editable?: boolean;
 }) {
   const localDevelopmentEnabled = useLocalDevelopment();
-  const [points, setPoints] = useState<number | null>(() => {
-    const stored = readPoints();
-
-    if (Object.prototype.hasOwnProperty.call(stored, featureId)) {
-      const value = stored[featureId];
-      return typeof value === 'number' && Number.isFinite(value) ? value : null;
-    }
-
-    return isClientes(featureId) ? 13 : null;
-  });
+  const [points, setPoints] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!localDevelopmentEnabled || !isClientes(featureId)) return;
+    if (!localDevelopmentEnabled) return;
 
-    const stored = readPoints();
+    let cancelled = false;
+    setPoints(null);
 
-    if (!Object.prototype.hasOwnProperty.call(stored, featureId)) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...stored, [featureId]: 13 }));
-      } catch (error) {
-        console.error('Falha ao inicializar PF:', error);
-      }
-    }
+    void getPersistedFeatureMetric(featureId)
+      .then((metric) => {
+        if (!cancelled) {
+          setPoints(metric?.functionPoints ?? (isClientes(featureId) ? 13 : null));
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) console.error('Erro ao carregar PF:', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [featureId, localDevelopmentEnabled]);
 
   if (!localDevelopmentEnabled) return null;
@@ -62,21 +45,13 @@ export function FunctionPointsDev({
 
   const update = (raw: string) => {
     const next = raw === '' ? null : Math.max(0, Math.floor(Number(raw)));
-
     if (next !== null && !Number.isFinite(next)) return;
 
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          ...readPoints(),
-          [featureId]: next,
-        }),
-      );
-      setPoints(next);
-    } catch (error) {
-      console.error('Falha ao salvar PF:', error);
-    }
+    setPoints(next);
+
+    void saveFeatureSettings(featureId, { functionPoints: next }).catch((error) =>
+      console.error('Erro ao salvar PF:', error),
+    );
   };
 
   return (

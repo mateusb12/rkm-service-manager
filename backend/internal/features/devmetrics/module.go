@@ -54,6 +54,16 @@ func (module *Module) Register(
 	)
 
 	mux.HandleFunc(
+		"PUT /api/dev/feature-metrics/settings",
+		module.authorizer.RequirePermission(
+			permissions.DevMetrics,
+			module.authorizer.RequireCSRF(
+				module.handleSettings,
+			),
+		),
+	)
+
+	mux.HandleFunc(
 		"POST /api/dev/feature-metrics/freeze",
 		module.authorizer.RequirePermission(
 			permissions.DevMetrics,

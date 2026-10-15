@@ -265,3 +265,42 @@ func writeQueryFailure(
 		},
 	)
 }
+
+func (module *Module) handleSettings(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	var input settingsInput
+
+	request.Body = http.MaxBytesReader(
+		writer, request.Body, maxRequestBodyBytes,
+	)
+
+	decoder := json.NewDecoder(request.Body)
+	decoder.DisallowUnknownFields()
+
+	if decoder.Decode(&input) != nil || !input.valid() {
+		writeValidationFailure(writer)
+		return
+	}
+
+	input.FeatureID = strings.TrimSpace(input.FeatureID)
+
+	metric, saveError := module.saveFeatureSettings(input)
+	if saveError != nil {
+		httpx.WriteJSON(
+			writer,
+			http.StatusInternalServerError,
+			map[string]string{"error": "feature_settings_save_failed"},
+		)
+		return
+	}
+
+	response, responseError := responseFromMetric(metric)
+	if responseError != nil {
+		writeQueryFailure(writer)
+		return
+	}
+
+	httpx.WriteJSON(writer, http.StatusOK, response)
+}

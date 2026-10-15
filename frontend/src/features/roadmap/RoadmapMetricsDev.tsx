@@ -5,7 +5,7 @@ import { FunctionPointsDev } from './FunctionPointsDev';
 import { getChatGptActivity } from './chatgpt-activity-service';
 import {
   getPersistedFeatureMetric,
-  readBranches,
+  saveFeatureSettings,
   type ChatGptEntry,
   type FeatureMetricDraft,
   type WakatimeEntry,
@@ -17,18 +17,6 @@ type RoadmapMetricsDevProps = {
   completed: boolean;
   onLiveMetricChange: (featureId: string, metric: FeatureMetricDraft | null) => void;
 };
-
-type HoursMap = Record<string, { estimated?: string; actual?: string }>;
-type BranchMap = Record<string, string>;
-const STORAGE_KEY = 'rkm:private-dev-hours';
-
-function readHours() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
 
 const WAKATIME_RETRY_MS = 30 * 1000;
 
@@ -68,8 +56,8 @@ export default function RoadmapMetricsDev({
   completed,
   onLiveMetricChange,
 }: RoadmapMetricsDevProps) {
-  const [hours, setHours] = useState<HoursMap>(readHours);
-  const [branches, setBranches] = useState<BranchMap>(readBranches);
+  const [estimatedHours, setEstimatedHours] = useState<number | null>(null);
+  const [storedBranch, setStoredBranch] = useState('');
   const [branchDraft, setBranchDraft] = useState('');
   const [editing, setEditing] = useState(false);
   const [wakatimeHours, setWakatimeHours] = useState<Record<string, WakatimeEntry>>({});
@@ -78,7 +66,7 @@ export default function RoadmapMetricsDev({
   const [manualRefreshKey, setManualRefreshKey] = useState(0);
   const handledManualRefresh = useRef(0);
 
-  const activeBranch = branches[featureId] || defaultBranch;
+  const activeBranch = storedBranch || defaultBranch;
   const editors = useMemo(
     () => wakatimeHours[featureId]?.editors ?? [],
     [featureId, wakatimeHours],
@@ -137,57 +125,48 @@ export default function RoadmapMetricsDev({
   }, [completed]);
 
   useEffect(() => {
-    if (!completed || !featureId) return;
+    if (!featureId) return;
 
     let cancelled = false;
-    const requestAbortController = new AbortController();
+    const controller = new AbortController();
 
-    void getPersistedFeatureMetric(featureId, requestAbortController.signal)
+    setEstimatedHours(null);
+    setStoredBranch('');
+
+    void getPersistedFeatureMetric(featureId, controller.signal)
       .then((metric) => {
-        if (cancelled || !metric || !metric.locked) {
-          return;
-        }
+        if (cancelled) return;
 
-        const nextWakatimeEntry: WakatimeEntry = {
-          loading: false,
-          error: '',
-          minutes: Math.round(metric.wakatimeSeconds / 60),
-          totalSeconds: metric.wakatimeSeconds,
-          editors: metric.editors,
-        };
+        setEstimatedHours(metric?.estimatedHours ?? null);
+        setStoredBranch(metric?.branch || '');
 
-        const nextChatGptEntry: ChatGptEntry = {
-          loading: false,
-          error: '',
-          totalSeconds: metric.chatGptSeconds,
-        };
-
-        setBranches((previous) => ({
-          ...previous,
-          [featureId]: metric.branch,
-        }));
+        if (!completed || !metric?.locked) return;
 
         setWakatimeHours((previous) => ({
           ...previous,
-          [featureId]: nextWakatimeEntry,
+          [featureId]: {
+            loading: false,
+            totalSeconds: metric.wakatimeSeconds,
+            minutes: Math.round(metric.wakatimeSeconds / 60),
+            editors: metric.editors,
+          },
         }));
 
         setChatGptActivity((previous) => ({
           ...previous,
-          [featureId]: nextChatGptEntry,
+          [featureId]: {
+            loading: false,
+            totalSeconds: metric.chatGptSeconds,
+          },
         }));
       })
       .catch((error) => {
-        if (cancelled || error instanceof DOMException) {
-          return;
-        }
-
-        console.error('Erro ao carregar métrica congelada:', error);
+        if (!cancelled) console.error('Falha ao carregar métricas DEV:', error);
       });
 
     return () => {
       cancelled = true;
-      requestAbortController.abort();
+      controller.abort();
     };
   }, [featureId, completed]);
 
@@ -337,31 +316,26 @@ export default function RoadmapMetricsDev({
     };
   }, [featureId, activeBranch, completed, manualRefreshKey]);
 
-  const recordHours = (id: string, field: 'estimated', value: string) => {
-    // RKM_LOCK_COMPLETED_HOURS_V1
+  const recordHours = (value: number | null) => {
     if (completed) return;
 
-    const next = {
-      ...hours,
-      [id]: { ...hours[id], [field]: value },
-    };
+    setEstimatedHours(value);
 
-    setHours(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    void saveFeatureSettings(featureId, { estimatedHours: value }).catch((error) =>
+      console.error('Erro ao salvar estimativa:', error),
+    );
   };
 
   const saveBranch = (id: string) => {
     const branch = branchDraft.trim();
-    if (!branch) return;
+    if (!branch || completed) return;
 
-    const next = { ...branches, [id]: branch };
-    try {
-      localStorage.setItem(BRANCH_STORAGE_KEY, JSON.stringify(next));
-      setBranches(next);
-      setEditing(false);
-    } catch (error) {
-      console.error('Erro ao salvar branch:', error);
-    }
+    void saveFeatureSettings(id, { branch })
+      .then((metric) => {
+        setStoredBranch(metric.branch);
+        setEditing(false);
+      })
+      .catch((error) => console.error('Erro ao salvar branch:', error));
   };
 
   return (
@@ -402,7 +376,7 @@ export default function RoadmapMetricsDev({
               if (editing) {
                 setEditing(false);
               } else {
-                setBranchDraft(branches[featureId] || defaultBranch);
+                setBranchDraft(storedBranch || defaultBranch);
                 setEditing(true);
               }
             }}
@@ -445,14 +419,8 @@ export default function RoadmapMetricsDev({
         <DurationPicker
           label="Estimativa inicial"
           mode={!completed && editing ? 'edit' : 'locked'}
-          minutes={
-            hours[featureId]?.estimated == null || hours[featureId]?.estimated === ''
-              ? null
-              : Math.round(Number(hours[featureId].estimated) * 60)
-          }
-          onChange={(value) =>
-            recordHours(featureId, 'estimated', value === null ? '' : String(value / 60))
-          }
+          minutes={estimatedHours == null ? null : Math.round(estimatedHours * 60)}
+          onChange={(value) => recordHours(value === null ? null : value / 60)}
         />
 
         <div className="space-y-2">
@@ -507,10 +475,8 @@ export default function RoadmapMetricsDev({
 
         <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2 w-full">
           Desvio:{' '}
-          {hours[featureId]?.estimated !== undefined &&
-          hours[featureId]?.estimated !== '' &&
-          totalTrackedSeconds != null
-            ? `${(totalTrackedSeconds / 3600 - Number(hours[featureId].estimated)).toFixed(2)} h`
+          {estimatedHours != null && totalTrackedSeconds != null
+            ? `${(totalTrackedSeconds / 3600 - estimatedHours).toFixed(2)} h`
             : '—'}
         </div>
       </div>

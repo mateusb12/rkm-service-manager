@@ -28,22 +28,18 @@ export type FeatureMetricDraft = {
 };
 
 export type DevFeatureMetric = FeatureMetricDraft & {
+  estimatedHours: number | null;
+  functionPoints: number | null;
   locked: boolean;
   completedAt: number;
   updatedAt: number;
 };
 
-const BRANCH_STORAGE_KEY = 'rkm:private-dev-branches';
-
-export function readBranches(): Record<string, string> {
-  try {
-    const value = JSON.parse(localStorage.getItem(BRANCH_STORAGE_KEY) || '{}');
-
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  } catch {
-    return {};
-  }
-}
+export type DevFeatureSettings = {
+  branch?: string;
+  estimatedHours?: number | null;
+  functionPoints?: number | null;
+};
 
 async function readJSON<T>(response: Response, fallbackMessage: string): Promise<T> {
   const payload = (await response.json().catch(() => null)) as ({ error?: string } & T) | null;
@@ -53,6 +49,22 @@ async function readJSON<T>(response: Response, fallbackMessage: string): Promise
   }
 
   return payload as T;
+}
+
+export async function saveFeatureSettings(
+  featureId: string,
+  settings: DevFeatureSettings,
+): Promise<DevFeatureMetric> {
+  const response = await apiRequest('/dev/feature-metrics/settings', {
+    method: 'PUT',
+    headers: csrfHeaders(),
+    body: JSON.stringify({ featureId, ...settings }),
+  });
+
+  return readJSON<DevFeatureMetric>(
+    response,
+    'Não foi possível salvar as configurações da feature.',
+  );
 }
 
 export async function listPersistedFeatureMetrics(): Promise<DevFeatureMetric[]> {
