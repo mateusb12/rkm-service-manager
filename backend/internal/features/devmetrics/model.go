@@ -9,6 +9,7 @@ import (
 type FeatureMetric struct {
 	FeatureID       string   `json:"featureId" gorm:"column:feature_id;primaryKey;size:160"`
 	Branch          string   `json:"branch" gorm:"column:branch;size:200;not null"`
+	Description     string   `json:"description" gorm:"column:description;type:text;comment:Descrição das atividades realizadas na entrega"`
 	EstimatedHours  *float64 `json:"estimatedHours" gorm:"column:estimated_hours"`
 	FunctionPoints  *int     `json:"functionPoints" gorm:"column:function_points"`
 	WakaTimeSeconds float64  `json:"wakatimeSeconds" gorm:"column:wakatime_seconds;not null"`
@@ -76,6 +77,7 @@ type unlockInput struct {
 type featureMetricResponse struct {
 	FeatureID       string       `json:"featureId"`
 	Branch          string       `json:"branch"`
+	Description     string       `json:"description"`
 	EstimatedHours  *float64     `json:"estimatedHours"`
 	FunctionPoints  *int         `json:"functionPoints"`
 	WakaTimeSeconds float64      `json:"wakatimeSeconds"`
@@ -138,6 +140,7 @@ func responseFromMetric(
 	return featureMetricResponse{
 		FeatureID:       metric.FeatureID,
 		Branch:          metric.Branch,
+		Description:     metric.Description,
 		EstimatedHours:  metric.EstimatedHours,
 		FunctionPoints:  metric.FunctionPoints,
 		WakaTimeSeconds: metric.WakaTimeSeconds,
