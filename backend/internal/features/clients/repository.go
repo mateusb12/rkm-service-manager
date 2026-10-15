@@ -22,7 +22,7 @@ func (module *Module) listClients(
 	storedClients := make([]Client, 0)
 
 	queryError := module.database.
-		Order("razao_social COLLATE NOCASE ASC").
+		Order("LOWER(razao_social) ASC, id ASC").
 		Find(&storedClients).
 		Error
 

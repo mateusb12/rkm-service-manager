@@ -8,3 +8,4 @@ backend/tmp/
 /codebase.md
 /frontend/frontend.md
 /.env
+/.env.cloud

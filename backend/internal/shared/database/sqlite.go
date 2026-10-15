@@ -6,10 +6,18 @@ import (
 	"strings"
 
 	"github.com/libtnb/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func Open() (*gorm.DB, error) {
+	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
+		return gorm.Open(
+			postgres.Open(databaseURL),
+			&gorm.Config{TranslateError: true},
+		)
+	}
+
 	databasePath := config.Env("DB_PATH", "rkm.db")
 
 	if importPath := os.Getenv("DB_IMPORT_PATH"); importPath != "" {
