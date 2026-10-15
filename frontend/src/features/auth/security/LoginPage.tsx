@@ -14,11 +14,28 @@ import {
 
 import { useAuth } from './AuthProvider';
 
+const TEMPORARY_PRODUCTION_PASSWORD = 'Rkm@123456';
+
 const PRODUCTION_PROFILES = [
-  { email: 'admin@rkm.com.br', label: 'Admin', role: 'admin', password: '' },
-  { email: 'mecanico@rkm.com.br', label: 'Mecânico', role: 'mechanic', password: '' },
-  { email: 'pcp@rkm.com.br', label: 'PCP', role: 'pcp', password: '' },
-  { email: 'comercial@rkm.com.br', label: 'Comercial', role: 'commercial', password: '' },
+  {
+    email: 'admin@rkm.com.br',
+    label: 'Admin',
+    role: 'admin',
+    password: TEMPORARY_PRODUCTION_PASSWORD,
+  },
+  {
+    email: 'mecanico@rkm.com.br',
+    label: 'Mecânico',
+    role: 'mechanic',
+    password: TEMPORARY_PRODUCTION_PASSWORD,
+  },
+  { email: 'pcp@rkm.com.br', label: 'PCP', role: 'pcp', password: TEMPORARY_PRODUCTION_PASSWORD },
+  {
+    email: 'comercial@rkm.com.br',
+    label: 'Comercial',
+    role: 'commercial',
+    password: TEMPORARY_PRODUCTION_PASSWORD,
+  },
 ];
 
 export function LoginPage() {
@@ -157,9 +174,7 @@ export function LoginPage() {
               <div>
                 <h2 className="font-semibold text-slate-800">Perfis de acesso</h2>
                 <p className="text-xs text-slate-500 mt-1">
-                  {isProduction
-                    ? 'Selecione um perfil e informe sua senha.'
-                    : 'Selecione um perfil para preencher as credenciais de acesso.'}
+                  Selecione um perfil para preencher as credenciais de acesso.
                 </p>
               </div>
               <span className="tag tag-amber">RKM</span>
@@ -172,7 +187,7 @@ export function LoginPage() {
                   className="zenit-surface zenit-dev-card text-left p-4"
                   onClick={() => {
                     setEmail(credential.email);
-                    setPassword(isProduction ? '' : credential.password);
+                    setPassword(credential.password);
                   }}
                 >
                   <div className="font-medium text-slate-800">{credential.label}</div>
