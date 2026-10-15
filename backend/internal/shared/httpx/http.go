@@ -17,9 +17,18 @@ func FrontendHandler(root string) http.Handler {
 		}
 		file := filepath.Join(root, strings.TrimPrefix(path.Clean(request.URL.Path), "/"))
 		if info, fileStatError := os.Stat(file); fileStatError == nil && !info.IsDir() {
+			// O Vite gera arquivos versionados por hash em /assets/.
+			if strings.HasPrefix(request.URL.Path, "/assets/") {
+				writer.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+			} else {
+				writer.Header().Set("Cache-Control", "no-cache, must-revalidate")
+			}
 			http.ServeFile(writer, request, file)
 			return
 		}
+
+		// Rotas SPA devem sempre revalidar o index.html.
+		writer.Header().Set("Cache-Control", "no-cache, must-revalidate")
 		http.ServeFile(writer, request, filepath.Join(root, "index.html"))
 	})
 }
