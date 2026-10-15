@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
 	"rkm-service-manager/backend/internal/features/auth"
 	"rkm-service-manager/backend/internal/features/clients"
 	"rkm-service-manager/backend/internal/features/devmetrics"
@@ -85,13 +86,21 @@ func main() {
 	var devMetricsDatabase *gorm.DB
 
 	if config.Env("APP_ENV", "development") == "development" {
-		devMetricsConnection, devMetricsOpenError :=
-			database.OpenPath(
-				config.Env(
-					"DEV_METRICS_DB_PATH",
-					"backend/rkm-dev.db",
-				),
-			)
+		var devMetricsConnection *gorm.DB
+		var devMetricsOpenError error
+
+		if databaseURL := os.Getenv("DEV_METRICS_DATABASE_URL"); databaseURL != "" {
+			devMetricsConnection, devMetricsOpenError =
+				database.OpenPostgres(databaseURL)
+		} else {
+			devMetricsConnection, devMetricsOpenError =
+				database.OpenPath(
+					config.Env(
+						"DEV_METRICS_DB_PATH",
+						"backend/rkm-dev.db",
+					),
+				)
+		}
 
 		if devMetricsOpenError != nil {
 			log.Fatal(devMetricsOpenError)

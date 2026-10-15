@@ -15,6 +15,7 @@ services:
       DATABASE_URL: "${DATABASE_URL:-}"
       DB_PATH: /data/rkm.db
       DEV_METRICS_DB_PATH: /dev-data/rkm-dev.db
+      DEV_METRICS_DATABASE_URL: "${DEV_METRICS_DATABASE_URL:-}"
       ACCESS_TTL: 15m
       SESSION_TTL: 8h
       SESSION_ABSOLUTE_TTL: 168h

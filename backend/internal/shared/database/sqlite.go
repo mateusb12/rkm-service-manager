@@ -12,10 +12,7 @@ import (
 
 func Open() (*gorm.DB, error) {
 	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
-		return gorm.Open(
-			postgres.Open(databaseURL),
-			&gorm.Config{TranslateError: true},
-		)
+		return OpenPostgres(databaseURL)
 	}
 
 	databasePath := config.Env("DB_PATH", "rkm.db")
@@ -31,6 +28,13 @@ func Open() (*gorm.DB, error) {
 	}
 
 	return OpenPath(databasePath)
+}
+
+func OpenPostgres(databaseURL string) (*gorm.DB, error) {
+	return gorm.Open(
+		postgres.Open(databaseURL),
+		&gorm.Config{TranslateError: true},
+	)
 }
 
 func OpenPath(databasePath string) (*gorm.DB, error) {
