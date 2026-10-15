@@ -14,8 +14,17 @@ import {
 
 import { useAuth } from './AuthProvider';
 
+const PRODUCTION_PROFILES = [
+  { email: 'admin@rkm.com.br', label: 'Admin', role: 'admin', password: '' },
+  { email: 'mecanico@rkm.com.br', label: 'Mecânico', role: 'mechanic', password: '' },
+  { email: 'pcp@rkm.com.br', label: 'PCP', role: 'pcp', password: '' },
+  { email: 'comercial@rkm.com.br', label: 'Comercial', role: 'commercial', password: '' },
+];
+
 export function LoginPage() {
   const { user, loading, backendOnline, login, devCredentials } = useAuth();
+  const isProduction = import.meta.env.PROD;
+  const loginProfiles = isProduction ? PRODUCTION_PROFILES : devCredentials;
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -142,31 +151,35 @@ export function LoginPage() {
             </div>
           </form>
         </div>
-        {devCredentials.length > 0 && (
+        {loginProfiles.length > 0 && (
           <section className="zenit-dev-access w-full max-w-6xl mx-auto pb-2">
             <div className="flex items-center justify-between gap-3 mb-3">
               <div>
                 <h2 className="font-semibold text-slate-800">Perfis de acesso</h2>
                 <p className="text-xs text-slate-500 mt-1">
-                  Selecione um perfil para preencher as credenciais de acesso.
+                  {isProduction
+                    ? 'Selecione um perfil e informe sua senha.'
+                    : 'Selecione um perfil para preencher as credenciais de acesso.'}
                 </p>
               </div>
               <span className="tag tag-amber">RKM</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {devCredentials.map((credential) => (
+              {loginProfiles.map((credential) => (
                 <button
                   key={credential.email}
                   type="button"
                   className="zenit-surface zenit-dev-card text-left p-4"
                   onClick={() => {
                     setEmail(credential.email);
-                    setPassword(credential.password);
+                    setPassword(isProduction ? '' : credential.password);
                   }}
                 >
                   <div className="font-medium text-slate-800">{credential.label}</div>
                   <div className="text-xs text-slate-500 mt-3 break-all">{credential.email}</div>
-                  <div className="text-xs text-blue-600 mt-1">Senha: {credential.password}</div>
+                  {!isProduction && (
+                    <div className="text-xs text-blue-600 mt-1">Senha: {credential.password}</div>
+                  )}
                 </button>
               ))}
             </div>
