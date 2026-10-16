@@ -423,6 +423,21 @@ label.rkm-check input {
   color: #e2e8f0;
   background: #1e3550;
 }
+.sidebar-item-featured {
+  color: #bfdbfe;
+  background: rgba(37, 99, 235, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.16);
+}
+.sidebar-item-featured:hover {
+  background: rgba(37, 99, 235, 0.14);
+}
+.sidebar-item-disabled,
+.sidebar-item-disabled:hover {
+  color: #64748b;
+  background: transparent;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
 .sidebar-item-active {
   color: #dbeafe;
   background: rgba(37, 99, 235, 0.18);

@@ -140,8 +140,14 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
                   'button',
                   {
                     key: it.key,
+                    type: 'button',
+                    disabled: it.status === 'missing',
                     onClick: () => setView(it.key),
-                    className: 'sidebar-item ' + (view === it.key ? 'sidebar-item-active' : ''),
+                    className:
+                      'sidebar-item ' +
+                      (view === it.key ? 'sidebar-item-active ' : '') +
+                      (it.key === 'roadmap' ? 'sidebar-item-featured ' : '') +
+                      (it.status === 'missing' ? 'sidebar-item-disabled' : ''),
                     title: showDevGuides
                       ? `${it.label} — ${SIDEBAR_STATUS_LABEL[it.status]}`
                       : it.label,
