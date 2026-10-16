@@ -7,8 +7,13 @@ services:
     environment:
       SSH_AUTH_SOCK: /run/ssh-agent
     volumes:
-      - ${HOME:-/root}/.ssh:/host-ssh:ro
-      - ${SSH_AUTH_SOCK:-/run/ssh-agent}:/run/ssh-agent
+      - type: bind
+        source: ${HOME:-/root}/.ssh
+        target: /host-ssh
+        read_only: true
+      - type: bind
+        source: ${SSH_AUTH_SOCK:-/run/ssh-agent}
+        target: /run/ssh-agent
       - ./docker/ssh-tunnel/entrypoint.sh:/usr/local/bin/rkm-ssh-tunnel:ro
     healthcheck:
       test: ["CMD-SHELL", "nc -z 127.0.0.1 15432"]
