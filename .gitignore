@@ -9,3 +9,5 @@ backend/tmp/
 /frontend/frontend.md
 /.env
 /.env.cloud
+/compose.override.yaml
+/docker/ssh-tunnel/
