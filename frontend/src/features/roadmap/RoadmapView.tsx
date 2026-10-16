@@ -8,6 +8,7 @@ import {
   type FeatureMetricDraft,
 } from './dev-feature-metrics-service';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
+import { formatRoadmapDate, getRoadmapTimebox } from '../time/roadmap-time';
 import type { RoadmapFeature } from './roadmap-model';
 import { RoadmapFeatureCard } from './RoadmapFeatureCard';
 import { getAreaProjections, ROADMAP } from './roadmap-data';
@@ -131,6 +132,7 @@ export function RoadmapView() {
 
   const version = ROADMAP.find((v) => v.id === versionId) || ROADMAP[0];
   const selectedArea = areaProjections.find((area) => area.id === areaId) || areaProjections[0];
+  const roadmapTimebox = getRoadmapTimebox();
 
   const handleLiveMetricChange = React.useCallback(
     (id: string, metric: FeatureMetricDraft | null) => {
@@ -334,11 +336,57 @@ export function RoadmapView() {
               : `Features de ${selectedArea.title} distribuídas ao longo das versões.`}
           </p>
           {localDevelopmentEnabled && (
-            <code className="mt-2 block text-xs text-blue-300">
-              {viewMode === 'version'
-                ? `versions/${version.id.toLowerCase()}`
-                : `area/${selectedArea.id}`}
-            </code>
+            <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+              <code className="text-xs text-blue-300">
+                {viewMode === 'version'
+                  ? `versions/${version.id.toLowerCase()}`
+                  : `area/${selectedArea.id}`}
+              </code>
+              {viewMode === 'version' && version.id === 'V0' && (
+                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-amber-300">
+                  <span>Prazo → {formatRoadmapDate(roadmapTimebox.deadline)}</span>
+                  <span>Falta → {roadmapTimebox.remainingLabel}</span>
+                </div>
+              )}
+            </div>
+          )}
+          {localDevelopmentEnabled && viewMode === 'version' && version.id === 'V0' && (
+            <div className="mt-10 flex items-center gap-8 text-xs text-slate-400">
+              <span className="shrink-0 uppercase tracking-wide text-slate-500">Sextas</span>
+              <div className="relative h-9 min-w-0 flex-1 sm:w-1/2 sm:flex-none">
+                {roadmapTimebox.fridays.length > 1 && (
+                  <span className="pointer-events-none absolute inset-x-0 top-2 border-t border-slate-500/70" />
+                )}
+
+                {roadmapTimebox.fridays.map((friday, index) => (
+                  <React.Fragment key={friday.toISOString()}>
+                    <span
+                      className="absolute top-0 z-10 flex -translate-x-1/2 flex-col items-center gap-1"
+                      style={{
+                        left: `${(index / Math.max(1, roadmapTimebox.fridays.length - 1)) * 100}%`,
+                      }}
+                    >
+                      <span className="h-4 w-4 rounded-full border border-amber-300 bg-amber-300/90 shadow-[0_0_8px_rgba(252,211,77,.25)]" />
+                      <span className="whitespace-nowrap">{formatRoadmapDate(friday)}</span>
+                    </span>
+
+                    {index < roadmapTimebox.fridays.length - 1 &&
+                      Array.from({ length: 6 }, (_, dayIndex) => (
+                        <span
+                          key={dayIndex}
+                          className="pointer-events-none absolute top-2 h-2 border-l border-slate-500/70"
+                          style={{
+                            left: `${
+                              ((index + (dayIndex + 1) / 7) / (roadmapTimebox.fridays.length - 1)) *
+                              100
+                            }%`,
+                          }}
+                        />
+                      ))}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
           )}
         </header>
 
