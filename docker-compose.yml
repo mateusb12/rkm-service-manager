@@ -1,27 +1,4 @@
 services:
-  postgres-tunnel:
-    profiles:
-      - dev
-    image: alpine:3.22
-    entrypoint: ["/bin/sh", "/usr/local/bin/rkm-ssh-tunnel"]
-    environment:
-      SSH_AUTH_SOCK: /run/ssh-agent
-    volumes:
-      - type: bind
-        source: ${HOME:-/root}/.ssh
-        target: /host-ssh
-        read_only: true
-      - type: bind
-        source: ${SSH_AUTH_SOCK:-/run/ssh-agent}
-        target: /run/ssh-agent
-      - ./docker/ssh-tunnel/entrypoint.sh:/usr/local/bin/rkm-ssh-tunnel:ro
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 15432"]
-      interval: 2s
-      timeout: 2s
-      retries: 30
-    restart: unless-stopped
-
   backend:
     build:
       context: .
