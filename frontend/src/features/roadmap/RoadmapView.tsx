@@ -343,48 +343,85 @@ export function RoadmapView() {
                   : `area/${selectedArea.id}`}
               </code>
               {viewMode === 'version' && version.id === 'V0' && (
-                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-amber-300">
-                  <span>Prazo → {formatRoadmapDate(roadmapTimebox.deadline)}</span>
-                  <span>Falta → {roadmapTimebox.remainingLabel}</span>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-emerald-200">
+                    <span className="uppercase tracking-wide">Início</span>
+                    <span>→ {formatRoadmapDate(roadmapTimebox.start)}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-amber-200 shadow-[0_0_0_1px_rgba(252,211,77,0.04)]">
+                    <span className="uppercase tracking-wide text-amber-100/80">Prazo</span>
+                    <span className="text-amber-100">
+                      → {formatRoadmapDate(roadmapTimebox.deadline)}
+                    </span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-sky-300/30 bg-sky-300/10 px-3 py-1 text-sky-200 shadow-[0_0_0_1px_rgba(125,211,252,0.04)]">
+                    <span className="uppercase tracking-wide text-sky-100/80">Falta</span>
+                    <span className="text-sky-100">→ {roadmapTimebox.remainingLabel}</span>
+                  </span>
                 </div>
               )}
             </div>
           )}
           {localDevelopmentEnabled && viewMode === 'version' && version.id === 'V0' && (
             <div className="mt-10 flex items-center gap-8 text-xs text-slate-400">
-              <span className="shrink-0 uppercase tracking-wide text-slate-500">Sextas</span>
-              <div className="relative h-9 min-w-0 flex-1 sm:w-1/2 sm:flex-none">
-                {roadmapTimebox.fridays.length > 1 && (
-                  <span className="pointer-events-none absolute inset-x-0 top-2 border-t border-slate-500/70" />
-                )}
+              <span className="shrink-0 uppercase tracking-wide text-slate-500">Dias</span>
+              <div className="relative mx-5 h-10 min-w-0 flex-1">
+                <span className="pointer-events-none absolute inset-x-0 top-2 border-t border-slate-500/70" />
 
-                {roadmapTimebox.fridays.map((friday, index) => (
-                  <React.Fragment key={friday.toISOString()}>
-                    <span
-                      className="absolute top-0 z-10 flex -translate-x-1/2 flex-col items-center gap-1"
-                      style={{
-                        left: `${(index / Math.max(1, roadmapTimebox.fridays.length - 1)) * 100}%`,
-                      }}
-                    >
-                      <span className="h-4 w-4 rounded-full border border-amber-300 bg-amber-300/90 shadow-[0_0_8px_rgba(252,211,77,.25)]" />
-                      <span className="whitespace-nowrap">{formatRoadmapDate(friday)}</span>
-                    </span>
+                {roadmapTimebox.days.map((day, index) => {
+                  const isStart = index === 0;
+                  const isDeadline = index === roadmapTimebox.days.length - 1;
+                  const isToday = day.getTime() === roadmapTimebox.today.getTime();
 
-                    {index < roadmapTimebox.fridays.length - 1 &&
-                      Array.from({ length: 6 }, (_, dayIndex) => (
-                        <span
-                          key={dayIndex}
-                          className="pointer-events-none absolute top-2 h-2 border-l border-slate-500/70"
-                          style={{
-                            left: `${
-                              ((index + (dayIndex + 1) / 7) / (roadmapTimebox.fridays.length - 1)) *
-                              100
-                            }%`,
-                          }}
-                        />
-                      ))}
-                  </React.Fragment>
-                ))}
+                  // Evita duas bolinhas coladas perto do início e do prazo.
+                  const isFriday =
+                    day.getDay() === 5 && index >= 4 && index <= roadmapTimebox.days.length - 5;
+
+                  const isMilestone = isStart || isDeadline || isFriday || isToday;
+
+                  const showLabel = isMilestone;
+
+                  const position = (index / Math.max(1, roadmapTimebox.days.length - 1)) * 100;
+
+                  return (
+                    <React.Fragment key={day.toISOString()}>
+                      <span
+                        className="pointer-events-none absolute top-0 flex -translate-x-1/2 flex-col items-center gap-1"
+                        style={{ left: `${position}%` }}
+                      >
+                        {isToday && (
+                          <span className="absolute bottom-full mb-2 whitespace-nowrap rounded-full border border-sky-400/50 bg-sky-500/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-sky-200">
+                            HOJE
+                          </span>
+                        )}
+
+                        {isMilestone ? (
+                          <span
+                            className={
+                              isToday
+                                ? 'relative z-20 h-4 w-4 rounded-full border-2 border-sky-200 bg-sky-400 shadow-[0_0_0_4px_rgba(56,189,248,0.15),0_0_14px_rgba(56,189,248,0.7)]'
+                                : 'h-4 w-4 rounded-full border border-amber-300 bg-amber-300/90 shadow-[0_0_8px_rgba(252,211,77,.25)]'
+                            }
+                          />
+                        ) : (
+                          <span className="mt-2 h-2 border-l border-slate-500/70" />
+                        )}
+
+                        {showLabel && (
+                          <span
+                            className={
+                              isToday
+                                ? 'whitespace-nowrap font-bold text-sky-300'
+                                : 'whitespace-nowrap'
+                            }
+                          >
+                            {formatRoadmapDate(day)}
+                          </span>
+                        )}
+                      </span>
+                    </React.Fragment>
+                  );
+                })}
               </div>
             </div>
           )}
