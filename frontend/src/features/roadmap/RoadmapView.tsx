@@ -349,53 +349,71 @@ export function RoadmapView() {
                 key={area.id}
                 className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
               >
-                <button
-                  type="button"
-                  onClick={() => setAreaId(areaId === area.id ? '' : area.id)}
-                  className="flex w-full items-center justify-between gap-3 p-4 text-left"
-                >
-                  <span className="text-sm font-semibold text-slate-100">
-                    {areaId === area.id ? '▾' : '▸'} {area.title}
-                  </span>
-                </button>
-
-                <div className="border-t border-rkmborder/70 px-3 py-3">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Progresso do {area.title}
-                    </span>
-                    <span className="text-xs font-semibold text-emerald-300">
-                      {area.features.filter((feature) => feature.state === 'Concluída').length}/
-                      {area.features.length} concluídas
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-0">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setAreaId(areaId === area.id ? '' : area.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setAreaId(areaId === area.id ? '' : area.id);
+                      }
+                    }}
+                    className="flex min-h-12 cursor-pointer items-center self-stretch p-4 text-left sm:w-56 sm:flex-none"
+                  >
+                    <span className="text-sm font-semibold text-slate-100">
+                      {areaId === area.id ? '▾' : '▸'} {area.title}
                     </span>
                   </div>
 
-                  <div className="relative grid grid-cols-3 gap-2">
-                    <div className="pointer-events-none absolute left-[16.67%] right-[16.67%] top-3 h-px bg-rkmborder" />
-                    {area.features.map((feature, index) => {
-                      const done = feature.state === 'Concluída';
+                  <div
+                    className="min-w-0 flex-1 self-center p-4 sm:mr-[8%]"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <div
+                      className={`relative grid gap-2 ${
+                        area.features.length === 1
+                          ? 'grid-cols-1'
+                          : area.features.length === 2
+                            ? 'grid-cols-2'
+                            : 'grid-cols-3'
+                      }`}
+                    >
+                      {area.features.length > 1 && (
+                        <div
+                          className={`pointer-events-none absolute top-3 h-px bg-slate-500/70 shadow-[0_0_4px_rgba(100,116,139,.35)] ${
+                            area.features.length === 2
+                              ? 'left-[25%] right-[25%]'
+                              : 'left-[16.67%] right-[16.67%]'
+                          }`}
+                        />
+                      )}
+                      {area.features.map((feature, index) => {
+                        const done = feature.state === 'Concluída';
 
-                      return (
-                        <div key={feature.id} className="relative text-center">
-                          <span
-                            className={`relative z-10 mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold ${
-                              done
-                                ? 'border-emerald-300 bg-emerald-400 text-emerald-950'
-                                : 'border-rkmborder bg-rkmcard2 text-slate-400'
-                            }`}
-                          >
-                            {done ? '✓' : index + 1}
-                          </span>
-                          <span
-                            className={`mt-2 block text-[10px] leading-tight ${
-                              done ? 'text-emerald-300' : 'text-slate-400'
-                            }`}
-                          >
-                            {feature.title}
-                          </span>
-                        </div>
-                      );
-                    })}
+                        return (
+                          <div key={feature.id} className="relative text-center">
+                            <span
+                              className={`relative z-10 mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold ${
+                                done
+                                  ? 'border-emerald-300 bg-emerald-400 text-emerald-950'
+                                  : 'border-rkmborder bg-rkmcard2 text-slate-400'
+                              }`}
+                            >
+                              {done ? '✓' : index + 1}
+                            </span>
+                            <span
+                              className={`mt-2 block text-[10px] leading-tight ${
+                                done ? 'text-emerald-300' : 'text-slate-400'
+                              }`}
+                            >
+                              {feature.title}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
