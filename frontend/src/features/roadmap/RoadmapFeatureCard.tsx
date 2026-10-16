@@ -27,12 +27,16 @@ export function RoadmapFeatureCard({
   onToggleTaskDone,
   onLiveMetricChange,
 }: RoadmapFeatureCardProps) {
+  const displayedState = localDevelopmentEnabled && completed ? 'Concluída' : item.state;
+
   return (
     <article
       className={`rounded-lg border transition ${
-        localDevelopmentEnabled && completed
-          ? 'border-emerald-400/20 bg-emerald-400/[0.025]'
-          : 'border-rkmborder bg-rkmbg/50'
+        displayedState === 'Concluída'
+          ? 'border-emerald-400/35 bg-emerald-400/[0.06] shadow-[0_0_18px_rgba(52,211,153,.06)]'
+          : displayedState === 'Em andamento'
+            ? 'border-blue-400/25 bg-blue-400/[0.04]'
+            : 'border-rkmborder bg-rkmbg/50'
       }`}
     >
       <button
@@ -45,14 +49,14 @@ export function RoadmapFeatureCard({
         </span>
         <span
           className={`tag ${
-            localDevelopmentEnabled && completed
+            displayedState === 'Concluída'
               ? 'tag-emerald'
-              : item.state === 'Depois do MVP'
-                ? 'tag-amber'
+              : displayedState === 'Em andamento'
+                ? 'tag-blue'
                 : 'tag-slate'
           }`}
         >
-          {localDevelopmentEnabled && completed ? 'Concluída' : item.state}
+          {displayedState}
         </span>
       </button>
 

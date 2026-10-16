@@ -1,8 +1,10 @@
+export type RoadmapFeatureState = 'Concluída' | 'Em andamento' | 'Planejada';
+
 export type RoadmapFeature = {
   id: string;
   title: string;
   acceptance: string;
-  state: string;
+  state: RoadmapFeatureState;
   completedAcceptanceCriteria: number[];
   branch: string;
 };

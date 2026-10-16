@@ -1,10 +1,15 @@
-import type { RoadmapAreaProjection, RoadmapFeature, RoadmapVersion } from './roadmap-model';
+import type {
+  RoadmapAreaProjection,
+  RoadmapFeature,
+  RoadmapFeatureState,
+  RoadmapVersion,
+} from './roadmap-model';
 
 const feature = (
   id: string,
   title: string,
   acceptance: string,
-  state = 'Planejada',
+  state: RoadmapFeatureState = 'Planejada',
   completedAcceptanceCriteria: number[] = [],
 ): RoadmapFeature => ({
   id,
@@ -30,7 +35,7 @@ export const ROADMAP: RoadmapVersion[] = [
             'pcp/clientes',
             'Cadastro e busca de clientes',
             'O PCP consegue cadastrar e consultar clientes.\nDurante a abertura da OS, consegue localizar um cliente por CNPJ, razão social ou nome fantasia.',
-            'Planejada',
+            'Concluída',
             [0, 1],
           ),
           feature(
