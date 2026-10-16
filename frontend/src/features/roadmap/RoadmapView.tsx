@@ -359,6 +359,46 @@ export function RoadmapView() {
                   </span>
                 </button>
 
+                <div className="border-t border-rkmborder/70 px-3 py-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Progresso do {area.title}
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-300">
+                      {area.features.filter((feature) => feature.state === 'Concluída').length}/
+                      {area.features.length} concluídas
+                    </span>
+                  </div>
+
+                  <div className="relative grid grid-cols-3 gap-2">
+                    <div className="pointer-events-none absolute left-[16.67%] right-[16.67%] top-3 h-px bg-rkmborder" />
+                    {area.features.map((feature, index) => {
+                      const done = feature.state === 'Concluída';
+
+                      return (
+                        <div key={feature.id} className="relative text-center">
+                          <span
+                            className={`relative z-10 mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold ${
+                              done
+                                ? 'border-emerald-300 bg-emerald-400 text-emerald-950'
+                                : 'border-rkmborder bg-rkmcard2 text-slate-400'
+                            }`}
+                          >
+                            {done ? '✓' : index + 1}
+                          </span>
+                          <span
+                            className={`mt-2 block text-[10px] leading-tight ${
+                              done ? 'text-emerald-300' : 'text-slate-400'
+                            }`}
+                          >
+                            {feature.title}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {areaId === area.id && (
                   <div className="space-y-2 border-t border-rkmborder p-3">
                     <p className="px-2 pb-1 text-sm text-slate-400">{area.objective}</p>
