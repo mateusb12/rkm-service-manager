@@ -8,7 +8,7 @@ import {
   type FeatureMetricDraft,
 } from './dev-feature-metrics-service';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
-import { formatRoadmapDate, getRoadmapTimebox } from '../time/roadmap-time';
+import { formatRoadmapDate, getRoadmapVersionTimebox } from '../time/roadmap-time';
 import type { RoadmapFeature } from './roadmap-model';
 import { RoadmapFeatureCard } from './RoadmapFeatureCard';
 import { getAreaProjections, ROADMAP } from './roadmap-data';
@@ -92,7 +92,12 @@ export function RoadmapView() {
   const [featureMetricDrafts, setFeatureMetricDrafts] = useState<
     Record<string, FeatureMetricDraft>
   >({});
-  const areaProjections = getAreaProjections(ROADMAP);
+  const visibleRoadmap = React.useMemo(
+    () => (localDevelopmentEnabled ? ROADMAP : ROADMAP.filter((entry) => entry.id !== 'V4')),
+    [localDevelopmentEnabled],
+  );
+
+  const areaProjections = React.useMemo(() => getAreaProjections(visibleRoadmap), [visibleRoadmap]);
 
   React.useEffect(() => {
     if (!localDevelopmentEnabled) {
@@ -130,9 +135,30 @@ export function RoadmapView() {
     };
   }, [localDevelopmentEnabled]);
 
-  const version = ROADMAP.find((v) => v.id === versionId) || ROADMAP[0];
+  const version = visibleRoadmap.find((v) => v.id === versionId) || visibleRoadmap[0];
   const selectedArea = areaProjections.find((area) => area.id === areaId) || areaProjections[0];
-  const roadmapTimebox = getRoadmapTimebox();
+  const roadmapTimebox = getRoadmapVersionTimebox(version.id);
+  const stepperCount = Math.max(
+    1,
+    viewMode === 'version' ? visibleRoadmap.length : areaProjections.length,
+  );
+
+  React.useEffect(() => {
+    const versionVisible = visibleRoadmap.some((entry) => entry.id === versionId);
+    const areaVisible = areaProjections.some((area) => area.id === areaId);
+
+    if (!versionVisible) {
+      setVersionId('V0');
+    }
+
+    if (!areaVisible) {
+      setAreaId('pcp');
+    }
+
+    if (!versionVisible || !areaVisible) {
+      setFeatureId('pcp/clientes');
+    }
+  }, [visibleRoadmap, areaProjections, versionId, areaId]);
 
   const handleLiveMetricChange = React.useCallback(
     (id: string, metric: FeatureMetricDraft | null) => {
@@ -253,14 +279,21 @@ export function RoadmapView() {
         </div>
 
         <div
-          className={`relative mt-6 grid gap-1 sm:gap-3 ${
-            viewMode === 'version' ? 'grid-cols-5' : 'grid-cols-3 sm:grid-cols-6'
-          }`}
+          className="relative mt-6 grid gap-1 sm:gap-3"
+          style={{
+            gridTemplateColumns: `repeat(${stepperCount}, minmax(0, 1fr))`,
+          }}
         >
-          <div className="pointer-events-none absolute left-[10%] right-[10%] top-[29px] h-px bg-blue-400/50" />
+          <div
+            className="pointer-events-none absolute top-[29px] h-px bg-blue-400/50"
+            style={{
+              left: `${50 / stepperCount}%`,
+              right: `${50 / stepperCount}%`,
+            }}
+          />
 
           {viewMode === 'version'
-            ? ROADMAP.map((v) => {
+            ? visibleRoadmap.map((v) => {
                 const c = COLORS[v.id];
                 const selected = v.id === versionId;
 
@@ -330,11 +363,31 @@ export function RoadmapView() {
           <h2 className="mt-2 text-xl font-semibold text-slate-100">
             {viewMode === 'version' ? version.title : selectedArea.title}
           </h2>
+          {viewMode === 'version' && (
+            <p className="mt-2 text-sm font-semibold text-sky-300">{version.question}</p>
+          )}
           <p className="mt-1 text-sm text-slate-400">
             {viewMode === 'version'
               ? version.description
               : `Features de ${selectedArea.title} distribuídas ao longo das versões.`}
           </p>
+          {viewMode === 'version' && (
+            <div className="mt-4 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Perguntas que esta versão responde
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(version.questions ?? []).map((question) => (
+                  <span
+                    key={question}
+                    className="rounded-lg border border-sky-400/15 bg-sky-400/[0.05] px-3 py-1.5 text-xs text-slate-300"
+                  >
+                    {question}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           {localDevelopmentEnabled && (
             <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
               <code className="text-xs text-blue-300">
@@ -342,7 +395,7 @@ export function RoadmapView() {
                   ? `versions/${version.id.toLowerCase()}`
                   : `area/${selectedArea.id}`}
               </code>
-              {viewMode === 'version' && version.id === 'V0' && (
+              {viewMode === 'version' && (
                 <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                   <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-emerald-200">
                     <span className="uppercase tracking-wide">Início</span>
@@ -362,7 +415,7 @@ export function RoadmapView() {
               )}
             </div>
           )}
-          {localDevelopmentEnabled && viewMode === 'version' && version.id === 'V0' && (
+          {localDevelopmentEnabled && viewMode === 'version' && (
             <div className="mt-10 flex items-center gap-8 text-xs text-slate-400">
               <span className="shrink-0 uppercase tracking-wide text-slate-500">Dias</span>
               <div className="relative mx-5 h-10 min-w-0 flex-1">

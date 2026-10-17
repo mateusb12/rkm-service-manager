@@ -20,10 +20,67 @@ const feature = (
   branch: `features/${id}`,
 });
 
+// RKM_V4_DEV_ONLY_CONSTRUCTION
+const LOCAL_ONLY_ROADMAP_V4: RoadmapVersion | null = import.meta.env.DEV
+  ? {
+      id: 'V4',
+      questions: [
+        'Quais OS estão atrasadas ou exigem atenção?',
+        'Onde estão os maiores gargalos da oficina?',
+        'Quanto tempo os serviços permanecem em cada etapa?',
+        'Os prazos previstos estão sendo cumpridos?',
+        'Quais treinamentos estão próximos do vencimento?',
+      ],
+      title: 'Gestão e avisos',
+      question: 'Como melhorar o desempenho da oficina?',
+      description:
+        'Identificar gargalos, acompanhar indicadores e alertar sobre situações que exigem atenção.',
+      areas: [
+        {
+          id: 'pcp',
+          title: 'PCP',
+          objective: 'Enxergar problemas da operação sem precisar procurar OS por OS.',
+          features: [
+            feature(
+              'pcp/avisos',
+              'Atrasos e OS paradas',
+              'O PCP consegue identificar OS atrasadas, paradas ou com pendências que precisam de atenção.\nEsses avisos são exibidos no próprio sistema. Notificações externas dependem de definição específica.',
+            ),
+            feature(
+              'pcp/indicadores',
+              'Gargalos e indicadores',
+              'A gestão consegue comparar o prazo previsto com o tempo efetivamente decorrido.\nConsegue visualizar há quanto tempo a OS está na etapa atual.\nO sistema ajuda a identificar pontos de acúmulo e gargalos da operação.',
+            ),
+          ],
+        },
+        {
+          id: 'admin',
+          title: 'Administração',
+          objective: 'Avisar sobre treinamentos próximos do vencimento.',
+          features: [
+            feature(
+              'admin/treinamentos',
+              'Treinamentos próximos do vencimento',
+              'O sistema exibe avisos quando treinamentos de funcionários estiverem próximos do vencimento, conforme as regras definidas com a RKM.',
+            ),
+          ],
+        },
+      ],
+    }
+  : null;
+
 export const ROADMAP: RoadmapVersion[] = [
   {
     id: 'V0',
     title: 'Sistema básico',
+    question: 'Onde está o serviço?',
+    questions: [
+      'Onde está a peça agora?',
+      'A peça está com qual mecânico?',
+      'O serviço já começou ou está parado? Por quê?',
+      'Qual é a previsão de conclusão?',
+      'O orçamento foi aprovado? A OS já foi finalizada?',
+    ],
     description: 'Receber, acompanhar e finalizar uma OS do começo ao fim.',
     areas: [
       {
@@ -41,12 +98,12 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'pcp/abertura-os',
             'Entrada e abertura da OS',
-            'O PCP consegue abrir uma OS com o cliente selecionado e registrar o equipamento ou material recebido com os dados disponíveis na chegada.\nO sistema gera automaticamente um número único para a OS.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.',
+            'O PCP consegue abrir uma OS com o cliente selecionado e registrar o equipamento ou material recebido com os dados disponíveis na chegada.\nO sistema gera automaticamente um número único para a OS.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.\nO PCP pode anexar uma foto do produto recebido na chegada.',
           ),
           feature(
             'pcp/fila',
             'Acompanhamento das OS',
-            'O PCP consegue consultar e localizar as OS em andamento.\nConsegue identificar a situação atual, com quem a OS está, se o serviço já começou e qual é a previsão informada.',
+            'O PCP consegue consultar e localizar as OS em andamento.\nConsegue identificar a situação atual, com quem a OS está, se o serviço já começou e qual é a previsão informada.\nSe a OS estiver parada, o PCP consegue consultar um motivo simples da parada.\nMudanças de situação e responsável ficam registradas com data, hora e usuário, preparando o histórico da V3.',
           ),
         ],
       },
@@ -111,21 +168,17 @@ export const ROADMAP: RoadmapVersion[] = [
 
   {
     id: 'V1',
+    questions: [
+      'Qual defeito foi identificado?',
+      'Quais componentes estão danificados?',
+      'O que precisa ser recuperado ou substituído?',
+      'Quais medidas e verificações técnicas foram realizadas?',
+    ],
     title: 'Detalhamento',
-    description: 'Aprofundar a peritagem e organizar melhor prazos e prioridades.',
+    question: 'O que exatamente precisa ser feito?',
+    description:
+      'Aprofundar a peritagem, identificar componentes e registrar as intervenções necessárias.',
     areas: [
-      {
-        id: 'pcp',
-        title: 'PCP',
-        objective: 'Organizar melhor o que precisa ser atendido primeiro.',
-        features: [
-          feature(
-            'pcp/prazos',
-            'Prazo e prioridade',
-            'O PCP consegue definir a prioridade da OS e trabalhar com prazos de forma mais estruturada.\nEssas informações ficam disponíveis durante o acompanhamento.',
-          ),
-        ],
-      },
       {
         id: 'oficina',
         title: 'Oficina',
@@ -154,17 +207,37 @@ export const ROADMAP: RoadmapVersion[] = [
   {
     id: 'V2',
     title: 'Controle',
-    description: 'Registrar pendências, exceções e decisões que afetam o andamento da OS.',
+    question: 'O que está impedindo o serviço de avançar?',
+    questions: [
+      'Qual defeito foi identificado?',
+      'Quais componentes estão danificados?',
+      'O que precisa ser recuperado ou substituído?',
+      'Quais medidas e verificações técnicas foram realizadas?',
+    ],
+    questions: [
+      'O que está faltando para começar ou continuar?',
+      'Há quanto tempo essa OS está parada?',
+      'Quem precisa tomar uma providência?',
+      'Qual serviço deve ter prioridade?',
+      'Quem precisa aprovar ou liberar a próxima etapa?',
+    ],
+    description: 'Gerenciar prioridades, pendências, exceções e aprovações entre os setores.',
     areas: [
       {
         id: 'pcp',
         title: 'PCP',
-        objective: 'Entender por que uma OS está parada e quem precisa agir.',
+        objective:
+          'Priorizar as OS, controlar prazos e identificar bloqueios e responsáveis pelas ações.',
         features: [
           feature(
             'controle/pendencias',
             'Pendências e motivo de parada',
             'Uma OS parada pode registrar o motivo, desde quando está parada e quem precisa agir para que o serviço continue.',
+          ),
+          feature(
+            'pcp/prazos',
+            'Prazo e prioridade',
+            'O PCP consegue definir a prioridade da OS e trabalhar com prazos de forma mais estruturada.\nEssas informações ficam disponíveis durante o acompanhamento.',
           ),
         ],
       },
@@ -191,7 +264,15 @@ export const ROADMAP: RoadmapVersion[] = [
   {
     id: 'V3',
     title: 'Rastreabilidade',
-    description: 'Guardar o histórico e as evidências produzidas durante o serviço.',
+    question: 'O que aconteceu com essa peça?',
+    questions: [
+      'Por quais etapas e responsáveis a peça passou?',
+      'O que foi feito e quando?',
+      'Quais fotos e evidências foram registradas?',
+      'Quais testes foram realizados e quais os resultados?',
+      'Como comprovar tecnicamente o serviço ao cliente?',
+    ],
+    description: 'Preservar o histórico, as evidências e a documentação técnica de cada serviço.',
     areas: [
       {
         id: 'pcp',
@@ -242,42 +323,12 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
   },
 
-  {
-    id: 'V4',
-    title: 'Gestão e avisos',
-    description: 'Destacar atrasos, gargalos e situações que precisam de atenção.',
-    areas: [
-      {
-        id: 'pcp',
-        title: 'PCP',
-        objective: 'Enxergar problemas da operação sem precisar procurar OS por OS.',
-        features: [
-          feature(
-            'pcp/avisos',
-            'Atrasos e OS paradas',
-            'O PCP consegue identificar OS atrasadas, paradas ou com pendências que precisam de atenção.',
-          ),
-          feature(
-            'pcp/indicadores',
-            'Gargalos e indicadores',
-            'A gestão consegue comparar o prazo previsto com o tempo efetivamente decorrido.\nConsegue visualizar há quanto tempo a OS está na etapa atual.\nO sistema ajuda a identificar pontos de acúmulo e gargalos da operação.',
-          ),
-        ],
-      },
-      {
-        id: 'admin',
-        title: 'Administração',
-        objective: 'Avisar sobre treinamentos próximos do vencimento.',
-        features: [
-          feature(
-            'admin/treinamentos',
-            'Treinamentos próximos do vencimento',
-            'O sistema exibe avisos quando treinamentos de funcionários estiverem próximos do vencimento, conforme as regras definidas com a RKM.',
-          ),
-        ],
-      },
-    ],
-  },
+  ...(import.meta.env.DEV &&
+  typeof window !== 'undefined' &&
+  ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+  LOCAL_ONLY_ROADMAP_V4
+    ? [LOCAL_ONLY_ROADMAP_V4]
+    : []),
 ];
 
 export function getAreaProjections(roadmap: RoadmapVersion[]): RoadmapAreaProjection[] {

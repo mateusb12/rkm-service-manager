@@ -18,6 +18,41 @@ export function formatRoadmapDate(date: Date) {
   return `${date.getDate()}/${MONTHS[date.getMonth()]}`;
 }
 
+// Períodos internos de planejamento.
+// Meses em JavaScript começam em zero.
+const ROADMAP_VERSION_PERIODS: Record<string, { start: Date; deadline: Date }> = {
+  V0: {
+    start: new Date(2026, 9, 8),
+    deadline: new Date(2026, 11, 8),
+  },
+  V1: {
+    start: new Date(2026, 11, 9),
+    deadline: new Date(2027, 1, 8),
+  },
+  V2: {
+    start: new Date(2027, 1, 9),
+    deadline: new Date(2027, 2, 8),
+  },
+  V3: {
+    start: new Date(2027, 2, 9),
+    deadline: new Date(2027, 4, 8),
+  },
+  V4: {
+    start: new Date(2027, 4, 9),
+    deadline: new Date(2027, 6, 8),
+  },
+};
+
+export function getRoadmapVersionTimebox(versionId: string, now = new Date()): RoadmapTimebox {
+  const period = ROADMAP_VERSION_PERIODS[versionId];
+
+  if (!period) {
+    throw new Error(`Período não definido para ${versionId}`);
+  }
+
+  return getRoadmapTimebox(now, period.deadline, period.start);
+}
+
 export function getRoadmapTimebox(
   now = new Date(),
   deadline = new Date(2026, 11, 8),

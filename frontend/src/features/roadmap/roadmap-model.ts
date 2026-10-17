@@ -19,6 +19,8 @@ export type RoadmapArea = {
 export type RoadmapVersion = {
   id: string;
   title: string;
+  question: string;
+  questions: string[];
   description: string;
   areas: RoadmapArea[];
 };
