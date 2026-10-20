@@ -27,6 +27,7 @@ const filters: { key: CatalogFilter; label: string }[] = [
 
 const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogItem['type'], string>> = {
   piece: '/assets/peça.png',
+  product: '/assets/produto.png',
   service: '/assets/serviço.png',
 };
 

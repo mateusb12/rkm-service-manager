@@ -21,6 +21,7 @@ type Props = {
 
 const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogInput['type'], string>> = {
   piece: '/assets/peça.png',
+  product: '/assets/produto.png',
   service: '/assets/serviço.png',
 };
 
