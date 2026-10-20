@@ -24,6 +24,14 @@ const demoItems: PriceCatalogItem[] = [
   createDemoItem('price-gaxeta-45-55-7', 'Gaxeta 45 × 55 × 7', 'piece', 'un', 32000),
   createDemoItem('price-o-ring-60-3', 'O-ring 60 × 3', 'piece', 'un', 3500),
   createDemoItem(
+    'price-kit-vedacao-acumulador',
+    'Kit de vedação para acumulador',
+    'product',
+    'un',
+    68000,
+    'Kit composto por elementos de vedação para manutenção de acumuladores hidráulicos.',
+  ),
+  createDemoItem(
     'price-recuperar-rosca-embolao',
     'Recuperar rosca do êmbolo',
     'service',
@@ -32,6 +40,8 @@ const demoItems: PriceCatalogItem[] = [
   ),
   createDemoItem('price-pintura', 'Pintura', 'service', 'un', 8500),
 ];
+const DEMO_SEED_VERSION_KEY = `${PRICE_CATALOG_STORAGE_KEY}-seed`;
+const DEMO_SEED_VERSION = '2';
 
 function createDemoItem(
   id: string,
@@ -39,13 +49,14 @@ function createDemoItem(
   type: PriceCatalogItem['type'],
   unit: PriceCatalogItem['unit'],
   unitPriceCents: number,
+  description = 'Dado fictício de demonstração baseado nas anotações da RKM.',
 ): PriceCatalogItem {
   const timestamp = '2026-01-15T12:00:00.000Z';
 
   return {
     id,
     name,
-    description: 'Dado fictício de demonstração baseado nas anotações da RKM.',
+    description,
     type,
     unit,
     unitPriceCents,
@@ -60,17 +71,30 @@ function readItems(): PriceCatalogItem[] {
 
   if (!stored) {
     writeItems(demoItems);
+    window.localStorage.setItem(DEMO_SEED_VERSION_KEY, DEMO_SEED_VERSION);
     return demoItems;
   }
 
   try {
     const parsed = JSON.parse(stored) as unknown;
-    if (Array.isArray(parsed)) return parsed as PriceCatalogItem[];
+    if (Array.isArray(parsed)) {
+      const items = parsed as PriceCatalogItem[];
+      if (window.localStorage.getItem(DEMO_SEED_VERSION_KEY) !== DEMO_SEED_VERSION) {
+        const existingIds = new Set(items.map((item) => item.id));
+        const missingDemoItems = demoItems.filter((item) => !existingIds.has(item.id));
+        const mergedItems = [...items, ...missingDemoItems];
+        writeItems(mergedItems);
+        window.localStorage.setItem(DEMO_SEED_VERSION_KEY, DEMO_SEED_VERSION);
+        return mergedItems;
+      }
+      return items;
+    }
   } catch {
     // Recreate the demo dataset when a local browser value is invalid.
   }
 
   writeItems(demoItems);
+  window.localStorage.setItem(DEMO_SEED_VERSION_KEY, DEMO_SEED_VERSION);
   return demoItems;
 }
 
