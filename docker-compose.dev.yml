@@ -29,3 +29,7 @@ services:
     depends_on:
       postgres-tunnel:
         condition: service_healthy
+
+  frontend:
+    volumes:
+      - ${HOME}/.wakatime.cfg:/root/.wakatime.cfg:ro

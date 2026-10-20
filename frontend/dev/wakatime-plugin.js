@@ -1,3 +1,17 @@
+import { readFileSync } from 'node:fs';
+
+const WAKATIME_CONFIG_PATH = '/root/.wakatime.cfg';
+
+function readWakatimeConfigKey() {
+  try {
+    const config = readFileSync(WAKATIME_CONFIG_PATH, 'utf8');
+    const match = config.match(/^\s*api_key\s*=\s*(\S.*?)\s*$/m);
+    return match?.[1]?.trim() || '';
+  } catch {
+    return '';
+  }
+}
+
 export function wakatimeDevPlugin() {
   const cache = new Map();
   const cacheTtlMs = 5 * 60 * 1000;
@@ -55,7 +69,7 @@ export function wakatimeDevPlugin() {
           return;
         }
 
-        const key = process.env.WAKATIME_API_KEY?.trim();
+        const key = process.env.WAKATIME_API_KEY?.trim() || readWakatimeConfigKey();
 
         if (!key) {
           send(503, {

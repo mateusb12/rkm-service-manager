@@ -138,6 +138,7 @@ export const ROADMAP: RoadmapVersion[] = [
             'comercial/tabela-precos',
             'Tabela de preços',
             'O comercial consegue cadastrar e consultar itens e serviços utilizados na formação do orçamento, com seus respectivos valores.',
+            'Em andamento',
           ),
           feature(
             'comercial/orcamento-minimo',

@@ -528,7 +528,9 @@ export function RoadmapView() {
                         />
                       )}
                       {area.features.map((feature, index) => {
-                        const done = feature.state === 'Concluída';
+                        const done =
+                          feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]);
+                        const inProgress = !done && feature.state === 'Em andamento';
 
                         return (
                           <div key={feature.id} className="relative text-center">
@@ -536,14 +538,20 @@ export function RoadmapView() {
                               className={`relative z-10 mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold ${
                                 done
                                   ? 'border-emerald-300 bg-emerald-400 text-emerald-950'
-                                  : 'border-rkmborder bg-rkmcard2 text-slate-400'
+                                  : inProgress
+                                    ? 'border-amber-300 bg-amber-300 text-amber-950 shadow-[0_0_10px_rgba(252,211,77,.35)]'
+                                    : 'border-rkmborder bg-rkmcard2 text-slate-400'
                               }`}
                             >
                               {done ? '✓' : index + 1}
                             </span>
                             <span
                               className={`mt-2 block text-[10px] leading-tight ${
-                                done ? 'text-emerald-300' : 'text-slate-400'
+                                done
+                                  ? 'text-emerald-300'
+                                  : inProgress
+                                    ? 'text-amber-300'
+                                    : 'text-slate-400'
                               }`}
                             >
                               {feature.title}
