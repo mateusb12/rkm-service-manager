@@ -26,14 +26,6 @@ export function formatCnpj(value: string): string {
     .replace(/(\d{4})(\d)/, '$1-$2');
 }
 
-export function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('pt-BR')
-    .trim();
-}
-
 export function validateClient(clientInput: ClientInput): ClientErrors {
   const validationErrors: ClientErrors = {};
   const normalizedCnpj = onlyDigits(clientInput.cnpj);

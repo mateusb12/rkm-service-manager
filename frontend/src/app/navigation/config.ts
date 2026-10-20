@@ -108,7 +108,7 @@ export const SIDEBAR_ITEMS = [
     group: 'PCP',
     status: 'incomplete',
     roles: ['admin', 'pcp'],
-    icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8',
+    icon: 'users-round',
   },
   {
     key: 'pcp',
@@ -117,6 +117,16 @@ export const SIDEBAR_ITEMS = [
     status: 'incomplete',
     roles: ['admin', 'pcp'],
     icon: 'M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z',
+  },
+
+  /* COMERCIAL */
+  {
+    key: 'commercial-price-catalog',
+    label: 'Tabela de preços',
+    group: 'Comercial',
+    status: 'incomplete',
+    roles: ['admin', 'commercial'],
+    icon: 'table-properties',
   },
 
   /* ROTAS INTERNAS */

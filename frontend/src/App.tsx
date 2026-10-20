@@ -39,6 +39,7 @@ import {
   SummaryView,
 } from './features/service-workflow';
 import { ClientsView } from './features/pcp/clients';
+import { PriceCatalogView } from './features/commercial/price-catalog';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -870,6 +871,10 @@ const App = () => {
 
     if (view === 'pcp-clients') {
       return React.createElement(ClientsView);
+    }
+
+    if (view === 'commercial-price-catalog') {
+      return React.createElement(PriceCatalogView);
     }
 
     if (view === 'populator') {

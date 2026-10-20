@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import React, { useState } from 'react';
+import { Table2, UsersRound } from 'lucide-react';
 
 import { SIDEBAR_ITEMS, SIDEBAR_STATUS_LABEL } from './config';
 
@@ -16,6 +17,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
     'Visão geral': true,
     Operação: true,
     PCP: true,
+    Comercial: true,
     Planejamento: true,
     Gestão: true,
     Ferramentas: true,
@@ -26,7 +28,15 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
   const user = mockUsers.find((u) => u.id === activeUser) || mockUsers[0];
   const role = ROLES.find((r) => r.key === activeRole) || ROLES[0];
 
-  const groupOrder = ['Visão geral', 'Operação', 'PCP', 'Planejamento', 'Gestão', 'Ferramentas'];
+  const groupOrder = [
+    'Visão geral',
+    'Operação',
+    'PCP',
+    'Comercial',
+    'Planejamento',
+    'Gestão',
+    'Ferramentas',
+  ];
 
   const groups = groupOrder.map((group) => [group, items.filter((item) => item.group === group)]);
 
@@ -153,22 +163,27 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
                       : it.label,
                   },
 
-                  React.createElement(
-                    'svg',
-                    {
-                      width: '17',
-                      height: '17',
-                      viewBox: '0 0 24 24',
-                      fill: 'none',
-                      stroke: 'currentColor',
-                      strokeWidth: '1.8',
-                      strokeLinecap: 'round',
-                      strokeLinejoin: 'round',
-                    },
-                    React.createElement('path', {
-                      d: it.icon,
-                    }),
-                  ),
+                  it.icon === 'table-properties' || it.icon === 'users-round'
+                    ? React.createElement(it.icon === 'users-round' ? UsersRound : Table2, {
+                        size: 21,
+                        strokeWidth: 1.8,
+                      })
+                    : React.createElement(
+                        'svg',
+                        {
+                          width: '21',
+                          height: '21',
+                          viewBox: '0 0 24 24',
+                          fill: 'none',
+                          stroke: 'currentColor',
+                          strokeWidth: '1.8',
+                          strokeLinecap: 'round',
+                          strokeLinejoin: 'round',
+                        },
+                        React.createElement('path', {
+                          d: it.icon,
+                        }),
+                      ),
 
                   React.createElement(
                     'span',
