@@ -811,8 +811,7 @@ label.rkm-check input {
   transform: translate(-50%, calc(-100% - 12px));
   transition: opacity 0.15s;
 }
-.rkm-tooltip:hover .rkm-tooltip-content,
-.rkm-tooltip:focus-within .rkm-tooltip-content {
+.rkm-tooltip-content.is-visible {
   opacity: 1;
 }
 .zenit-dev-access {

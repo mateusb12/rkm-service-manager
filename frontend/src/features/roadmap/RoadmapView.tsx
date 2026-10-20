@@ -1,6 +1,7 @@
 // RKM_ROADMAP_COMPACT_V1
 import React, { useState } from 'react';
 
+import { Tooltip } from '../../Tooltip';
 import {
   freezeFeatureMetric,
   listPersistedFeatureMetrics,
@@ -79,6 +80,26 @@ const AREA_COLORS = {
   },
 };
 
+const V0_MILESTONE_FEATURES: Record<string, string[]> = {
+  '2026-10-16': ['pcp/clientes'],
+  '2026-10-23': ['comercial/tabela-precos'],
+  '2026-10-30': ['pcp/abertura-os'],
+  '2026-11-06': ['pcp/fila'],
+  '2026-11-13': ['oficina/bancadas'],
+  '2026-11-20': ['oficina/diagnostico-minimo'],
+  '2026-11-27': ['oficina/execucao-minima'],
+  '2026-12-04': ['comercial/orcamento-minimo'],
+  '2026-12-08': ['finalizacao/encerramento', 'finalizacao/relatorio-pdf'],
+};
+
+function roadmapDateKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
 export function RoadmapView() {
   const localDevelopmentEnabled = useLocalDevelopment();
   const [viewMode, setViewMode] = useState<'version' | 'area'>('version');
@@ -138,6 +159,66 @@ export function RoadmapView() {
   const version = visibleRoadmap.find((v) => v.id === versionId) || visibleRoadmap[0];
   const selectedArea = areaProjections.find((area) => area.id === areaId) || areaProjections[0];
   const roadmapTimebox = getRoadmapVersionTimebox(version.id);
+  const versionProgress = React.useMemo(() => {
+    const totalFeatures = version.areas.reduce((total, area) => total + area.features.length, 0);
+    const delivered: string[] = [];
+    const inProgress: string[] = [];
+
+    version.areas.forEach((area) => {
+      area.features.forEach((feature) => {
+        const isDelivered = feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]);
+
+        if (isDelivered) delivered.push(feature.title);
+        else if (feature.state === 'Em andamento') inProgress.push(feature.title);
+      });
+    });
+
+    const workedFeatures = delivered.length + inProgress.length;
+
+    return {
+      actualPercentage: Math.round((workedFeatures / totalFeatures) * 100),
+      delivered,
+      inProgress,
+      expectedPercentage: Math.min(
+        100,
+        Math.max(
+          0,
+          Math.round(
+            ((roadmapTimebox.today.getTime() - roadmapTimebox.start.getTime()) /
+              (roadmapTimebox.deadline.getTime() - roadmapTimebox.start.getTime())) *
+              100,
+          ),
+        ),
+      ),
+    };
+  }, [completedFeatures, roadmapTimebox, version]);
+  const progressTooltipContent = (
+    <div className="space-y-2">
+      <strong className="block text-orange-200">
+        Progresso realizado: {versionProgress.actualPercentage}%
+      </strong>
+      {versionProgress.delivered.length > 0 && (
+        <div>
+          <span className="font-semibold text-emerald-300">Entregues</span>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            {versionProgress.delivered.map((title) => (
+              <li key={title}>{title}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {versionProgress.inProgress.length > 0 && (
+        <div>
+          <span className="font-semibold text-orange-300">Em andamento</span>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            {versionProgress.inProgress.map((title) => (
+              <li key={title}>{title}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
   const stepperCount = Math.max(
     1,
     viewMode === 'version' ? visibleRoadmap.length : areaProjections.length,
@@ -435,6 +516,70 @@ export function RoadmapView() {
                   const showLabel = isMilestone;
 
                   const position = (index / Math.max(1, roadmapTimebox.days.length - 1)) * 100;
+                  const milestoneFeatures =
+                    version.id === 'V0'
+                      ? V0_MILESTONE_FEATURES[roadmapDateKey(day)]?.flatMap((id) =>
+                          version.areas.flatMap((area) =>
+                            area.features.filter((feature) => feature.id === id),
+                          ),
+                        ) || []
+                      : [];
+                  const milestoneAreas = version.areas.filter((area) =>
+                    milestoneFeatures.some((feature) =>
+                      area.features.some((item) => item.id === feature.id),
+                    ),
+                  );
+                  const milestoneIsDelivered = milestoneFeatures.every(
+                    (feature) =>
+                      feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]),
+                  );
+                  const milestoneIsInProgress = milestoneFeatures.some(
+                    (feature) => feature.state === 'Em andamento',
+                  );
+                  const milestoneHeadingClass = milestoneIsDelivered
+                    ? 'text-emerald-300'
+                    : milestoneIsInProgress
+                      ? 'text-orange-300'
+                      : 'text-slate-300';
+                  const milestoneTooltipContent = milestoneFeatures.length ? (
+                    <div className="space-y-1">
+                      <strong className={`block ${milestoneHeadingClass}`}>
+                        [{milestoneAreas.map((area) => area.title).join(' · ')}] Entregas previstas
+                      </strong>
+                      <ul className="list-disc space-y-0.5 pl-4">
+                        {milestoneFeatures.map((feature) => (
+                          <li key={feature.id}>{feature.title}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : isStart ? (
+                    <strong className="text-emerald-200">Início da V0</strong>
+                  ) : isDeadline ? (
+                    <strong className="text-amber-200">Prazo da V0</strong>
+                  ) : null;
+                  const milestoneDot = (
+                    <span
+                      className={
+                        isToday
+                          ? 'relative z-20 h-4 w-4 rounded-full border-2 border-sky-200 bg-sky-400 shadow-[0_0_0_4px_rgba(56,189,248,0.15),0_0_14px_rgba(56,189,248,0.7)]'
+                          : 'h-4 w-4 rounded-full border border-amber-300 bg-amber-300/90 shadow-[0_0_8px_rgba(252,211,77,.25)]'
+                      }
+                    >
+                      {isToday && (
+                        <Tooltip content={progressTooltipContent}>
+                          <span
+                            className="block h-4 w-4"
+                            aria-label="Detalhes do progresso realizado"
+                          />
+                        </Tooltip>
+                      )}
+                      {!isToday && milestoneTooltipContent && (
+                        <Tooltip content={milestoneTooltipContent}>
+                          <span className="block h-4 w-4" aria-label="Detalhes da entrega" />
+                        </Tooltip>
+                      )}
+                    </span>
+                  );
 
                   return (
                     <React.Fragment key={day.toISOString()}>
@@ -449,13 +594,7 @@ export function RoadmapView() {
                         )}
 
                         {isMilestone ? (
-                          <span
-                            className={
-                              isToday
-                                ? 'relative z-20 h-4 w-4 rounded-full border-2 border-sky-200 bg-sky-400 shadow-[0_0_0_4px_rgba(56,189,248,0.15),0_0_14px_rgba(56,189,248,0.7)]'
-                                : 'h-4 w-4 rounded-full border border-amber-300 bg-amber-300/90 shadow-[0_0_8px_rgba(252,211,77,.25)]'
-                            }
-                          />
+                          milestoneDot
                         ) : (
                           <span className="mt-2 h-2 border-l border-slate-500/70" />
                         )}
@@ -475,6 +614,51 @@ export function RoadmapView() {
                     </React.Fragment>
                   );
                 })}
+              </div>
+            </div>
+          )}
+          {localDevelopmentEnabled && viewMode === 'version' && (
+            <div className="mt-5 grid gap-3 text-xs text-slate-400 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-8">
+              <span className="shrink-0 uppercase tracking-wide text-slate-500">Progresso V0</span>
+              <div className="relative mx-5 h-9 min-w-0">
+                <span className="pointer-events-none absolute inset-x-0 top-2 border-t border-slate-500/70" />
+                <span
+                  className="pointer-events-none absolute left-0 top-[7px] h-1 rounded-full bg-sky-300/70"
+                  style={{ width: `${versionProgress.expectedPercentage}%` }}
+                />
+                <span
+                  className="pointer-events-none absolute left-0 top-[7px] h-1 rounded-full bg-orange-300 shadow-[0_0_8px_rgba(253,186,116,.4)]"
+                  style={{ width: `${versionProgress.actualPercentage}%` }}
+                />
+                {[0, 25, 50, 75, 100].map((percentage) => (
+                  <span
+                    key={percentage}
+                    className="absolute top-0 flex -translate-x-1/2 flex-col items-center gap-1"
+                    style={{ left: `${percentage}%` }}
+                  >
+                    <span
+                      className={`h-4 w-px ${percentage <= versionProgress.actualPercentage ? 'bg-orange-300' : 'bg-slate-500/70'}`}
+                    />
+                    <span className="whitespace-nowrap text-[10px]">{percentage}%</span>
+                  </span>
+                ))}
+                <span
+                  className="absolute top-[-5px] z-10 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-orange-100 bg-orange-300 shadow-[0_0_10px_rgba(253,186,116,.55)]"
+                  style={{ left: `${versionProgress.actualPercentage}%` }}
+                />
+                <span
+                  className="absolute top-[-5px] z-[5] h-4 w-4 -translate-x-1/2 rounded-full border-2 border-sky-100 bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,.45)]"
+                  style={{ left: `${versionProgress.expectedPercentage}%` }}
+                  title={`Esperado: ${versionProgress.expectedPercentage}%`}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                <span className="whitespace-nowrap text-sky-200">
+                  Esperado {versionProgress.expectedPercentage}%
+                </span>
+                <span className="whitespace-nowrap font-semibold text-orange-200">
+                  Realizado {versionProgress.actualPercentage}%
+                </span>
               </div>
             </div>
           )}
