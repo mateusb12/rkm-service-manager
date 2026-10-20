@@ -19,7 +19,7 @@ type GanttRow = {
 };
 
 const INSTALLMENTS = Array.from({ length: 14 }, (_, index) => index + 1);
-const V0_DEADLINE_INSTALLMENT = 3;
+const V0_DEADLINE_INSTALLMENT = 2;
 
 // Referência visual: primeira parcela em outubro de 2026.
 const FIRST_MONTH = new Date(2026, 9, 1);
@@ -70,9 +70,9 @@ const GANTT_ROWS: GanttRow[] = [
     title: 'PCP',
     phases: [
       { start: 1, end: 2, label: 'V0', kind: 'v0' },
-      { start: 3, end: 3, label: 'V2', kind: 'v2' },
-      { start: 4, end: 6, label: 'V3', kind: 'v3' },
-      { start: 7, end: 14, label: 'Manutenção', kind: 'manutencao' },
+      { start: 5, end: 5, label: 'V2', kind: 'v2' },
+      { start: 7, end: 7, label: 'V3', kind: 'v3' },
+      { start: 10, end: 10, label: 'V4', kind: 'v4' },
     ],
   },
   {
@@ -80,41 +80,30 @@ const GANTT_ROWS: GanttRow[] = [
     title: 'Oficina',
     phases: [
       { start: 1, end: 2, label: 'V0', kind: 'v0' },
-      { start: 3, end: 3, label: 'V1', kind: 'v1' },
-      { start: 4, end: 7, label: 'V2', kind: 'v2' },
-      { start: 8, end: 14, label: 'Manutenção', kind: 'manutencao' },
+      { start: 3, end: 4, label: 'V1', kind: 'v1' },
+      { start: 6, end: 6, label: 'V2', kind: 'v2' },
+      { start: 8, end: 8, label: 'V3', kind: 'v3' },
     ],
   },
   {
     id: 'comercial',
     title: 'Comercial',
-    phases: [
-      { start: 2, end: 2, label: 'V0', kind: 'v0' },
-      { start: 3, end: 14, label: 'Manutenção', kind: 'manutencao' },
-    ],
+    phases: [{ start: 2, end: 2, label: 'V0', kind: 'v0' }],
   },
   {
     id: 'finalizacao',
     title: 'Finalização',
     phases: [
       { start: 2, end: 2, label: 'V0', kind: 'v0' },
-      { start: 3, end: 4, label: 'V3', kind: 'v3' },
-      { start: 5, end: 14, label: 'Manutenção', kind: 'manutencao' },
+      { start: 9, end: 9, label: 'V3', kind: 'v3' },
     ],
   },
   {
     id: 'administracao',
     title: 'Administração',
-    phases: [
-      { start: 8, end: 10, label: 'V4', kind: 'v4' },
-      { start: 11, end: 14, label: 'Manutenção', kind: 'manutencao' },
-    ],
+    phases: [{ start: 10, end: 10, label: 'V4', kind: 'v4' }],
   },
 ];
-
-function getPhase(row: GanttRow, installment: number) {
-  return row.phases.find((phase) => installment >= phase.start && installment <= phase.end);
-}
 
 function getPhaseTooltipContent(row: GanttRow, phase: Phase) {
   const version = ROADMAP.find((entry) => entry.id === phase.label);
@@ -248,22 +237,16 @@ export function RoadmapGanttLocalDev() {
           </div>
 
           {GANTT_ROWS.map((row) => (
-            <div key={row.id} className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
-              <div className="flex min-h-11 items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-sm font-semibold text-slate-100">
+            <div
+              key={row.id}
+              className="grid min-h-11 grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1 rounded-md bg-rkmcard2/25"
+            >
+              <div
+                style={{ gridColumn: 1, gridRow: 1 }}
+                className="flex min-h-11 items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-sm font-semibold text-slate-100"
+              >
                 {row.title}
               </div>
-
-              {INSTALLMENTS.filter((installment) => !getPhase(row, installment)).map(
-                (installment) => (
-                  <div
-                    key={`${row.id}-empty-${installment}`}
-                    style={{ gridColumn: installment + 1 }}
-                    className="flex min-h-11 items-center justify-center rounded-md border border-rkmborder bg-rkmcard2/30 text-slate-500"
-                  >
-                    —
-                  </div>
-                ),
-              )}
 
               {row.phases.map((phase) => (
                 <Tooltip
@@ -274,6 +257,7 @@ export function RoadmapGanttLocalDev() {
                   style={{
                     display: 'flex',
                     gridColumn: `${phase.start + 1} / span ${phase.end - phase.start + 1}`,
+                    gridRow: 1,
                   }}
                 >
                   <span>{phase.label}</span>
@@ -281,6 +265,23 @@ export function RoadmapGanttLocalDev() {
               ))}
             </div>
           ))}
+
+          {/* RKM_GANTT_SUPPORT_P11_P14 */}
+          <div className="grid min-h-11 grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1 rounded-md bg-rkmcard2/25">
+            <div
+              style={{ gridColumn: 1, gridRow: 1 }}
+              className="flex min-h-11 items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-sm font-semibold text-slate-100"
+            >
+              Período geral
+            </div>
+            <div
+              style={{ gridColumn: '12 / span 4', gridRow: 1 }}
+              title="P11–P14 · Sustentação, correções e pequenas evoluções"
+              className={`flex min-h-11 items-center justify-center rounded-md border px-3 py-2 text-center text-xs font-semibold ${getCellClass('manutencao')}`}
+            >
+              Sustentação
+            </div>
+          </div>
         </div>
       </div>
     </section>
