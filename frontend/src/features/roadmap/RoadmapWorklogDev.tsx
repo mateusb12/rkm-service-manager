@@ -56,6 +56,43 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Diagnóstico e recuperação da integração WakaTime após recriação do frontend, reutilizando a configuração existente no Linux.',
     },
   ],
+  'comercial/tabela-precos': [
+    {
+      category: 'Produto',
+      description:
+        'Implementação do CRUD demonstrativo da tabela de preços, com cadastro de peças, produtos e serviços, edição, busca, filtros, validações, preços em centavos e persistência local. Inclui exclusão híbrida conforme a existência de vínculos simulados com orçamentos.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Criação do componente compartilhado CrudTable, reutilizado por Clientes e Tabela de preços para padronizar listagens, buscas, filtros, ações e estados visuais.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Extração dos utilitários compartilhados de formatação monetária e normalização textual, eliminando duplicações entre os cadastros.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Integração da Tabela de preços à navegação Comercial, com restrição visual para Admin e Comercial e padronização dos ícones com Lucide React.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Implementação dos indicadores de andamento no roadmap, com diferenciação visual entre features planejadas, em andamento e concluídas.',
+    },
+    {
+      category: 'Ambiente',
+      description:
+        'Adequação do Docker de desenvolvimento para utilizar a configuração WakaTime existente no Linux, sem duplicar a chave no projeto e mantendo a integração isolada do ambiente de produção.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Diagnóstico e correção da falha do Frontend CI causada por arquivos utilitários ausentes no primeiro commit, restabelecendo o build da branch.',
+    },
+  ],
 };
 
 const styles = {
