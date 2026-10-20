@@ -19,6 +19,11 @@ type Props = {
   onSave: (input: PriceCatalogInput, itemId: string | null) => Promise<void>;
 };
 
+const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogInput['type'], string>> = {
+  piece: '/assets/peça.png',
+  service: '/assets/serviço.png',
+};
+
 export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
   const [input, setInput] = useState<PriceCatalogInput>(() =>
     item ? { ...item } : { ...EMPTY_PRICE_CATALOG_INPUT },
@@ -142,24 +147,6 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
               />
             </Field>
 
-            <Field label="Tipo" required error={errors.type}>
-              <select
-                id="price-type"
-                className={fieldClass(Boolean(errors.type))}
-                value={input.type}
-                disabled={saving}
-                onChange={(event) =>
-                  changeField('type', event.target.value as PriceCatalogInput['type'])
-                }
-              >
-                {PRICE_CATALOG_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {PRICE_CATALOG_TYPE_LABELS[type]}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
             <Field label="Unidade" required error={errors.unit}>
               <select
                 id="price-unit"
@@ -204,6 +191,47 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
                 disabled={saving}
                 onChange={(event) => changeField('description', event.target.value)}
               />
+            </Field>
+
+            <Field label="Tipo" required error={errors.type}>
+              <div
+                id="price-type"
+                role="group"
+                aria-label="Tipo de cadastro"
+                className="grid grid-cols-3 gap-3"
+              >
+                {PRICE_CATALOG_TYPES.map((type) => {
+                  const selected = input.type === type;
+                  const icon = PRICE_CATALOG_TYPE_ICONS[type];
+
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      aria-pressed={selected}
+                      disabled={saving}
+                      className={`flex min-h-[88px] flex-col items-center justify-center gap-1.5 rounded-lg border p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 disabled:cursor-not-allowed disabled:opacity-60 ${
+                        selected
+                          ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
+                          : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                      }`}
+                      onClick={() => changeField('type', type)}
+                    >
+                      <span className="flex h-12 w-12 items-center justify-center p-1">
+                        {icon && (
+                          <img
+                            src={icon}
+                            alt=""
+                            aria-hidden="true"
+                            className="h-full w-full object-contain"
+                          />
+                        )}
+                      </span>
+                      <span className="text-xs font-medium">{PRICE_CATALOG_TYPE_LABELS[type]}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </Field>
           </div>
         </section>

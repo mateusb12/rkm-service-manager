@@ -63,6 +63,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Implementação do CRUD demonstrativo da tabela de preços, com cadastro de peças, produtos e serviços, edição, busca, filtros, validações, preços em centavos e persistência local. Inclui exclusão híbrida conforme a existência de vínculos simulados com orçamentos.',
     },
     {
+      category: 'Produto',
+      description:
+        'Refinamento visual dos tipos do catálogo, com ícones de peças e serviços, destaque das imagens na listagem e seleção visual dos tipos no formulário.',
+    },
+    {
       category: 'Transversal',
       description:
         'Criação do componente compartilhado CrudTable, reutilizado por Clientes e Tabela de preços para padronizar listagens, buscas, filtros, ações e estados visuais.',

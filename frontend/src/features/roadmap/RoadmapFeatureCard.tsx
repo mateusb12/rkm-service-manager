@@ -35,7 +35,7 @@ export function RoadmapFeatureCard({
         displayedState === 'Concluída'
           ? 'border-emerald-400/35 bg-emerald-400/[0.06] shadow-[0_0_18px_rgba(52,211,153,.06)]'
           : displayedState === 'Em andamento'
-            ? 'border-blue-400/25 bg-blue-400/[0.04]'
+            ? 'border-orange-400/30 bg-orange-400/[0.05]'
             : 'border-rkmborder bg-rkmbg/50'
       }`}
     >
@@ -52,7 +52,7 @@ export function RoadmapFeatureCard({
             displayedState === 'Concluída'
               ? 'tag-emerald'
               : displayedState === 'Em andamento'
-                ? 'tag-blue'
+                ? 'tag-orange'
                 : 'tag-slate'
           }`}
         >

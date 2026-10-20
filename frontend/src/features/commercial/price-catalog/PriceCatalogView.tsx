@@ -24,6 +24,11 @@ const filters: { key: CatalogFilter; label: string }[] = [
   { key: 'archived', label: 'Arquivados' },
 ];
 
+const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogItem['type'], string>> = {
+  piece: '/assets/peça.png',
+  service: '/assets/serviço.png',
+};
+
 export function PriceCatalogView() {
   const [items, setItems] = useState<PriceCatalogItem[]>([]);
   const [page, setPage] = useState<CatalogPage>({ mode: 'list' });
@@ -275,7 +280,23 @@ function CatalogTable({
                 )}
               </td>
               <td className="px-5 py-4">
-                <span className="tag tag-blue">{PRICE_CATALOG_TYPE_LABELS[item.type]}</span>
+                {PRICE_CATALOG_TYPE_ICONS[item.type] ? (
+                  <div className="flex w-fit flex-col items-center gap-1.5">
+                    <div className="flex h-12 w-12 items-center justify-center p-1">
+                      <img
+                        src={PRICE_CATALOG_TYPE_ICONS[item.type]}
+                        alt=""
+                        aria-hidden="true"
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <span className="text-[10px] font-medium leading-none text-sky-300">
+                      {PRICE_CATALOG_TYPE_LABELS[item.type]}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="tag tag-blue">{PRICE_CATALOG_TYPE_LABELS[item.type]}</span>
+                )}
               </td>
               <td className="px-5 py-4 text-slate-300">{item.unit}</td>
               <td className="px-5 py-4 text-center font-medium text-slate-100">
