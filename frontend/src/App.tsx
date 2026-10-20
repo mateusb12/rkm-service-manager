@@ -39,7 +39,7 @@ import {
   SummaryView,
 } from './features/service-workflow';
 import { ClientsView } from './features/pcp/clients';
-import { PriceCatalogView } from './features/commercial/price-catalog';
+import { PriceCatalogView, type PriceCatalogPage } from './features/commercial/price-catalog';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -626,6 +626,7 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [view, setView] = useState(() => viewFromPath(location.pathname));
+  const [priceCatalogPage, setPriceCatalogPage] = useState<PriceCatalogPage>({ mode: 'list' });
   const [activeIT, setActiveIT] = useState('IT001');
   const activeUser = authenticatedUser?.id || '';
   const activeRole = authenticatedUser?.role || '';
@@ -705,6 +706,7 @@ const App = () => {
     setView(viewFromPath(location.pathname));
   }, [location.pathname]);
   const handleSetView = (newView) => {
+    if (newView !== 'commercial-price-catalog') setPriceCatalogPage({ mode: 'list' });
     if (newView === 'it001') setActiveIT('IT001');
     if (newView === 'it002') setActiveIT('IT002');
     navigate(`/${newView}`);
@@ -874,7 +876,10 @@ const App = () => {
     }
 
     if (view === 'commercial-price-catalog') {
-      return React.createElement(PriceCatalogView);
+      return React.createElement(PriceCatalogView, {
+        page: priceCatalogPage,
+        onPageChange: setPriceCatalogPage,
+      });
     }
 
     if (view === 'populator') {
@@ -1033,6 +1038,13 @@ const App = () => {
           darkMode: darkMode,
           onToggleDarkMode: () => setDarkMode((value) => !value),
           onHide: hideTopBar,
+          subpageTitle:
+            view === 'commercial-price-catalog' && priceCatalogPage.mode !== 'list'
+              ? priceCatalogPage.mode === 'edit'
+                ? 'Editar cadastro'
+                : 'Novo cadastro'
+              : undefined,
+          onSubpageBack: () => setPriceCatalogPage({ mode: 'list' }),
         }),
       renderView(),
     ),

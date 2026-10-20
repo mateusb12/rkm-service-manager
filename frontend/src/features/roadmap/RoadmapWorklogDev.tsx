@@ -85,6 +85,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Transversal',
       description:
+        'Refinamento da navegação contextual das sub-telas pela TopBar, com retorno para a listagem no título da página e remoção de breadcrumbs e identificadores redundantes do formulário.',
+    },
+    {
+      category: 'Transversal',
+      description:
         'Implementação dos indicadores de andamento no roadmap, com diferenciação visual entre features planejadas, em andamento e concluídas.',
     },
     {

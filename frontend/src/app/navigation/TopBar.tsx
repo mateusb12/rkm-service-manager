@@ -9,7 +9,14 @@ import {
   useLocalDevelopment,
 } from '../../shared/dev/local-development';
 
-export const CleanTopBar = ({ view, darkMode, onToggleDarkMode, onHide }) => {
+export const CleanTopBar = ({
+  view,
+  darkMode,
+  onToggleDarkMode,
+  onHide,
+  subpageTitle,
+  onSubpageBack,
+}) => {
   const localDevelopmentEnabled = useLocalDevelopment();
   const labels = {
     dashboard: 'Painel',
@@ -29,12 +36,41 @@ export const CleanTopBar = ({ view, darkMode, onToggleDarkMode, onHide }) => {
     { className: 'topbar px-4 md:px-6 py-3 flex items-center gap-3 sticky top-0 z-20' },
     React.createElement(
       'div',
-      { className: 'flex-1 min-w-0' },
-      React.createElement('div', { className: 'text-xs text-slate-500' }, 'RKM Service Manager'),
+      { className: 'flex-1 min-w-0 flex items-center gap-3' },
       React.createElement(
         'div',
-        { className: 'text-base font-semibold text-slate-100 truncate' },
-        SIDEBAR_ITEMS.find((item) => item.key === view)?.label || labels[view] || 'Operações',
+        { className: 'min-w-0' },
+        React.createElement(
+          'div',
+          { className: 'flex min-w-0 items-baseline gap-2' },
+          subpageTitle
+            ? React.createElement(
+                'button',
+                {
+                  type: 'button',
+                  onClick: onSubpageBack,
+                  className:
+                    'truncate text-base font-semibold text-sky-300 transition hover:text-sky-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50',
+                  title: 'Voltar para a tabela de preços',
+                },
+                SIDEBAR_ITEMS.find((item) => item.key === view)?.label ||
+                  labels[view] ||
+                  'Operações',
+              )
+            : React.createElement(
+                'div',
+                { className: 'truncate text-base font-semibold text-slate-100' },
+                SIDEBAR_ITEMS.find((item) => item.key === view)?.label ||
+                  labels[view] ||
+                  'Operações',
+              ),
+          subpageTitle &&
+            React.createElement(
+              'span',
+              { className: 'truncate text-sm text-slate-400' },
+              `/ ${subpageTitle}`,
+            ),
+        ),
       ),
     ),
     React.createElement(

@@ -87,26 +87,8 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
 
   return (
     <main className="mx-auto max-w-5xl space-y-5 p-4 md:p-6">
-      <nav aria-label="Navegação da tabela de preços">
-        <button
-          type="button"
-          className="text-sm text-blue-400 hover:text-blue-300"
-          onClick={onCancel}
-          disabled={saving}
-        >
-          ← Tabela de preços
-        </button>
-        <span className="mx-2 text-slate-500">/</span>
-        <span className="text-sm text-slate-300">
-          {editing ? 'Editar cadastro' : 'Novo cadastro'}
-        </span>
-      </nav>
-
       <header>
-        <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-          COMERCIAL · TABELA DE PREÇOS
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold text-slate-100">
+        <h1 className="text-2xl font-semibold text-slate-100">
           {editing ? item?.name : 'Novo cadastro'}
         </h1>
         <p className="mt-2 text-sm text-slate-400">

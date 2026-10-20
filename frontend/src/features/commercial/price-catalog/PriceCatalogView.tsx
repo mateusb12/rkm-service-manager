@@ -13,7 +13,8 @@ import {
   updatePriceCatalogItem,
 } from './service';
 
-type CatalogPage = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; itemId: string };
+export type PriceCatalogPage =
+  { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; itemId: string };
 type CatalogFilter = 'active' | 'all' | 'piece' | 'product' | 'service' | 'archived';
 
 const filters: { key: CatalogFilter; label: string }[] = [
@@ -29,9 +30,14 @@ const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogItem['type'], string>
   service: '/assets/serviço.png',
 };
 
-export function PriceCatalogView() {
+type Props = {
+  page?: PriceCatalogPage;
+  onPageChange?: (page: PriceCatalogPage) => void;
+};
+
+export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) {
   const [items, setItems] = useState<PriceCatalogItem[]>([]);
-  const [page, setPage] = useState<CatalogPage>({ mode: 'list' });
+  const [internalPage, setInternalPage] = useState<PriceCatalogPage>({ mode: 'list' });
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<CatalogFilter>('active');
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -39,6 +45,12 @@ export function PriceCatalogView() {
   const [loadError, setLoadError] = useState('');
   const [success, setSuccess] = useState('');
   const [actionError, setActionError] = useState('');
+  const page = controlledPage || internalPage;
+
+  function changePage(nextPage: PriceCatalogPage) {
+    onPageChange?.(nextPage);
+    if (!onPageChange) setInternalPage(nextPage);
+  }
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -78,17 +90,17 @@ export function PriceCatalogView() {
   function openCreate() {
     setSuccess('');
     setActionError('');
-    setPage({ mode: 'create' });
+    changePage({ mode: 'create' });
   }
 
   function openEdit(itemId: string) {
     setSuccess('');
     setActionError('');
-    setPage({ mode: 'edit', itemId });
+    changePage({ mode: 'edit', itemId });
   }
 
   function returnToList() {
-    setPage({ mode: 'list' });
+    changePage({ mode: 'list' });
     setPendingDeleteId(null);
   }
 
