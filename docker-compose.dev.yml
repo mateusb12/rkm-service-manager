@@ -2,6 +2,8 @@ services:
   postgres-tunnel:
     image: alpine:3.22
     entrypoint: ["/bin/sh", "/usr/local/bin/rkm-ssh-tunnel"]
+    ports:
+      - "127.0.0.1:15432:15432"
     environment:
       SSH_AUTH_SOCK: /run/ssh-agent
     volumes:

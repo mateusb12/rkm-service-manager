@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { DurationPicker } from '../../utils/DurationPicker';
+import { DurationPicker, formatDuration } from '../../utils/DurationPicker';
 import { FunctionPointsDev } from './FunctionPointsDev';
 import { getChatGptActivity } from './chatgpt-activity-service';
 import {
@@ -64,6 +64,7 @@ export default function RoadmapMetricsDev({
   const [chatGptActivity, setChatGptActivity] = useState<Record<string, ChatGptEntry>>({});
   const [nextWakatimeSyncAt, setNextWakatimeSyncAt] = useState<number | null>(null);
   const [manualRefreshKey, setManualRefreshKey] = useState(0);
+  const [hoursExpanded, setHoursExpanded] = useState(false);
   const handledManualRefresh = useRef(0);
 
   const activeBranch = storedBranch || defaultBranch;
@@ -340,8 +341,23 @@ export default function RoadmapMetricsDev({
 
   return (
     <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold text-amber-300">HORAS · APENAS LOCALHOST</span>
+      <div className={`${hoursExpanded ? 'mb-3 ' : ''}flex items-center justify-between gap-3`}>
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setHoursExpanded((expanded) => !expanded)}
+            aria-expanded={hoursExpanded}
+            className="shrink-0 text-left text-xs font-semibold text-amber-300 hover:text-amber-200"
+          >
+            <span className="block">
+              {hoursExpanded ? '▾' : '▸'} TEMPO DE FEATURE
+              {!hoursExpanded && `: ${formatDuration(totalTrackedMinutes).replace(' ', '')}`}
+            </span>
+            <span className="mt-0.5 block text-[10px] font-medium text-amber-300/70">
+              (APENAS LOCALHOST)
+            </span>
+          </button>
+        </div>
 
         <div className="flex items-center gap-2">
           <button
@@ -387,103 +403,107 @@ export default function RoadmapMetricsDev({
         </div>
       </div>
 
-      <div className="mb-3 border-t border-amber-400/20 pt-3">
-        <FunctionPointsDev featureId={featureId} editable={!completed && editing} />
-      </div>
+      {hoursExpanded && (
+        <>
+          <div className="mb-3 border-t border-amber-400/20 pt-3">
+            <FunctionPointsDev featureId={featureId} editable={!completed && editing} />
+          </div>
 
-      {editing && (
-        <div className="mb-3 flex flex-wrap items-end gap-2">
-          <label className="min-w-0 flex-1 text-xs text-slate-400">
-            Branch WakaTime
-            <input
-              value={branchDraft}
-              onChange={(event) => setBranchDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') saveBranch(featureId);
-              }}
-              className="mt-1 w-full rounded-md border border-rkmborder bg-rkmcard2 px-3 py-2 text-sm text-slate-200"
-              placeholder={defaultBranch}
+          {editing && (
+            <div className="mb-3 flex flex-wrap items-end gap-2">
+              <label className="min-w-0 flex-1 text-xs text-slate-400">
+                Branch WakaTime
+                <input
+                  value={branchDraft}
+                  onChange={(event) => setBranchDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') saveBranch(featureId);
+                  }}
+                  className="mt-1 w-full rounded-md border border-rkmborder bg-rkmcard2 px-3 py-2 text-sm text-slate-200"
+                  placeholder={defaultBranch}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => saveBranch(featureId)}
+                className="rounded-md border border-sky-400/30 px-3 py-2 text-xs font-medium text-sky-200 hover:bg-sky-400/10"
+              >
+                Salvar branch
+              </button>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <DurationPicker
+              label="Estimativa inicial"
+              mode={!completed && editing ? 'edit' : 'locked'}
+              minutes={estimatedHours == null ? null : Math.round(estimatedHours * 60)}
+              onChange={(value) => recordHours(value === null ? null : value / 60)}
             />
-          </label>
-          <button
-            type="button"
-            onClick={() => saveBranch(featureId)}
-            className="rounded-md border border-sky-400/30 px-3 py-2 text-xs font-medium text-sky-200 hover:bg-sky-400/10"
-          >
-            Salvar branch
-          </button>
-        </div>
-      )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <DurationPicker
-          label="Estimativa inicial"
-          mode={!completed && editing ? 'edit' : 'locked'}
-          minutes={estimatedHours == null ? null : Math.round(estimatedHours * 60)}
-          onChange={(value) => recordHours(value === null ? null : value / 60)}
-        />
+            <div className="space-y-2">
+              <DurationPicker
+                label="Tempo real · WakaTime + ChatGPT"
+                mode="locked"
+                minutes={totalTrackedMinutes}
+                onChange={() => undefined}
+              >
+                {activityRows.length > 0 && (
+                  <ul className="list-disc space-y-1 pl-5 text-xs text-slate-400">
+                    {activityRows.map((row) => (
+                      <li
+                        key={row.name}
+                        title={row.chatGpt ? chatGptEntry?.error || undefined : undefined}
+                      >
+                        <span className="text-slate-300">{row.name}</span>
+                        {' — '}
+                        {!completed && row.chatGpt && chatGptEntry?.loading
+                          ? 'consultando...'
+                          : row.seconds != null
+                            ? formatActivityDuration(row.seconds)
+                            : row.chatGpt && chatGptEntry?.error
+                              ? 'indisponível'
+                              : '—'}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </DurationPicker>
 
-        <div className="space-y-2">
-          <DurationPicker
-            label="Tempo real · WakaTime + ChatGPT"
-            mode="locked"
-            minutes={totalTrackedMinutes}
-            onChange={() => undefined}
-          >
-            {activityRows.length > 0 && (
-              <ul className="list-disc space-y-1 pl-5 text-xs text-slate-400">
-                {activityRows.map((row) => (
-                  <li
-                    key={row.name}
-                    title={row.chatGpt ? chatGptEntry?.error || undefined : undefined}
-                  >
-                    <span className="text-slate-300">{row.name}</span>
-                    {' — '}
-                    {!completed && row.chatGpt && chatGptEntry?.loading
-                      ? 'consultando...'
-                      : row.seconds != null
-                        ? formatActivityDuration(row.seconds)
-                        : row.chatGpt && chatGptEntry?.error
-                          ? 'indisponível'
-                          : '—'}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </DurationPicker>
+              <p
+                role="status"
+                className={`text-xs ${
+                  completed
+                    ? 'text-emerald-300'
+                    : wakatimeHours[featureId]?.error
+                      ? 'text-rose-300'
+                      : 'text-slate-400'
+                }`}
+              >
+                {completed
+                  ? 'Congelado — feature concluída.'
+                  : wakatimeHours[featureId]?.error ||
+                    (wakatimeHours[featureId]?.loading ? (
+                      'Sincronizando com WakaTime...'
+                    ) : (
+                      <WakatimeCountdown nextAt={nextWakatimeSyncAt} />
+                    ))}
+              </p>
+            </div>
 
-          <p
-            role="status"
-            className={`text-xs ${
-              completed
-                ? 'text-emerald-300'
-                : wakatimeHours[featureId]?.error
-                  ? 'text-rose-300'
-                  : 'text-slate-400'
-            }`}
-          >
-            {completed
-              ? 'Congelado — feature concluída.'
-              : wakatimeHours[featureId]?.error ||
-                (wakatimeHours[featureId]?.loading ? (
-                  'Sincronizando com WakaTime...'
-                ) : (
-                  <WakatimeCountdown nextAt={nextWakatimeSyncAt} />
-                ))}
+            <div className="w-full rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2">
+              Desvio:{' '}
+              {estimatedHours != null && totalTrackedSeconds != null
+                ? `${(totalTrackedSeconds / 3600 - estimatedHours).toFixed(2)} h`
+                : '—'}
+            </div>
+          </div>
+
+          <p className="mt-2 text-xs text-slate-500">
+            Estimativa local. WakaTime e ChatGPT por branch desde 01/09/2026.
           </p>
-        </div>
-
-        <div className="rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2 w-full">
-          Desvio:{' '}
-          {estimatedHours != null && totalTrackedSeconds != null
-            ? `${(totalTrackedSeconds / 3600 - estimatedHours).toFixed(2)} h`
-            : '—'}
-        </div>
-      </div>
-
-      <p className="mt-2 text-xs text-slate-500">
-        Estimativa local. WakaTime e ChatGPT por branch desde 01/09/2026.
-      </p>
+        </>
+      )}
     </div>
   );
 }

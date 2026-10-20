@@ -84,7 +84,7 @@ export function RoadmapView() {
   const [viewMode, setViewMode] = useState<'version' | 'area'>('version');
   const [versionId, setVersionId] = useState('V0');
   const [areaId, setAreaId] = useState('pcp');
-  const [featureId, setFeatureId] = useState('pcp/clientes');
+  const [featureId, setFeatureId] = useState('');
   const [completedFeatures, setCompletedFeatures] = useState<Record<string, boolean>>({});
   const [taskStatusLoaded, setTaskStatusLoaded] = useState(false);
   const [taskStatusPending, setTaskStatusPending] = useState<Record<string, boolean>>({});
@@ -151,11 +151,11 @@ export function RoadmapView() {
       setVersionId('V0');
     }
 
-    if (!areaVisible) {
+    if (areaId && !areaVisible) {
       setAreaId('pcp');
     }
 
-    if (!versionVisible || !areaVisible) {
+    if (!versionVisible || (areaId && !areaVisible)) {
       setFeatureId('pcp/clientes');
     }
   }, [visibleRoadmap, areaProjections, versionId, areaId]);
