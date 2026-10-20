@@ -187,18 +187,23 @@ export const ROADMAP: RoadmapVersion[] = [
         features: [
           feature(
             'oficina/checklists',
-            'Peritagem por tipo de equipamento',
-            'A inspeção diferencia cilindro, bomba, motor hidráulico, unidade hidráulica, comando e outros tipos definidos com a RKM.\nCada tipo apresenta os componentes e verificações que fazem sentido para aquela peritagem.',
+            'Peritagem por equipamento',
+            'A oficina identifica o tipo de equipamento e realiza uma peritagem estruturada com os campos e verificações adequados a cilindros, bombas, motores hidráulicos e outros equipamentos definidos com a RKM.',
           ),
           feature(
             'oficina/componentes',
-            'Componentes e medidas',
-            'O mecânico registra a condição dos componentes e informa quando é necessário recuperar ou substituir uma peça.\nQuando necessário, registra medidas, diâmetros, materiais e demais informações técnicas.',
+            'Componentes e condições',
+            'O mecânico identifica os componentes do equipamento e registra individualmente suas condições, defeitos e observações técnicas.',
+          ),
+          feature(
+            'oficina/medicoes',
+            'Medições técnicas',
+            'O mecânico registra e consulta medidas, diâmetros, materiais e verificações técnicas associadas aos componentes inspecionados.',
           ),
           feature(
             'oficina/diagnostico-estruturado',
-            'Diagnóstico detalhado',
-            'O diagnóstico reúne as informações da peritagem e permite complementar o resultado com observações técnicas.',
+            'Diagnóstico consolidado',
+            'A oficina reúne os resultados da peritagem, identifica o que precisa ser recuperado ou substituído e conclui o diagnóstico técnico para subsidiar o orçamento.',
           ),
         ],
       },

@@ -10,6 +10,17 @@ const FEATURE_IMAGES: Record<string, string> = {
   'pcp/clientes': '/assets/cadastro-e-busca-de-clientes.png',
 };
 
+const V1_FEATURE_EXAMPLES: Record<string, string> = {
+  'oficina/checklists':
+    'O usuário abre a OS nº 123, acessa a peritagem e seleciona "Cilindro hidráulico". O sistema apresenta os campos específicos desse equipamento, como camisa, haste e êmbolo.',
+  'oficina/componentes':
+    'Na OS nº 123, o usuário seleciona o componente "Haste", define a condição como "Desgastada", adiciona a observação "Riscos na superfície cromada" e salva.',
+  'oficina/medicoes':
+    'Na ficha do componente "Haste", o usuário adiciona duas medições: "Diâmetro: 45,20 mm" e "Comprimento: 820 mm". Após salvar, consegue consultar esses valores vinculados ao componente.',
+  'oficina/diagnostico-estruturado':
+    'Na aba "Diagnóstico", o usuário visualiza as condições e medições registradas, indica "Recuperar haste" e "Substituir vedação", acrescenta uma conclusão e salva o diagnóstico na OS.',
+};
+
 type RoadmapFeatureDetailsProps = {
   item: RoadmapFeature;
   localDevelopmentEnabled: boolean;
@@ -77,6 +88,15 @@ export function RoadmapFeatureDetails({
             <span>{item.acceptance}</span>
           )}
         </div>
+
+        {V1_FEATURE_EXAMPLES[item.id] && (
+          <div className="rounded-md border-l-2 border-sky-400/40 bg-sky-400/[0.04] px-3 py-2 text-sm text-slate-300">
+            <strong className="mb-1 block text-xs font-semibold uppercase tracking-wide text-sky-300">
+              Exemplo
+            </strong>
+            <p>{V1_FEATURE_EXAMPLES[item.id]}</p>
+          </div>
+        )}
       </div>
 
       {localDevelopmentEnabled && (

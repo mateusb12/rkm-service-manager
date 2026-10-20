@@ -529,10 +529,12 @@ export function RoadmapView() {
                       area.features.some((item) => item.id === feature.id),
                     ),
                   );
-                  const milestoneIsDelivered = milestoneFeatures.every(
-                    (feature) =>
-                      feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]),
-                  );
+                  const milestoneIsDelivered =
+                    milestoneFeatures.length > 0 &&
+                    milestoneFeatures.every(
+                      (feature) =>
+                        feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]),
+                    );
                   const milestoneIsInProgress = milestoneFeatures.some(
                     (feature) => feature.state === 'Em andamento',
                   );
@@ -541,6 +543,11 @@ export function RoadmapView() {
                     : milestoneIsInProgress
                       ? 'text-orange-300'
                       : 'text-slate-300';
+                  const milestoneDotClass = milestoneIsDelivered
+                    ? 'h-4 w-4 rounded-full border border-emerald-200 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,.4)]'
+                    : milestoneIsInProgress
+                      ? 'h-4 w-4 rounded-full border border-orange-100 bg-orange-300 shadow-[0_0_8px_rgba(253,186,116,.45)]'
+                      : 'h-4 w-4 rounded-full border border-amber-300 bg-amber-300/90 shadow-[0_0_8px_rgba(252,211,77,.25)]';
                   const milestoneTooltipContent = milestoneFeatures.length ? (
                     <div className="space-y-1">
                       <strong className={`block ${milestoneHeadingClass}`}>
@@ -562,7 +569,7 @@ export function RoadmapView() {
                       className={
                         isToday
                           ? 'relative z-20 h-4 w-4 rounded-full border-2 border-sky-200 bg-sky-400 shadow-[0_0_0_4px_rgba(56,189,248,0.15),0_0_14px_rgba(56,189,248,0.7)]'
-                          : 'h-4 w-4 rounded-full border border-amber-300 bg-amber-300/90 shadow-[0_0_8px_rgba(252,211,77,.25)]'
+                          : milestoneDotClass
                       }
                     >
                       {isToday && (
@@ -690,7 +697,7 @@ export function RoadmapView() {
                   </div>
 
                   <div
-                    className="min-w-0 flex-1 self-center p-4 sm:mr-[8%]"
+                    className="min-w-0 flex-1 self-center overflow-x-auto p-4 sm:mr-[8%]"
                     onClick={(event) => event.stopPropagation()}
                   >
                     <div
@@ -699,7 +706,9 @@ export function RoadmapView() {
                           ? 'grid-cols-1'
                           : area.features.length === 2
                             ? 'grid-cols-2'
-                            : 'grid-cols-3'
+                            : area.features.length === 4
+                              ? 'grid-cols-4 min-w-[560px]'
+                              : 'grid-cols-3'
                       }`}
                     >
                       {area.features.length > 1 && (
@@ -707,7 +716,9 @@ export function RoadmapView() {
                           className={`pointer-events-none absolute top-3 h-px bg-slate-500/70 shadow-[0_0_4px_rgba(100,116,139,.35)] ${
                             area.features.length === 2
                               ? 'left-[25%] right-[25%]'
-                              : 'left-[16.67%] right-[16.67%]'
+                              : area.features.length === 4
+                                ? 'left-[12.5%] right-[12.5%]'
+                                : 'left-[16.67%] right-[16.67%]'
                           }`}
                         />
                       )}
