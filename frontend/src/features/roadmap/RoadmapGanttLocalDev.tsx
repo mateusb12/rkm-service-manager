@@ -197,18 +197,6 @@ export function RoadmapGanttLocalDev() {
         </div>
       </div>
 
-      <div className="mb-4 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3">
-        <div className="text-xs font-semibold uppercase tracking-wide text-emerald-300">
-          Prazo máximo da versão mínima
-        </div>
-        <p className="mt-1 text-sm text-slate-200">
-          O prazo máximo é <strong className="text-emerald-200">08/dez/2026 (P3)</strong>, no início
-          de dezembro. Nessa data, o cliente começa a usar o sistema por completo no fluxo básico —
-          saindo do papel e caneta para um uso operacional mínimo de{' '}
-          <strong className="text-emerald-200">PCP + Oficina + Comercial + Finalização</strong>.
-        </p>
-      </div>
-
       <div className="overflow-x-auto">
         <div className="min-w-[1320px] space-y-1 text-xs">
           <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
@@ -225,32 +213,6 @@ export function RoadmapGanttLocalDev() {
                 {group.year}
               </div>
             ))}
-          </div>
-
-          <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
-            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-slate-400">
-              Versão
-            </div>
-            <div
-              style={{ gridColumn: `2 / span ${V0_DEADLINE_INSTALLMENT - 1}` }}
-              className="flex items-center justify-center rounded-md border border-emerald-300/35 bg-emerald-400/10 py-1.5 text-center font-semibold text-emerald-200"
-            >
-              Versão mínima
-            </div>
-            <div
-              style={{ gridColumn: `${V0_DEADLINE_INSTALLMENT + 1}` }}
-              className="flex items-center justify-center rounded-md border border-amber-300/45 bg-amber-300/10 py-1.5 text-center font-semibold text-amber-200"
-            >
-              Limite mínimo
-            </div>
-            <div
-              style={{
-                gridColumn: `${V0_DEADLINE_INSTALLMENT + 2} / span ${INSTALLMENTS.length - V0_DEADLINE_INSTALLMENT}`,
-              }}
-              className="rounded-md border border-slate-500/35 bg-slate-700/25 py-1.5 text-center font-semibold text-slate-300"
-            >
-              Pós-versão mínima · evolução e manutenção
-            </div>
           </div>
 
           <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
