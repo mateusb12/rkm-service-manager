@@ -12,6 +12,7 @@ import { useLocalDevelopment } from '../../shared/dev/local-development';
 import { formatRoadmapDate, getRoadmapVersionTimebox } from '../time/roadmap-time';
 import type { RoadmapFeature } from './roadmap-model';
 import { RoadmapFeatureCard } from './RoadmapFeatureCard';
+import { RoadmapGanttLocalDev } from './RoadmapGanttLocalDev';
 import { getAreaProjections, ROADMAP } from './roadmap-data';
 
 const COLORS = {
@@ -560,9 +561,9 @@ export function RoadmapView() {
                       </ul>
                     </div>
                   ) : isStart ? (
-                    <strong className="text-emerald-200">Início da V0</strong>
+                    <strong className="text-emerald-200">Início da versão mínima</strong>
                   ) : isDeadline ? (
-                    <strong className="text-amber-200">Prazo da V0</strong>
+                    <strong className="text-amber-200">Prazo da versão mínima</strong>
                   ) : null;
                   const milestoneDot = (
                     <span
@@ -626,7 +627,9 @@ export function RoadmapView() {
           )}
           {localDevelopmentEnabled && viewMode === 'version' && (
             <div className="mt-5 grid gap-3 text-xs text-slate-400 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-8">
-              <span className="shrink-0 uppercase tracking-wide text-slate-500">Progresso V0</span>
+              <span className="shrink-0 uppercase tracking-wide text-slate-500">
+                Progresso da versão mínima
+              </span>
               <div className="relative mx-5 h-9 min-w-0">
                 <span className="pointer-events-none absolute inset-x-0 top-2 border-t border-slate-500/70" />
                 <span
@@ -670,6 +673,12 @@ export function RoadmapView() {
             </div>
           )}
         </header>
+
+        {localDevelopmentEnabled && viewMode === 'area' && (
+          <div className="px-4 pb-4 pt-2">
+            <RoadmapGanttLocalDev />
+          </div>
+        )}
 
         {viewMode === 'version' ? (
           <div className="space-y-3 p-4">
@@ -771,26 +780,39 @@ export function RoadmapView() {
           </div>
         ) : (
           <div className="space-y-3 p-4">
-            {selectedArea.versions.map((areaVersion) => (
-              <section
-                key={areaVersion.id}
-                className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
-              >
-                <div className="flex items-start justify-between gap-3 p-4">
-                  <div>
-                    <span className="text-xs font-bold text-blue-300">{areaVersion.id}</span>
-                    <h3 className="mt-1 text-sm font-semibold text-slate-100">
-                      {areaVersion.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-400">{areaVersion.objective}</p>
+            {selectedArea.versions.map((areaVersion) => {
+              const areaTimebox = getRoadmapVersionTimebox(areaVersion.id);
+
+              return (
+                <section
+                  key={areaVersion.id}
+                  className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
+                >
+                  <div className="flex items-start justify-between gap-3 p-4">
+                    <div>
+                      <span className="text-xs font-bold text-blue-300">{areaVersion.id}</span>
+                      <h3 className="mt-1 text-sm font-semibold text-slate-100">
+                        {areaVersion.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-400">{areaVersion.objective}</p>
+
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-emerald-200">
+                          Início → {formatRoadmapDate(areaTimebox.start)}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-amber-200">
+                          Prazo → {formatRoadmapDate(areaTimebox.deadline)}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="tag tag-slate">{areaVersion.features.length} features</span>
                   </div>
-                  <span className="tag tag-slate">{areaVersion.features.length} features</span>
-                </div>
-                <div className="space-y-2 border-t border-rkmborder p-3">
-                  {areaVersion.features.map(renderFeatureCard)}
-                </div>
-              </section>
-            ))}
+                  <div className="space-y-2 border-t border-rkmborder p-3">
+                    {areaVersion.features.map(renderFeatureCard)}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
       </section>

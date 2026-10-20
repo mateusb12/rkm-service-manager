@@ -791,6 +791,9 @@ label.rkm-check input {
 .rkm-tooltip-target {
   display: inline-block;
 }
+.rkm-tooltip-target.flex {
+  display: flex;
+}
 .rkm-tooltip-content {
   position: fixed;
   z-index: 100;

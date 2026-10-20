@@ -1,0 +1,326 @@
+import React from 'react';
+
+import { Tooltip } from '../../Tooltip';
+import { ROADMAP } from './roadmap-data';
+
+type PhaseKind = 'v0' | 'v1' | 'v2' | 'v3' | 'v4' | 'manutencao';
+
+type Phase = {
+  start: number;
+  end: number;
+  label: string;
+  kind: PhaseKind;
+};
+
+type GanttRow = {
+  id: string;
+  title: string;
+  phases: Phase[];
+};
+
+const INSTALLMENTS = Array.from({ length: 14 }, (_, index) => index + 1);
+const V0_DEADLINE_INSTALLMENT = 3;
+
+// Referência visual: primeira parcela em outubro de 2026.
+const FIRST_MONTH = new Date(2026, 9, 1);
+
+const MONTH_NAMES = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
+];
+
+const SCHEDULE_MONTHS = INSTALLMENTS.map((installment) => {
+  const date = new Date(FIRST_MONTH.getFullYear(), FIRST_MONTH.getMonth() + installment - 1, 1);
+
+  return {
+    installment,
+    year: date.getFullYear(),
+    month: MONTH_NAMES[date.getMonth()],
+  };
+});
+
+const YEAR_GROUPS = SCHEDULE_MONTHS.reduce<Array<{ year: number; count: number }>>(
+  (groups, item) => {
+    const last = groups[groups.length - 1];
+
+    if (last && last.year === item.year) {
+      last.count += 1;
+    } else {
+      groups.push({ year: item.year, count: 1 });
+    }
+
+    return groups;
+  },
+  [],
+);
+
+const GANTT_ROWS: GanttRow[] = [
+  {
+    id: 'pcp',
+    title: 'PCP',
+    phases: [
+      { start: 1, end: 2, label: 'V0', kind: 'v0' },
+      { start: 3, end: 3, label: 'V2', kind: 'v2' },
+      { start: 4, end: 6, label: 'V3', kind: 'v3' },
+      { start: 7, end: 14, label: 'Manutenção', kind: 'manutencao' },
+    ],
+  },
+  {
+    id: 'oficina',
+    title: 'Oficina',
+    phases: [
+      { start: 1, end: 2, label: 'V0', kind: 'v0' },
+      { start: 3, end: 3, label: 'V1', kind: 'v1' },
+      { start: 4, end: 7, label: 'V2', kind: 'v2' },
+      { start: 8, end: 14, label: 'Manutenção', kind: 'manutencao' },
+    ],
+  },
+  {
+    id: 'comercial',
+    title: 'Comercial',
+    phases: [
+      { start: 2, end: 2, label: 'V0', kind: 'v0' },
+      { start: 3, end: 14, label: 'Manutenção', kind: 'manutencao' },
+    ],
+  },
+  {
+    id: 'finalizacao',
+    title: 'Finalização',
+    phases: [
+      { start: 2, end: 2, label: 'V0', kind: 'v0' },
+      { start: 3, end: 4, label: 'V3', kind: 'v3' },
+      { start: 5, end: 14, label: 'Manutenção', kind: 'manutencao' },
+    ],
+  },
+  {
+    id: 'administracao',
+    title: 'Administração',
+    phases: [
+      { start: 8, end: 10, label: 'V4', kind: 'v4' },
+      { start: 11, end: 14, label: 'Manutenção', kind: 'manutencao' },
+    ],
+  },
+];
+
+function getPhase(row: GanttRow, installment: number) {
+  return row.phases.find((phase) => installment >= phase.start && installment <= phase.end);
+}
+
+function getPhaseTooltipContent(row: GanttRow, phase: Phase) {
+  const version = ROADMAP.find((entry) => entry.id === phase.label);
+  const area = version?.areas.find((entry) => entry.id === row.id);
+
+  return area?.objective ?? `${row.title} · P${phase.start}–P${phase.end} · ${phase.label}`;
+}
+
+function getCellClass(kind?: PhaseKind) {
+  if (kind === 'v0') {
+    return 'border-emerald-300/35 bg-emerald-400/10 text-emerald-100';
+  }
+
+  if (kind === 'v1') {
+    return 'border-sky-300/45 bg-sky-400/10 text-sky-100';
+  }
+
+  if (kind === 'v2') {
+    return 'border-violet-300/45 bg-violet-400/10 text-violet-100';
+  }
+
+  if (kind === 'v3') {
+    return 'border-indigo-300/45 bg-indigo-400/10 text-indigo-100';
+  }
+
+  if (kind === 'v4') {
+    return 'border-fuchsia-300/45 bg-fuchsia-400/10 text-fuchsia-100';
+  }
+
+  if (kind === 'manutencao') {
+    return 'border-amber-300/40 bg-amber-300/20 text-amber-100';
+  }
+
+  return 'border-rkmborder bg-rkmcard2/30 text-slate-500';
+}
+
+export function RoadmapGanttLocalDev() {
+  return (
+    <section className="rounded-xl border border-amber-400/20 bg-rkmcard2/35 p-4">
+      <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+            Planejamento interno · localhost
+          </div>
+          <h3 className="mt-1 text-base font-semibold text-slate-100">
+            Diagrama de Gantt por área
+          </h3>
+          <p className="mt-1 max-w-3xl text-sm text-slate-400">
+            Distribuição macro das 5 grandes áreas ao longo das 14 parcelas. As últimas parcelas
+            priorizam manutenção, ajustes e pequenas evoluções — sem exigir novas entregas grandes
+            em todo mês.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-emerald-200">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
+            V0
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-sky-300/30 bg-sky-400/10 px-3 py-1 text-sky-200">
+            <span className="h-2.5 w-2.5 rounded-full bg-sky-300" />
+            V1
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-violet-300/30 bg-violet-400/10 px-3 py-1 text-violet-200">
+            <span className="h-2.5 w-2.5 rounded-full bg-violet-300" />
+            V2
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-300/30 bg-indigo-400/10 px-3 py-1 text-indigo-200">
+            <span className="h-2.5 w-2.5 rounded-full bg-indigo-300" />
+            V3
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-fuchsia-300/30 bg-fuchsia-400/10 px-3 py-1 text-fuchsia-200">
+            <span className="h-2.5 w-2.5 rounded-full bg-fuchsia-300" />
+            V4
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-amber-200">
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+            Manutenção
+          </span>
+        </div>
+      </div>
+
+      <div className="mb-4 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3">
+        <div className="text-xs font-semibold uppercase tracking-wide text-emerald-300">
+          Prazo máximo da versão mínima
+        </div>
+        <p className="mt-1 text-sm text-slate-200">
+          O prazo máximo é <strong className="text-emerald-200">08/dez/2026 (P3)</strong>, no início
+          de dezembro. Nessa data, o cliente começa a usar o sistema por completo no fluxo básico —
+          saindo do papel e caneta para um uso operacional mínimo de{' '}
+          <strong className="text-emerald-200">PCP + Oficina + Comercial + Finalização</strong>.
+        </p>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="min-w-[1320px] space-y-1 text-xs">
+          <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
+            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 font-semibold text-slate-300">
+              Área
+            </div>
+
+            {YEAR_GROUPS.map((group) => (
+              <div
+                key={group.year}
+                style={{ gridColumn: `span ${group.count}` }}
+                className="rounded-md border border-slate-500/40 bg-slate-700/60 py-2 text-center font-bold text-slate-100"
+              >
+                {group.year}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
+            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-slate-400">
+              Versão
+            </div>
+            <div
+              style={{ gridColumn: `2 / span ${V0_DEADLINE_INSTALLMENT - 1}` }}
+              className="flex items-center justify-center rounded-md border border-emerald-300/35 bg-emerald-400/10 py-1.5 text-center font-semibold text-emerald-200"
+            >
+              Versão mínima
+            </div>
+            <div
+              style={{ gridColumn: `${V0_DEADLINE_INSTALLMENT + 1}` }}
+              className="flex items-center justify-center rounded-md border border-amber-300/45 bg-amber-300/10 py-1.5 text-center font-semibold text-amber-200"
+            >
+              Limite mínimo
+            </div>
+            <div
+              style={{
+                gridColumn: `${V0_DEADLINE_INSTALLMENT + 2} / span ${INSTALLMENTS.length - V0_DEADLINE_INSTALLMENT}`,
+              }}
+              className="rounded-md border border-slate-500/35 bg-slate-700/25 py-1.5 text-center font-semibold text-slate-300"
+            >
+              Pós-versão mínima · evolução e manutenção
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
+            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-slate-400">
+              Parcela
+            </div>
+
+            {SCHEDULE_MONTHS.map((item) => {
+              const isV0Deadline = item.installment === V0_DEADLINE_INSTALLMENT;
+
+              return (
+                <div
+                  key={item.installment}
+                  className={`flex flex-col items-center justify-center rounded-md border py-2 ${
+                    isV0Deadline
+                      ? 'border-amber-300/45 bg-amber-300/10 shadow-[0_0_0_1px_rgba(252,211,77,0.08)]'
+                      : 'border-rkmborder bg-rkmcard2/50'
+                  }`}
+                >
+                  <span
+                    className={`font-semibold ${isV0Deadline ? 'text-amber-100' : 'text-slate-100'}`}
+                  >
+                    {item.month}
+                  </span>
+                  <span
+                    className={`text-[10px] ${isV0Deadline ? 'text-amber-300' : 'text-slate-400'}`}
+                  >
+                    P{item.installment}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {GANTT_ROWS.map((row) => (
+            <div key={row.id} className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
+              <div className="flex min-h-11 items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-sm font-semibold text-slate-100">
+                {row.title}
+              </div>
+
+              {INSTALLMENTS.filter((installment) => !getPhase(row, installment)).map(
+                (installment) => (
+                  <div
+                    key={`${row.id}-empty-${installment}`}
+                    style={{ gridColumn: installment + 1 }}
+                    className="flex min-h-11 items-center justify-center rounded-md border border-rkmborder bg-rkmcard2/30 text-slate-500"
+                  >
+                    —
+                  </div>
+                ),
+              )}
+
+              {row.phases.map((phase) => (
+                <Tooltip
+                  key={`${row.id}-${phase.start}-${phase.end}`}
+                  content={getPhaseTooltipContent(row, phase)}
+                  className={`flex min-h-11 items-center justify-center rounded-md border px-3 py-2 text-center text-xs font-semibold ${getCellClass(phase.kind)}`}
+                  targetClassName="flex h-full w-full items-center justify-center"
+                  style={{
+                    display: 'flex',
+                    gridColumn: `${phase.start + 1} / span ${phase.end - phase.start + 1}`,
+                  }}
+                >
+                  <span>{phase.label}</span>
+                </Tooltip>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

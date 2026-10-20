@@ -238,12 +238,12 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'controle/pendencias',
             'Pendências e motivo de parada',
-            'Uma OS parada pode registrar o motivo, desde quando está parada e quem precisa agir para que o serviço continue.',
+            'O usuário PCP:\nAbre uma OS parada.\nInforma o motivo da parada.\nInforma desde quando ela está parada.\nInforma quem precisa tomar uma providência para o serviço continuar.',
           ),
           feature(
             'pcp/prazos',
             'Prazo e prioridade',
-            'O PCP consegue definir a prioridade da OS e trabalhar com prazos de forma mais estruturada.\nEssas informações ficam disponíveis durante o acompanhamento.',
+            'O PCP acessa uma OS, define sua prioridade e o prazo previsto. Depois, consegue consultar essas informações durante o acompanhamento do serviço.',
           ),
         ],
       },
@@ -255,12 +255,12 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'oficina/nao-aplicavel',
             'Etapas flexíveis',
-            'Uma etapa que não se aplica ao serviço pode ser marcada como não aplicável sem interromper o fluxo da OS.',
+            'O mecânico acessa a OS e marca como “Não aplicável” uma etapa que não será necessária naquele serviço, permitindo que o fluxo continue normalmente.',
           ),
           feature(
             'controle/liberacao',
             'Aprovações e liberações',
-            'É possível registrar decisões de aprovação ou liberação, incluindo quem tomou a decisão e quando ela ocorreu.',
+            'O usuário autorizado acessa a OS e registra uma decisão de aprovação ou liberação. O sistema mantém registrado quem tomou a decisão e quando.',
           ),
         ],
       },

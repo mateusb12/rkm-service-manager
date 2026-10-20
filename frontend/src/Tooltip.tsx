@@ -1,7 +1,19 @@
 import { createPortal } from 'react-dom';
-import { useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 
-export function Tooltip({ content, children }: { content: ReactNode; children: ReactNode }) {
+export function Tooltip({
+  content,
+  children,
+  className,
+  style,
+  targetClassName,
+}: {
+  content: ReactNode;
+  children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+  targetClassName?: string;
+}) {
   const target = useRef<HTMLSpanElement>(null);
   const [point, setPoint] = useState({ x: 0, y: 0 });
   const [visible, setVisible] = useState(false);
@@ -20,13 +32,18 @@ export function Tooltip({ content, children }: { content: ReactNode; children: R
   return (
     <>
       <span
-        className="rkm-tooltip pointer-events-auto"
+        className={`rkm-tooltip pointer-events-auto${className ? ` ${className}` : ''}`}
+        style={style}
         tabIndex={0}
         onFocus={focus}
         onBlur={() => setVisible(false)}
         onMouseLeave={() => setVisible(false)}
       >
-        <span ref={target} className="rkm-tooltip-target" onMouseMove={move}>
+        <span
+          ref={target}
+          className={`rkm-tooltip-target${targetClassName ? ` ${targetClassName}` : ''}`}
+          onMouseMove={move}
+        >
           {children}
         </span>
       </span>
