@@ -116,24 +116,37 @@ const GANTT_FEATURE_ACTIONS: Record<string, string> = {
   'comercial/orcamento-minimo': 'Montar um orçamento e registrar sua aprovação, revisão ou recusa.',
   'finalizacao/encerramento': 'Encerrar uma OS e registrar a saída do material.',
   'finalizacao/relatorio-pdf': 'Gerar um PDF básico com os dados da OS e do serviço realizado.',
-  'oficina/checklists': 'Selecionar o tipo de equipamento e preencher a peritagem correspondente.',
-  'oficina/componentes': 'Registrar componentes, suas condições, defeitos e observações.',
-  'oficina/medicoes': 'Adicionar e consultar medições técnicas de cada componente.',
+  'oficina/checklists':
+    'Selecionar o tipo de equipamento (ex.: cilindro hidráulico) e preencher a peritagem correspondente (ex.: campos de camisa, haste e êmbolo).',
+  'oficina/componentes':
+    'Registrar a condição dos componentes (ex.: haste desgastada) e adicionar observações (ex.: riscos na superfície cromada).',
+  'oficina/medicoes':
+    'Adicionar medições técnicas aos componentes (ex.: diâmetro da haste de 45,20 mm e comprimento de 820 mm).',
   'oficina/diagnostico-estruturado':
-    'Consolidar o diagnóstico e indicar o que recuperar ou substituir.',
-  'controle/pendencias': 'Registrar o motivo da parada de uma OS e quem precisa agir.',
-  'pcp/prazos': 'Definir e consultar prazos e prioridades das OS.',
-  'oficina/nao-aplicavel': 'Marcar como não aplicáveis as etapas desnecessárias de uma OS.',
-  'controle/liberacao': 'Registrar aprovações e liberações com responsável e data.',
-  'controle/auditoria': 'Consultar o histórico de alterações, etapas e responsáveis de uma OS.',
-  'oficina/evidencias': 'Anexar fotos e evidências às etapas de uma OS.',
-  'oficina/testes': 'Registrar resultados e observações dos testes realizados.',
-  'finalizacao/anexos': 'Anexar documentos e consultar os arquivos vinculados à OS.',
+    'Consolidar o diagnóstico da OS (ex.: OS 123) e indicar intervenções (ex.: recuperar haste e substituir vedação).',
+  'controle/pendencias':
+    'Registrar o motivo e o responsável por uma parada (ex.: OS 123 aguardando vedação desde 12/02, com providência pendente para o PCP).',
+  'pcp/prazos':
+    'Definir prazos e prioridades das OS (ex.: OS 123 com prioridade Alta e prazo previsto de 20/02).',
+  'oficina/nao-aplicavel':
+    'Marcar etapas desnecessárias como não aplicáveis (ex.: dispensar a etapa Pintura na OS 123).',
+  'controle/liberacao':
+    'Registrar aprovações e liberações (ex.: Admin aprova a liberação da OS 123, com data e responsável registrados).',
+  'controle/auditoria':
+    'Consultar o histórico de alterações de uma OS (ex.: mudança de Peritagem para Em execução, com data, hora e responsável).',
+  'oficina/evidencias':
+    'Anexar fotos e evidências às etapas de uma OS (ex.: duas fotos da haste danificada durante a peritagem).',
+  'oficina/testes':
+    'Registrar resultados de testes (ex.: Teste de pressão aprovado, com observação Sem vazamentos).',
+  'finalizacao/anexos':
+    'Anexar e consultar documentos de uma OS (ex.: laudo técnico em PDF da OS 123).',
   'finalizacao/relatorio-tecnico':
-    'Gerar um relatório técnico com peritagem, fotos, medidas e testes.',
-  'pcp/avisos': 'Consultar avisos de OS atrasadas, paradas ou com pendências.',
-  'pcp/indicadores': 'Visualizar indicadores de prazo, tempo por etapa e gargalos da operação.',
-  'admin/treinamentos': 'Consultar avisos sobre treinamentos próximos do vencimento.',
+    'Gerar um relatório técnico consolidado (ex.: PDF da OS 123 com peritagem, fotos, medidas e testes).',
+  'pcp/avisos': 'Consultar avisos operacionais (ex.: OS 123 parada há 3 dias aguardando material).',
+  'pcp/indicadores':
+    'Visualizar indicadores da operação (ex.: OS 123 com prazo previsto de 5 dias e 8 dias decorridos).',
+  'admin/treinamentos':
+    'Consultar alertas de vencimento de treinamentos (ex.: treinamento de funcionário vencendo em 20 dias).',
 };
 
 function getPhaseTooltipContent(row: GanttRow, phase: Phase) {
