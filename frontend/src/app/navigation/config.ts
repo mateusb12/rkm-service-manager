@@ -120,6 +120,7 @@ export const SIDEBAR_ITEMS = [
     label: 'Tabela de preços',
     group: 'Comercial',
     status: 'incomplete',
+    disabled: true,
     roles: ['admin', 'commercial'],
     icon: 'table-properties',
   },

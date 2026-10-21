@@ -722,6 +722,14 @@ const App = () => {
   const renderView = () => {
     const route = SIDEBAR_ITEMS.find((item) => item.key === view);
 
+    if (route?.disabled) {
+      return React.createElement(
+        'main',
+        { className: 'p-6 text-slate-300' },
+        'Esta funcionalidade está indisponível.',
+      );
+    }
+
     if (route && !route.roles.includes(activeRole)) {
       return React.createElement(
         'main',

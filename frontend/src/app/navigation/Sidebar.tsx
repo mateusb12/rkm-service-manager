@@ -161,9 +161,9 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
                       (it.key === 'roadmap' ? 'sidebar-item-featured ' : '') +
                       (it.disabled || it.status === 'missing' ? 'sidebar-item-disabled' : ''),
                     title: showDevGuides
-                      ? `${it.label} — ${it.disabled ? 'BLOQUEADO' : SIDEBAR_STATUS_LABEL[it.status]}`
+                      ? `${it.label} — ${it.disabled ? 'INDISPONÍVEL' : SIDEBAR_STATUS_LABEL[it.status]}`
                       : it.disabled
-                        ? `${it.label} — Bloqueado`
+                        ? `${it.label} — Indisponível`
                         : it.label,
                   },
 
