@@ -105,11 +105,68 @@ const GANTT_ROWS: GanttRow[] = [
   },
 ];
 
+const GANTT_FEATURE_ACTIONS: Record<string, string> = {
+  'pcp/clientes': 'Cadastrar clientes e pesquisá-los por CNPJ, razão social ou nome fantasia.',
+  'pcp/abertura-os': 'Abrir uma OS, selecionar o cliente e registrar o equipamento recebido.',
+  'pcp/fila': 'Consultar a situação das OS, seus responsáveis e os prazos previstos.',
+  'oficina/bancadas': 'Cadastrar bancadas, vincular funcionários e consultar sua ocupação.',
+  'oficina/diagnostico-minimo': 'Abrir uma OS e registrar um diagnóstico inicial em texto livre.',
+  'oficina/execucao-minima': 'Atualizar o andamento do serviço, o responsável e o próximo passo.',
+  'comercial/tabela-precos': 'Cadastrar e consultar peças, produtos e serviços com seus preços.',
+  'comercial/orcamento-minimo': 'Montar um orçamento e registrar sua aprovação, revisão ou recusa.',
+  'finalizacao/encerramento': 'Encerrar uma OS e registrar a saída do material.',
+  'finalizacao/relatorio-pdf': 'Gerar um PDF básico com os dados da OS e do serviço realizado.',
+  'oficina/checklists': 'Selecionar o tipo de equipamento e preencher a peritagem correspondente.',
+  'oficina/componentes': 'Registrar componentes, suas condições, defeitos e observações.',
+  'oficina/medicoes': 'Adicionar e consultar medições técnicas de cada componente.',
+  'oficina/diagnostico-estruturado':
+    'Consolidar o diagnóstico e indicar o que recuperar ou substituir.',
+  'controle/pendencias': 'Registrar o motivo da parada de uma OS e quem precisa agir.',
+  'pcp/prazos': 'Definir e consultar prazos e prioridades das OS.',
+  'oficina/nao-aplicavel': 'Marcar como não aplicáveis as etapas desnecessárias de uma OS.',
+  'controle/liberacao': 'Registrar aprovações e liberações com responsável e data.',
+  'controle/auditoria': 'Consultar o histórico de alterações, etapas e responsáveis de uma OS.',
+  'oficina/evidencias': 'Anexar fotos e evidências às etapas de uma OS.',
+  'oficina/testes': 'Registrar resultados e observações dos testes realizados.',
+  'finalizacao/anexos': 'Anexar documentos e consultar os arquivos vinculados à OS.',
+  'finalizacao/relatorio-tecnico':
+    'Gerar um relatório técnico com peritagem, fotos, medidas e testes.',
+  'pcp/avisos': 'Consultar avisos de OS atrasadas, paradas ou com pendências.',
+  'pcp/indicadores': 'Visualizar indicadores de prazo, tempo por etapa e gargalos da operação.',
+  'admin/treinamentos': 'Consultar avisos sobre treinamentos próximos do vencimento.',
+};
+
 function getPhaseTooltipContent(row: GanttRow, phase: Phase) {
   const version = ROADMAP.find((entry) => entry.id === phase.label);
   const area = version?.areas.find((entry) => entry.id === row.id);
 
-  return area?.objective ?? `${row.title} · P${phase.start}–P${phase.end} · ${phase.label}`;
+  if (!area) {
+    return `${row.title} · ${phase.label}`;
+  }
+
+  return (
+    <span className="block max-w-[360px] space-y-2 text-left">
+      <strong className="block text-sm text-sky-200">
+        {phase.label} · {row.title}
+      </strong>
+
+      <span className="block text-xs text-slate-300">O que será possível fazer:</span>
+
+      <span className="block space-y-1.5">
+        {area.features.map((feature) => (
+          <span
+            key={feature.id}
+            className="flex items-start gap-2 text-xs leading-relaxed text-slate-100"
+          >
+            <span aria-hidden="true" className="shrink-0 text-sky-300">
+              •
+            </span>
+            <span>{GANTT_FEATURE_ACTIONS[feature.id] ?? feature.title}</span>
+          </span>
+        ))}
+      </span>
+    </span>
+  );
 }
 
 function getCellClass(kind?: PhaseKind) {
@@ -251,6 +308,8 @@ export function RoadmapGanttLocalDev() {
               {row.phases.map((phase) => (
                 <Tooltip
                   key={`${row.id}-${phase.start}-${phase.end}`}
+                  mode="cursor"
+                  instant
                   content={getPhaseTooltipContent(row, phase)}
                   className={`flex min-h-11 items-center justify-center rounded-md border px-3 py-2 text-center text-xs font-semibold ${getCellClass(phase.kind)}`}
                   targetClassName="flex h-full w-full items-center justify-center"
