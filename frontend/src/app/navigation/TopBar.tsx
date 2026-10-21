@@ -22,7 +22,6 @@ export const CleanTopBar = ({
     dashboard: 'Painel',
     supervisor: 'Visão do Supervisor',
     quality: 'Visão da Qualidade',
-    pcp: 'Visão do PCP',
     it001: 'IT001 — Bexiga',
     it002: 'IT002 — Pistão',
     pendencies: 'Pendências',

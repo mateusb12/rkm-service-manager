@@ -16,7 +16,6 @@ import {
   AuthorizationHistoryPanel,
   SupervisorAuthQueue,
   QualityAuthQueue,
-  PCPAuthQueue,
   AuthDecisionModal,
 } from './features/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -495,128 +494,6 @@ const QualityView = ({ services, rec001, rec002, activeRole, onDecisionClick }) 
   );
 };
 /* ============================================================
-   VIEW — Visão do PCP
-   ============================================================ */
-const PCPView = ({ services, rec001, rec002, activeRole, onDecisionClick }) => {
-  const recebidos = services.filter((s) => /recebido/i.test(s.status));
-  const emExecucao = services.filter((s) => /em execu/i.test(s.status));
-  const aguardSup = services.filter((s) => /pendente t[ée]cnico/i.test(s.status));
-  const aguardQual = services.filter((s) => /aguardando qualidade/i.test(s.status));
-  const aguardMat = services.filter((s) => /pendente material/i.test(s.status));
-  const aguardCli = services.filter((s) => /pendente cliente|aguardando cliente/i.test(s.status));
-  const prontos = services.filter((s) => /aprovado/i.test(s.status));
-  const liberados = services.filter((s) => /liberado/i.test(s.status));
-  return React.createElement(
-    'div',
-    { className: 'p-4 md:p-6 space-y-5' },
-    React.createElement(
-      'div',
-      { className: 'rkm-card p-5' },
-      React.createElement(
-        'div',
-        { className: 'text-xs text-amber-300 uppercase tracking-wider' },
-        'PCP',
-      ),
-      React.createElement(
-        'div',
-        { className: 'text-lg font-semibold mt-1' },
-        'Vis\u00E3o do PCP \u2014 Andamento e Fechamento',
-      ),
-      React.createElement(
-        'div',
-        { className: 'text-xs text-slate-400' },
-        'Status geral dos servi\u00E7os. PCP n\u00E3o aprova etapas t\u00E9cnicas cr\u00EDticas \u2014 apenas registra fechamento.',
-      ),
-    ),
-    React.createElement(PCPAuthQueue, {
-      rec001: rec001,
-      rec002: rec002,
-      activeRole: activeRole,
-      onDecisionClick: onDecisionClick,
-    }),
-    React.createElement(AuthorizationHistoryPanel, {
-      rec001: rec001,
-      rec002: rec002,
-      scope: 'pcp',
-      title: 'Hist\u00F3rico de autoriza\u00E7\u00F5es do PCP',
-    }),
-    React.createElement(
-      'div',
-      { className: 'grid grid-cols-2 md:grid-cols-4 gap-4' },
-      React.createElement(SupervisorBucket, {
-        title: 'Recebidos',
-        count: recebidos.length,
-        hint: 'Aguardando in\u00EDcio',
-        accent: 'bg-blue-500/15 text-blue-300',
-        services: recebidos,
-      }),
-      React.createElement(SupervisorBucket, {
-        title: 'Em execu\u00E7\u00E3o',
-        count: emExecucao.length,
-        hint: 'Em andamento',
-        accent: 'bg-blue-500/15 text-blue-300',
-        services: emExecucao,
-      }),
-      React.createElement(SupervisorBucket, {
-        title: 'Aguardando supervisor',
-        count: aguardSup.length,
-        hint: 'Valida\u00E7\u00E3o t\u00E9cnica pendente',
-        accent: 'bg-amber-500/15 text-amber-300',
-        services: aguardSup,
-      }),
-      React.createElement(SupervisorBucket, {
-        title: 'Aguardando qualidade',
-        count: aguardQual.length,
-        hint: 'Valida\u00E7\u00E3o da Qualidade pendente',
-        accent: 'bg-emerald-500/15 text-emerald-300',
-        services: aguardQual,
-      }),
-      React.createElement(SupervisorBucket, {
-        title: 'Aguardando material',
-        count: aguardMat.length,
-        hint: 'Componente em falta',
-        accent: 'bg-amber-500/15 text-amber-300',
-        services: aguardMat,
-      }),
-      React.createElement(SupervisorBucket, {
-        title: 'Aguardando cliente',
-        count: aguardCli.length,
-        hint: 'Resposta / informa\u00E7\u00E3o',
-        accent: 'bg-amber-500/15 text-amber-300',
-        services: aguardCli,
-      }),
-      React.createElement(SupervisorBucket, {
-        title: 'Prontos para fechamento',
-        count: prontos.length,
-        hint: 'Aprovados \u2014 fechar',
-        accent: 'bg-emerald-500/15 text-emerald-300',
-        services: prontos,
-      }),
-      React.createElement(SupervisorBucket, {
-        title: 'Liberados',
-        count: liberados.length,
-        hint: 'J\u00E1 entregues',
-        accent: 'bg-emerald-500/15 text-emerald-300',
-        services: liberados,
-      }),
-    ),
-    React.createElement(
-      'div',
-      { className: 'rkm-card p-5' },
-      React.createElement(
-        'div',
-        { className: 'text-sm font-semibold mb-2' },
-        'Pr\u00F3xima Tarefa (prepara\u00E7\u00E3o)',
-      ),
-      React.createElement(
-        'p',
-        { className: 'text-xs text-slate-300' },
-        'Fila de fechamento administrativo do PCP, integra\u00E7\u00E3o futura com Lise (IT002 \u00A73, \u00A718; APH-15) e relat\u00F3rio de SLA. Bot\u00F5es para registrar fechamento ser\u00E3o adicionados na Tarefa 2 \u2014 Bloco 2B.',
-      ),
-    ),
-  );
-};
-/* ============================================================
    APP RAIZ — dual IT + perfis + Bloco 2A (autorizações)
    ============================================================ */
 const App = () => {
@@ -891,15 +768,6 @@ const App = () => {
     }
     if (view === 'quality') {
       return React.createElement(QualityView, {
-        services: services,
-        rec001: rec001,
-        rec002: rec002,
-        activeRole: activeRole,
-        onDecisionClick: handleDecisionClick,
-      });
-    }
-    if (view === 'pcp') {
-      return React.createElement(PCPView, {
         services: services,
         rec001: rec001,
         rec002: rec002,
