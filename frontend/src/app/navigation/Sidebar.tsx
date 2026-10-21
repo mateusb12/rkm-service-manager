@@ -24,7 +24,9 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
     Ferramentas: true,
   });
 
-  const items = SIDEBAR_ITEMS.filter((it) => it.roles.includes(activeRole || ''));
+  const items = SIDEBAR_ITEMS.filter(
+    (it) => it.roles.includes(activeRole || '') && (it.key !== 'roadmap' || showDevGuides),
+  );
 
   const user = mockUsers.find((u) => u.id === activeUser) || mockUsers[0];
   const role = ROLES.find((r) => r.key === activeRole) || ROLES[0];
