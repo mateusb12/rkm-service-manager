@@ -796,14 +796,16 @@ export function RoadmapView() {
                       </h3>
                       <p className="mt-1 text-sm text-slate-400">{areaVersion.objective}</p>
 
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
-                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-emerald-200">
-                          Início → {formatRoadmapDate(areaTimebox.start)}
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-amber-200">
-                          Prazo → {formatRoadmapDate(areaTimebox.deadline)}
-                        </span>
-                      </div>
+                      {localDevelopmentEnabled && (
+                        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-emerald-200">
+                            Início → {formatRoadmapDate(areaTimebox.start)}
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-amber-200">
+                            Prazo → {formatRoadmapDate(areaTimebox.deadline)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <span className="tag tag-slate">{areaVersion.features.length} features</span>
                   </div>
