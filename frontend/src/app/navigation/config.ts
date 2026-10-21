@@ -16,14 +16,6 @@ export const SIDEBAR_ITEMS = [
     roles: ALL_ROLES,
     icon: 'M3 12l2-2 4 4 8-8 4 4',
   },
-  {
-    key: 'mybench',
-    label: 'Minha Bancada',
-    group: 'Visão geral',
-    status: 'incomplete',
-    roles: ['admin', 'mechanic'],
-    icon: 'M3 7h18M3 12h18M3 17h12',
-  },
 
   /* CICLO OPERACIONAL */
   {
@@ -40,7 +32,7 @@ export const SIDEBAR_ITEMS = [
   {
     key: 'inspection',
     label: 'Peritagem',
-    group: 'Operação',
+    group: 'Oficina',
     status: 'missing',
     placeholder: true,
     source: 'Serviços → Desmontagem → Análise',
@@ -51,7 +43,7 @@ export const SIDEBAR_ITEMS = [
   {
     key: 'execution',
     label: 'Em Execução',
-    group: 'Operação',
+    group: 'Oficina',
     status: 'missing',
     placeholder: true,
     source: 'OS + IT001 / IT002',
@@ -69,6 +61,17 @@ export const SIDEBAR_ITEMS = [
     description: 'Histórico de serviços concluídos e encerrados.',
     roles: ['admin', 'mechanic', 'pcp'],
     icon: 'M5 13l4 4L19 7',
+  },
+
+  /* OFICINA */
+  {
+    key: 'workshop-benches',
+    label: 'Bancadas',
+    group: 'Oficina',
+    status: 'incomplete',
+    description: 'Cadastro de bancadas e acompanhamento da ocupação.',
+    roles: ['admin', 'mechanic', 'pcp'],
+    icon: 'M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z',
   },
 
   /* PLANEJAMENTO */

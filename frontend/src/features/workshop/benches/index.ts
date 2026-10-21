@@ -1,0 +1,1 @@
+export { BenchesView } from './BenchesView';

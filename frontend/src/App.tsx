@@ -3,7 +3,6 @@ import { RoadmapView } from './features/roadmap';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ServiceEntryView } from './features/service-entry';
 import { PopulatorView } from './features/populator';
-import { MyBenchView } from './features/bench';
 import { DashboardView } from './features/dashboard';
 import { initialRecordIT002, computeAlertsIT002 } from './features/its/it002';
 import { initialRecord, computeAlerts } from './features/its/it001';
@@ -29,15 +28,14 @@ import {
   CleanTopBar,
 } from './app/navigation';
 import {
-  IT_CONFIG,
   loadDraft,
   saveDraft,
-  clearDraft,
   ITForm,
   PendenciesView,
   EvidencesView,
   SummaryView,
 } from './features/service-workflow';
+import { BenchesView } from './features/workshop/benches';
 import { ClientsView } from './features/pcp/clients';
 import { PriceCatalogView, type PriceCatalogPage } from './features/commercial/price-catalog';
 /* ============================================================
@@ -711,22 +709,6 @@ const App = () => {
     if (newView === 'it002') setActiveIT('IT002');
     navigate(`/${newView}`);
   };
-  const openIT001 = () => {
-    clearDraft('IT001');
-    setRec001(initialRecord());
-    setStep001(1);
-    setHasDraft001(false);
-    setActiveIT('IT001');
-    navigate('/it001');
-  };
-  const openIT002 = () => {
-    clearDraft('IT002');
-    setRec002(initialRecordIT002());
-    setStep002(1);
-    setHasDraft002(false);
-    setActiveIT('IT002');
-    navigate('/it002');
-  };
   const goToStep = (step) => {
     if (activeIT === 'IT002') {
       setStep002(step);
@@ -871,6 +853,10 @@ const App = () => {
       );
     }
 
+    if (view === 'workshop-benches') {
+      return React.createElement(BenchesView);
+    }
+
     if (view === 'pcp-clients') {
       return React.createElement(ClientsView);
     }
@@ -892,32 +878,6 @@ const App = () => {
     if (view === 'dashboard') {
       return React.createElement(DashboardView, {
         onOpenServiceEntry: () => navigate('/receiving'),
-      });
-    }
-    if (view === 'mybench') {
-      return React.createElement(MyBenchView, {
-        itConfig: IT_CONFIG,
-        services: services,
-        activeUser: activeUser,
-        openIT001: openIT001,
-        openIT002: openIT002,
-        rec001: rec001,
-        rec002: rec002,
-
-        onOpenIT: (it) => {
-          setActiveIT(it);
-          setView(it === 'IT002' ? 'it002' : 'it001');
-        },
-
-        onOpenEvidence: (it) => {
-          setActiveIT(it);
-          setView('evidences');
-        },
-
-        onOpenSummary: (it) => {
-          setActiveIT(it);
-          setView('summary');
-        },
       });
     }
     if (view === 'supervisor') {

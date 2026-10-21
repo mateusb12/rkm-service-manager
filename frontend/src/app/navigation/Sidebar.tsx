@@ -16,6 +16,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
   const [openGroups, setOpenGroups] = useState({
     'Visão geral': true,
     Operação: true,
+    Oficina: true,
     PCP: true,
     Comercial: true,
     Planejamento: true,
@@ -31,6 +32,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
   const groupOrder = [
     'Visão geral',
     'Operação',
+    'Oficina',
     'PCP',
     'Comercial',
     'Planejamento',

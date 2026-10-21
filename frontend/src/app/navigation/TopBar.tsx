@@ -20,7 +20,6 @@ export const CleanTopBar = ({
   const localDevelopmentEnabled = useLocalDevelopment();
   const labels = {
     dashboard: 'Painel',
-    mybench: 'Minha Bancada',
     supervisor: 'Visão do Supervisor',
     quality: 'Visão da Qualidade',
     pcp: 'Visão do PCP',
