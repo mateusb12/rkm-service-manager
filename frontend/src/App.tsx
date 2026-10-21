@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { RoadmapView } from './features/roadmap';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ServiceEntryView } from './features/service-entry';
 import { PopulatorView } from './features/populator';
@@ -37,14 +38,6 @@ import {
 import { BenchesView } from './features/workshop/benches';
 import { ClientsView } from './features/pcp/clients';
 import { PriceCatalogView, type PriceCatalogPage } from './features/commercial/price-catalog';
-import { useLocalDevelopment } from './shared/dev/local-development';
-
-// Keep the internal roadmap out of production bundles entirely.
-const RoadmapView = import.meta.env.DEV
-  ? React.lazy(() =>
-      import('./features/roadmap').then(({ RoadmapView }) => ({ default: RoadmapView })),
-    )
-  : null;
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -628,7 +621,6 @@ const PCPView = ({ services, rec001, rec002, activeRole, onDecisionClick }) => {
    ============================================================ */
 const App = () => {
   const { user: authenticatedUser, logout } = useAuth();
-  const localDevelopmentEnabled = useLocalDevelopment();
   const location = useLocation();
   const navigate = useNavigate();
   const [view, setView] = useState(() => viewFromPath(location.pathname));
@@ -976,16 +968,7 @@ const App = () => {
       );
     }
     if (view === 'roadmap') {
-      if (!localDevelopmentEnabled) {
-        return React.createElement(DashboardView, {
-          onOpenServiceEntry: () => navigate('/receiving'),
-        });
-      }
-      return React.createElement(
-        React.Suspense,
-        { fallback: null },
-        RoadmapView && React.createElement(RoadmapView),
-      );
+      return React.createElement(RoadmapView);
     }
     const operationalItem = SIDEBAR_ITEMS.find((item) => item.key === view && item.placeholder);
 
