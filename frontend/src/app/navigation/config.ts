@@ -69,6 +69,7 @@ export const SIDEBAR_ITEMS = [
     label: 'Bancadas',
     group: 'Oficina',
     status: 'incomplete',
+    disabled: true,
     description: 'Cadastro de bancadas e acompanhamento da ocupação.',
     roles: ['admin', 'mechanic', 'pcp'],
     icon: 'M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z',

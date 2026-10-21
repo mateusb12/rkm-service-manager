@@ -153,16 +153,18 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
                   {
                     key: it.key,
                     type: 'button',
-                    disabled: it.status === 'missing',
+                    disabled: it.disabled || it.status === 'missing',
                     onClick: () => setView(it.key),
                     className:
                       'sidebar-item ' +
                       (view === it.key ? 'sidebar-item-active ' : '') +
                       (it.key === 'roadmap' ? 'sidebar-item-featured ' : '') +
-                      (it.status === 'missing' ? 'sidebar-item-disabled' : ''),
+                      (it.disabled || it.status === 'missing' ? 'sidebar-item-disabled' : ''),
                     title: showDevGuides
-                      ? `${it.label} — ${SIDEBAR_STATUS_LABEL[it.status]}`
-                      : it.label,
+                      ? `${it.label} — ${it.disabled ? 'BLOQUEADO' : SIDEBAR_STATUS_LABEL[it.status]}`
+                      : it.disabled
+                        ? `${it.label} — Bloqueado`
+                        : it.label,
                   },
 
                   it.icon === 'table-properties' || it.icon === 'users-round'
