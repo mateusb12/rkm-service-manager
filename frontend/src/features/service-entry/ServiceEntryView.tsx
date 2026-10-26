@@ -115,11 +115,7 @@ const createDemoServiceEntry = () => {
     fluidApplication: 'Óleo hidráulico — aplicação de demonstração',
     receivedBy: 'Operador de recebimento DEV',
     deliveredBy: 'Transportadora de exemplo',
-    arrivalCondition: 'Com avarias',
     receivedAccessories: 'Conexões e tampa de proteção (exemplo).',
-    pressureState: 'Aliviada/verificada',
-    safetyReviewed: true,
-    safeToDisassemble: true,
     disassemblyOperator: 'Técnico de desmontagem DEV',
     disassemblyStartedAt: localDateTime,
     disassemblyComplete: true,
@@ -282,7 +278,6 @@ export const ServiceEntryView = () => {
         ['orderType', 'Categoria do equipamento'],
         ['equipment', 'Equipamento'],
         ['receivedBy', 'Responsável pelo recebimento'],
-        ['arrivalCondition', 'Condição de chegada'],
       ],
       2: [['disassemblyOperator', 'Responsável pela desmontagem']],
       3: [
@@ -299,26 +294,7 @@ export const ServiceEntryView = () => {
       .filter(([key]) => !String(form[key] || '').trim())
       .map(([, label]) => label);
 
-    if (
-      step === 1 &&
-      ((form.pressureState !== 'Aliviada/verificada' && form.pressureState !== 'Não aplicável') ||
-        !form.safetyReviewed ||
-        !form.safeToDisassemble)
-    ) {
-      setError(
-        'Desmontagem bloqueada: confirme pressão aliviada (ou não aplicável), conclua a checagem e libere a abertura.',
-      );
-      return false;
-    }
     if (step === 2) {
-      if (form.pressureState !== 'Aliviada/verificada' && form.pressureState !== 'Não aplicável') {
-        setError('Desmontagem bloqueada: confirme pressão aliviada ou registre que não se aplica.');
-        return false;
-      }
-      if (!form.safetyReviewed || !form.safeToDisassemble) {
-        setError('Desmontagem bloqueada: conclua a checagem de segurança e libere a abertura.');
-        return false;
-      }
       if (!form.disassemblyComplete) missing.push('confirmação da desmontagem');
       if (!form.disassemblyControlled || !form.partsSeparated)
         missing.push('desmontagem controlada e separação das peças');
@@ -452,16 +428,9 @@ export const ServiceEntryView = () => {
   };
 
   const saveProgress = async () => {
-    const blocked =
-      (step === 1 || step === 2) &&
-      (!form.safeToDisassemble ||
-        !form.safetyReviewed ||
-        (form.pressureState !== 'Aliviada/verificada' && form.pressureState !== 'Não aplicável'));
     const awaitingApproval =
       step === 3 && form.approvalRequired && form.approvalStatus !== 'Aprovada';
-    await persistEntry(
-      blocked ? 'Bloqueado por segurança' : awaitingApproval ? 'Aguardando aprovação' : undefined,
-    );
+    await persistEntry(awaitingApproval ? 'Aguardando aprovação' : undefined);
   };
 
   const openEntry = (entry) => {
@@ -853,8 +822,8 @@ export const ServiceEntryView = () => {
             </ServiceEntrySection>
 
             <ServiceEntrySection
-              title="Condição da chegada"
-              description="Registre a cadeia de recebimento e o estado da peça antes de qualquer abertura."
+              title="Dados da chegada"
+              description="Registre a cadeia de recebimento antes da avaliação e desmontagem."
             >
               <Field label="Recebido por" required>
                 <TextInput
@@ -870,20 +839,6 @@ export const ServiceEntryView = () => {
                   placeholder="Motorista / cliente"
                 />
               </Field>
-              <Field label="Condição externa" required>
-                <select
-                  className="rkm-input zenit-field"
-                  value={form.arrivalCondition}
-                  onChange={(event) => set('arrivalCondition', event.target.value)}
-                >
-                  <option value="">Selecione</option>
-                  <option>Íntegra</option>
-                  <option>Com avarias</option>
-                  <option>Vazamento / contaminação</option>
-                  <option>Embalagem violada</option>
-                  <option>Não foi possível avaliar</option>
-                </select>
-              </Field>
               <Field label="Acessórios / itens recebidos" className="md:col-span-2">
                 <TextArea
                   rows={2}
@@ -892,45 +847,6 @@ export const ServiceEntryView = () => {
                   placeholder="Conexões, válvulas, peças soltas, embalagem..."
                 />
               </Field>
-            </ServiceEntrySection>
-            <ServiceEntrySection
-              title="Triagem de segurança"
-              description="A desmontagem só libera após checar energia/pressão residual e condição segura."
-            >
-              <Field label="Estado da pressão *">
-                <select
-                  className="rkm-input zenit-field"
-                  value={form.pressureState}
-                  onChange={(event) => set('pressureState', event.target.value)}
-                >
-                  <option>Desconhecida</option>
-                  <option>Pressão residual</option>
-                  <option>Aliviada/verificada</option>
-                  <option>Não aplicável</option>
-                </select>
-              </Field>
-              <Field label="Checagem feita">
-                <Toggle
-                  checked={form.safetyReviewed}
-                  onChange={(value) => set('safetyReviewed', value)}
-                  label="Risco, fluido e condição avaliados"
-                />
-              </Field>
-              <Field label="Liberação para abrir">
-                <Toggle
-                  checked={form.safeToDisassemble}
-                  onChange={(value) => set('safeToDisassemble', value)}
-                  label="Peça segura para desmontagem"
-                />
-              </Field>
-              {(form.pressureState === 'Desconhecida' ||
-                form.pressureState === 'Pressão residual' ||
-                !form.safeToDisassemble) && (
-                <div className="service-entry-blocked md:col-span-3">
-                  A OS fica bloqueada para desmontagem até confirmar pressão aliviada (ou não
-                  aplicável) e liberar a condição segura.
-                </div>
-              )}
             </ServiceEntrySection>
           </>
         )}
