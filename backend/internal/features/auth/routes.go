@@ -54,6 +54,7 @@ func (module *Module) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/auth/refresh", module.refresh)
 	mux.HandleFunc("/api/auth/logout", module.logout)
 	mux.HandleFunc("/api/auth/me", module.currentUser)
+	mux.HandleFunc("/api/auth/active-users", module.activeUsers)
 	mux.HandleFunc("/api/auth/dev-credentials", module.devCredentials)
 	authadmin.New(module.database, module, hashPassword).Register(mux)
 }

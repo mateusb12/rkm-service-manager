@@ -276,6 +276,46 @@ func TestListUsersIsAdminOnly(test *testing.T) {
 	}
 }
 
+func TestActiveUsersRequiresAuthentication(test *testing.T) {
+	test.Setenv("DUMMY_PASSWORD_ADMIN", "Rkm@123456")
+
+	module := newTestModule(test)
+	unauthenticatedResponse := performAuthRequest(
+		module,
+		http.MethodGet,
+		"/api/auth/active-users",
+		"",
+		"",
+	)
+	if unauthenticatedResponse.Code != http.StatusUnauthorized {
+		test.Fatalf("unauthenticated active users expected 401, got %d", unauthenticatedResponse.Code)
+	}
+
+	accessToken := loginTestUser(test, module, "admin@rkm.com.br", "Rkm@123456")
+	authenticatedResponse := performAuthRequest(
+		module,
+		http.MethodGet,
+		"/api/auth/active-users",
+		"",
+		accessToken,
+	)
+	if authenticatedResponse.Code != http.StatusOK {
+		test.Fatalf("authenticated active users expected 200, got %d", authenticatedResponse.Code)
+	}
+
+	var users []struct {
+		ID        string `json:"id"`
+		Name      string `json:"name"`
+		RoleLabel string `json:"roleLabel"`
+	}
+	if decodeError := json.NewDecoder(authenticatedResponse.Body).Decode(&users); decodeError != nil {
+		test.Fatal(decodeError)
+	}
+	if len(users) != 4 || users[0].ID == "" || users[0].Name == "" || users[0].RoleLabel == "" {
+		test.Fatalf("unexpected active users response: %+v", users)
+	}
+}
+
 func TestAdminUserLifecycle(test *testing.T) {
 	test.Setenv("DUMMY_PASSWORD_ADMIN", "Rkm@123456")
 	test.Setenv("DUMMY_PASSWORD_PCP", "Rkm@123456")

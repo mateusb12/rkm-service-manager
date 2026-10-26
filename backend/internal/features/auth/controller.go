@@ -327,6 +327,51 @@ func (module *Module) currentUser(
 	httpx.WriteJSON(writer, http.StatusOK, user)
 }
 
+func (module *Module) activeUsers(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	if request.Method != http.MethodGet {
+		httpx.WriteJSON(writer, http.StatusMethodNotAllowed, map[string]string{"error": "method_not_allowed"})
+		return
+	}
+	if _, authenticated := module.authenticatedUser(request); !authenticated {
+		httpx.WriteJSON(writer, http.StatusUnauthorized, map[string]string{"error": "authentication_required"})
+		return
+	}
+
+	var storedUsers []userModel
+	if queryError := module.database.
+		Select("id, email, name, role").
+		Where("active = ?", true).
+		Order("name ASC").
+		Find(&storedUsers).Error; queryError != nil {
+		httpx.WriteJSON(writer, http.StatusInternalServerError, map[string]string{"error": "active_users_query_failed"})
+		return
+	}
+
+	type activeUser struct {
+		ID        string `json:"id"`
+		Email     string `json:"email"`
+		Name      string `json:"name"`
+		Role      string `json:"role"`
+		RoleLabel string `json:"roleLabel"`
+	}
+
+	users := make([]activeUser, 0, len(storedUsers))
+	for _, storedUser := range storedUsers {
+		users = append(users, activeUser{
+			ID:        storedUser.ID,
+			Email:     storedUser.Email,
+			Name:      storedUser.Name,
+			Role:      storedUser.Role,
+			RoleLabel: roleLabels[storedUser.Role],
+		})
+	}
+
+	httpx.WriteJSON(writer, http.StatusOK, users)
+}
+
 func (module *Module) devCredentials(
 	writer http.ResponseWriter,
 	request *http.Request,
