@@ -848,10 +848,12 @@ export const ServiceEntryView = () => {
               description="Registre a cadeia de recebimento antes da avaliação e desmontagem."
             >
               <Field label="Recebido por" required>
-                <TextInput
+                <ClientSelector
                   value={form.receivedBy}
-                  onChange={(value) => set('receivedBy', value)}
-                  placeholder="Pessoa que recebeu"
+                  onSelect={(client) =>
+                    set('receivedBy', client.nomeFantasia || client.razaoSocial)
+                  }
+                  onClear={() => set('receivedBy', '')}
                 />
               </Field>
               <Field label="Entregue por">
