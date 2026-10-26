@@ -98,7 +98,7 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'pcp/abertura-os',
             'Entrada e abertura da OS',
-            'O PCP consegue abrir uma OS com o cliente selecionado e registrar o equipamento ou material recebido com os dados disponíveis na chegada.\nO sistema gera automaticamente um número único para a OS.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.\nO PCP pode anexar uma foto do produto recebido na chegada.',
+            'O PCP consegue abrir uma OS com o cliente selecionado e registrar o equipamento ou material recebido com os dados disponíveis na chegada.\nO sistema gera automaticamente um número único e aleatório para a OS, sem exigir preenchimento manual.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.\nA identificação inicial não exige condição externa nem triagem de segurança. Ao salvar e continuar, o fluxo avança para a desmontagem preservando os dados informados.',
           ),
           feature(
             'pcp/fila',
@@ -115,12 +115,12 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'oficina/bancadas',
             'Cadastro de bancadas',
-            'É possível cadastrar, editar e consultar as bancadas da oficina.\nFuncionários podem ser vinculados às bancadas.\nÉ possível identificar bancadas livres ou ocupadas e a OS atendida quando houver.',
+            'É possível cadastrar, editar e consultar as bancadas da oficina.\nUsuários ativos com perfil Mecânico podem ser vinculados às bancadas.\nÉ possível identificar bancadas livres ou ocupadas e a OS atendida quando houver.',
           ),
           feature(
             'oficina/diagnostico-minimo',
             'Peritagem básica',
-            'A oficina identifica o equipamento e registra um diagnóstico inicial em texto livre.\nA OS consegue seguir para orçamento sem exigir uma peritagem técnica detalhada.',
+            'A oficina identifica o equipamento e seleciona um usuário ativo com perfil Mecânico como responsável pela desmontagem.\nRegistra observações essenciais da desmontagem, quando necessária, e um diagnóstico inicial em texto livre.\nA OS consegue seguir para orçamento sem exigir checklist técnico detalhado ou fotos.',
           ),
           feature(
             'oficina/execucao-minima',
@@ -159,7 +159,19 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'finalizacao/relatorio-pdf',
             'Relatório básico em PDF',
-            'O sistema gera um PDF com os principais dados da OS, cliente, equipamento, diagnóstico e serviço executado.\nFotos e anexos não são obrigatórios nesta versão.',
+            'O sistema gera um PDF com os principais dados da OS, cliente, equipamento, diagnóstico e serviço executado.\nFotos e anexos estão previstos para versões posteriores.',
+          ),
+        ],
+      },
+      {
+        id: 'admin',
+        title: 'Administração',
+        objective: 'Gerenciar os usuários que acessam o sistema.',
+        features: [
+          feature(
+            'admin/usuarios',
+            'Gestão de usuários',
+            'O administrador consegue cadastrar, consultar, editar e desativar usuários do sistema.\nCada funcionário possui seu próprio login e um perfil de acesso: Admin, Mecânico, PCP ou Comercial.\nUsuários ativos com perfil Mecânico ficam disponíveis para seleção como responsáveis nas telas da oficina.',
           ),
         ],
       },

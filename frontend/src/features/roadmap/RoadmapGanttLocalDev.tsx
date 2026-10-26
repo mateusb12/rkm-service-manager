@@ -99,18 +99,23 @@ const GANTT_ROWS: GanttRow[] = [
     ],
   },
   {
-    id: 'administracao',
+    id: 'admin',
     title: 'Administração',
-    phases: [{ start: 10, end: 10, label: 'V4', kind: 'v4' }],
+    phases: [
+      { start: 1, end: 2, label: 'V0', kind: 'v0' },
+      { start: 10, end: 10, label: 'V4', kind: 'v4' },
+    ],
   },
 ];
 
 const GANTT_FEATURE_ACTIONS: Record<string, string> = {
   'pcp/clientes': 'Cadastrar clientes e pesquisá-los por CNPJ, razão social ou nome fantasia.',
-  'pcp/abertura-os': 'Abrir uma OS, selecionar o cliente e registrar o equipamento recebido.',
+  'pcp/abertura-os':
+    'Abrir uma OS com numeração automática, identificar o equipamento e avançar sem triagem de segurança.',
   'pcp/fila': 'Consultar a situação das OS, seus responsáveis e os prazos previstos.',
   'oficina/bancadas': 'Cadastrar bancadas, vincular funcionários e consultar sua ocupação.',
-  'oficina/diagnostico-minimo': 'Abrir uma OS e registrar um diagnóstico inicial em texto livre.',
+  'oficina/diagnostico-minimo':
+    'Selecionar o mecânico responsável e registrar a desmontagem essencial e o diagnóstico inicial.',
   'oficina/execucao-minima': 'Atualizar o andamento do serviço, o responsável e o próximo passo.',
   'comercial/tabela-precos': 'Cadastrar e consultar peças, produtos e serviços com seus preços.',
   'comercial/orcamento-minimo': 'Montar um orçamento e registrar sua aprovação, revisão ou recusa.',
@@ -145,6 +150,8 @@ const GANTT_FEATURE_ACTIONS: Record<string, string> = {
   'pcp/avisos': 'Consultar avisos operacionais (ex.: OS 123 parada há 3 dias aguardando material).',
   'pcp/indicadores':
     'Visualizar indicadores da operação (ex.: OS 123 com prazo previsto de 5 dias e 8 dias decorridos).',
+  'admin/usuarios':
+    'Cadastrar usuários com login e perfil de acesso (Admin, Mecânico, PCP ou Comercial).',
   'admin/treinamentos':
     'Consultar alertas de vencimento de treinamentos (ex.: treinamento de funcionário vencendo em 20 dias).',
 };
