@@ -436,12 +436,6 @@ export const ServiceEntryView = () => {
     }
   };
 
-  const saveProgress = async () => {
-    const awaitingApproval =
-      step === 3 && form.approvalRequired && form.approvalStatus !== 'Aprovada';
-    await persistEntry(awaitingApproval ? 'Aguardando aprovação' : undefined);
-  };
-
   const openEntry = (entry) => {
     setForm({
       ...createEmptyServiceEntry(),
@@ -594,11 +588,22 @@ export const ServiceEntryView = () => {
                       <td>{entry.client}</td>
 
                       <td>
-                        <div>{entry.equipment || 'A identificar'}</div>
-                        <small>
-                          {entry.manufacturer}
-                          {entry.model ? ` · ${entry.model}` : ''}
-                        </small>
+                        <div className="service-entry-equipment-cell">
+                          {SERVICE_ENTRY_ORDER_TYPE_ICONS[entry.orderType] && (
+                            <img
+                              src={SERVICE_ENTRY_ORDER_TYPE_ICONS[entry.orderType]}
+                              alt=""
+                              aria-hidden="true"
+                            />
+                          )}
+                          <div>
+                            <div>{entry.equipment || 'A identificar'}</div>
+                            <small>
+                              {entry.manufacturer}
+                              {entry.model ? ` · ${entry.model}` : ''}
+                            </small>
+                          </div>
+                        </div>
                       </td>
 
                       <td>{serviceEntryDateLabel(entry.expectedDeliveryDate)}</td>
@@ -1143,22 +1148,14 @@ export const ServiceEntryView = () => {
         )}
 
         <div className="service-entry-actions service-entry-step-actions">
-          <button type="button" className="btn btn-ghost" onClick={reset}>
-            Nova OS
-          </button>
           <div className="service-entry-action-group">
             {step > 0 && (
               <button type="button" className="btn btn-ghost" onClick={() => changeStep(step - 1)}>
                 Voltar
               </button>
             )}
-            {form.id && (
-              <button type="button" className="btn btn-ghost" onClick={saveProgress}>
-                Salvar progresso
-              </button>
-            )}
             <button type="submit" className="btn btn-primary service-entry-save">
-              {step === SERVICE_ENTRY_STEPS.length - 1 ? 'Finalizar OS' : 'Salvar e continuar'}
+              Salvar
             </button>
           </div>
         </div>

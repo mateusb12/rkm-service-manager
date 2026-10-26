@@ -2216,6 +2216,19 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   background: rgba(59, 130, 246, 0.035);
 }
 
+.service-entry-equipment-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-entry-equipment-cell > img {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  object-fit: contain;
+}
+
 .service-entry-table strong {
   color: #e2e8f0;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
