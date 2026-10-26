@@ -70,7 +70,7 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
-        'Substituição do campo livre “Recebido por” pelo seletor pesquisável de clientes, reutilizando a busca por CNPJ, razão social ou nome fantasia.',
+        'Substituição do seletor incorreto de clientes no campo “Recebido por” por uma busca de usuários ativos, exibindo nome, perfil e e-mail do responsável pelo recebimento.',
     },
     {
       category: 'Produto',
@@ -113,6 +113,21 @@ const WORKLOG: Record<string, WorkEntry[]> = {
       category: 'Transversal',
       description:
         'Organização do backend por responsabilidade, separando rotas, controllers e repositório da administração de usuários, além da padronização dos arquivos de endpoints das demais features.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Implementação dos endpoints administrativos para cadastrar, consultar, editar, desativar e excluir permanentemente usuários, com validações, hash de senha e controle de acesso exclusivo para administradores.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Integração da gestão de usuários do frontend com o backend, incluindo cadastro, edição, desativação, exclusão permanente e expansão inline dos detalhes na própria tabela.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Criação da seleção de usuários ativos no campo “Recebido por” da abertura da OS, substituindo a busca incorreta por clientes/CNPJ e corrigindo o scroll do dropdown.',
     },
   ],
   'comercial/tabela-precos': [
