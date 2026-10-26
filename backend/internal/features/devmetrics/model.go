@@ -14,6 +14,7 @@ type FeatureMetric struct {
 	FunctionPoints  *int     `json:"functionPoints" gorm:"column:function_points"`
 	WakaTimeSeconds float64  `json:"wakatimeSeconds" gorm:"column:wakatime_seconds;not null"`
 	ChatGPTSeconds  float64  `json:"chatGptSeconds" gorm:"column:chatgpt_seconds;not null"`
+	LocalSeconds    float64  `json:"localSeconds" gorm:"column:local_seconds;not null;default:0"`
 	EditorsJSON     string   `json:"-" gorm:"column:editors_json;type:text;not null"`
 	Locked          bool     `json:"locked" gorm:"column:locked;not null"`
 	CompletedAt     int64    `json:"completedAt" gorm:"column:completed_at;not null"`
@@ -34,6 +35,7 @@ type freezeInput struct {
 	Branch          string       `json:"branch"`
 	WakaTimeSeconds float64      `json:"wakatimeSeconds"`
 	ChatGPTSeconds  float64      `json:"chatGptSeconds"`
+	LocalSeconds    float64      `json:"localSeconds"`
 	Editors         []EditorTime `json:"editors"`
 }
 
@@ -82,6 +84,7 @@ type featureMetricResponse struct {
 	FunctionPoints  *int         `json:"functionPoints"`
 	WakaTimeSeconds float64      `json:"wakatimeSeconds"`
 	ChatGPTSeconds  float64      `json:"chatGptSeconds"`
+	LocalSeconds    float64      `json:"localSeconds"`
 	Editors         []EditorTime `json:"editors"`
 	Locked          bool         `json:"locked"`
 	CompletedAt     int64        `json:"completedAt"`
@@ -100,7 +103,8 @@ func (input freezeInput) valid() bool {
 	}
 
 	if invalidSeconds(input.WakaTimeSeconds) ||
-		invalidSeconds(input.ChatGPTSeconds) {
+		invalidSeconds(input.ChatGPTSeconds) ||
+		invalidSeconds(input.LocalSeconds) {
 		return false
 	}
 
@@ -145,6 +149,7 @@ func responseFromMetric(
 		FunctionPoints:  metric.FunctionPoints,
 		WakaTimeSeconds: metric.WakaTimeSeconds,
 		ChatGPTSeconds:  metric.ChatGPTSeconds,
+		LocalSeconds:    metric.LocalSeconds,
 		Editors:         editors,
 		Locked:          metric.Locked,
 		CompletedAt:     metric.CompletedAt,

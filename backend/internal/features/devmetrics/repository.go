@@ -95,6 +95,7 @@ func (module *Module) freezeFeatureMetric(
 	metric.Branch = branch
 	metric.WakaTimeSeconds = input.WakaTimeSeconds
 	metric.ChatGPTSeconds = input.ChatGPTSeconds
+	metric.LocalSeconds = input.LocalSeconds
 	metric.EditorsJSON = string(editorsPayload)
 	metric.Locked = true
 	metric.CompletedAt = timestamp

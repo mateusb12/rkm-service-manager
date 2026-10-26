@@ -74,14 +74,19 @@ export default function RoadmapMetricsDev({
   );
   const chatGptEntry = chatGptActivity[featureId];
   const wakatimeSeconds = wakatimeHours[featureId]?.totalSeconds;
+  const chatGptSeconds = chatGptEntry?.chatGptSeconds ?? 0;
+  const localSeconds = chatGptEntry?.localSeconds ?? 0;
   const totalTrackedSeconds =
-    wakatimeSeconds == null ? null : wakatimeSeconds + (chatGptEntry?.totalSeconds ?? 0);
+    wakatimeSeconds == null ? null : wakatimeSeconds + chatGptSeconds + localSeconds;
   const totalTrackedMinutes =
     totalTrackedSeconds == null ? null : Math.round(totalTrackedSeconds / 60);
   const activityRows: Array<{ name: string; seconds?: number; chatGpt?: boolean }> = [
     ...editors.map((editor) => ({ name: editor.name, seconds: editor.totalSeconds })),
     ...(chatGptEntry
-      ? [{ name: 'ChatGPT', seconds: chatGptEntry.totalSeconds, chatGpt: true }]
+      ? [
+          { name: 'ChatGPT', seconds: chatGptSeconds, chatGpt: true },
+          { name: 'RKM local', seconds: localSeconds },
+        ]
       : []),
   ].sort((first, second) => (second.seconds ?? -1) - (first.seconds ?? -1));
 
@@ -97,9 +102,12 @@ export default function RoadmapMetricsDev({
       return;
     }
 
-    const chatGptSeconds = chatGptEntry?.totalSeconds ?? 0;
-
-    if (!Number.isFinite(chatGptSeconds) || chatGptSeconds < 0) {
+    if (
+      !Number.isFinite(chatGptSeconds) ||
+      chatGptSeconds < 0 ||
+      !Number.isFinite(localSeconds) ||
+      localSeconds < 0
+    ) {
       onLiveMetricChange(featureId, null);
       return;
     }
@@ -109,14 +117,18 @@ export default function RoadmapMetricsDev({
       branch: activeBranch,
       wakatimeSeconds,
       chatGptSeconds,
+      localSeconds,
       editors,
     });
   }, [
     activeBranch,
-    chatGptEntry?.totalSeconds,
+    chatGptEntry?.chatGptSeconds,
+    chatGptEntry?.localSeconds,
     completed,
     editors,
     featureId,
+    chatGptSeconds,
+    localSeconds,
     onLiveMetricChange,
     wakatimeSeconds,
   ]);
@@ -157,7 +169,8 @@ export default function RoadmapMetricsDev({
           ...previous,
           [featureId]: {
             loading: false,
-            totalSeconds: metric.chatGptSeconds,
+            chatGptSeconds: metric.chatGptSeconds,
+            localSeconds: metric.localSeconds,
           },
         }));
       })
@@ -206,7 +219,8 @@ export default function RoadmapMetricsDev({
 
         const nextChatGptEntry: ChatGptEntry = {
           loading: false,
-          totalSeconds: result.totalSeconds,
+          chatGptSeconds: result.chatGptSeconds,
+          localSeconds: result.localSeconds,
         };
 
         setChatGptActivity((previous) => ({
@@ -443,7 +457,7 @@ export default function RoadmapMetricsDev({
 
             <div className="space-y-2">
               <DurationPicker
-                label="Tempo real · WakaTime + ChatGPT"
+                label="Tempo real · WakaTime + ChatGPT + RKM local"
                 mode="locked"
                 minutes={totalTrackedMinutes}
                 onChange={() => undefined}
@@ -500,7 +514,7 @@ export default function RoadmapMetricsDev({
           </div>
 
           <p className="mt-2 text-xs text-slate-500">
-            Estimativa local. WakaTime e ChatGPT por branch desde 01/09/2026.
+            Estimativa local. WakaTime, ChatGPT e RKM local por branch desde 01/09/2026.
           </p>
         </>
       )}

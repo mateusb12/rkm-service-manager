@@ -70,6 +70,7 @@ func TestFeatureMetricFreezeLifecycle(
 		Branch:          "features/pcp/clientes",
 		WakaTimeSeconds: 100,
 		ChatGPTSeconds:  50,
+		LocalSeconds:    25,
 		Editors: []EditorTime{
 			{
 				Name:         "WebStorm",
@@ -153,5 +154,13 @@ func TestFeatureMetricFreezeLifecycle(
 	if len(response.Editors) != 1 ||
 		response.Editors[0].Name != "WebStorm" {
 		test.Fatal("editor breakdown was not preserved")
+	}
+
+	if response.ChatGPTSeconds != 50 || response.LocalSeconds != 25 {
+		test.Fatalf(
+			"activity breakdown was not preserved: chatgpt=%.0f local=%.0f",
+			response.ChatGPTSeconds,
+			response.LocalSeconds,
+		)
 	}
 }
