@@ -84,13 +84,11 @@ const AREA_COLORS = {
 const V0_MILESTONE_FEATURES: Record<string, string[]> = {
   '2026-10-16': ['pcp/clientes'],
   '2026-10-23': ['pcp/abertura-os'],
-  '2026-10-30': ['comercial/tabela-precos'],
-  '2026-11-06': ['pcp/fila', 'admin/usuarios'],
-  '2026-11-13': ['oficina/bancadas'],
-  '2026-11-20': ['oficina/diagnostico-minimo'],
-  '2026-11-27': ['oficina/execucao-minima'],
-  '2026-12-04': ['comercial/orcamento-minimo'],
-  '2026-12-08': ['finalizacao/encerramento', 'finalizacao/relatorio-pdf'],
+  '2026-10-30': ['oficina/diagnostico-minimo'],
+  '2026-11-06': ['admin/usuarios'],
+  '2026-11-13': ['pcp/fila'],
+  '2026-11-20': ['finalizacao/encerramento', 'finalizacao/relatorio-pdf'],
+  '2026-11-27': ['oficina/peritagem-cilindro'],
 };
 
 function roadmapDateKey(date: Date) {

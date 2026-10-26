@@ -79,7 +79,7 @@ export const ROADMAP: RoadmapVersion[] = [
       'A peça está com qual mecânico?',
       'O serviço já começou ou está parado? Por quê?',
       'Qual é a previsão de conclusão?',
-      'O orçamento foi aprovado? A OS já foi finalizada?',
+      'A OS já foi finalizada?',
     ],
     description: 'Receber, acompanhar e finalizar uma OS do começo ao fim.',
     areas: [
@@ -104,47 +104,30 @@ export const ROADMAP: RoadmapVersion[] = [
           ),
           feature(
             'pcp/fila',
-            'Acompanhamento das OS',
-            'O PCP consegue consultar e localizar as OS em andamento.\nConsegue identificar a situação atual, com quem a OS está, se o serviço já começou e qual é a previsão informada.\nSe a OS estiver parada, o PCP consegue consultar um motivo simples da parada.\nMudanças de situação e responsável ficam registradas com data, hora e usuário, preparando o histórico da V3.',
+            'Encaminhamento da OS ao mecânico',
+            'O PCP consegue encaminhar uma OS para um mecânico pelo nome e consultar as OS em andamento.\nConsegue identificar a situação atual, com quem a OS está, se o serviço já começou e qual é a previsão informada.\nSe a OS estiver parada, o PCP consegue consultar um motivo simples da parada.\nMudanças de situação e responsável ficam registradas com data, hora e usuário, preparando o histórico da V3.',
           ),
         ],
       },
       {
         id: 'oficina',
         title: 'Oficina',
-        objective: 'Organizar onde o serviço acontece e registrar seu andamento básico.',
+        objective: 'Registrar a peritagem inicial e o andamento básico do serviço.',
         features: [
           feature(
-            'oficina/bancadas',
-            'Cadastro de bancadas',
-            'É possível cadastrar, editar e consultar as bancadas da oficina.\nUsuários ativos com perfil Mecânico podem ser vinculados às bancadas.\nÉ possível identificar bancadas livres ou ocupadas e a OS atendida quando houver.',
+            'oficina/diagnostico-minimo',
+            'Preparação da peritagem do cilindro',
+            'A oficina identifica o equipamento e seleciona um usuário ativo com perfil Mecânico como responsável pela desmontagem.\nNa V0, a peritagem começa validando o fluxo para cilindros, com uma lista simples de componentes e campos manuais para observações e medidas.\nA implementação não exige regras automáticas, interpretação do diagnóstico ou checklist técnico detalhado para outros equipamentos.',
           ),
           feature(
-            'oficina/diagnostico-minimo',
-            'Peritagem básica',
-            'A oficina identifica o equipamento e seleciona um usuário ativo com perfil Mecânico como responsável pela desmontagem.\nRegistra observações essenciais da desmontagem, quando necessária, e um diagnóstico inicial em texto livre.\nA OS consegue seguir para orçamento sem exigir checklist técnico detalhado ou fotos.',
+            'oficina/peritagem-cilindro',
+            'Registro dos componentes do cilindro',
+            'O mecânico consegue abrir cada componente da lista de peritagem do cilindro e registrar manualmente sua condição, observações e medidas básicas.\nO progresso pode ser salvo sem exigir regras automáticas, diagnóstico estruturado ou suporte imediato a outros equipamentos.',
           ),
           feature(
             'oficina/execucao-minima',
             'Andamento do serviço',
             'A oficina consegue indicar que o serviço ainda não começou, está em execução ou foi concluído.\nÉ possível registrar o que está sendo feito, o responsável atual e o próximo passo necessário.',
-          ),
-        ],
-      },
-      {
-        id: 'comercial',
-        title: 'Comercial',
-        objective: 'Definir preços e registrar o orçamento necessário para o serviço continuar.',
-        features: [
-          feature(
-            'comercial/tabela-precos',
-            'Tabela de preços',
-            'O comercial consegue cadastrar e consultar itens e serviços utilizados na formação do orçamento, com seus respectivos valores.',
-          ),
-          feature(
-            'comercial/orcamento-minimo',
-            'Orçamento',
-            'O comercial monta o orçamento da OS utilizando os serviços e valores aplicáveis.\nO orçamento registra a descrição do que será feito, os valores e o total.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
           ),
         ],
       },
@@ -174,8 +157,8 @@ export const ROADMAP: RoadmapVersion[] = [
             'admin/usuarios',
             'Gestão de usuários',
             'O administrador consegue cadastrar, consultar, editar e desativar usuários do sistema.\nCada funcionário possui seu próprio login e um perfil de acesso: Admin, Mecânico, PCP ou Comercial.\nUsuários ativos com perfil Mecânico ficam disponíveis para seleção como responsáveis nas telas da oficina.',
-            'Concluída',
-            [0, 1, 2],
+            'Em andamento',
+            [0],
           ),
         ],
       },
@@ -268,6 +251,11 @@ export const ROADMAP: RoadmapVersion[] = [
         objective: 'Dar mais controle ao fluxo sem tornar todas as etapas obrigatórias.',
         features: [
           feature(
+            'oficina/bancadas',
+            'Cadastro de bancadas',
+            'É possível cadastrar, editar e consultar as bancadas da oficina.\nUsuários ativos com perfil Mecânico podem ser vinculados às bancadas.\nÉ possível identificar bancadas livres ou ocupadas e a OS atendida quando houver.',
+          ),
+          feature(
             'oficina/nao-aplicavel',
             'Etapas flexíveis',
             'O mecânico acessa a OS e marca como “Não aplicável” uma etapa que não será necessária naquele serviço, permitindo que o fluxo continue normalmente.',
@@ -276,6 +264,23 @@ export const ROADMAP: RoadmapVersion[] = [
             'controle/liberacao',
             'Aprovações e liberações',
             'O usuário autorizado acessa a OS e registra uma decisão de aprovação ou liberação. O sistema mantém registrado quem tomou a decisão e quando.',
+          ),
+        ],
+      },
+      {
+        id: 'comercial',
+        title: 'Comercial',
+        objective: 'Definir preços e registrar o orçamento necessário para o serviço continuar.',
+        features: [
+          feature(
+            'comercial/tabela-precos',
+            'Tabela de preços',
+            'O comercial consegue cadastrar e consultar itens e serviços utilizados na formação do orçamento, com seus respectivos valores.',
+          ),
+          feature(
+            'comercial/orcamento-minimo',
+            'Orçamento',
+            'O comercial monta o orçamento da OS utilizando os serviços e valores aplicáveis.\nO orçamento registra a descrição do que será feito, os valores e o total.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
           ),
         ],
       },
