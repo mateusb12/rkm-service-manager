@@ -102,6 +102,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
       description: 'Ajuste da validação da desmontagem para tratar a foto como opcional.',
     },
     {
+      category: 'Produto',
+      description:
+        'Criação da checklist visual de saúde do cilindro com botões para camisa, haste, êmbolo, cabeçotes, vedações, articulações e outros componentes, preparada para a próxima etapa de avaliação.',
+    },
+    {
       category: 'Transversal',
       description:
         'Padronização do feedback de validação em toast compacto, com fechamento manual, desaparecimento automático e barra de progresso.',
