@@ -1,5 +1,12 @@
 // @ts-nocheck
-import { useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
+
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { ptBR } from 'date-fns/locale/pt-BR';
+
+import 'react-datepicker/dist/react-datepicker.css';
+
+registerLocale('pt-BR', ptBR);
 
 import {
   SERVICE_ENTRY_STEPS,
@@ -10,7 +17,7 @@ import {
 
 import { loadServiceEntries, saveServiceEntries } from './repository';
 
-import { Field, TextArea, TextInput, Toggle } from '../../shared/ui/form-controls';
+import { Field, TextArea, TextInput } from '../../shared/ui/form-controls';
 
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
@@ -27,6 +34,18 @@ const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
   'Motor hidráulico': '/assets/motor-hidraulico.png',
   Outro: '/assets/outro.png',
 };
+
+const CYLINDER_HEALTH_COMPONENTS = [
+  'Camisa',
+  'Haste',
+  'Êmbolo',
+  'Cabeçote dianteiro',
+  'Cabeçote traseiro',
+  'Vedações',
+  'Articulação dianteira',
+  'Articulação traseira',
+  'Outros',
+];
 
 const openServiceEntryPhotoDb = () =>
   new Promise((resolve, reject) => {
@@ -179,6 +198,43 @@ const serviceEntryDateLabel = (value) => {
   return date.toLocaleDateString('pt-BR');
 };
 
+const parseStoredDateTime = (value) => {
+  const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+
+  if (!match) return null;
+
+  const date = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+    Number(match[4]),
+    Number(match[5]),
+  );
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const serializeDateTime = (date) => {
+  if (!date) return '';
+
+  const pad = (value) => String(value).padStart(2, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, className }, ref) => (
+  <input
+    ref={ref}
+    type="text"
+    value={value || ''}
+    placeholder={placeholder}
+    className={className || 'rkm-input zenit-field'}
+    onClick={onClick}
+    onMouseDown={(event) => event.preventDefault()}
+    readOnly
+  />
+));
+
 const ServiceEntrySection = ({ title, description, children }) => (
   <section className="service-entry-section">
     <div className="service-entry-section-header">
@@ -253,6 +309,13 @@ export const ServiceEntryView = () => {
   const [savedOrder, setSavedOrder] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
 
+  useEffect(() => {
+    if (!error) return undefined;
+
+    const timeoutId = window.setTimeout(() => setError(''), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [error]);
+
   const set = (key, value) => {
     setForm((prev) => ({
       ...prev,
@@ -303,23 +366,11 @@ export const ServiceEntryView = () => {
       .filter(([key]) => !String(form[key] || '').trim())
       .map(([, label]) => label);
 
-    if (step === 2) {
-      if (!form.disassemblyComplete) missing.push('confirmação da desmontagem');
-      if (!form.disassemblyControlled || !form.partsSeparated)
-        missing.push('desmontagem controlada e separação das peças');
-      if ((form.photos.disassembly || []).length === 0) missing.push('foto da desmontagem');
-    }
-    if (step === 3 && form.approvalRequired && form.approvalStatus !== 'Aprovada') {
-      setError('A OS fica aguardando aprovação do cliente antes de avançar para execução.');
-      return false;
-    }
     if (step === 4) {
       if (form.testResult !== 'Aprovado') missing.push('teste aprovado');
-      if (!form.qualityApproved) missing.push('liberação da Qualidade');
       if ((form.photos.execution || []).length === 0)
         missing.push('evidência fotográfica da execução/teste');
     }
-    if (step === 5 && !form.dispatched) missing.push('confirmação da expedição/entrega');
 
     if (missing.length) {
       setError(`Para avançar, complete: ${missing.join(', ')}.`);
@@ -436,17 +487,14 @@ export const ServiceEntryView = () => {
     }
   };
 
-  const saveProgress = async () => {
-    const awaitingApproval =
-      step === 3 && form.approvalRequired && form.approvalStatus !== 'Aprovada';
-    await persistEntry(awaitingApproval ? 'Aguardando aprovação' : undefined);
-  };
-
   const openEntry = (entry) => {
+    const emptyEntry = createEmptyServiceEntry();
+
     setForm({
-      ...createEmptyServiceEntry(),
+      ...emptyEntry,
       ...entry,
-      photos: { ...createEmptyServiceEntry().photos, ...(entry.photos || {}) },
+      disassemblyStartedAt: entry.disassemblyStartedAt || emptyEntry.disassemblyStartedAt,
+      photos: { ...emptyEntry.photos, ...(entry.photos || {}) },
     });
     setStep(Math.max(0, Math.min(entry.currentStep || 0, SERVICE_ENTRY_STEPS.length - 1)));
     setError('');
@@ -564,6 +612,10 @@ export const ServiceEntryView = () => {
               <tbody>
                 {entries.slice(0, 8).map((entry) => {
                   const isSelected = form.id === entry.id;
+                  const entryStep = Math.min(
+                    Math.max(Number(entry.currentStep) || 0, 0),
+                    SERVICE_ENTRY_STEPS.length - 1,
+                  );
                   return (
                     <tr
                       key={entry.id}
@@ -590,21 +642,35 @@ export const ServiceEntryView = () => {
                       <td>{entry.client}</td>
 
                       <td>
-                        <div>{entry.equipment || 'A identificar'}</div>
-                        <small>
-                          {entry.manufacturer}
-                          {entry.model ? ` · ${entry.model}` : ''}
-                        </small>
+                        <div className="service-entry-equipment-cell">
+                          {SERVICE_ENTRY_ORDER_TYPE_ICONS[entry.orderType] && (
+                            <img
+                              src={SERVICE_ENTRY_ORDER_TYPE_ICONS[entry.orderType]}
+                              alt=""
+                              aria-hidden="true"
+                            />
+                          )}
+                          <div>
+                            <div>{entry.equipment || 'A identificar'}</div>
+                            <small>
+                              {entry.manufacturer}
+                              {entry.model ? ` · ${entry.model}` : ''}
+                            </small>
+                          </div>
+                        </div>
                       </td>
 
                       <td>{serviceEntryDateLabel(entry.expectedDeliveryDate)}</td>
 
-                      <td>
+                      <td className="service-entry-status-cell">
                         <span
                           className={`tag ${entry.status === 'Bloqueado por segurança' ? 'tag-red' : 'tag-blue'}`}
                         >
                           {entry.status || 'Recebido'}
                         </span>
+                        <small className="service-entry-stage-count">
+                          {entryStep + 1}/{SERVICE_ENTRY_STEPS.length}
+                        </small>
                       </td>
                       <td>
                         <div className="service-entry-open-actions">
@@ -695,7 +761,23 @@ export const ServiceEntryView = () => {
         </div>
       )}
 
-      {error && <div className="alert-critical rounded-lg p-4 text-xs">{error}</div>}
+      {error && (
+        <div
+          role="alert"
+          className="service-entry-toast alert-critical rounded-lg p-4 pr-10 text-sm"
+        >
+          {error}
+          <button
+            type="button"
+            className="service-entry-toast-close"
+            aria-label="Fechar mensagem de erro"
+            onClick={() => setError('')}
+          >
+            ×
+          </button>
+          <span className="service-entry-toast-progress" aria-hidden="true" />
+        </div>
+      )}
 
       <div
         className="service-entry-stepper service-entry-amazon-stepper"
@@ -813,14 +895,14 @@ export const ServiceEntryView = () => {
                         type="button"
                         role="radio"
                         aria-checked={selected}
-                        className={`flex min-h-[88px] min-w-[112px] flex-col items-center justify-center gap-1.5 rounded-lg border p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                        className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
                           selected
                             ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
                             : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
                         }`}
                         onClick={() => set('orderType', type)}
                       >
-                        <span className="flex h-12 w-12 items-center justify-center p-1">
+                        <span className="flex h-20 w-20 items-center justify-center p-1">
                           <img
                             src={icon}
                             alt=""
@@ -881,45 +963,45 @@ export const ServiceEntryView = () => {
               description="Preserve a identidade da OS e registre como os componentes foram encontrados."
             >
               <Field label="Responsável pela desmontagem *">
-                <TextInput
+                <UserSelector
                   value={form.disassemblyOperator}
-                  onChange={(value) => set('disassemblyOperator', value)}
-                  placeholder="Técnico"
+                  onSelect={(user) => set('disassemblyOperator', user.name)}
+                  onClear={() => set('disassemblyOperator', '')}
                 />
               </Field>
               <Field label="Início">
-                <TextInput
-                  type="datetime-local"
-                  value={form.disassemblyStartedAt}
-                  onChange={(value) => set('disassemblyStartedAt', value)}
+                <DatePicker
+                  selected={parseStoredDateTime(form.disassemblyStartedAt)}
+                  onChange={(value) => set('disassemblyStartedAt', serializeDateTime(value))}
+                  dateFormat="dd 'de' MMMM 'de' yyyy 'às' HH'h'mm"
+                  locale="pt-BR"
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  timeCaption="Horário"
+                  placeholderText="DD de mês de YYYY às HHhmm"
+                  customInput={<ReadOnlyDatePickerInput />}
+                  wrapperClassName="service-entry-date-picker"
                 />
               </Field>
-              <Field label="Desmontagem concluída">
-                <Toggle
-                  checked={form.disassemblyComplete}
-                  onChange={(value) => set('disassemblyComplete', value)}
-                  label="Abertura concluída"
-                />
-              </Field>
-              <Field label="Controles do processo" className="md:col-span-3">
-                <div className="service-entry-checks">
-                  <Toggle
-                    checked={form.disassemblyControlled}
-                    onChange={(value) => set('disassemblyControlled', value)}
-                    label="Abertura controlada e ferramentas compatíveis"
-                  />
-                  <Toggle
-                    checked={form.partsSeparated}
-                    onChange={(value) => set('partsSeparated', value)}
-                    label="Componentes separados e identificados por OS"
-                  />
-                  <Toggle
-                    checked={form.oilCollected}
-                    onChange={(value) => set('oilCollected', value)}
-                    label="Óleo/resíduo contido e destinado"
-                  />
+              {form.orderType === 'Cilindro' && (
+                <div className="md:col-span-3">
+                  <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+                    Checklist de saúde do cilindro
+                  </span>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {CYLINDER_HEALTH_COMPONENTS.map((component) => (
+                      <button
+                        key={component}
+                        type="button"
+                        className="rounded-lg border border-rkmborder bg-rkmcard2/40 px-3 py-3 text-left text-sm text-slate-300 transition hover:border-blue-400/50 hover:bg-rkmcard2"
+                      >
+                        {component}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </Field>
+              )}
               <Field label="Observações da desmontagem" className="md:col-span-3">
                 <TextArea
                   rows={3}
@@ -984,36 +1066,25 @@ export const ServiceEntryView = () => {
                   placeholder="Serviços e peças recomendados para orçamento/laudo..."
                 />
               </Field>
-              <Field label="Exige aprovação do cliente">
-                <Toggle
-                  checked={form.approvalRequired}
-                  onChange={(value) => set('approvalRequired', value)}
-                  label="Aguardar autorização antes do reparo"
+              <Field label="Status da aprovação">
+                <select
+                  className="rkm-input zenit-field"
+                  value={form.approvalStatus}
+                  onChange={(event) => set('approvalStatus', event.target.value)}
+                >
+                  <option>Pendente</option>
+                  <option>Aprovada</option>
+                  <option>Reprovada</option>
+                  <option>Ajuste solicitado</option>
+                </select>
+              </Field>
+              <Field label="Referência da aprovação">
+                <TextInput
+                  value={form.approvalReference}
+                  onChange={(value) => set('approvalReference', value)}
+                  placeholder="E-mail, pedido ou autorização"
                 />
               </Field>
-              {form.approvalRequired && (
-                <>
-                  <Field label="Status da aprovação">
-                    <select
-                      className="rkm-input zenit-field"
-                      value={form.approvalStatus}
-                      onChange={(event) => set('approvalStatus', event.target.value)}
-                    >
-                      <option>Pendente</option>
-                      <option>Aprovada</option>
-                      <option>Reprovada</option>
-                      <option>Ajuste solicitado</option>
-                    </select>
-                  </Field>
-                  <Field label="Referência da aprovação">
-                    <TextInput
-                      value={form.approvalReference}
-                      onChange={(value) => set('approvalReference', value)}
-                      placeholder="E-mail, pedido ou autorização"
-                    />
-                  </Field>
-                </>
-              )}
               <Field label="Disponibilidade de material">
                 <select
                   className="rkm-input zenit-field"
@@ -1064,13 +1135,6 @@ export const ServiceEntryView = () => {
                   <option>Não aplicável</option>
                 </select>
               </Field>
-              <Field label="Liberação da Qualidade">
-                <Toggle
-                  checked={form.qualityApproved}
-                  onChange={(value) => set('qualityApproved', value)}
-                  label="Inspeção final aprovada"
-                />
-              </Field>
               <div className="md:col-span-3">
                 <ServiceEntryPhotoField
                   label="Fotos da execução e teste *"
@@ -1108,13 +1172,6 @@ export const ServiceEntryView = () => {
                   placeholder="Código ou referência de entrega"
                 />
               </Field>
-              <Field label="Saída confirmada">
-                <Toggle
-                  checked={form.dispatched}
-                  onChange={(value) => set('dispatched', value)}
-                  label="Peça expedida / entregue"
-                />
-              </Field>
               <Field label="Observações de expedição" className="md:col-span-3">
                 <TextArea
                   rows={3}
@@ -1136,22 +1193,14 @@ export const ServiceEntryView = () => {
         )}
 
         <div className="service-entry-actions service-entry-step-actions">
-          <button type="button" className="btn btn-ghost" onClick={reset}>
-            Nova OS
-          </button>
           <div className="service-entry-action-group">
             {step > 0 && (
               <button type="button" className="btn btn-ghost" onClick={() => changeStep(step - 1)}>
                 Voltar
               </button>
             )}
-            {form.id && (
-              <button type="button" className="btn btn-ghost" onClick={saveProgress}>
-                Salvar progresso
-              </button>
-            )}
             <button type="submit" className="btn btn-primary service-entry-save">
-              {step === SERVICE_ENTRY_STEPS.length - 1 ? 'Finalizar OS' : 'Salvar e continuar'}
+              Salvar
             </button>
           </div>
         </div>

@@ -2009,6 +2009,19 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   gap: 5px;
 }
 
+.service-entry-status-cell {
+  white-space: nowrap;
+}
+
+.service-entry-stage-count {
+  display: inline-block;
+  margin-left: 8px;
+  color: #94a3b8;
+  font-size: var(--font-xs);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
 .service-entry-deselect {
   width: 30px;
   height: 30px;
@@ -2079,6 +2092,58 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   font-size: var(--font-xs);
 }
 
+.service-entry-date-picker,
+.service-entry-date-picker .react-datepicker-wrapper,
+.service-entry-date-picker .react-datepicker__input-container {
+  display: block;
+  width: 100%;
+}
+
+.service-entry-date-picker .react-datepicker-popper {
+  z-index: 20;
+}
+
+.service-entry-page .react-datepicker {
+  overflow: hidden;
+  border: 1px solid #294462;
+  border-radius: 9px;
+  background: #0f2741;
+  color: #e2e8f0;
+  font-family: inherit;
+}
+
+.service-entry-page .react-datepicker__header {
+  border-bottom: 1px solid #294462;
+  background: #132f4d;
+}
+
+.service-entry-page .react-datepicker__current-month,
+.service-entry-page .react-datepicker-time__header,
+.service-entry-page .react-datepicker-year-header,
+.service-entry-page .react-datepicker__day-name,
+.service-entry-page .react-datepicker__day,
+.service-entry-page .react-datepicker__time-list-item {
+  color: #cbd5e1;
+}
+
+.service-entry-page .react-datepicker__day:hover,
+.service-entry-page .react-datepicker__time-list-item:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.service-entry-page .react-datepicker__day--selected,
+.service-entry-page .react-datepicker__day--keyboard-selected,
+.service-entry-page .react-datepicker__time-list-item--selected {
+  background: #1683f7;
+  color: #fff;
+}
+
+.service-entry-page .react-datepicker__time-container,
+.service-entry-page .react-datepicker__time {
+  border-left-color: #294462;
+  background: #0f2741;
+}
+
 .service-entry-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2112,6 +2177,52 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 10px;
   background: rgba(16, 185, 129, 0.08);
+}
+
+.service-entry-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  background: #000;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(2, 8, 23, 0.38);
+}
+
+.service-entry-toast-close {
+  position: absolute;
+  top: 6px;
+  right: 9px;
+  color: #cbd5e1;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.service-entry-toast-close:hover {
+  color: #fff;
+}
+
+.service-entry-toast-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  transform-origin: left;
+  background: #fb7185;
+  animation: service-entry-toast-progress 5s linear forwards;
+}
+
+@keyframes service-entry-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
 }
 
 .service-entry-success-icon {
@@ -2201,6 +2312,19 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-table tbody tr:hover {
   background: rgba(59, 130, 246, 0.035);
+}
+
+.service-entry-equipment-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-entry-equipment-cell > img {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  object-fit: contain;
 }
 
 .service-entry-table strong {
