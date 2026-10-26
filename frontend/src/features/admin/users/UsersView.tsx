@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Check,
@@ -15,6 +15,9 @@ import {
   X,
 } from 'lucide-react';
 
+import { formatLongDateTimeBR } from '../../../utils/formatLongDateTimeBR';
+import { listUsers, type ApiUser } from './service';
+
 type UserStatus = 'active' | 'invited' | 'suspended';
 type UserRole = 'admin' | 'pcp' | 'mechanic' | 'commercial';
 
@@ -25,7 +28,7 @@ type ManagedUser = {
   role: UserRole;
   status: UserStatus;
   department: string;
-  lastAccess: string;
+  lastLogin: string;
   initials: string;
   color: string;
 };
@@ -59,74 +62,36 @@ const statusClasses: Record<UserStatus, string> = {
   suspended: 'bg-rose-400',
 };
 
-const demoUsers: ManagedUser[] = [
-  {
-    id: 'u5',
-    name: 'Osmar Lamarck',
-    email: 'osmar.lamarck@rkmhidraulica.com.br',
-    role: 'admin',
-    status: 'active',
-    department: 'Gestão',
-    lastAccess: 'Hoje, 08:42',
-    initials: 'OL',
-    color: 'from-violet-500 to-indigo-600',
-  },
-  {
-    id: 'u4',
-    name: 'PCP RKM',
-    email: 'pcp@rkmhidraulica.com.br',
-    role: 'pcp',
-    status: 'active',
-    department: 'PCP',
-    lastAccess: 'Hoje, 07:58',
-    initials: 'PR',
-    color: 'from-amber-500 to-orange-600',
-  },
-  {
-    id: 'u1',
-    name: 'Carlos Mendes',
-    email: 'carlos.mendes@rkmhidraulica.com.br',
-    role: 'mechanic',
-    status: 'active',
-    department: 'Oficina',
-    lastAccess: 'Ontem, 17:31',
-    initials: 'CM',
-    color: 'from-sky-500 to-cyan-600',
-  },
-  {
-    id: 'u6',
-    name: 'Marcelo Ribeiro',
-    email: 'marcelo.ribeiro@rkmhidraulica.com.br',
-    role: 'mechanic',
-    status: 'active',
-    department: 'Oficina',
-    lastAccess: '24/04/2026, 16:12',
-    initials: 'MR',
-    color: 'from-emerald-500 to-teal-600',
-  },
-  {
-    id: 'u7',
-    name: 'Comercial RKM',
-    email: 'comercial@rkmhidraulica.com.br',
-    role: 'commercial',
-    status: 'invited',
-    department: 'Comercial',
-    lastAccess: 'Ainda não acessou',
-    initials: 'CR',
-    color: 'from-blue-500 to-indigo-600',
-  },
-  {
-    id: 'u8',
-    name: 'Jeferson Nascimento',
-    email: 'jeferson.n@rkmhidraulica.com.br',
-    role: 'mechanic',
-    status: 'suspended',
-    department: 'Oficina',
-    lastAccess: '18/04/2026, 10:05',
-    initials: 'JN',
-    color: 'from-rose-500 to-red-600',
-  },
-];
+function mapApiUser(user: ApiUser): ManagedUser {
+  const role = user.role as UserRole;
+  const status: UserStatus = user.active ? 'active' : 'suspended';
+  const departmentByRole: Record<UserRole, string> = {
+    admin: 'Gestão',
+    pcp: 'PCP',
+    mechanic: 'Oficina',
+    commercial: 'Comercial',
+  };
+  const colorByRole: Record<UserRole, string> = {
+    admin: 'from-violet-500 to-indigo-600',
+    pcp: 'from-amber-500 to-orange-600',
+    mechanic: 'from-sky-500 to-cyan-600',
+    commercial: 'from-blue-500 to-indigo-600',
+  };
+
+  const lastLoginLabel = formatLongDateTimeBR(user.lastLoginAt);
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: role in roleLabels ? role : 'mechanic',
+    status,
+    department: departmentByRole[role] || '—',
+    lastLogin: lastLoginLabel,
+    initials: initialsFor(user.name),
+    color: colorByRole[role] || 'from-slate-500 to-slate-600',
+  };
+}
 
 const emptyInput: UserInput = {
   name: '',
@@ -149,13 +114,34 @@ function initialsFor(name: string) {
 }
 
 export function UsersView() {
-  const [users, setUsers] = useState(demoUsers);
+  const [users, setUsers] = useState<ManagedUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [page, setPage] = useState<Page>({ mode: 'list' });
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | UserStatus>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void listUsers()
+      .then((items) => {
+        if (!cancelled) setUsers(items.map(mapApiUser));
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError('Não foi possível carregar os usuários do backend.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const visibleUsers = useMemo(() => {
     const term = search.trim().toLocaleLowerCase('pt-BR');
@@ -187,7 +173,7 @@ export function UsersView() {
     const saved: ManagedUser = {
       id: existing?.id || `u-${Date.now()}`,
       ...input,
-      lastAccess: existing?.lastAccess || 'Ainda não acessou',
+      lastLogin: existing?.lastLogin || 'Ainda não acessou',
       initials: initialsFor(input.name),
       color: existing?.color || 'from-blue-500 to-cyan-600',
     };
@@ -244,11 +230,17 @@ export function UsersView() {
       </section>
 
       <div className="flex items-center gap-2 text-xs text-slate-500">
-        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-300">
-          Modo demonstração
+        <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-300">
+          Dados do backend
         </span>
-        <span>Dados fictícios salvos apenas nesta sessão.</span>
+        <span>Nome, e-mail, perfil e status vêm do banco.</span>
       </div>
+
+      {loadError && (
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+          {loadError}
+        </div>
+      )}
 
       <section className="grid gap-3 sm:grid-cols-3">
         <MetricCard
@@ -336,7 +328,9 @@ export function UsersView() {
           </div>
         </div>
 
-        {visibleUsers.length === 0 ? (
+        {loading ? (
+          <div className="px-5 py-14 text-center text-sm text-slate-500">Carregando usuários…</div>
+        ) : visibleUsers.length === 0 ? (
           <div className="px-5 py-14 text-center">
             <UserRound className="mx-auto text-slate-600" size={32} />
             <h3 className="mt-3 font-medium text-slate-200">Nenhum usuário encontrado</h3>
@@ -364,8 +358,10 @@ export function UsersView() {
                   <th className="px-5 py-3.5 font-medium">Perfil</th>
                   <th className="px-5 py-3.5 font-medium">Setor</th>
                   <th className="px-5 py-3.5 font-medium">Status</th>
-                  <th className="px-5 py-3.5 font-medium">Último acesso</th>
-                  <th className="px-5 py-3.5 text-right font-medium">Ações</th>
+                  <th className="w-px whitespace-nowrap px-5 py-3.5 font-medium">Último acesso</th>
+                  <th className="w-px whitespace-nowrap px-5 py-3.5 text-right font-medium">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -403,8 +399,10 @@ export function UsersView() {
                         {statusLabels[user.status]}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-slate-400">{user.lastAccess}</td>
-                    <td className="px-5 py-4 text-right">
+                    <td className="w-px whitespace-nowrap px-5 py-4 text-slate-400">
+                      {user.lastLogin}
+                    </td>
+                    <td className="w-px whitespace-nowrap px-5 py-4 text-right">
                       {pendingDelete === user.id ? (
                         <div className="flex items-center justify-end gap-2">
                           <span className="text-xs text-rose-300">Remover?</span>
