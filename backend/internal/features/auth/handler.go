@@ -12,7 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func (module *Module) handleLogin(
+type tokenResponse struct {
+	User         authUser `json:"user"`
+	AccessToken  string   `json:"accessToken"`
+	RefreshToken string   `json:"refreshToken"`
+	ExpiresIn    int64    `json:"expiresIn"`
+}
+
+func (module *Module) login(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -58,10 +65,19 @@ func (module *Module) handleLogin(
 		return
 	}
 
-	if sessionError := module.startSession(
-		writer,
+	if loginUpdateError := module.recordLastLogin(user.ID, time.Now().Unix()); loginUpdateError != nil {
+		httpx.WriteJSON(
+			writer,
+			http.StatusInternalServerError,
+			map[string]string{"error": "last_login_update_failed"},
+		)
+		return
+	}
+
+	tokens, sessionError := module.startSession(
 		user,
-	); sessionError != nil {
+	)
+	if sessionError != nil {
 		httpx.WriteJSON(
 			writer,
 			http.StatusInternalServerError,
@@ -72,10 +88,20 @@ func (module *Module) handleLogin(
 		return
 	}
 
+	if request.Header.Get(authTransportHeader) == bearerTransport {
+		httpx.WriteJSON(writer, http.StatusOK, tokenResponse{
+			User:         user,
+			AccessToken:  tokens.Access,
+			RefreshToken: tokens.Refresh,
+			ExpiresIn:    int64(module.accessTTL.Seconds()),
+		})
+		return
+	}
+
 	httpx.WriteJSON(writer, http.StatusOK, user)
 }
 
-func (module *Module) handleRefresh(
+func (module *Module) refresh(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -88,17 +114,8 @@ func (module *Module) handleRefresh(
 		return
 	}
 
-	if !module.validCSRF(request) {
-		httpx.WriteJSON(
-			writer,
-			http.StatusForbidden,
-			map[string]string{"error": "csrf_failed"},
-		)
-		return
-	}
-
-	refreshCookieValue, cookieError := request.Cookie(refreshCookie)
-	if cookieError != nil {
+	refreshToken, refreshTokenIsMobile := refreshTokenFromRequest(request)
+	if refreshToken == "" {
 		httpx.WriteJSON(
 			writer,
 			http.StatusUnauthorized,
@@ -107,7 +124,7 @@ func (module *Module) handleRefresh(
 		return
 	}
 
-	oldRefreshHash := sha256Hex(refreshCookieValue.Value)
+	oldRefreshHash := sha256Hex(refreshToken)
 
 	var storedSession sessionModel
 
@@ -172,6 +189,20 @@ func (module *Module) handleRefresh(
 		return
 	}
 
+	accessToken, accessTokenError := module.issueAccessToken(
+		user,
+		time.Now().Add(module.accessTTL),
+	)
+	if accessTokenError != nil {
+		httpx.WriteJSON(
+			writer,
+			http.StatusInternalServerError,
+			map[string]string{"error": "refresh_failed"},
+		)
+		return
+	}
+	tokens.Access = accessToken
+
 	refreshExpires := now.Add(module.sessionTTL)
 	absoluteExpires := time.Unix(
 		storedSession.AbsoluteExpiresAt,
@@ -220,20 +251,24 @@ func (module *Module) handleRefresh(
 		return
 	}
 
-	module.setCookies(
-		writer,
-		tokens.Access,
-		tokens.Refresh,
-		tokens.CSRF,
-		accessExpires,
-		refreshExpires,
-		absoluteExpires,
-	)
+	if !refreshTokenIsMobile {
+		httpx.WriteJSON(
+			writer,
+			http.StatusBadRequest,
+			map[string]string{"error": "bearer_refresh_required"},
+		)
+		return
+	}
 
-	httpx.WriteJSON(writer, http.StatusOK, user)
+	httpx.WriteJSON(writer, http.StatusOK, tokenResponse{
+		User:         user,
+		AccessToken:  tokens.Access,
+		RefreshToken: tokens.Refresh,
+		ExpiresIn:    int64(module.accessTTL.Seconds()),
+	})
 }
 
-func (module *Module) handleLogout(
+func (module *Module) logout(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -246,20 +281,7 @@ func (module *Module) handleLogout(
 		return
 	}
 
-	if !module.validCSRF(request) {
-		httpx.WriteJSON(
-			writer,
-			http.StatusForbidden,
-			map[string]string{"error": "csrf_failed"},
-		)
-		return
-	}
-
 	revokeError := module.revokeSession(request)
-
-	// O cliente deve perder os cookies mesmo se a persistência
-	// da revogação falhar.
-	module.clearCookies(writer)
 
 	if revokeError != nil {
 		httpx.WriteJSON(
@@ -277,7 +299,7 @@ func (module *Module) handleLogout(
 	)
 }
 
-func (module *Module) handleMe(
+func (module *Module) currentUser(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {
@@ -305,7 +327,50 @@ func (module *Module) handleMe(
 	httpx.WriteJSON(writer, http.StatusOK, user)
 }
 
-func (module *Module) handleDevCredentials(
+func (module *Module) listUsers(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	var storedUsers []userModel
+	if queryError := module.database.Order("name ASC").Find(&storedUsers).Error; queryError != nil {
+		httpx.WriteJSON(
+			writer,
+			http.StatusInternalServerError,
+			map[string]string{"error": "users_query_failed"},
+		)
+		return
+	}
+
+	type userSummary struct {
+		ID          string `json:"id"`
+		Email       string `json:"email"`
+		Name        string `json:"name"`
+		Role        string `json:"role"`
+		RoleLabel   string `json:"roleLabel"`
+		Active      bool   `json:"active"`
+		CreatedAt   int64  `json:"createdAt"`
+		LastLoginAt *int64 `json:"lastLoginAt"`
+	}
+
+	users := make([]userSummary, 0, len(storedUsers))
+	for _, storedUser := range storedUsers {
+		roleLabel := roleLabels[storedUser.Role]
+		users = append(users, userSummary{
+			ID:          storedUser.ID,
+			Email:       storedUser.Email,
+			Name:        storedUser.Name,
+			Role:        storedUser.Role,
+			RoleLabel:   roleLabel,
+			Active:      storedUser.Active,
+			CreatedAt:   storedUser.CreatedAt,
+			LastLoginAt: storedUser.LastLoginAt,
+		})
+	}
+
+	httpx.WriteJSON(writer, http.StatusOK, users)
+}
+
+func (module *Module) devCredentials(
 	writer http.ResponseWriter,
 	request *http.Request,
 ) {

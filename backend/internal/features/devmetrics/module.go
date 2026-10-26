@@ -12,10 +12,6 @@ type Authorizer interface {
 		permission string,
 		next http.HandlerFunc,
 	) http.HandlerFunc
-
-	RequireCSRF(
-		next http.HandlerFunc,
-	) http.HandlerFunc
 }
 
 type Module struct {
@@ -57,9 +53,7 @@ func (module *Module) Register(
 		"PUT /api/dev/feature-metrics/settings",
 		module.authorizer.RequirePermission(
 			permissions.DevMetrics,
-			module.authorizer.RequireCSRF(
-				module.handleSettings,
-			),
+			module.handleSettings,
 		),
 	)
 
@@ -67,9 +61,7 @@ func (module *Module) Register(
 		"POST /api/dev/feature-metrics/freeze",
 		module.authorizer.RequirePermission(
 			permissions.DevMetrics,
-			module.authorizer.RequireCSRF(
-				module.handleFreeze,
-			),
+			module.handleFreeze,
 		),
 	)
 
@@ -77,9 +69,7 @@ func (module *Module) Register(
 		"POST /api/dev/feature-metrics/unlock",
 		module.authorizer.RequirePermission(
 			permissions.DevMetrics,
-			module.authorizer.RequireCSRF(
-				module.handleUnlock,
-			),
+			module.handleUnlock,
 		),
 	)
 }

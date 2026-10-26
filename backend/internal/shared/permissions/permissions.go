@@ -4,4 +4,5 @@ const (
 	ClientsView   = "clients.view"
 	ClientsManage = "clients.manage"
 	DevMetrics    = "dev.metrics"
+	UsersManage   = "users.manage"
 )

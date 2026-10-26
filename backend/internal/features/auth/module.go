@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"rkm-service-manager/backend/internal/shared/config"
+	"rkm-service-manager/backend/internal/shared/permissions"
 	"time"
 
 	"gorm.io/gorm"
@@ -14,15 +16,17 @@ type Module struct {
 	accessTTL   time.Duration
 	sessionTTL  time.Duration
 	absoluteTTL time.Duration
-	secure      bool
+	jwtSecret   string
 }
 
 func New(databaseConnection *gorm.DB) (*Module, error) {
 	environment := config.Env("APP_ENV", "development")
-
-	secureDefault := "false"
-	if environment == "production" {
-		secureDefault = "true"
+	jwtSecret := config.Env("AUTH_JWT_SECRET", "")
+	if environment == "production" && jwtSecret == "" {
+		return nil, errors.New("AUTH_JWT_SECRET is required in production")
+	}
+	if jwtSecret == "" {
+		jwtSecret = "development-only-jwt-secret"
 	}
 
 	module := &Module{
@@ -31,7 +35,7 @@ func New(databaseConnection *gorm.DB) (*Module, error) {
 		accessTTL:   config.EnvDuration("ACCESS_TTL", 15*time.Minute),
 		sessionTTL:  config.EnvDuration("SESSION_TTL", 8*time.Hour),
 		absoluteTTL: config.EnvDuration("SESSION_ABSOLUTE_TTL", 7*24*time.Hour),
-		secure:      config.Env("COOKIE_SECURE", secureDefault) == "true",
+		jwtSecret:   jwtSecret,
 	}
 
 	if migrationError := module.migrate(); migrationError != nil {
@@ -46,9 +50,16 @@ func New(databaseConnection *gorm.DB) (*Module, error) {
 }
 
 func (module *Module) Register(mux *http.ServeMux) {
-	mux.HandleFunc("/api/auth/login", module.handleLogin)
-	mux.HandleFunc("/api/auth/refresh", module.handleRefresh)
-	mux.HandleFunc("/api/auth/logout", module.handleLogout)
-	mux.HandleFunc("/api/auth/me", module.handleMe)
-	mux.HandleFunc("/api/auth/dev-credentials", module.handleDevCredentials)
+	mux.HandleFunc("/api/auth/login", module.login)
+	mux.HandleFunc("/api/auth/refresh", module.refresh)
+	mux.HandleFunc("/api/auth/logout", module.logout)
+	mux.HandleFunc("/api/auth/me", module.currentUser)
+	mux.HandleFunc("/api/auth/dev-credentials", module.devCredentials)
+	mux.HandleFunc(
+		"GET /api/admin/users",
+		module.RequirePermission(
+			permissions.UsersManage,
+			module.listUsers,
+		),
+	)
 }
