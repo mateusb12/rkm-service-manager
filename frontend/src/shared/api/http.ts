@@ -1,20 +1,17 @@
 const API_BASE_PATH = '/api';
 
-const CSRF_COOKIE_NAME = 'rkm_csrf';
-
-const CSRF_HEADER_NAME = 'X-CSRF-Token';
-
 const API_REQUEST_TIMEOUT_MS = 10_000;
 
-const getCsrfToken = (): string =>
-  document.cookie
-    .split('; ')
-    .find((cookie) => cookie.startsWith(`${CSRF_COOKIE_NAME}=`))
-    ?.split('=')[1] || '';
+const getAccessToken = (): string => {
+  try {
+    const raw = window.sessionStorage.getItem('rkm-auth-tokens');
+    if (!raw) return '';
 
-export const csrfHeaders = (): HeadersInit => ({
-  [CSRF_HEADER_NAME]: getCsrfToken(),
-});
+    return JSON.parse(raw)?.accessToken || '';
+  } catch {
+    return '';
+  }
+};
 
 export function apiRequest(path: string, options: RequestInit = {}): Promise<Response> {
   const headers = new Headers(options.headers);
@@ -28,10 +25,15 @@ export function apiRequest(path: string, options: RequestInit = {}): Promise<Res
     headers.set('Content-Type', 'application/json');
   }
 
+  const accessToken = getAccessToken();
+  if (accessToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  }
+
   return fetch(`${API_BASE_PATH}${path}`, {
     ...options,
     signal: requestAbortSignal,
-    credentials: 'include',
+    credentials: 'omit',
     headers,
   });
 }

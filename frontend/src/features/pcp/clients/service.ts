@@ -1,4 +1,4 @@
-import { apiRequest, csrfHeaders } from '../../../shared/api/http';
+import { apiRequest } from '../../../shared/api/http';
 
 import type { Client, ClientErrors, ClientInput } from './clientModel';
 
@@ -42,7 +42,6 @@ export async function listClients(searchTerm = ''): Promise<Client[]> {
 export async function createClient(clientInput: ClientInput): Promise<Client> {
   const response = await apiRequest('/clients', {
     method: 'POST',
-    headers: csrfHeaders(),
     body: JSON.stringify(clientInput),
   });
 
@@ -56,7 +55,6 @@ export async function createClient(clientInput: ClientInput): Promise<Client> {
 export async function updateClient(clientId: number, clientInput: ClientInput): Promise<Client> {
   const response = await apiRequest(`/clients/${clientId}`, {
     method: 'PUT',
-    headers: csrfHeaders(),
     body: JSON.stringify(clientInput),
   });
 
@@ -70,7 +68,6 @@ export async function updateClient(clientId: number, clientInput: ClientInput): 
 export async function deleteClient(clientId: number): Promise<void> {
   const response = await apiRequest(`/clients/${clientId}`, {
     method: 'DELETE',
-    headers: csrfHeaders(),
   });
 
   if (!response.ok) {

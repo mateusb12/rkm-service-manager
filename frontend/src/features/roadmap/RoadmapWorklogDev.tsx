@@ -70,7 +70,7 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
-        'Substituição do campo livre “Recebido por” pelo seletor pesquisável de clientes, reutilizando a busca por CNPJ, razão social ou nome fantasia.',
+        'Substituição do seletor incorreto de clientes no campo “Recebido por” por uma busca de usuários ativos, exibindo nome, perfil e e-mail do responsável pelo recebimento.',
     },
     {
       category: 'Produto',
@@ -86,6 +86,48 @@ const WORKLOG: Record<string, WorkEntry[]> = {
       category: 'Ambiente',
       description:
         'Inclusão do acompanhamento de atividade local do frontend em localhost:4173 no cálculo de tempo da feature, separado das atividades do ChatGPT.',
+    },
+  ],
+  'admin/usuarios': [
+    {
+      category: 'Produto',
+      description:
+        'Implementação da autenticação Bearer JWT com claims de usuário, perfil e permissões, refresh token rotativo e proteção de rotas administrativas.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Criação da listagem administrativa de usuários consumindo o backend, com nome, e-mail, perfil, setor, status e último login persistido.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Persistência dos usuários e sessões com GORM, incluindo migração automática da coluna de último login e registro do acesso após autenticação bem-sucedida.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Migração do frontend para autenticação exclusivamente via Bearer, removendo o suporte a cookies HttpOnly e CSRF baseado em cookie.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Organização do backend por responsabilidade, separando rotas, controllers e repositório da administração de usuários, além da padronização dos arquivos de endpoints das demais features.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Implementação dos endpoints administrativos para cadastrar, consultar, editar, desativar e excluir permanentemente usuários, com validações, hash de senha e controle de acesso exclusivo para administradores.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Integração da gestão de usuários do frontend com o backend, incluindo cadastro, edição, desativação, exclusão permanente e expansão inline dos detalhes na própria tabela.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Criação da seleção de usuários ativos no campo “Recebido por” da abertura da OS, substituindo a busca incorreta por clientes/CNPJ e corrigindo o scroll do dropdown.',
     },
   ],
   'comercial/tabela-precos': [

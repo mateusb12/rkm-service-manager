@@ -12,10 +12,6 @@ type Authorizer interface {
 		permission string,
 		next http.HandlerFunc,
 	) http.HandlerFunc
-
-	RequireCSRF(
-		next http.HandlerFunc,
-	) http.HandlerFunc
 }
 
 type Module struct {
@@ -65,9 +61,7 @@ func (module *Module) Register(
 		"POST /api/clients",
 		module.authorizer.RequirePermission(
 			permissions.ClientsManage,
-			module.authorizer.RequireCSRF(
-				module.handleCreate,
-			),
+			module.handleCreate,
 		),
 	)
 
@@ -75,9 +69,7 @@ func (module *Module) Register(
 		"PUT /api/clients/{id}",
 		module.authorizer.RequirePermission(
 			permissions.ClientsManage,
-			module.authorizer.RequireCSRF(
-				module.handleUpdate,
-			),
+			module.handleUpdate,
 		),
 	)
 
@@ -85,9 +77,7 @@ func (module *Module) Register(
 		"DELETE /api/clients/{id}",
 		module.authorizer.RequirePermission(
 			permissions.ClientsManage,
-			module.authorizer.RequireCSRF(
-				module.handleDelete,
-			),
+			module.handleDelete,
 		),
 	)
 }

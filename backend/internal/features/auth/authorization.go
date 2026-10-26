@@ -42,28 +42,6 @@ func (module *Module) RequirePermission(
 	}
 }
 
-func (module *Module) RequireCSRF(
-	next http.HandlerFunc,
-) http.HandlerFunc {
-	return func(
-		writer http.ResponseWriter,
-		request *http.Request,
-	) {
-		if !module.validCSRF(request) {
-			httpx.WriteJSON(
-				writer,
-				http.StatusForbidden,
-				map[string]string{
-					"error": "csrf_failed",
-				},
-			)
-			return
-		}
-
-		next(writer, request)
-	}
-}
-
 func userHasPermission(
 	user authUser,
 	permission string,

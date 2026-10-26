@@ -1,10 +1,12 @@
-import { apiRequest, csrfHeaders } from '../../../shared/api/http';
+import { apiRequest } from '../../../shared/api/http';
+import { clearAuthTokens, getAuthTokens, saveAuthTokens } from './token-store';
 
-import type { AuthUser, DevCredential } from './types';
+import type { ActiveUser, AuthTokenResponse, AuthUser, DevCredential } from './types';
 
 export async function login(email: string, password: string): Promise<AuthUser> {
   const response = await apiRequest('/auth/login', {
     method: 'POST',
+    headers: { 'X-Auth-Transport': 'bearer' },
     body: JSON.stringify({
       email,
       password,
@@ -17,14 +19,19 @@ export async function login(email: string, password: string): Promise<AuthUser> 
     throw new Error(payload?.error || 'invalid_credentials');
   }
 
-  return response.json();
+  const payload = (await response.json()) as AuthTokenResponse;
+  saveAuthTokens(payload);
+  return payload.user;
 }
 
 export async function logout(): Promise<void> {
-  await apiRequest('/auth/logout', {
-    method: 'POST',
-    headers: csrfHeaders(),
-  });
+  try {
+    await apiRequest('/auth/logout', {
+      method: 'POST',
+    });
+  } finally {
+    clearAuthTokens();
+  }
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
@@ -37,17 +44,33 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   return response.json();
 }
 
+export async function listActiveUsers(): Promise<ActiveUser[]> {
+  const response = await apiRequest('/auth/active-users');
+  if (!response.ok) {
+    throw new Error('active_users_query_failed');
+  }
+  return response.json();
+}
+
 export async function refreshSession(): Promise<AuthUser> {
+  const tokens = getAuthTokens();
+  if (!tokens) {
+    clearAuthTokens();
+    throw new Error('session_expired');
+  }
+
   const response = await apiRequest('/auth/refresh', {
     method: 'POST',
-    headers: csrfHeaders(),
+    headers: { 'X-Refresh-Token': tokens.refreshToken },
   });
 
   if (!response.ok) {
     throw new Error('session_expired');
   }
 
-  return response.json();
+  const payload = (await response.json()) as AuthTokenResponse;
+  saveAuthTokens(payload);
+  return payload.user || (payload as unknown as AuthUser);
 }
 
 export async function getDevCredentials(): Promise<DevCredential[]> {
