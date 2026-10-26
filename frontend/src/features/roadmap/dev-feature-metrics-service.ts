@@ -16,7 +16,8 @@ export type WakatimeEntry = {
 export type ChatGptEntry = {
   loading?: boolean;
   error?: string;
-  totalSeconds?: number;
+  chatGptSeconds?: number;
+  localSeconds?: number;
 };
 
 export type FeatureMetricDraft = {
@@ -24,6 +25,7 @@ export type FeatureMetricDraft = {
   branch: string;
   wakatimeSeconds: number;
   chatGptSeconds: number;
+  localSeconds: number;
   editors: EditorTime[];
 };
 

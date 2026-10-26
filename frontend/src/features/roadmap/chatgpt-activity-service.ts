@@ -1,5 +1,5 @@
 const AW_API_BASE = import.meta.env.VITE_AW_API_BASE || 'http://127.0.0.1:5600/api/0';
-const CHATGPT_CACHE_PREFIX = 'rkm:roadmap:chatgpt-activity:v1:';
+const CHATGPT_CACHE_PREFIX = 'rkm:roadmap:chatgpt-activity:v2:';
 const CHATGPT_CACHE_TTL_MS = 5 * 60 * 1000;
 
 type AwBucket = {
@@ -18,7 +18,8 @@ type AwEvent = {
 };
 
 export type ChatGptActivity = {
-  totalSeconds: number;
+  chatGptSeconds: number;
+  localSeconds: number;
   eventCount: number;
   nextRefreshAt: number;
 };
@@ -33,7 +34,8 @@ function readChatGptCache(key: string): CachedChatGptActivity | null {
     const cached = JSON.parse(value) as CachedChatGptActivity;
     const isValid =
       Number.isFinite(cached.cachedAt) &&
-      Number.isFinite(cached.totalSeconds) &&
+      Number.isFinite(cached.chatGptSeconds) &&
+      Number.isFinite(cached.localSeconds) &&
       Number.isFinite(cached.eventCount);
 
     if (!isValid || Date.now() - cached.cachedAt >= CHATGPT_CACHE_TTL_MS) {
@@ -71,7 +73,21 @@ function isBrowserBucket(bucketId: string, bucket: AwBucket) {
   return description.includes('aw-watcher-web') || description.includes('web.tab.current');
 }
 
-function isChatGptUrl(value: string | undefined) {
+function isLocalRkmUrl(value: string | undefined) {
+  if (!value) return false;
+
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase();
+
+    return (hostname === 'localhost' || hostname === '127.0.0.1') && url.port === '4173';
+  } catch {
+    return false;
+  }
+}
+
+function isTrackedActivityUrl(value: string | undefined) {
+  if (isLocalRkmUrl(value)) return true;
   if (!value) return false;
 
   try {
@@ -91,7 +107,7 @@ function eventMatchesBranch(title: string | undefined, branch: string) {
   return (title || '').trim().toLowerCase() === branch.trim().toLowerCase();
 }
 
-/** Soma eventos do ChatGPT cujo título corresponde à branch no intervalo informado. */
+/** Soma eventos do ChatGPT e do RKM local cujo título corresponde à branch. */
 export async function getChatGptActivity(
   branch: string,
   forceRefresh = false,
@@ -114,7 +130,8 @@ export async function getChatGptActivity(
     const cached = readChatGptCache(cacheKey);
     if (cached) {
       return {
-        totalSeconds: cached.totalSeconds,
+        chatGptSeconds: cached.chatGptSeconds,
+        localSeconds: cached.localSeconds,
         eventCount: cached.eventCount,
         nextRefreshAt: cached.cachedAt + CHATGPT_CACHE_TTL_MS,
       };
@@ -150,13 +167,14 @@ export async function getChatGptActivity(
     throw new Error('Não foi possível consultar os eventos do ActivityWatch.');
   }
 
-  let totalSeconds = 0;
+  let chatGptSeconds = 0;
+  let localSeconds = 0;
   let eventCount = 0;
 
   for (const events of eventLists) {
     for (const event of events) {
-      if (!isChatGptUrl(event.data?.url) || !eventMatchesBranch(event.data?.title, branch))
-        continue;
+      const url = event.data?.url;
+      if (!isTrackedActivityUrl(url) || !eventMatchesBranch(event.data?.title, branch)) continue;
 
       const timestamp = Date.parse(event.timestamp || '');
       const duration = Number(event.duration);
@@ -168,18 +186,33 @@ export async function getChatGptActivity(
       );
       if (overlapMs <= 0) continue;
 
-      totalSeconds += overlapMs / 1000;
+      const seconds = overlapMs / 1000;
+      if (isLocalRkmUrl(url)) {
+        localSeconds += seconds;
+      } else {
+        chatGptSeconds += seconds;
+      }
       eventCount += 1;
     }
   }
 
   const cachedAt = Date.now();
   try {
-    const cachedValue: CachedChatGptActivity = { totalSeconds, eventCount, cachedAt };
+    const cachedValue: CachedChatGptActivity = {
+      chatGptSeconds,
+      localSeconds,
+      eventCount,
+      cachedAt,
+    };
     sessionStorage.setItem(cacheKey, JSON.stringify(cachedValue));
   } catch {
     // A indisponibilidade do storage não deve impedir a consulta ao ActivityWatch.
   }
 
-  return { totalSeconds, eventCount, nextRefreshAt: cachedAt + CHATGPT_CACHE_TTL_MS };
+  return {
+    chatGptSeconds,
+    localSeconds,
+    eventCount,
+    nextRefreshAt: cachedAt + CHATGPT_CACHE_TTL_MS,
+  };
 }

@@ -17,9 +17,11 @@ export const SERVICE_ENTRY_STEPS = [
   { id: 'dispatch', label: 'Expedição', status: 'Pronto para expedição' },
 ];
 
+export const generateOrderNumber = () => String(Math.floor(100000 + Math.random() * 900000));
+
 export const createEmptyServiceEntry = () => ({
   orderType: '',
-  orderNumber: '',
+  orderNumber: generateOrderNumber(),
   previousOrderNumber: '',
   expectedDeliveryDate: '',
   urgent: false,
@@ -46,11 +48,7 @@ export const createEmptyServiceEntry = () => ({
   fluidApplication: '',
   receivedBy: '',
   deliveredBy: '',
-  arrivalCondition: '',
   receivedAccessories: '',
-  pressureState: 'Desconhecida',
-  safetyReviewed: false,
-  safeToDisassemble: false,
   disassemblyOperator: '',
   disassemblyStartedAt: '',
   disassemblyComplete: false,

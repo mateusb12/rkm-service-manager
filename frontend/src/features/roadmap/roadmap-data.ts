@@ -99,6 +99,8 @@ export const ROADMAP: RoadmapVersion[] = [
             'pcp/abertura-os',
             'Entrada e abertura da OS',
             'O PCP consegue abrir uma OS com o cliente selecionado e registrar o equipamento ou material recebido com os dados disponíveis na chegada.\nO sistema gera automaticamente um número único e aleatório para a OS, sem exigir preenchimento manual.\nA nota fiscal pode ser informada, marcada como N/A ou complementada posteriormente.\nA identificação inicial não exige condição externa nem triagem de segurança. Ao salvar e continuar, o fluxo avança para a desmontagem preservando os dados informados.',
+            'Em andamento',
+            [0],
           ),
           feature(
             'pcp/fila',
