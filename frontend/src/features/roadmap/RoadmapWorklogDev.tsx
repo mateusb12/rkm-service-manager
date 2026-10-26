@@ -83,6 +83,21 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Adição dos ícones de cilindro, acumulador, bomba hidráulica, motor hidráulico e outro na seleção de categoria do equipamento, seguindo o padrão visual do catálogo.',
     },
     {
+      category: 'Produto',
+      description:
+        'Inclusão do seletor de usuários ativos como responsável pela desmontagem, com busca por nome, e-mail ou perfil e seleção integrada ao formulário da OS.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Inclusão de date picker em português para o início da desmontagem, com data e horário atual pré-preenchidos, formato de 24 horas, exibição por extenso e campo protegido contra edição manual.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Simplificação do formulário de desmontagem com remoção dos checklists e dos controles de confirmação, mantendo o registro de observações e evidências fotográficas.',
+    },
+    {
       category: 'Ambiente',
       description:
         'Inclusão do acompanhamento de atividade local do frontend em localhost:4173 no cálculo de tempo da feature, separado das atividades do ChatGPT.',
