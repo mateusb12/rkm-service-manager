@@ -2009,6 +2009,19 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   gap: 5px;
 }
 
+.service-entry-status-cell {
+  white-space: nowrap;
+}
+
+.service-entry-stage-count {
+  display: inline-block;
+  margin-left: 8px;
+  color: #94a3b8;
+  font-size: var(--font-xs);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
 .service-entry-deselect {
   width: 30px;
   height: 30px;

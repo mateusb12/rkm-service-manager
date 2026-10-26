@@ -6,6 +6,18 @@ const CSRF_HEADER_NAME = 'X-CSRF-Token';
 
 const API_REQUEST_TIMEOUT_MS = 10_000;
 
+const ACCESS_TOKEN_STORAGE_KEY = 'rkm_access_token';
+
+export const getAccessToken = (): string => sessionStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || '';
+
+export const setAccessToken = (token: string): void => {
+  sessionStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
+};
+
+export const clearAccessToken = (): void => {
+  sessionStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+};
+
 const getCsrfToken = (): string =>
   document.cookie
     .split('; ')
@@ -26,6 +38,12 @@ export function apiRequest(path: string, options: RequestInit = {}): Promise<Res
 
   if (typeof options.body === 'string' && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  const accessToken = getAccessToken();
+
+  if (accessToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
   return fetch(`${API_BASE_PATH}${path}`, {

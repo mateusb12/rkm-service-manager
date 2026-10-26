@@ -563,6 +563,10 @@ export const ServiceEntryView = () => {
               <tbody>
                 {entries.slice(0, 8).map((entry) => {
                   const isSelected = form.id === entry.id;
+                  const entryStep = Math.min(
+                    Math.max(Number(entry.currentStep) || 0, 0),
+                    SERVICE_ENTRY_STEPS.length - 1,
+                  );
                   return (
                     <tr
                       key={entry.id}
@@ -598,12 +602,15 @@ export const ServiceEntryView = () => {
 
                       <td>{serviceEntryDateLabel(entry.expectedDeliveryDate)}</td>
 
-                      <td>
+                      <td className="service-entry-status-cell">
                         <span
                           className={`tag ${entry.status === 'Bloqueado por segurança' ? 'tag-red' : 'tag-blue'}`}
                         >
                           {entry.status || 'Recebido'}
                         </span>
+                        <small className="service-entry-stage-count">
+                          {entryStep + 1}/{SERVICE_ENTRY_STEPS.length}
+                        </small>
                       </td>
                       <td>
                         <div className="service-entry-open-actions">
@@ -812,14 +819,14 @@ export const ServiceEntryView = () => {
                         type="button"
                         role="radio"
                         aria-checked={selected}
-                        className={`flex min-h-[88px] min-w-[112px] flex-col items-center justify-center gap-1.5 rounded-lg border p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                        className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
                           selected
                             ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
                             : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
                         }`}
                         onClick={() => set('orderType', type)}
                       >
-                        <span className="flex h-12 w-12 items-center justify-center p-1">
+                        <span className="flex h-20 w-20 items-center justify-center p-1">
                           <img
                             src={icon}
                             alt=""
