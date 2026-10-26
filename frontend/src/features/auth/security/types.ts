@@ -7,6 +7,8 @@ export type AuthUser = {
   permissions: string[];
 };
 
+export type ActiveUser = Pick<AuthUser, 'id' | 'email' | 'name' | 'role' | 'roleLabel'>;
+
 export type AuthTokenSet = {
   accessToken: string;
   refreshToken: string;

@@ -16,6 +16,7 @@ import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
 
 import { ClientSelector } from '../pcp/clients';
+import { UserSelector } from './UserSelector';
 
 const SERVICE_ENTRY_PHOTO_DB = 'rkm-service-entry-photo-store-v1';
 
@@ -848,11 +849,9 @@ export const ServiceEntryView = () => {
               description="Registre a cadeia de recebimento antes da avaliação e desmontagem."
             >
               <Field label="Recebido por" required>
-                <ClientSelector
+                <UserSelector
                   value={form.receivedBy}
-                  onSelect={(client) =>
-                    set('receivedBy', client.nomeFantasia || client.razaoSocial)
-                  }
+                  onSelect={(user) => set('receivedBy', user.name)}
                   onClear={() => set('receivedBy', '')}
                 />
               </Field>

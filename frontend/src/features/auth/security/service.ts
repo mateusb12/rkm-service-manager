@@ -1,7 +1,7 @@
 import { apiRequest } from '../../../shared/api/http';
 import { clearAuthTokens, getAuthTokens, saveAuthTokens } from './token-store';
 
-import type { AuthTokenResponse, AuthUser, DevCredential } from './types';
+import type { ActiveUser, AuthTokenResponse, AuthUser, DevCredential } from './types';
 
 export async function login(email: string, password: string): Promise<AuthUser> {
   const response = await apiRequest('/auth/login', {
@@ -41,6 +41,14 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     return null;
   }
 
+  return response.json();
+}
+
+export async function listActiveUsers(): Promise<ActiveUser[]> {
+  const response = await apiRequest('/auth/active-users');
+  if (!response.ok) {
+    throw new Error('active_users_query_failed');
+  }
   return response.json();
 }
 
