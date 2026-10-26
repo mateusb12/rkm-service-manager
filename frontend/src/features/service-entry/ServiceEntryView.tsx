@@ -784,7 +784,7 @@ export const ServiceEntryView = () => {
                 <TextInput
                   value={form.orderNumber}
                   onChange={(value) => set('orderNumber', value)}
-                  placeholder="Ex.: 2541"
+                  placeholder="Ex.: 254186"
                   disabled={!!form.id}
                 />
               </Field>
