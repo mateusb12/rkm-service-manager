@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import {
   ArrowLeft,
   Check,
@@ -16,7 +16,14 @@ import {
 } from 'lucide-react';
 
 import { formatLongDateTimeBR } from '../../../utils/formatLongDateTimeBR';
-import { listUsers, type ApiUser } from './service';
+import {
+  createUser,
+  deactivateUser,
+  hardDeleteUser,
+  listUsers,
+  updateUser,
+  type ApiUser,
+} from './service';
 
 type UserStatus = 'active' | 'invited' | 'suspended';
 type UserRole = 'admin' | 'pcp' | 'mechanic' | 'commercial';
@@ -33,7 +40,9 @@ type ManagedUser = {
   color: string;
 };
 
-type UserInput = Pick<ManagedUser, 'name' | 'email' | 'role' | 'status' | 'department'>;
+type UserInput = Pick<ManagedUser, 'name' | 'email' | 'role' | 'status' | 'department'> & {
+  password: string;
+};
 type Page = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; userId: string };
 
 const roleLabels: Record<UserRole, string> = {
@@ -99,6 +108,7 @@ const emptyInput: UserInput = {
   role: 'mechanic',
   status: 'active',
   department: 'Oficina',
+  password: '',
 };
 
 function initialsFor(name: string) {
@@ -122,6 +132,9 @@ export function UsersView() {
   const [statusFilter, setStatusFilter] = useState<'all' | UserStatus>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
@@ -164,39 +177,70 @@ export function UsersView() {
 
   function openEdit(userId: string) {
     setNotice('');
+    setOpenMenuId(null);
+    setExpandedUserId(null);
     setPage({ mode: 'edit', userId });
   }
 
-  function saveUser(input: UserInput) {
+  async function saveUser(input: UserInput) {
     const editingId = page.mode === 'edit' ? page.userId : null;
-    const existing = editingId ? users.find((user) => user.id === editingId) : undefined;
-    const saved: ManagedUser = {
-      id: existing?.id || `u-${Date.now()}`,
-      ...input,
-      lastLogin: existing?.lastLogin || 'Ainda não acessou',
-      initials: initialsFor(input.name),
-      color: existing?.color || 'from-blue-500 to-cyan-600',
+    const payload = {
+      name: input.name,
+      email: input.email,
+      role: input.role,
+      ...(input.password ? { password: input.password } : {}),
     };
-    setUsers((current) =>
-      editingId
-        ? current.map((user) => (user.id === editingId ? saved : user))
-        : [saved, ...current],
-    );
-    setPage({ mode: 'list' });
-    setNotice(
-      editingId
-        ? 'Usuário atualizado com sucesso.'
-        : 'Usuário criado com sucesso. O convite está pronto para envio.',
-    );
+
+    try {
+      const savedApiUser = editingId
+        ? await updateUser(editingId, payload)
+        : await createUser(payload);
+      const saved = mapApiUser(savedApiUser);
+      setUsers((current) =>
+        editingId
+          ? current.map((user) => (user.id === editingId ? saved : user))
+          : [saved, ...current],
+      );
+      setPage({ mode: 'list' });
+      setNotice(editingId ? 'Usuário atualizado com sucesso.' : 'Usuário criado com sucesso.');
+    } catch (error) {
+      if (error instanceof Error && error.message === 'email_already_exists') {
+        throw new Error('Este e-mail já está cadastrado.');
+      }
+      throw new Error('Não foi possível salvar o usuário.');
+    }
   }
 
-  function removeUser(userId: string) {
-    setUsers((current) => current.filter((user) => user.id !== userId));
-    setPendingDelete(null);
-    setNotice('Usuário removido da demonstração.');
+  async function removeUser(userId: string) {
+    setActionLoadingId(userId);
+    try {
+      const deactivated = mapApiUser(await deactivateUser(userId));
+      setUsers((current) => current.map((user) => (user.id === userId ? deactivated : user)));
+      setPendingDelete(null);
+      setNotice('Usuário desativado com sucesso.');
+    } catch {
+      setNotice('Não foi possível desativar o usuário.');
+    } finally {
+      setActionLoadingId(null);
+    }
   }
 
-  if (page.mode !== 'list') {
+  async function permanentlyDeleteUser(userId: string) {
+    setActionLoadingId(userId);
+    try {
+      await hardDeleteUser(userId);
+      setUsers((current) => current.filter((user) => user.id !== userId));
+      setExpandedUserId(null);
+      setPage({ mode: 'list' });
+      setNotice('Usuário excluído permanentemente.');
+    } catch {
+      setNotice('Não foi possível excluir o usuário.');
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  if (page.mode === 'create' || page.mode === 'edit') {
     const editingUser =
       page.mode === 'edit' ? users.find((user) => user.id === page.userId) : undefined;
     return (
@@ -366,93 +410,152 @@ export function UsersView() {
               </thead>
               <tbody>
                 {visibleUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-t border-rkmborder transition-colors hover:bg-rkmcard2/40"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white ${user.color}`}
-                        >
-                          {user.initials}
+                  <Fragment key={user.id}>
+                    <tr
+                      key={user.id}
+                      className="cursor-pointer border-t border-rkmborder transition-colors hover:bg-rkmcard2/40"
+                      onClick={() =>
+                        setExpandedUserId((current) => (current === user.id ? null : user.id))
+                      }
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white ${user.color}`}
+                          >
+                            {user.initials}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-slate-100">{user.name}</div>
+                            <div className="truncate text-xs text-slate-500">{user.email}</div>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <div className="font-medium text-slate-100">{user.name}</div>
-                          <div className="truncate text-xs text-slate-500">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span
-                        className={`rounded-full border px-2.5 py-1 text-xs ${roleClasses[user.role]}`}
-                      >
-                        {roleLabels[user.role]}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-slate-400">{user.department}</td>
-                    <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-2 text-xs text-slate-300">
+                      </td>
+                      <td className="px-5 py-4">
                         <span
-                          className={`h-1.5 w-1.5 rounded-full ${statusClasses[user.status]}`}
-                        />
-                        {statusLabels[user.status]}
-                      </span>
-                    </td>
-                    <td className="w-px whitespace-nowrap px-5 py-4 text-slate-400">
-                      {user.lastLogin}
-                    </td>
-                    <td className="w-px whitespace-nowrap px-5 py-4 text-right">
-                      {pendingDelete === user.id ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="text-xs text-rose-300">Remover?</span>
-                          <button
-                            type="button"
-                            className="rounded-lg border border-rkmborder px-2.5 py-1.5 text-xs text-slate-300 hover:bg-rkmcard2"
-                            onClick={() => setPendingDelete(null)}
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300 hover:bg-rose-500/20"
-                            onClick={() => removeUser(user.id)}
-                          >
-                            Confirmar
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex justify-end gap-1">
-                          <button
-                            type="button"
-                            className="rounded-lg p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300"
-                            aria-label={`Editar ${user.name}`}
-                            title="Editar usuário"
-                            onClick={() => openEdit(user.id)}
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded-lg p-2 text-slate-500 hover:bg-rose-500/10 hover:text-rose-300"
-                            aria-label={`Remover ${user.name}`}
-                            title="Remover usuário"
-                            onClick={() => setPendingDelete(user.id)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-500/10 hover:text-slate-200"
-                            aria-label={`Mais opções para ${user.name}`}
-                            title="Mais opções"
-                          >
-                            <Ellipsis size={16} />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
+                          className={`rounded-full border px-2.5 py-1 text-xs ${roleClasses[user.role]}`}
+                        >
+                          {roleLabels[user.role]}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-slate-400">{user.department}</td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex items-center gap-2 text-xs text-slate-300">
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${statusClasses[user.status]}`}
+                          />
+                          {statusLabels[user.status]}
+                        </span>
+                      </td>
+                      <td className="w-px whitespace-nowrap px-5 py-4 text-slate-400">
+                        {user.lastLogin}
+                      </td>
+                      <td
+                        className="w-px whitespace-nowrap px-5 py-4 text-right"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        {pendingDelete === user.id ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-xs text-rose-300">Remover?</span>
+                            <button
+                              type="button"
+                              className="rounded-lg border border-rkmborder px-2.5 py-1.5 text-xs text-slate-300 hover:bg-rkmcard2"
+                              onClick={() => setPendingDelete(null)}
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300 hover:bg-rose-500/20"
+                              onClick={() => removeUser(user.id)}
+                            >
+                              Confirmar
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-1">
+                            <button
+                              type="button"
+                              className="rounded-lg p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300"
+                              aria-label={`Editar ${user.name}`}
+                              title="Editar usuário"
+                              onClick={() => openEdit(user.id)}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className="rounded-lg p-2 text-slate-500 hover:bg-rose-500/10 hover:text-rose-300 disabled:cursor-wait disabled:opacity-50"
+                              aria-label={`Desativar ${user.name}`}
+                              title="Desativar usuário"
+                              disabled={actionLoadingId === user.id}
+                              onClick={() => setPendingDelete(user.id)}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <div className="relative">
+                              <button
+                                type="button"
+                                className="rounded-lg p-2 text-slate-500 hover:bg-slate-500/10 hover:text-slate-200"
+                                aria-label={`Mais opções para ${user.name}`}
+                                aria-expanded={openMenuId === user.id}
+                                title="Mais opções"
+                                onClick={() =>
+                                  setOpenMenuId((current) => (current === user.id ? null : user.id))
+                                }
+                              >
+                                <Ellipsis size={16} />
+                              </button>
+                              {openMenuId === user.id && (
+                                <div className="absolute right-0 z-10 mt-1 w-52 rounded-lg border border-rkmborder bg-rkmcard p-1 text-left shadow-xl">
+                                  <button
+                                    type="button"
+                                    className="block w-full rounded-md px-3 py-2 text-left text-xs text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
+                                    disabled={
+                                      user.status !== 'active' || actionLoadingId === user.id
+                                    }
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      setPendingDelete(user.id);
+                                    }}
+                                  >
+                                    Desativar acesso
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="block w-full rounded-md px-3 py-2 text-left text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                                    disabled={actionLoadingId === user.id}
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      if (window.confirm(`Excluir ${user.name} permanentemente?`)) {
+                                        void permanentlyDeleteUser(user.id);
+                                      }
+                                    }}
+                                  >
+                                    Excluir permanentemente
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                    {expandedUserId === user.id && (
+                      <tr>
+                        <td colSpan={6} className="px-5 pb-4">
+                          <UserDetails
+                            user={user}
+                            onCollapse={() => setExpandedUserId(null)}
+                            onEdit={() => openEdit(user.id)}
+                            onDeactivate={() => removeUser(user.id)}
+                            onDelete={() => permanentlyDeleteUser(user.id)}
+                            loading={actionLoadingId === user.id}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -529,7 +632,7 @@ function UserForm({
 }: {
   user?: ManagedUser;
   onCancel: () => void;
-  onSave: (input: UserInput) => void;
+  onSave: (input: UserInput) => Promise<void> | void;
 }) {
   const [input, setInput] = useState<UserInput>(
     user
@@ -539,6 +642,7 @@ function UserForm({
           role: user.role,
           status: user.status,
           department: user.department,
+          password: '',
         }
       : emptyInput,
   );
@@ -548,18 +652,28 @@ function UserForm({
     setInput((current) => ({ ...current, [key]: value }) as UserInput);
     setError('');
   };
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
     if (!input.name.trim() || !input.email.trim() || !input.department.trim()) {
       setError('Preencha nome, e-mail e setor para continuar.');
       return;
     }
-    onSave({
-      ...input,
-      name: input.name.trim(),
-      email: input.email.trim(),
-      department: input.department.trim(),
-    });
+    if (!editing && input.password.length < 8) {
+      setError('Informe uma senha com pelo menos 8 caracteres.');
+      return;
+    }
+    try {
+      await onSave({
+        ...input,
+        name: input.name.trim(),
+        email: input.email.trim(),
+        department: input.department.trim(),
+      });
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error ? saveError.message : 'Não foi possível salvar o usuário.',
+      );
+    }
   }
   return (
     <main className="mx-auto max-w-4xl space-y-5 p-4 md:p-6">
@@ -631,6 +745,17 @@ function UserForm({
                 placeholder="nome@empresa.com.br"
               />
             </FormField>
+            {!editing && (
+              <FormField label="Senha inicial" required>
+                <input
+                  className="rkm-input"
+                  type="password"
+                  value={input.password}
+                  onChange={(event) => change('password', event.target.value)}
+                  placeholder="Mínimo de 8 caracteres"
+                />
+              </FormField>
+            )}
             <FormField label="Perfil de acesso" required>
               <select
                 className="rkm-input"
@@ -680,6 +805,87 @@ function UserForm({
         </div>
       </form>
     </main>
+  );
+}
+
+function UserDetails({
+  user,
+  onCollapse,
+  onEdit,
+  onDeactivate,
+  onDelete,
+  loading,
+}: {
+  user: ManagedUser;
+  onCollapse: () => void;
+  onEdit: () => void;
+  onDeactivate: () => void;
+  onDelete: () => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-blue-400/20 bg-rkmcard2/30 p-4 md:p-5">
+      <div className="flex items-center justify-between gap-3 border-b border-rkmborder pb-4">
+        <div className="flex items-center gap-4 border-b border-rkmborder pb-5">
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-sm font-semibold text-white ${user.color}`}
+          >
+            {user.initials}
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-slate-100">{user.name}</h1>
+            <p className="text-sm text-slate-500">{user.email}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="text-xs text-blue-300 hover:text-blue-200"
+          onClick={onCollapse}
+        >
+          Recolher
+        </button>
+      </div>
+      <dl className="grid gap-4 py-5 sm:grid-cols-2">
+        <DetailItem label="Perfil" value={roleLabels[user.role]} />
+        <DetailItem label="Setor" value={user.department} />
+        <DetailItem label="Status" value={statusLabels[user.status]} />
+        <DetailItem label="Último acesso" value={user.lastLogin} />
+      </dl>
+      <div className="flex flex-wrap justify-end gap-2 border-t border-rkmborder pt-5">
+        <button type="button" className="btn btn-ghost" onClick={onEdit} disabled={loading}>
+          <Pencil size={16} /> Editar
+        </button>
+        {user.status === 'active' && (
+          <button
+            type="button"
+            className="btn border border-rose-500/40 text-rose-300 hover:bg-rose-500/10"
+            onClick={onDeactivate}
+            disabled={loading}
+          >
+            <Trash2 size={16} /> Desativar
+          </button>
+        )}
+        <button
+          type="button"
+          className="btn border border-red-500/40 text-red-300 hover:bg-red-500/10"
+          onClick={() => {
+            if (window.confirm(`Excluir ${user.name} permanentemente?`)) onDelete();
+          }}
+          disabled={loading}
+        >
+          Excluir permanentemente
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DetailItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt>
+      <dd className="mt-1 text-sm text-slate-200">{value}</dd>
+    </div>
   );
 }
 
