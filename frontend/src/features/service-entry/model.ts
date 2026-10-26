@@ -19,6 +19,13 @@ export const SERVICE_ENTRY_STEPS = [
 
 export const generateOrderNumber = () => String(Math.floor(100000 + Math.random() * 900000));
 
+const currentLocalDateTime = () => {
+  const now = new Date();
+  const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+
+  return localNow.toISOString().slice(0, 16);
+};
+
 export const createEmptyServiceEntry = () => ({
   orderType: '',
   orderNumber: generateOrderNumber(),
@@ -50,7 +57,7 @@ export const createEmptyServiceEntry = () => ({
   deliveredBy: '',
   receivedAccessories: '',
   disassemblyOperator: '',
-  disassemblyStartedAt: '',
+  disassemblyStartedAt: currentLocalDateTime(),
   disassemblyComplete: false,
   disassemblyControlled: false,
   partsSeparated: false,

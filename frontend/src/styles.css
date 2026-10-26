@@ -2092,6 +2092,58 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   font-size: var(--font-xs);
 }
 
+.service-entry-date-picker,
+.service-entry-date-picker .react-datepicker-wrapper,
+.service-entry-date-picker .react-datepicker__input-container {
+  display: block;
+  width: 100%;
+}
+
+.service-entry-date-picker .react-datepicker-popper {
+  z-index: 20;
+}
+
+.service-entry-page .react-datepicker {
+  overflow: hidden;
+  border: 1px solid #294462;
+  border-radius: 9px;
+  background: #0f2741;
+  color: #e2e8f0;
+  font-family: inherit;
+}
+
+.service-entry-page .react-datepicker__header {
+  border-bottom: 1px solid #294462;
+  background: #132f4d;
+}
+
+.service-entry-page .react-datepicker__current-month,
+.service-entry-page .react-datepicker-time__header,
+.service-entry-page .react-datepicker-year-header,
+.service-entry-page .react-datepicker__day-name,
+.service-entry-page .react-datepicker__day,
+.service-entry-page .react-datepicker__time-list-item {
+  color: #cbd5e1;
+}
+
+.service-entry-page .react-datepicker__day:hover,
+.service-entry-page .react-datepicker__time-list-item:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.service-entry-page .react-datepicker__day--selected,
+.service-entry-page .react-datepicker__day--keyboard-selected,
+.service-entry-page .react-datepicker__time-list-item--selected {
+  background: #1683f7;
+  color: #fff;
+}
+
+.service-entry-page .react-datepicker__time-container,
+.service-entry-page .react-datepicker__time {
+  border-left-color: #294462;
+  background: #0f2741;
+}
+
 .service-entry-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
