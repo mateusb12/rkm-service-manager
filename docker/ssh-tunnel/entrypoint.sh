@@ -20,5 +20,5 @@ exec ssh -N \
   -o ExitOnForwardFailure=yes \
   -o ServerAliveInterval=30 \
   -o ServerAliveCountMax=3 \
-  -L "0.0.0.0:15432:${RKM_PG_PRIVATE_IP:-172.16.1.6}:5432" \
+  -L "0.0.0.0:15432:${RKM_PG_PRIVATE_IP:-127.0.0.1}:${RKM_PG_PRIVATE_PORT:-15432}" \
   rkm
