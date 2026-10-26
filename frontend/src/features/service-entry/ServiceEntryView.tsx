@@ -19,6 +19,14 @@ import { ClientSelector } from '../pcp/clients';
 
 const SERVICE_ENTRY_PHOTO_DB = 'rkm-service-entry-photo-store-v1';
 
+const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
+  Cilindro: '/assets/cilindro.png',
+  Acumulador: '/assets/acumulador.png',
+  Bomba: '/assets/bomba-hidraulica.png',
+  'Motor hidráulico': '/assets/motor-hidraulico.png',
+  Outro: '/assets/outro.png',
+};
+
 const openServiceEntryPhotoDb = () =>
   new Promise((resolve, reject) => {
     if (!('indexedDB' in window)) {
@@ -795,20 +803,34 @@ export const ServiceEntryView = () => {
                   role="radiogroup"
                   aria-label="Categoria do equipamento"
                 >
-                  {['Cilindro', 'Acumulador', 'Bomba', 'Motor hidráulico', 'Outro'].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      role="radio"
-                      aria-checked={form.orderType === type}
-                      className={
-                        'service-entry-order-type ' + (form.orderType === type ? 'is-active' : '')
-                      }
-                      onClick={() => set('orderType', type)}
-                    >
-                      {type}
-                    </button>
-                  ))}
+                  {Object.entries(SERVICE_ENTRY_ORDER_TYPE_ICONS).map(([type, icon]) => {
+                    const selected = form.orderType === type;
+
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        className={`flex min-h-[88px] min-w-[112px] flex-col items-center justify-center gap-1.5 rounded-lg border p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                          selected
+                            ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
+                            : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                        }`}
+                        onClick={() => set('orderType', type)}
+                      >
+                        <span className="flex h-12 w-12 items-center justify-center p-1">
+                          <img
+                            src={icon}
+                            alt=""
+                            aria-hidden="true"
+                            className="h-full w-full object-contain"
+                          />
+                        </span>
+                        <span className="text-xs font-medium">{type}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </Field>
 
