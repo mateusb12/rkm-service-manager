@@ -39,7 +39,7 @@ const PRODUCTION_PROFILES = [
 ];
 
 export function LoginPage() {
-  const { user, loading, backendOnline, login, devCredentials } = useAuth();
+  const { user, backendOnline, login, devCredentials } = useAuth();
   const isProduction = import.meta.env.PROD;
   const loginProfiles = isProduction ? PRODUCTION_PROFILES : devCredentials;
   const navigate = useNavigate();
@@ -54,7 +54,6 @@ export function LoginPage() {
       return false;
     }
   });
-  if (loading) return <div className="min-h-screen bg-rkmbg" />;
   if (user) {
     navigate('/', { replace: true });
     return null;
