@@ -1764,7 +1764,7 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 }
 
 .service-entry-form {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .service-entry-stepper {

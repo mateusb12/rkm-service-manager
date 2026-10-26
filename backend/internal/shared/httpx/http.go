@@ -46,8 +46,7 @@ func WithCORS(next http.Handler) http.Handler {
 		origin := request.Header.Get("Origin")
 		if origin == "http://localhost:4173" || origin == "http://127.0.0.1:4173" {
 			writer.Header().Set("Access-Control-Allow-Origin", origin)
-			writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token")
+			writer.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Auth-Transport, X-Refresh-Token")
 			writer.Header().Set(
 				"Access-Control-Allow-Methods",
 				"GET, POST, PUT, PATCH, DELETE, OPTIONS",

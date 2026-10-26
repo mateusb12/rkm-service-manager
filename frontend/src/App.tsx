@@ -37,6 +37,7 @@ import {
 import { BenchesView } from './features/workshop/benches';
 import { ClientsView } from './features/pcp/clients';
 import { PriceCatalogView, type PriceCatalogPage } from './features/commercial/price-catalog';
+import { UsersView } from './features/admin/users';
 /* ============================================================
    MODELO DE DADOS — alinhado ao prompt e à IT001 validada
    (NÃO INVENTAR critérios técnicos; lacunas são tratadas como
@@ -744,6 +745,10 @@ const App = () => {
 
     if (view === 'pcp-clients') {
       return React.createElement(ClientsView);
+    }
+
+    if (view === 'users') {
+      return React.createElement(UsersView);
     }
 
     if (view === 'commercial-price-catalog') {

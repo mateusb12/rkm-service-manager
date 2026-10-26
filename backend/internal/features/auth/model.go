@@ -17,6 +17,7 @@ type userModel struct {
 	PasswordHash string `gorm:"column:password_hash;not null"`
 	Active       bool   `gorm:"column:active;not null;default:true"`
 	CreatedAt    int64  `gorm:"column:created_at;not null"`
+	LastLoginAt  *int64 `gorm:"column:last_login_at"`
 }
 
 func (userModel) TableName() string {

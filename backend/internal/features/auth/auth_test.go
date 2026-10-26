@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -13,7 +14,6 @@ func newTestModule(test *testing.T) *Module {
 	test.Helper()
 
 	test.Setenv("APP_ENV", "development")
-	test.Setenv("COOKIE_SECURE", "false")
 	test.Setenv(
 		"DUMMY_PASSWORD_ADMIN",
 		"Rkm@123456",
@@ -51,8 +51,7 @@ func performAuthRequest(
 	method string,
 	path string,
 	body string,
-	cookies []*http.Cookie,
-	csrf string,
+	accessToken string,
 ) *httptest.ResponseRecorder {
 	request := httptest.NewRequest(
 		method,
@@ -67,15 +66,11 @@ func performAuthRequest(
 		)
 	}
 
-	for _, cookie := range cookies {
-		request.AddCookie(cookie)
+	if accessToken != "" {
+		request.Header.Set("Authorization", "Bearer "+accessToken)
 	}
-
-	if csrf != "" {
-		request.Header.Set(
-			"X-CSRF-Token",
-			csrf,
-		)
+	if path == "/api/auth/login" {
+		request.Header.Set(authTransportHeader, bearerTransport)
 	}
 
 	recorder := httptest.NewRecorder()
@@ -88,17 +83,74 @@ func performAuthRequest(
 	return recorder
 }
 
-func findCookie(
-	cookies []*http.Cookie,
-	name string,
-) *http.Cookie {
-	for _, cookie := range cookies {
-		if cookie.Name == name {
-			return cookie
-		}
+func TestBearerLoginAndRefreshRotation(test *testing.T) {
+	test.Setenv("DUMMY_PASSWORD_PCP", "Rkm@123456")
+
+	module := newTestModule(test)
+	mux := http.NewServeMux()
+	module.Register(mux)
+
+	loginRequest := httptest.NewRequest(
+		http.MethodPost,
+		"/api/auth/login",
+		strings.NewReader(`{"email":"pcp@rkm.com.br","password":"Rkm@123456"}`),
+	)
+	loginRequest.Header.Set("Content-Type", "application/json")
+	loginRequest.Header.Set(authTransportHeader, bearerTransport)
+	loginRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(loginRecorder, loginRequest)
+
+	if loginRecorder.Code != http.StatusOK {
+		test.Fatalf("bearer login expected 200, got %d", loginRecorder.Code)
 	}
 
-	return nil
+	var loginTokens tokenResponse
+	if decodeError := json.NewDecoder(loginRecorder.Body).Decode(&loginTokens); decodeError != nil {
+		test.Fatal(decodeError)
+	}
+	if loginTokens.AccessToken == "" || loginTokens.RefreshToken == "" {
+		test.Fatal("bearer login returned incomplete token response")
+	}
+
+	refreshRequest := httptest.NewRequest(
+		http.MethodPost,
+		"/api/auth/refresh",
+		nil,
+	)
+	refreshRequest.Header.Set(refreshTokenHeader, loginTokens.RefreshToken)
+	refreshRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(refreshRecorder, refreshRequest)
+
+	if refreshRecorder.Code != http.StatusOK {
+		test.Fatalf("bearer refresh expected 200, got %d", refreshRecorder.Code)
+	}
+
+	var refreshedTokens tokenResponse
+	if decodeError := json.NewDecoder(refreshRecorder.Body).Decode(&refreshedTokens); decodeError != nil {
+		test.Fatal(decodeError)
+	}
+	if refreshedTokens.AccessToken == "" || refreshedTokens.RefreshToken == "" {
+		test.Fatal("bearer refresh returned incomplete token response")
+	}
+	if refreshedTokens.AccessToken == loginTokens.AccessToken {
+		test.Fatal("refresh did not rotate access token")
+	}
+	if refreshedTokens.RefreshToken == loginTokens.RefreshToken {
+		test.Fatal("refresh did not rotate refresh token")
+	}
+
+	oldRefreshRequest := httptest.NewRequest(
+		http.MethodPost,
+		"/api/auth/refresh",
+		nil,
+	)
+	oldRefreshRequest.Header.Set(refreshTokenHeader, loginTokens.RefreshToken)
+	oldRefreshRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(oldRefreshRecorder, oldRefreshRequest)
+
+	if oldRefreshRecorder.Code != http.StatusUnauthorized {
+		test.Fatalf("reused refresh token expected 401, got %d", oldRefreshRecorder.Code)
+	}
 }
 
 func TestPasswordHash(test *testing.T) {
@@ -180,7 +232,7 @@ func TestDevCredentialsUnavailableInProduction(
 
 	recorder := httptest.NewRecorder()
 
-	module.handleDevCredentials(
+	module.devCredentials(
 		recorder,
 		request,
 	)
@@ -195,45 +247,29 @@ func TestDevCredentialsUnavailableInProduction(
 
 func TestAuthenticationLifecycle(test *testing.T) {
 	module := newTestModule(test)
+	mux := http.NewServeMux()
+	module.Register(mux)
 
-	login := performAuthRequest(
-		module,
-		http.MethodPost,
-		"/api/auth/login",
-		`{"email":"admin@rkm.com.br","password":"Rkm@123456"}`,
-		nil,
-		"",
-	)
+	loginRequest := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(`{"email":"admin@rkm.com.br","password":"Rkm@123456"}`))
+	loginRequest.Header.Set("Content-Type", "application/json")
+	loginRequest.Header.Set(authTransportHeader, bearerTransport)
+	loginRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(loginRecorder, loginRequest)
 
-	if login.Code != http.StatusOK {
+	if loginRecorder.Code != http.StatusOK {
 		test.Fatalf(
 			"login expected 200, got %d: %s",
-			login.Code,
-			login.Body.String(),
+			loginRecorder.Code,
+			loginRecorder.Body.String(),
 		)
 	}
 
-	loginCookies := login.Result().Cookies()
-
-	access := findCookie(
-		loginCookies,
-		accessCookie,
-	)
-	refresh := findCookie(
-		loginCookies,
-		refreshCookie,
-	)
-	csrf := findCookie(
-		loginCookies,
-		csrfCookie,
-	)
-
-	if access == nil ||
-		refresh == nil ||
-		csrf == nil {
-		test.Fatal(
-			"login did not return all auth cookies",
-		)
+	var loginTokens tokenResponse
+	if decodeError := json.NewDecoder(loginRecorder.Body).Decode(&loginTokens); decodeError != nil {
+		test.Fatal(decodeError)
+	}
+	if loginTokens.AccessToken == "" || loginTokens.RefreshToken == "" {
+		test.Fatal("login did not return bearer tokens")
 	}
 
 	currentUser := performAuthRequest(
@@ -241,8 +277,7 @@ func TestAuthenticationLifecycle(test *testing.T) {
 		http.MethodGet,
 		"/api/auth/me",
 		"",
-		[]*http.Cookie{access},
-		"",
+		loginTokens.AccessToken,
 	)
 
 	if currentUser.Code != http.StatusOK {
@@ -252,65 +287,36 @@ func TestAuthenticationLifecycle(test *testing.T) {
 		)
 	}
 
-	refreshResponse := performAuthRequest(
-		module,
-		http.MethodPost,
-		"/api/auth/refresh",
-		"",
-		[]*http.Cookie{
-			refresh,
-			csrf,
-		},
-		csrf.Value,
-	)
+	refreshRequest := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", nil)
+	refreshRequest.Header.Set(refreshTokenHeader, loginTokens.RefreshToken)
+	refreshRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(refreshRecorder, refreshRequest)
 
-	if refreshResponse.Code != http.StatusOK {
+	if refreshRecorder.Code != http.StatusOK {
 		test.Fatalf(
 			"refresh expected 200, got %d: %s",
-			refreshResponse.Code,
-			refreshResponse.Body.String(),
+			refreshRecorder.Code,
+			refreshRecorder.Body.String(),
 		)
 	}
 
-	rotatedCookies := refreshResponse.Result().Cookies()
-
-	rotatedAccess := findCookie(
-		rotatedCookies,
-		accessCookie,
-	)
-	rotatedRefresh := findCookie(
-		rotatedCookies,
-		refreshCookie,
-	)
-	rotatedCSRF := findCookie(
-		rotatedCookies,
-		csrfCookie,
-	)
-
-	if rotatedAccess == nil ||
-		rotatedRefresh == nil ||
-		rotatedCSRF == nil {
-		test.Fatal(
-			"refresh did not rotate all auth cookies",
-		)
+	var refreshedTokens tokenResponse
+	if decodeError := json.NewDecoder(refreshRecorder.Body).Decode(&refreshedTokens); decodeError != nil {
+		test.Fatal(decodeError)
+	}
+	if refreshedTokens.AccessToken == "" || refreshedTokens.RefreshToken == "" {
+		test.Fatal("refresh did not return bearer tokens")
 	}
 
-	reusedRefresh := performAuthRequest(
-		module,
-		http.MethodPost,
-		"/api/auth/refresh",
-		"",
-		[]*http.Cookie{
-			refresh,
-			csrf,
-		},
-		csrf.Value,
-	)
+	reusedRefreshRequest := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", nil)
+	reusedRefreshRequest.Header.Set(refreshTokenHeader, loginTokens.RefreshToken)
+	reusedRefreshRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(reusedRefreshRecorder, reusedRefreshRequest)
 
-	if reusedRefresh.Code != http.StatusUnauthorized {
+	if reusedRefreshRecorder.Code != http.StatusUnauthorized {
 		test.Fatalf(
 			"reused refresh expected 401, got %d",
-			reusedRefresh.Code,
+			reusedRefreshRecorder.Code,
 		)
 	}
 
@@ -319,12 +325,7 @@ func TestAuthenticationLifecycle(test *testing.T) {
 		http.MethodPost,
 		"/api/auth/logout",
 		"",
-		[]*http.Cookie{
-			rotatedAccess,
-			rotatedRefresh,
-			rotatedCSRF,
-		},
-		rotatedCSRF.Value,
+		refreshedTokens.AccessToken,
 	)
 
 	if logout.Code != http.StatusOK {
@@ -334,38 +335,12 @@ func TestAuthenticationLifecycle(test *testing.T) {
 		)
 	}
 
-	refreshDeletion := findCookie(
-		logout.Result().Cookies(),
-		refreshCookie,
-	)
-
-	if refreshDeletion == nil {
-		test.Fatal(
-			"logout did not clear refresh cookie",
-		)
-	}
-
-	if refreshDeletion.Path != "/api/auth" {
-		test.Fatalf(
-			"refresh cookie deletion path = %q",
-			refreshDeletion.Path,
-		)
-	}
-
-	if refreshDeletion.MaxAge >= 0 {
-		test.Fatalf(
-			"refresh cookie deletion MaxAge = %d",
-			refreshDeletion.MaxAge,
-		)
-	}
-
 	afterLogout := performAuthRequest(
 		module,
 		http.MethodGet,
 		"/api/auth/me",
 		"",
-		[]*http.Cookie{rotatedAccess},
-		"",
+		refreshedTokens.AccessToken,
 	)
 
 	if afterLogout.Code != http.StatusUnauthorized {

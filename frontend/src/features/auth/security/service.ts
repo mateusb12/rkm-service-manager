@@ -1,41 +1,12 @@
-import {
-  apiRequest,
-  clearAccessToken,
-  csrfHeaders,
-  setAccessToken,
-} from '../../../shared/api/http';
+import { apiRequest } from '../../../shared/api/http';
+import { clearAuthTokens, getAuthTokens, saveAuthTokens } from './token-store';
 
-import type { AuthUser, DevCredential } from './types';
-
-const REFRESH_TOKEN_STORAGE_KEY = 'rkm_refresh_token';
-
-type TokenResponse = {
-  user: AuthUser;
-  accessToken: string;
-  refreshToken: string;
-};
-
-const isTokenResponse = (payload: TokenResponse | AuthUser): payload is TokenResponse =>
-  'accessToken' in payload && 'refreshToken' in payload && 'user' in payload;
-
-const getRefreshToken = (): string => sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY) || '';
-
-const setSessionTokens = (tokens: TokenResponse): void => {
-  setAccessToken(tokens.accessToken);
-  sessionStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, tokens.refreshToken);
-};
-
-const clearSessionTokens = (): void => {
-  clearAccessToken();
-  sessionStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-};
+import type { ActiveUser, AuthTokenResponse, AuthUser, DevCredential } from './types';
 
 export async function login(email: string, password: string): Promise<AuthUser> {
   const response = await apiRequest('/auth/login', {
     method: 'POST',
-    headers: {
-      'X-Auth-Transport': 'bearer',
-    },
+    headers: { 'X-Auth-Transport': 'bearer' },
     body: JSON.stringify({
       email,
       password,
@@ -48,25 +19,18 @@ export async function login(email: string, password: string): Promise<AuthUser> 
     throw new Error(payload?.error || 'invalid_credentials');
   }
 
-  const payload = (await response.json()) as TokenResponse | AuthUser;
-
-  if (isTokenResponse(payload)) {
-    setSessionTokens(payload);
-
-    return payload.user;
-  }
-
-  return payload;
+  const payload = (await response.json()) as AuthTokenResponse;
+  saveAuthTokens(payload);
+  return payload.user;
 }
 
 export async function logout(): Promise<void> {
   try {
     await apiRequest('/auth/logout', {
       method: 'POST',
-      headers: csrfHeaders(),
     });
   } finally {
-    clearSessionTokens();
+    clearAuthTokens();
   }
 }
 
@@ -80,34 +44,33 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   return response.json();
 }
 
-export async function refreshSession(): Promise<AuthUser> {
-  const refreshToken = getRefreshToken();
+export async function listActiveUsers(): Promise<ActiveUser[]> {
+  const response = await apiRequest('/auth/active-users');
+  if (!response.ok) {
+    throw new Error('active_users_query_failed');
+  }
+  return response.json();
+}
 
-  const headers: HeadersInit = refreshToken
-    ? {
-        'X-Auth-Transport': 'bearer',
-        'X-Refresh-Token': refreshToken,
-      }
-    : csrfHeaders();
+export async function refreshSession(): Promise<AuthUser> {
+  const tokens = getAuthTokens();
+  if (!tokens) {
+    clearAuthTokens();
+    throw new Error('session_expired');
+  }
 
   const response = await apiRequest('/auth/refresh', {
     method: 'POST',
-    headers,
+    headers: { 'X-Refresh-Token': tokens.refreshToken },
   });
 
   if (!response.ok) {
     throw new Error('session_expired');
   }
 
-  const payload = (await response.json()) as TokenResponse | AuthUser;
-
-  if (isTokenResponse(payload)) {
-    setSessionTokens(payload);
-
-    return payload.user;
-  }
-
-  return payload;
+  const payload = (await response.json()) as AuthTokenResponse;
+  saveAuthTokens(payload);
+  return payload.user || (payload as unknown as AuthUser);
 }
 
 export async function getDevCredentials(): Promise<DevCredential[]> {

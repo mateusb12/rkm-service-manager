@@ -121,6 +121,14 @@ func (module *Module) findUser(
 	return user, storedUser.PasswordHash, true
 }
 
+func (module *Module) recordLastLogin(userID string, loggedInAt int64) error {
+	return module.database.
+		Model(&userModel{}).
+		Where("id = ?", userID).
+		Update("last_login_at", loggedInAt).
+		Error
+}
+
 func (module *Module) findUserByID(
 	userID string,
 ) (authUser, bool) {

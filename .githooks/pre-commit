@@ -30,8 +30,12 @@ while IFS= read -r -d '' file; do
       esac
       ;;
 
-    backend/*.go)
-      go_files+=("$file")
+    backend/*)
+      case "$file" in
+        *.go)
+          go_files+=("$file")
+          ;;
+      esac
       ;;
   esac
 done < <(

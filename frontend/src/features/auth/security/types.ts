@@ -7,6 +7,18 @@ export type AuthUser = {
   permissions: string[];
 };
 
+export type ActiveUser = Pick<AuthUser, 'id' | 'email' | 'name' | 'role' | 'roleLabel'>;
+
+export type AuthTokenSet = {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+};
+
+export type AuthTokenResponse = AuthTokenSet & {
+  user: AuthUser;
+};
+
 export type DevCredential = {
   email: string;
   password: string;

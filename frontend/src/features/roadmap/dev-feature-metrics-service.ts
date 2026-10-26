@@ -1,4 +1,4 @@
-import { apiRequest, csrfHeaders } from '../../shared/api/http';
+import { apiRequest } from '../../shared/api/http';
 
 export type EditorTime = {
   name: string;
@@ -59,7 +59,6 @@ export async function saveFeatureSettings(
 ): Promise<DevFeatureMetric> {
   const response = await apiRequest('/dev/feature-metrics/settings', {
     method: 'PUT',
-    headers: csrfHeaders(),
     body: JSON.stringify({ featureId, ...settings }),
   });
 
@@ -97,7 +96,6 @@ export async function getPersistedFeatureMetric(
 export async function freezeFeatureMetric(input: FeatureMetricDraft): Promise<DevFeatureMetric> {
   const response = await apiRequest('/dev/feature-metrics/freeze', {
     method: 'POST',
-    headers: csrfHeaders(),
     body: JSON.stringify(input),
   });
 
@@ -107,7 +105,6 @@ export async function freezeFeatureMetric(input: FeatureMetricDraft): Promise<De
 export async function unlockFeatureMetric(featureId: string): Promise<DevFeatureMetric> {
   const response = await apiRequest('/dev/feature-metrics/unlock', {
     method: 'POST',
-    headers: csrfHeaders(),
     body: JSON.stringify({ featureId }),
   });
 
