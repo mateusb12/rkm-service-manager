@@ -174,6 +174,8 @@ export const ROADMAP: RoadmapVersion[] = [
             'admin/usuarios',
             'Gestão de usuários',
             'O administrador consegue cadastrar, consultar, editar e desativar usuários do sistema.\nCada funcionário possui seu próprio login e um perfil de acesso: Admin, Mecânico, PCP ou Comercial.\nUsuários ativos com perfil Mecânico ficam disponíveis para seleção como responsáveis nas telas da oficina.',
+            'Em andamento',
+            [1],
           ),
         ],
       },

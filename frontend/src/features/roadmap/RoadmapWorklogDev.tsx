@@ -88,6 +88,28 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Inclusão do acompanhamento de atividade local do frontend em localhost:4173 no cálculo de tempo da feature, separado das atividades do ChatGPT.',
     },
   ],
+  'admin/usuarios': [
+    {
+      category: 'Produto',
+      description:
+        'Implementação da autenticação Bearer JWT com claims de usuário, perfil e permissões, refresh token rotativo e proteção de rotas administrativas.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Criação da listagem administrativa de usuários consumindo o backend, com nome, e-mail, perfil, setor, status e último login persistido.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Persistência dos usuários e sessões com GORM, incluindo migração automática da coluna de último login e registro do acesso após autenticação bem-sucedida.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Migração do frontend para autenticação exclusivamente via Bearer, removendo o suporte a cookies HttpOnly e CSRF baseado em cookie.',
+    },
+  ],
   'comercial/tabela-precos': [
     {
       category: 'Produto',
