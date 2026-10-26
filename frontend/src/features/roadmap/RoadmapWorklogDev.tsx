@@ -109,6 +109,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
       description:
         'Migração do frontend para autenticação exclusivamente via Bearer, removendo o suporte a cookies HttpOnly e CSRF baseado em cookie.',
     },
+    {
+      category: 'Transversal',
+      description:
+        'Organização do backend por responsabilidade, separando rotas, controllers e repositório da administração de usuários, além da padronização dos arquivos de endpoints das demais features.',
+    },
   ],
   'comercial/tabela-precos': [
     {

@@ -3,8 +3,8 @@ package auth
 import (
 	"errors"
 	"net/http"
+	authadmin "rkm-service-manager/backend/internal/features/auth/admin"
 	"rkm-service-manager/backend/internal/shared/config"
-	"rkm-service-manager/backend/internal/shared/permissions"
 	"time"
 
 	"gorm.io/gorm"
@@ -55,11 +55,5 @@ func (module *Module) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/auth/logout", module.logout)
 	mux.HandleFunc("/api/auth/me", module.currentUser)
 	mux.HandleFunc("/api/auth/dev-credentials", module.devCredentials)
-	mux.HandleFunc(
-		"GET /api/admin/users",
-		module.RequirePermission(
-			permissions.UsersManage,
-			module.listUsers,
-		),
-	)
+	authadmin.New(module.database, module).Register(mux)
 }
