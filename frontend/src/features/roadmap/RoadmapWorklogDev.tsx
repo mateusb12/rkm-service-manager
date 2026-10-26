@@ -56,6 +56,38 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Diagnóstico e recuperação da integração WakaTime após recriação do frontend, reutilizando a configuração existente no Linux.',
     },
   ],
+  'pcp/abertura-os': [
+    {
+      category: 'Produto',
+      description:
+        'Implementação do fluxo de recebimento e abertura da OS, com seleção do cliente por CNPJ, razão social ou nome fantasia, geração automática do número da OS e registro do equipamento ou material recebido.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Inclusão do registro opcional de nota fiscal, com suporte a número informado, N/A ou complementação posterior, mantendo os dados do recebimento persistidos localmente.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Substituição do campo livre “Recebido por” pelo seletor pesquisável de clientes, reutilizando a busca por CNPJ, razão social ou nome fantasia.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Simplificação da identificação inicial: remoção da condição externa e da triagem de segurança para permitir salvar o recebimento e avançar para a desmontagem.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Adição dos ícones de cilindro, acumulador, bomba hidráulica, motor hidráulico e outro na seleção de categoria do equipamento, seguindo o padrão visual do catálogo.',
+    },
+    {
+      category: 'Ambiente',
+      description:
+        'Inclusão do acompanhamento de atividade local do frontend em localhost:4173 no cálculo de tempo da feature, separado das atividades do ChatGPT.',
+    },
+  ],
   'comercial/tabela-precos': [
     {
       category: 'Produto',
