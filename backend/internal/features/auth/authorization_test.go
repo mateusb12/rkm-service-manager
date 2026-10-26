@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"rkm-service-manager/backend/internal/shared/permissions"
+	"strings"
 	"testing"
 )
 
@@ -272,5 +273,110 @@ func TestListUsersIsAdminOnly(test *testing.T) {
 	}
 	if adminUser == nil || *adminUser <= 0 {
 		test.Fatal("admin last login was not persisted")
+	}
+}
+
+func TestAdminUserLifecycle(test *testing.T) {
+	test.Setenv("DUMMY_PASSWORD_ADMIN", "Rkm@123456")
+	test.Setenv("DUMMY_PASSWORD_PCP", "Rkm@123456")
+
+	module := newTestModule(test)
+	mux := http.NewServeMux()
+	module.Register(mux)
+	adminAccess := loginTestUser(test, module, "admin@rkm.com.br", "Rkm@123456")
+
+	createRequest := httptest.NewRequest(
+		http.MethodPost,
+		"/api/admin/users",
+		strings.NewReader(`{"name":"Ana Souza","email":"ana@rkm.com.br","role":"mechanic","password":"Senha@123"}`),
+	)
+	createRequest.Header.Set("Authorization", "Bearer "+adminAccess)
+	createRequest.Header.Set("Content-Type", "application/json")
+	createRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(createRecorder, createRequest)
+	if createRecorder.Code != http.StatusCreated {
+		test.Fatalf("create user expected 201, got %d", createRecorder.Code)
+	}
+
+	var createdUser struct {
+		ID     string `json:"id"`
+		Email  string `json:"email"`
+		Active bool   `json:"active"`
+	}
+	if decodeError := json.NewDecoder(createRecorder.Body).Decode(&createdUser); decodeError != nil {
+		test.Fatal(decodeError)
+	}
+	if createdUser.ID == "" || createdUser.Email != "ana@rkm.com.br" || !createdUser.Active {
+		test.Fatalf("unexpected created user: %+v", createdUser)
+	}
+
+	getRequest := httptest.NewRequest(http.MethodGet, "/api/admin/users/"+createdUser.ID, nil)
+	getRequest.Header.Set("Authorization", "Bearer "+adminAccess)
+	getRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(getRecorder, getRequest)
+	if getRecorder.Code != http.StatusOK {
+		test.Fatalf("get user expected 200, got %d", getRecorder.Code)
+	}
+
+	updateRequest := httptest.NewRequest(
+		http.MethodPatch,
+		"/api/admin/users/"+createdUser.ID,
+		strings.NewReader(`{"name":"Ana Souza Atualizada","role":"pcp"}`),
+	)
+	updateRequest.Header.Set("Authorization", "Bearer "+adminAccess)
+	updateRequest.Header.Set("Content-Type", "application/json")
+	updateRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(updateRecorder, updateRequest)
+	if updateRecorder.Code != http.StatusOK {
+		test.Fatalf("update user expected 200, got %d", updateRecorder.Code)
+	}
+
+	deactivateRequest := httptest.NewRequest(http.MethodDelete, "/api/admin/users/"+createdUser.ID, nil)
+	deactivateRequest.Header.Set("Authorization", "Bearer "+adminAccess)
+	deactivateRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(deactivateRecorder, deactivateRequest)
+	if deactivateRecorder.Code != http.StatusOK {
+		test.Fatalf("deactivate user expected 200, got %d", deactivateRecorder.Code)
+	}
+
+	var deactivatedUser struct {
+		Active bool `json:"active"`
+	}
+	if decodeError := json.NewDecoder(deactivateRecorder.Body).Decode(&deactivatedUser); decodeError != nil {
+		test.Fatal(decodeError)
+	}
+	if deactivatedUser.Active {
+		test.Fatal("deactivated user remained active")
+	}
+
+	loginResponse := performAuthRequest(
+		module,
+		http.MethodPost,
+		"/api/auth/login",
+		`{"email":"ana@rkm.com.br","password":"Senha@123"}`,
+		"",
+	)
+	if loginResponse.Code != http.StatusUnauthorized {
+		test.Fatalf("deactivated user login expected 401, got %d", loginResponse.Code)
+	}
+
+	deleteRequest := httptest.NewRequest(
+		http.MethodDelete,
+		"/api/admin/users/"+createdUser.ID+"/permanent",
+		nil,
+	)
+	deleteRequest.Header.Set("Authorization", "Bearer "+adminAccess)
+	deleteRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(deleteRecorder, deleteRequest)
+	if deleteRecorder.Code != http.StatusNoContent {
+		test.Fatalf("hard delete expected 204, got %d", deleteRecorder.Code)
+	}
+
+	missingRequest := httptest.NewRequest(http.MethodGet, "/api/admin/users/"+createdUser.ID, nil)
+	missingRequest.Header.Set("Authorization", "Bearer "+adminAccess)
+	missingRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(missingRecorder, missingRequest)
+	if missingRecorder.Code != http.StatusNotFound {
+		test.Fatalf("deleted user lookup expected 404, got %d", missingRecorder.Code)
 	}
 }
