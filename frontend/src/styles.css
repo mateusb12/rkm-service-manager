@@ -2179,6 +2179,52 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   background: rgba(16, 185, 129, 0.08);
 }
 
+.service-entry-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  background: #000;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(2, 8, 23, 0.38);
+}
+
+.service-entry-toast-close {
+  position: absolute;
+  top: 6px;
+  right: 9px;
+  color: #cbd5e1;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.service-entry-toast-close:hover {
+  color: #fff;
+}
+
+.service-entry-toast-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  transform-origin: left;
+  background: #fb7185;
+  animation: service-entry-toast-progress 5s linear forwards;
+}
+
+@keyframes service-entry-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
 .service-entry-success-icon {
   width: 30px;
   height: 30px;

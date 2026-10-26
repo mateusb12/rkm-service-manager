@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
@@ -34,6 +34,18 @@ const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
   'Motor hidráulico': '/assets/motor-hidraulico.png',
   Outro: '/assets/outro.png',
 };
+
+const CYLINDER_HEALTH_COMPONENTS = [
+  'Camisa',
+  'Haste',
+  'Êmbolo',
+  'Cabeçote dianteiro',
+  'Cabeçote traseiro',
+  'Vedações',
+  'Articulação dianteira',
+  'Articulação traseira',
+  'Outros',
+];
 
 const openServiceEntryPhotoDb = () =>
   new Promise((resolve, reject) => {
@@ -297,6 +309,13 @@ export const ServiceEntryView = () => {
   const [savedOrder, setSavedOrder] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
 
+  useEffect(() => {
+    if (!error) return undefined;
+
+    const timeoutId = window.setTimeout(() => setError(''), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [error]);
+
   const set = (key, value) => {
     setForm((prev) => ({
       ...prev,
@@ -347,9 +366,6 @@ export const ServiceEntryView = () => {
       .filter(([key]) => !String(form[key] || '').trim())
       .map(([, label]) => label);
 
-    if (step === 2) {
-      if ((form.photos.disassembly || []).length === 0) missing.push('foto da desmontagem');
-    }
     if (step === 4) {
       if (form.testResult !== 'Aprovado') missing.push('teste aprovado');
       if ((form.photos.execution || []).length === 0)
@@ -745,7 +761,23 @@ export const ServiceEntryView = () => {
         </div>
       )}
 
-      {error && <div className="alert-critical rounded-lg p-4 text-xs">{error}</div>}
+      {error && (
+        <div
+          role="alert"
+          className="service-entry-toast alert-critical rounded-lg p-4 pr-10 text-sm"
+        >
+          {error}
+          <button
+            type="button"
+            className="service-entry-toast-close"
+            aria-label="Fechar mensagem de erro"
+            onClick={() => setError('')}
+          >
+            ×
+          </button>
+          <span className="service-entry-toast-progress" aria-hidden="true" />
+        </div>
+      )}
 
       <div
         className="service-entry-stepper service-entry-amazon-stepper"
@@ -952,6 +984,24 @@ export const ServiceEntryView = () => {
                   wrapperClassName="service-entry-date-picker"
                 />
               </Field>
+              {form.orderType === 'Cilindro' && (
+                <div className="md:col-span-3">
+                  <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+                    Checklist de saúde do cilindro
+                  </span>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {CYLINDER_HEALTH_COMPONENTS.map((component) => (
+                      <button
+                        key={component}
+                        type="button"
+                        className="rounded-lg border border-rkmborder bg-rkmcard2/40 px-3 py-3 text-left text-sm text-slate-300 transition hover:border-blue-400/50 hover:bg-rkmcard2"
+                      >
+                        {component}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <Field label="Observações da desmontagem" className="md:col-span-3">
                 <TextArea
                   rows={3}

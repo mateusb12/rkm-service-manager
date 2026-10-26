@@ -98,6 +98,15 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Simplificação do formulário de desmontagem com remoção dos checklists e dos controles de confirmação, mantendo o registro de observações e evidências fotográficas.',
     },
     {
+      category: 'Produto',
+      description: 'Ajuste da validação da desmontagem para tratar a foto como opcional.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Padronização do feedback de validação em toast compacto, com fechamento manual, desaparecimento automático e barra de progresso.',
+    },
+    {
       category: 'Ambiente',
       description:
         'Inclusão do acompanhamento de atividade local do frontend em localhost:4173 no cálculo de tempo da feature, separado das atividades do ChatGPT.',
