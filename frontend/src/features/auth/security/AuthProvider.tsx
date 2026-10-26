@@ -31,21 +31,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    Promise.all([
-      getCurrentUser().then(async (currentUser) => {
+    const initializeAuth = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+
         if (currentUser) {
           setUser(currentUser);
-          return;
+        } else {
+          await refresh().catch(() => undefined);
         }
 
-        await refresh().catch(() => undefined);
-      }),
+        if (import.meta.env.DEV) {
+          await getDevCredentials()
+            .then(setDevCredentials)
+            .catch(() => undefined);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      getDevCredentials()
-        .then(setDevCredentials)
-        .catch(() => undefined),
-    ]).finally(() => setLoading(false));
+    initializeAuth();
+  }, []);
 
+  useEffect(() => {
     const timer = window.setInterval(() => {
       if (user) {
         refresh().catch(() => setUser(null));
