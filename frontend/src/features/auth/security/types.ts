@@ -7,6 +7,16 @@ export type AuthUser = {
   permissions: string[];
 };
 
+export type AuthTokenSet = {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+};
+
+export type AuthTokenResponse = AuthTokenSet & {
+  user: AuthUser;
+};
+
 export type DevCredential = {
   email: string;
   password: string;
