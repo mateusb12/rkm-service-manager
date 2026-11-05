@@ -12,8 +12,8 @@ find /root/.ssh -type f -exec chmod 600 {} +
 
 exec ssh -N \
   -F /dev/null \
-  -o "HostName=${RKM_PG_SSH_HOST:-187.127.38.154}" \
-  -o "User=${RKM_PG_SSH_USER:-root}" \
+  -o "HostName=${RKM_PG_SSH_HOST:-${RKM_SSH_HOST:-187.127.38.154}}" \
+  -o "User=${RKM_PG_SSH_USER:-${RKM_SSH_USER:-root}}" \
   -o IdentitiesOnly=no \
   -o IdentityAgent=/run/ssh-agent \
   -o IdentityFile=/root/.ssh/id_ed25519_rkm \
