@@ -126,7 +126,7 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
-        'Criação da listagem administrativa de usuários consumindo o backend, com nome, e-mail, perfil, setor, status e último login persistido.',
+        'Criação da listagem administrativa de usuários consumindo o backend, com nome, e-mail, perfil, status e último login persistido.',
     },
     {
       category: 'Transversal',
@@ -152,6 +152,41 @@ const WORKLOG: Record<string, WorkEntry[]> = {
       category: 'Produto',
       description:
         'Integração da gestão de usuários do frontend com o backend, incluindo cadastro, edição, desativação, exclusão permanente e expansão inline dos detalhes na própria tabela.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Refinamento do cadastro de usuários com remoção do campo de setor, confirmação de senha, botão para exibir ou ocultar a senha e status derivado do acesso ativo ou suspenso.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Implementação do fluxo de ciclo de vida dos usuários: usuários ativos são desativados primeiro; usuários suspensos podem ser excluídos permanentemente, com confirmação em dois passos e bloqueio equivalente no backend.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Correção da identidade da sessão após o login, removendo o fallback para usuários demonstrativos e exibindo no menu o nome, perfil e iniciais do usuário autenticado.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Restrição dos responsáveis pela desmontagem aos usuários ativos com perfil Mecânico, mantendo a seleção geral de usuários ativos para o recebimento da OS.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Adição de skeleton loading à tela de usuários para métricas, contagem e linhas da tabela, preservando a estrutura visual enquanto os dados são carregados.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Configuração do ambiente local para acessar exclusivamente o PostgreSQL da Hostinger por túnel SSH, incluindo os dados principais e as métricas, sem montar ou usar SQLite local como fonte de verdade.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Validação ponta a ponta do cadastro de usuários e clientes diretamente no PostgreSQL remoto, com rebuild do backend local e testes automatizados do fluxo de hard delete.',
     },
     {
       category: 'Produto',

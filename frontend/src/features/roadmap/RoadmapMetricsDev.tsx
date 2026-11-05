@@ -22,9 +22,16 @@ const WAKATIME_RETRY_MS = 30 * 1000;
 
 function formatActivityDuration(seconds: number) {
   const roundedSeconds = Math.round(seconds);
-  const minutes = Math.floor(roundedSeconds / 60);
+  const hours = Math.floor(roundedSeconds / 3600);
+  const minutes = Math.floor((roundedSeconds % 3600) / 60);
   const remainder = roundedSeconds % 60;
-  return minutes > 0 ? `${minutes}min ${remainder}s` : `${remainder}s`;
+  const parts = [
+    hours > 0 ? `${hours}h` : '',
+    minutes > 0 || hours > 0 ? `${minutes}min` : '',
+    remainder > 0 || (hours === 0 && minutes === 0) ? `${remainder}s` : '',
+  ];
+
+  return parts.filter(Boolean).join(' ');
 }
 
 function WakatimeCountdown({ nextAt }: { nextAt: number | null }) {

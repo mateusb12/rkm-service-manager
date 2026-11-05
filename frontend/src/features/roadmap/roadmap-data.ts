@@ -157,8 +157,8 @@ export const ROADMAP: RoadmapVersion[] = [
             'admin/usuarios',
             'Gestão de usuários',
             'O administrador consegue cadastrar, consultar, editar e desativar usuários do sistema.\nCada funcionário possui seu próprio login e um perfil de acesso: Admin, Mecânico, PCP ou Comercial.\nUsuários ativos com perfil Mecânico ficam disponíveis para seleção como responsáveis nas telas da oficina.',
-            'Em andamento',
-            [0],
+            'Concluída',
+            [0, 1, 2],
           ),
         ],
       },
@@ -225,12 +225,6 @@ export const ROADMAP: RoadmapVersion[] = [
     id: 'V2',
     title: 'Controle',
     question: 'O que está impedindo o serviço de avançar?',
-    questions: [
-      'Qual defeito foi identificado?',
-      'Quais componentes estão danificados?',
-      'O que precisa ser recuperado ou substituído?',
-      'Quais medidas e verificações técnicas foram realizadas?',
-    ],
     questions: [
       'O que está faltando para começar ou continuar?',
       'Há quanto tempo essa OS está parada?',

@@ -197,6 +197,30 @@ export function RoadmapView() {
   }, [completedFeatures, localDevelopmentEnabled, visibleRoadmap]);
 
   const version = visibleRoadmap.find((v) => v.id === versionId) || visibleRoadmap[0];
+  const v0TotalDurationMinutes = React.useMemo(() => {
+    if (version.id !== 'V0') return null;
+
+    const durations = version.areas.flatMap((area) =>
+      area.features.map((feature) => {
+        const metric = featureMetricDrafts[feature.id];
+        return (
+          featureDurations[feature.id] ??
+          (metric
+            ? Math.round(
+                (metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60,
+              )
+            : null)
+        );
+      }),
+    );
+
+    const total = durations.reduce(
+      (sum, duration) => sum + (duration != null && duration > 0 ? duration : 0),
+      0,
+    );
+
+    return total > 0 ? total : null;
+  }, [featureDurations, featureMetricDrafts, version]);
   const selectedArea = areaProjections.find((area) => area.id === areaId) || areaProjections[0];
   const roadmapTimebox = getRoadmapVersionTimebox(version.id);
   const versionProgress = React.useMemo(() => {
@@ -517,6 +541,16 @@ export function RoadmapView() {
               ? version.description
               : `Features de ${selectedArea.title} distribuídas ao longo das versões.`}
           </p>
+          {localDevelopmentEnabled &&
+            viewMode === 'version' &&
+            version.id === 'V0' &&
+            v0TotalDurationMinutes != null && (
+              <div className="mt-2">
+                <span className="tag tag-amber">
+                  V0 · {formatDuration(v0TotalDurationMinutes).replace(' ', '')}
+                </span>
+              </div>
+            )}
           {viewMode === 'version' && (
             <div className="mt-4 space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
