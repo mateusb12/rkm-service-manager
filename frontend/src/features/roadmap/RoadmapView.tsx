@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import { Tooltip } from '../../Tooltip';
 import {
   freezeFeatureMetric,
+  getLiveFeatureMetric,
   listPersistedFeatureMetrics,
   unlockFeatureMetric,
   type FeatureMetricDraft,
 } from './dev-feature-metrics-service';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
 import { formatRoadmapDate, getRoadmapVersionTimebox } from '../time/roadmap-time';
+import { formatDuration } from '../../utils/DurationPicker';
 import type { RoadmapFeature } from './roadmap-model';
 import { RoadmapFeatureCard } from './RoadmapFeatureCard';
 import { RoadmapGanttLocalDev } from './RoadmapGanttLocalDev';
@@ -106,6 +108,7 @@ export function RoadmapView() {
   const [areaId, setAreaId] = useState('pcp');
   const [featureId, setFeatureId] = useState('');
   const [completedFeatures, setCompletedFeatures] = useState<Record<string, boolean>>({});
+  const [featureDurations, setFeatureDurations] = useState<Record<string, number>>({});
   const [taskStatusLoaded, setTaskStatusLoaded] = useState(false);
   const [taskStatusPending, setTaskStatusPending] = useState<Record<string, boolean>>({});
   const [taskStatusError, setTaskStatusError] = useState('');
@@ -134,8 +137,15 @@ export function RoadmapView() {
         const persistedCompleted = Object.fromEntries(
           metrics.filter((metric) => metric.locked).map((metric) => [metric.featureId, true]),
         );
+        const persistedDurations = Object.fromEntries(
+          metrics.map((metric) => [
+            metric.featureId,
+            Math.round((metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60),
+          ]),
+        );
 
         setCompletedFeatures(persistedCompleted);
+        setFeatureDurations(persistedDurations);
         setTaskStatusLoaded(true);
       })
       .catch((error) => {
@@ -154,6 +164,37 @@ export function RoadmapView() {
       cancelled = true;
     };
   }, [localDevelopmentEnabled]);
+
+  React.useEffect(() => {
+    if (!localDevelopmentEnabled) return;
+
+    const completedItems = visibleRoadmap.flatMap((entry) =>
+      entry.areas.flatMap((area) =>
+        area.features.filter(
+          (feature) =>
+            feature.state === 'Concluída' ||
+            feature.state === 'Em andamento' ||
+            Boolean(completedFeatures[feature.id]),
+        ),
+      ),
+    );
+    const controller = new AbortController();
+
+    void Promise.allSettled(
+      completedItems.map(async (feature) => {
+        const metric = await getLiveFeatureMetric(feature.id, feature.branch, controller.signal);
+
+        setFeatureDurations((previous) => ({
+          ...previous,
+          [feature.id]: Math.round(
+            (metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60,
+          ),
+        }));
+      }),
+    );
+
+    return () => controller.abort();
+  }, [completedFeatures, localDevelopmentEnabled, visibleRoadmap]);
 
   const version = visibleRoadmap.find((v) => v.id === versionId) || visibleRoadmap[0];
   const selectedArea = areaProjections.find((area) => area.id === areaId) || areaProjections[0];
@@ -278,6 +319,11 @@ export function RoadmapView() {
     try {
       if (completedFeatures[item.id]) {
         await unlockFeatureMetric(item.id);
+        setFeatureDurations((previous) => {
+          const next = { ...previous };
+          delete next[item.id];
+          return next;
+        });
       } else {
         const metric = featureMetricDrafts[item.id];
 
@@ -285,7 +331,16 @@ export function RoadmapView() {
           throw new Error('Aguarde as métricas atuais carregarem antes de concluir a feature.');
         }
 
-        await freezeFeatureMetric(metric);
+        const frozenMetric = await freezeFeatureMetric(metric);
+        setFeatureDurations((previous) => ({
+          ...previous,
+          [item.id]: Math.round(
+            (frozenMetric.wakatimeSeconds +
+              frozenMetric.chatGptSeconds +
+              frozenMetric.localSeconds) /
+              60,
+          ),
+        }));
       }
 
       setCompletedFeatures((previous) => {
@@ -318,6 +373,17 @@ export function RoadmapView() {
       expanded={featureId === item.id}
       localDevelopmentEnabled={localDevelopmentEnabled}
       completed={Boolean(completedFeatures[item.id])}
+      completedDurationMinutes={
+        featureDurations[item.id] ??
+        (featureMetricDrafts[item.id]
+          ? Math.round(
+              (featureMetricDrafts[item.id].wakatimeSeconds +
+                featureMetricDrafts[item.id].chatGptSeconds +
+                featureMetricDrafts[item.id].localSeconds) /
+                60,
+            )
+          : null)
+      }
       taskStatusLoaded={taskStatusLoaded}
       taskStatusPending={Boolean(taskStatusPending[item.id])}
       taskStatusError={taskStatusError}
@@ -680,101 +746,133 @@ export function RoadmapView() {
 
         {viewMode === 'version' ? (
           <div className="space-y-3 p-4">
-            {version.areas.map((area) => (
-              <section
-                key={area.id}
-                className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-0">
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setAreaId(areaId === area.id ? '' : area.id)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        setAreaId(areaId === area.id ? '' : area.id);
-                      }
-                    }}
-                    className="flex min-h-12 cursor-pointer items-center self-stretch p-4 text-left sm:w-56 sm:flex-none"
-                  >
-                    <span className="text-sm font-semibold text-slate-100">
-                      {areaId === area.id ? '▾' : '▸'} {area.title}
-                    </span>
-                  </div>
+            {version.areas.map((area) => {
+              const featureDurationsWithTime = area.features
+                .map((feature) => {
+                  const duration =
+                    featureDurations[feature.id] ??
+                    (featureMetricDrafts[feature.id]
+                      ? Math.round(
+                          (featureMetricDrafts[feature.id].wakatimeSeconds +
+                            featureMetricDrafts[feature.id].chatGptSeconds +
+                            featureMetricDrafts[feature.id].localSeconds) /
+                            60,
+                        )
+                      : null);
 
-                  <div
-                    className="min-w-0 flex-1 self-center overflow-x-auto p-4 sm:mr-[8%]"
-                    onClick={(event) => event.stopPropagation()}
-                  >
+                  return duration != null && duration > 0 ? duration : null;
+                })
+                .filter((duration): duration is number => duration != null);
+              const areaDurationMinutes = featureDurationsWithTime.reduce(
+                (total, duration) => total + duration,
+                0,
+              );
+              const shouldShowAreaDuration =
+                localDevelopmentEnabled && featureDurationsWithTime.length >= 2;
+
+              return (
+                <section
+                  key={area.id}
+                  className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-0">
                     <div
-                      className={`relative grid gap-2 ${
-                        area.features.length === 1
-                          ? 'grid-cols-1'
-                          : area.features.length === 2
-                            ? 'grid-cols-2'
-                            : area.features.length === 4
-                              ? 'grid-cols-4 min-w-[560px]'
-                              : 'grid-cols-3'
-                      }`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setAreaId(areaId === area.id ? '' : area.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setAreaId(areaId === area.id ? '' : area.id);
+                        }
+                      }}
+                      className="flex min-h-12 cursor-pointer items-center self-stretch p-4 text-left sm:w-56 sm:flex-none"
                     >
-                      {area.features.length > 1 && (
-                        <div
-                          className={`pointer-events-none absolute top-3 h-px bg-slate-500/70 shadow-[0_0_4px_rgba(100,116,139,.35)] ${
-                            area.features.length === 2
-                              ? 'left-[25%] right-[25%]'
-                              : area.features.length === 4
-                                ? 'left-[12.5%] right-[12.5%]'
-                                : 'left-[16.67%] right-[16.67%]'
-                          }`}
-                        />
-                      )}
-                      {area.features.map((feature, index) => {
-                        const done =
-                          feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]);
-                        const inProgress =
-                          localDevelopmentEnabled && !done && feature.state === 'Em andamento';
+                      <span className="text-sm font-semibold text-slate-100">
+                        {areaId === area.id ? '▾' : '▸'} {area.title}
+                      </span>
+                    </div>
 
-                        return (
-                          <div key={feature.id} className="relative text-center">
-                            <span
-                              className={`relative z-10 mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold ${
-                                done
-                                  ? 'border-emerald-300 bg-emerald-400 text-emerald-950'
-                                  : inProgress
-                                    ? 'border-orange-300 bg-orange-300 text-orange-950 shadow-[0_0_10px_rgba(253,186,116,.35)]'
-                                    : 'border-rkmborder bg-rkmcard2 text-slate-400'
-                              }`}
-                            >
-                              {done ? '✓' : index + 1}
-                            </span>
-                            <span
-                              className={`mt-2 block text-[10px] leading-tight ${
-                                done
-                                  ? 'text-emerald-300'
-                                  : inProgress
-                                    ? 'text-orange-300'
-                                    : 'text-slate-400'
-                              }`}
-                            >
-                              {feature.title}
-                            </span>
-                          </div>
-                        );
-                      })}
+                    <div
+                      className="min-w-0 flex-1 self-center overflow-x-auto p-4 sm:mr-[8%]"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <div
+                        className={`relative grid gap-2 ${
+                          area.features.length === 1
+                            ? 'grid-cols-1'
+                            : area.features.length === 2
+                              ? 'grid-cols-2'
+                              : area.features.length === 4
+                                ? 'grid-cols-4 min-w-[560px]'
+                                : 'grid-cols-3'
+                        }`}
+                      >
+                        {area.features.length > 1 && (
+                          <div
+                            className={`pointer-events-none absolute top-3 h-px bg-slate-500/70 shadow-[0_0_4px_rgba(100,116,139,.35)] ${
+                              area.features.length === 2
+                                ? 'left-[25%] right-[25%]'
+                                : area.features.length === 4
+                                  ? 'left-[12.5%] right-[12.5%]'
+                                  : 'left-[16.67%] right-[16.67%]'
+                            }`}
+                          />
+                        )}
+                        {area.features.map((feature, index) => {
+                          const done =
+                            feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]);
+                          const inProgress =
+                            localDevelopmentEnabled && !done && feature.state === 'Em andamento';
+
+                          return (
+                            <div key={feature.id} className="relative text-center">
+                              <span
+                                className={`relative z-10 mx-auto flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold ${
+                                  done
+                                    ? 'border-emerald-300 bg-emerald-400 text-emerald-950'
+                                    : inProgress
+                                      ? 'border-orange-300 bg-orange-300 text-orange-950 shadow-[0_0_10px_rgba(253,186,116,.35)]'
+                                      : 'border-rkmborder bg-rkmcard2 text-slate-400'
+                                }`}
+                              >
+                                {done ? '✓' : index + 1}
+                              </span>
+                              <span
+                                className={`mt-2 block text-[10px] leading-tight ${
+                                  done
+                                    ? 'text-emerald-300'
+                                    : inProgress
+                                      ? 'text-orange-300'
+                                      : 'text-slate-400'
+                                }`}
+                              >
+                                {feature.title}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {areaId === area.id && (
-                  <div className="space-y-2 border-t border-rkmborder p-3">
-                    <p className="px-2 pb-1 text-sm text-slate-400">{area.objective}</p>
+                  {areaId === area.id && (
+                    <div className="space-y-2 border-t border-rkmborder p-3">
+                      <p className="px-2 pb-1 text-sm text-slate-400">{area.objective}</p>
+                      {shouldShowAreaDuration && (
+                        <div className="px-2">
+                          <span className="tag tag-amber">
+                            {formatDuration(areaDurationMinutes)}
+                          </span>
+                        </div>
+                      )}
 
-                    {area.features.map(renderFeatureCard)}
-                  </div>
-                )}
-              </section>
-            ))}
+                      {area.features.map(renderFeatureCard)}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
           </div>
         ) : (
           <div className="space-y-3 p-4">

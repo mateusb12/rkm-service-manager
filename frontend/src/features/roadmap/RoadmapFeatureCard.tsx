@@ -1,4 +1,5 @@
 import type { FeatureMetricDraft } from './dev-feature-metrics-service';
+import { formatDuration } from '../../utils/DurationPicker';
 import { RoadmapFeatureDetails } from './RoadmapFeatureDetails';
 import type { RoadmapFeature } from './roadmap-model';
 
@@ -7,6 +8,7 @@ type RoadmapFeatureCardProps = {
   expanded: boolean;
   localDevelopmentEnabled: boolean;
   completed: boolean;
+  completedDurationMinutes: number | null;
   taskStatusLoaded: boolean;
   taskStatusPending: boolean;
   taskStatusError: string;
@@ -20,6 +22,7 @@ export function RoadmapFeatureCard({
   expanded,
   localDevelopmentEnabled,
   completed,
+  completedDurationMinutes,
   taskStatusLoaded,
   taskStatusPending,
   taskStatusError,
@@ -57,6 +60,11 @@ export function RoadmapFeatureCard({
           }`}
         >
           {displayedState}
+          {localDevelopmentEnabled &&
+          (displayedState === 'Concluída' || displayedState === 'Em andamento') &&
+          completedDurationMinutes != null
+            ? ` · ${formatDuration(completedDurationMinutes)}`
+            : ''}
         </span>
       </button>
 

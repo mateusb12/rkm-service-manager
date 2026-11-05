@@ -153,6 +153,17 @@ export default function RoadmapMetricsDev({
         setEstimatedHours(metric?.estimatedHours ?? null);
         setStoredBranch(metric?.branch || '');
 
+        if (metric) {
+          onLiveMetricChange(featureId, {
+            featureId,
+            branch: metric.branch || defaultBranch,
+            wakatimeSeconds: metric.wakatimeSeconds,
+            chatGptSeconds: metric.chatGptSeconds,
+            localSeconds: metric.localSeconds,
+            editors: metric.editors,
+          });
+        }
+
         if (!completed || !metric?.locked) return;
 
         setWakatimeHours((previous) => ({
@@ -182,7 +193,7 @@ export default function RoadmapMetricsDev({
       cancelled = true;
       controller.abort();
     };
-  }, [featureId, completed]);
+  }, [defaultBranch, featureId, completed, onLiveMetricChange]);
 
   useEffect(() => {
     if (!featureId || completed) {

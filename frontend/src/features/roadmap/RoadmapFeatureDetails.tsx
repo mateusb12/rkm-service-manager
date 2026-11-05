@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
 
 import type { FeatureMetricDraft } from './dev-feature-metrics-service';
 import type { RoadmapFeature } from './roadmap-model';
@@ -20,6 +21,35 @@ const V1_FEATURE_EXAMPLES: Record<string, string> = {
   'oficina/diagnostico-estruturado':
     'Na aba "Diagnóstico", o usuário visualiza as condições e medições registradas, indica "Recuperar haste" e "Substituir vedação", acrescenta uma conclusão e salva o diagnóstico na OS.',
 };
+
+function RoadmapBranchSnippet({ branch }: { branch: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyBranch = async () => {
+    try {
+      await navigator.clipboard.writeText(branch);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="inline-flex max-w-full items-center gap-3 rounded-md border border-sky-400/20 bg-slate-950/30 px-3 py-2">
+      <code className="min-w-0 overflow-x-auto text-xs text-blue-300">{branch}</code>
+      <button
+        type="button"
+        onClick={copyBranch}
+        className="shrink-0 rounded-md border border-sky-400/25 p-1.5 text-sky-300 transition hover:bg-sky-400/10 hover:text-sky-200"
+        aria-label={copied ? 'Branch copiada' : 'Copiar branch'}
+        title={copied ? 'Branch copiada' : 'Copiar branch'}
+      >
+        {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+      </button>
+    </div>
+  );
+}
 
 type RoadmapFeatureDetailsProps = {
   item: RoadmapFeature;
@@ -44,9 +74,7 @@ export function RoadmapFeatureDetails({
 }: RoadmapFeatureDetailsProps) {
   return (
     <div className="space-y-3 border-t border-rkmborder p-3">
-      {localDevelopmentEnabled && (
-        <code className="block text-xs text-blue-300">{item.branch}</code>
-      )}
+      {localDevelopmentEnabled && <RoadmapBranchSnippet branch={item.branch} />}
 
       <div className="space-y-4">
         {FEATURE_IMAGES[item.id] && (

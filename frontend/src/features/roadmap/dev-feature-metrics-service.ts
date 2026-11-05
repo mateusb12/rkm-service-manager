@@ -1,4 +1,5 @@
 import { apiRequest } from '../../shared/api/http';
+import { getChatGptActivity } from './chatgpt-activity-service';
 
 export type EditorTime = {
   name: string;
@@ -109,4 +110,47 @@ export async function unlockFeatureMetric(featureId: string): Promise<DevFeature
   });
 
   return readJSON<DevFeatureMetric>(response, 'Não foi possível reabrir a métrica.');
+}
+
+export async function getLiveFeatureMetric(
+  featureId: string,
+  branch: string,
+  signal?: AbortSignal,
+): Promise<FeatureMetricDraft> {
+  const query = new URLSearchParams({ branch });
+  const wakatimeResponse = await fetch(`/__dev/wakatime?${query}`, { signal });
+  const wakatimeResult = (await wakatimeResponse.json()) as {
+    totalSeconds?: number;
+    editors?: EditorTime[];
+    error?: string;
+  };
+
+  if (!wakatimeResponse.ok) {
+    throw new Error(wakatimeResult.error || 'Falha ao consultar WakaTime.');
+  }
+
+  const wakatimeSeconds = Number(wakatimeResult.totalSeconds);
+  if (!Number.isFinite(wakatimeSeconds) || wakatimeSeconds < 0) {
+    throw new Error('Tempo retornado pelo WakaTime é inválido.');
+  }
+
+  let chatGptSeconds = 0;
+  let localSeconds = 0;
+
+  try {
+    const activity = await getChatGptActivity(branch, false, undefined, undefined, signal);
+    chatGptSeconds = activity.chatGptSeconds;
+    localSeconds = activity.localSeconds;
+  } catch {
+    // WakaTime continua sendo suficiente para exibir a duração local.
+  }
+
+  return {
+    featureId,
+    branch,
+    wakatimeSeconds,
+    chatGptSeconds,
+    localSeconds,
+    editors: Array.isArray(wakatimeResult.editors) ? wakatimeResult.editors : [],
+  };
 }

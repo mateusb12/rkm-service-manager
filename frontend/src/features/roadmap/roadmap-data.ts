@@ -162,6 +162,19 @@ export const ROADMAP: RoadmapVersion[] = [
           ),
         ],
       },
+      {
+        id: 'arquivos',
+        title: 'Arquivos',
+        objective:
+          'Disponibilizar um armazenamento centralizado para arquivos enviados pelos usuários.',
+        features: [
+          feature(
+            'arquivos/upload',
+            'Upload de arquivos',
+            'O usuário autenticado consegue enviar um arquivo para o armazenamento do sistema e consultar os metadados do upload.\nO registro informa o nome original, tipo, tamanho, chave de armazenamento, usuário responsável e data do upload.\nNesta versão, o arquivo não precisa estar vinculado a uma OS ou outra entidade do domínio.',
+          ),
+        ],
+      },
     ],
   },
 
