@@ -2,17 +2,17 @@ type DateValue = Date | number | string;
 
 export function formatLongDateTimeBR(value: DateValue | null | undefined): string {
   if (value === null || value === undefined || value === '') {
-    return 'Ainda não acessou';
+    return '—';
   }
 
   const date = new Date(typeof value === 'number' ? value * 1000 : value);
 
   if (Number.isNaN(date.getTime())) {
-    return 'Ainda não acessou';
+    return '—';
   }
 
   const dateLabel = date.toLocaleDateString('pt-BR', {
-    day: 'numeric',
+    day: '2-digit',
     month: 'long',
     year: 'numeric',
   });
@@ -24,5 +24,5 @@ export function formatLongDateTimeBR(value: DateValue | null | undefined): strin
     })
     .replace(':', 'h');
 
-  return `${dateLabel}, às ${timeLabel}`;
+  return `${dateLabel} às ${timeLabel}`;
 }

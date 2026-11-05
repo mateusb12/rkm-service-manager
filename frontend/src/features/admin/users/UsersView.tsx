@@ -83,7 +83,9 @@ function mapApiUser(user: ApiUser): ManagedUser {
     commercial: 'from-blue-500 to-indigo-600',
   };
 
-  const lastLoginLabel = formatLongDateTimeBR(user.lastLoginAt);
+  const lastLoginLabel = user.lastLoginAt
+    ? formatLongDateTimeBR(user.lastLoginAt)
+    : 'Ainda não acessou';
 
   return {
     id: user.id,
