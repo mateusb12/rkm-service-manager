@@ -12,6 +12,7 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-production}
       PORT: "8787"
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
       DATABASE_URL: ""
       DB_PATH: /data/rkm.db
       DEV_METRICS_DB_PATH: /dev-data/rkm-dev.db
@@ -33,6 +34,9 @@ services:
       - "127.0.0.1:${RKM_FRONTEND_PORT:-4173}:4173"
     environment:
       BACKEND_URL: http://backend:8787
+      WAKATIME_ACCESS_TOKEN: ${WAKATIME_ACCESS_TOKEN:-}
+      WAKATIME_EXPIRES_AT: ${WAKATIME_EXPIRES_AT:-}
+      WAKATIME_SCOPE: ${WAKATIME_SCOPE:-}
       WAKATIME_API_KEY: ${WAKATIME_API_KEY:-}
       WAKATIME_PROJECT: ${WAKATIME_PROJECT:-rkm-service-manager}
       WAKATIME_START_DATE: ${WAKATIME_START_DATE:-2026-09-01}

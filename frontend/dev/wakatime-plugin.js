@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 const WAKATIME_CONFIG_PATH = '/root/.wakatime.cfg';
+const WAKATIME_SECRETS_PATH = '/root/.secrets.env';
 
 function readWakatimeConfigKey() {
   try {
@@ -10,6 +11,78 @@ function readWakatimeConfigKey() {
   } catch {
     return '';
   }
+}
+
+export function parseSecretsEnv(contents) {
+  const values = {};
+
+  for (const line of contents.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (!match) continue;
+
+    let value = match[2];
+    if (
+      value.length >= 2 &&
+      ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'")))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    values[match[1]] = value;
+  }
+
+  return values;
+}
+
+export function isWakatimeTokenExpired(expiresAt, now = Date.now()) {
+  const value = String(expiresAt || '').trim();
+  if (!value) return false;
+
+  const numericValue = Number(value);
+  const timestamp = Number.isFinite(numericValue)
+    ? numericValue < 1e12
+      ? numericValue * 1000
+      : numericValue
+    : Date.parse(value);
+
+  return !Number.isFinite(timestamp) || timestamp <= now;
+}
+
+function readWakatimeSecretsFile(path) {
+  try {
+    return parseSecretsEnv(readFileSync(path, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+export function resolveWakatimeCredentials({
+  env = process.env,
+  readFile = readWakatimeSecretsFile,
+} = {}) {
+  const homeSecretsPath = env.HOME ? `${env.HOME}/.secrets.env` : '';
+  const fileValues = {
+    ...readFile(WAKATIME_SECRETS_PATH),
+    ...(homeSecretsPath ? readFile(homeSecretsPath) : {}),
+  };
+  const accessToken =
+    env.WAKATIME_ACCESS_TOKEN?.trim() || fileValues.WAKATIME_ACCESS_TOKEN?.trim() || '';
+  const apiKey = env.WAKATIME_API_KEY?.trim() || fileValues.WAKATIME_API_KEY?.trim() || '';
+
+  if (accessToken) {
+    return {
+      authorization: `Bearer ${accessToken}`,
+      expiresAt: env.WAKATIME_EXPIRES_AT?.trim() || fileValues.WAKATIME_EXPIRES_AT?.trim() || '',
+      scope: env.WAKATIME_SCOPE?.trim() || fileValues.WAKATIME_SCOPE?.trim() || '',
+    };
+  }
+
+  if (apiKey) {
+    return { authorization: `Basic ${Buffer.from(apiKey).toString('base64')}` };
+  }
+
+  return null;
 }
 
 export function wakatimeDevPlugin() {
@@ -69,11 +142,19 @@ export function wakatimeDevPlugin() {
           return;
         }
 
-        const key = process.env.WAKATIME_API_KEY?.trim() || readWakatimeConfigKey();
+        const credentials = resolveWakatimeCredentials();
+        const legacyKey = credentials ? null : readWakatimeConfigKey();
 
-        if (!key) {
+        if (!credentials && !legacyKey) {
           send(503, {
-            error: 'Configure WAKATIME_API_KEY no ambiente do Vite.',
+            error: 'Configure WAKATIME_ACCESS_TOKEN em ~/.secrets.env ou no ambiente do Vite.',
+          });
+          return;
+        }
+
+        if (credentials && isWakatimeTokenExpired(credentials.expiresAt)) {
+          send(401, {
+            error: 'WAKATIME_ACCESS_TOKEN expirado ou WAKATIME_EXPIRES_AT inválido.',
           });
           return;
         }
@@ -131,7 +212,9 @@ export function wakatimeDevPlugin() {
               `https://wakatime.com/api/v1/users/current/summaries?${params}`,
               {
                 headers: {
-                  Authorization: `Basic ${Buffer.from(key).toString('base64')}`,
+                  Authorization:
+                    credentials?.authorization ||
+                    `Basic ${Buffer.from(legacyKey).toString('base64')}`,
                 },
                 signal: AbortSignal.timeout(15000),
               },

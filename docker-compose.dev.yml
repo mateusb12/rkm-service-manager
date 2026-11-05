@@ -31,7 +31,10 @@ services:
     depends_on:
       postgres-tunnel:
         condition: service_healthy
+    environment:
+      APP_ENV: development
 
   frontend:
     volumes:
       - ${HOME}/.wakatime.cfg:/root/.wakatime.cfg:ro
+      - ${HOME}/.secrets.env:/root/.secrets.env:ro
