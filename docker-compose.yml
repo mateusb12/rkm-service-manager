@@ -13,10 +13,10 @@ services:
       APP_ENV: ${APP_ENV:-production}
       PORT: "8787"
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
-      DATABASE_URL: ""
+      DATABASE_URL: "${DATABASE_URL:?DATABASE_URL must point to the PostgreSQL instance}"
       DB_PATH: /data/rkm.db
       DEV_METRICS_DB_PATH: /dev-data/rkm-dev.db
-      DEV_METRICS_DATABASE_URL: "${DEV_METRICS_DATABASE_URL:-}"
+      DEV_METRICS_DATABASE_URL: "${DEV_METRICS_DATABASE_URL:-${DATABASE_URL:?DATABASE_URL must point to the PostgreSQL instance}}"
       ACCESS_TTL: 15m
       SESSION_TTL: 8h
       SESSION_ABSOLUTE_TTL: 168h

@@ -866,7 +866,7 @@ const App = () => {
       view: view,
       setView: handleSetView,
       activeIT: activeIT,
-      activeUser: activeUser,
+      authenticatedUser: authenticatedUser,
       activeRole: activeRole,
       onLogout: logout,
     }),

@@ -5,11 +5,11 @@ import { Table2, UsersRound } from 'lucide-react';
 
 import { SIDEBAR_ITEMS, SIDEBAR_STATUS_LABEL } from './config';
 
-import { ROLES, mockUsers } from '../../features/auth';
+import { ROLES } from '../../features/auth';
 
 import { useLocalDevelopment } from '../../shared/dev/local-development';
 
-export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }) => {
+export const CleanSidebar = ({ view, setView, authenticatedUser, activeRole, onLogout }) => {
   const showDevGuides = useLocalDevelopment();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -26,8 +26,16 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
 
   const items = SIDEBAR_ITEMS.filter((it) => it.roles.includes(activeRole || ''));
 
-  const user = mockUsers.find((u) => u.id === activeUser) || mockUsers[0];
   const role = ROLES.find((r) => r.key === activeRole) || ROLES[0];
+  const userName = authenticatedUser?.name || 'Usuário';
+  const userRoleLabel = authenticatedUser?.roleLabel || role.label;
+  const userShort = userName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 
   const groupOrder = [
     'Visão geral',
@@ -227,7 +235,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
               'bg-gradient-to-br from-emerald-500 to-cyan-600 ' +
               'flex items-center justify-center text-xs font-bold',
           },
-          user.short,
+          userShort || 'US',
         ),
 
         React.createElement(
@@ -239,7 +247,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
             {
               className: 'text-xs font-medium text-slate-200 truncate',
             },
-            user.name,
+            userName,
           ),
 
           React.createElement(
@@ -247,7 +255,7 @@ export const CleanSidebar = ({ view, setView, activeUser, activeRole, onLogout }
             {
               className: 'text-xs text-slate-500 truncate',
             },
-            role.label,
+            userRoleLabel,
           ),
         ),
       ),

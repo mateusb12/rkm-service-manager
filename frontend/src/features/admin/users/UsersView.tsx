@@ -4,6 +4,8 @@ import {
   Check,
   ChevronDown,
   Ellipsis,
+  Eye,
+  EyeOff,
   Mail,
   Pencil,
   Plus,
@@ -34,14 +36,14 @@ type ManagedUser = {
   email: string;
   role: UserRole;
   status: UserStatus;
-  department: string;
   lastLogin: string;
   initials: string;
   color: string;
 };
 
-type UserInput = Pick<ManagedUser, 'name' | 'email' | 'role' | 'status' | 'department'> & {
+type UserInput = Pick<ManagedUser, 'name' | 'email' | 'role'> & {
   password: string;
+  confirmPassword: string;
 };
 type Page = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; userId: string };
 
@@ -74,12 +76,6 @@ const statusClasses: Record<UserStatus, string> = {
 function mapApiUser(user: ApiUser): ManagedUser {
   const role = user.role as UserRole;
   const status: UserStatus = user.active ? 'active' : 'suspended';
-  const departmentByRole: Record<UserRole, string> = {
-    admin: 'Gestão',
-    pcp: 'PCP',
-    mechanic: 'Oficina',
-    commercial: 'Comercial',
-  };
   const colorByRole: Record<UserRole, string> = {
     admin: 'from-violet-500 to-indigo-600',
     pcp: 'from-amber-500 to-orange-600',
@@ -95,7 +91,6 @@ function mapApiUser(user: ApiUser): ManagedUser {
     email: user.email,
     role: role in roleLabels ? role : 'mechanic',
     status,
-    department: departmentByRole[role] || '—',
     lastLogin: lastLoginLabel,
     initials: initialsFor(user.name),
     color: colorByRole[role] || 'from-slate-500 to-slate-600',
@@ -106,9 +101,8 @@ const emptyInput: UserInput = {
   name: '',
   email: '',
   role: 'mechanic',
-  status: 'active',
-  department: 'Oficina',
   password: '',
+  confirmPassword: '',
 };
 
 function initialsFor(name: string) {
@@ -160,8 +154,7 @@ export function UsersView() {
     const term = search.trim().toLocaleLowerCase('pt-BR');
     return users.filter((user) => {
       const matchesSearch =
-        !term ||
-        `${user.name} ${user.email} ${user.department}`.toLocaleLowerCase('pt-BR').includes(term);
+        !term || `${user.name} ${user.email}`.toLocaleLowerCase('pt-BR').includes(term);
       return (
         matchesSearch &&
         (statusFilter === 'all' || user.status === statusFilter) &&
@@ -211,7 +204,7 @@ export function UsersView() {
     }
   }
 
-  async function removeUser(userId: string) {
+  async function deactivateSelectedUser(userId: string) {
     setActionLoadingId(userId);
     try {
       const deactivated = mapApiUser(await deactivateUser(userId));
@@ -223,6 +216,14 @@ export function UsersView() {
     } finally {
       setActionLoadingId(null);
     }
+  }
+
+  async function handleUserAction(user: ManagedUser) {
+    if (user.status === 'suspended') {
+      await permanentlyDeleteUser(user.id);
+      return;
+    }
+    await deactivateSelectedUser(user.id);
   }
 
   async function permanentlyDeleteUser(userId: string) {
@@ -273,13 +274,6 @@ export function UsersView() {
         </button>
       </section>
 
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-300">
-          Dados do backend
-        </span>
-        <span>Nome, e-mail, perfil e status vêm do banco.</span>
-      </div>
-
       {loadError && (
         <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
           {loadError}
@@ -287,27 +281,37 @@ export function UsersView() {
       )}
 
       <section className="grid gap-3 sm:grid-cols-3">
-        <MetricCard
-          icon={<UsersRound size={18} />}
-          label="Total de usuários"
-          value={users.length}
-          detail="cadastros no sistema"
-          accent="text-blue-300"
-        />
-        <MetricCard
-          icon={<Check size={18} />}
-          label="Acessos ativos"
-          value={activeCount}
-          detail="podem entrar agora"
-          accent="text-emerald-300"
-        />
-        <MetricCard
-          icon={<Mail size={18} />}
-          label="Convites pendentes"
-          value={invitedCount}
-          detail={`${suspendedCount} acesso${suspendedCount === 1 ? '' : 's'} suspenso${suspendedCount === 1 ? '' : 's'}`}
-          accent="text-amber-300"
-        />
+        {loading ? (
+          <>
+            <MetricSkeleton />
+            <MetricSkeleton />
+            <MetricSkeleton />
+          </>
+        ) : (
+          <>
+            <MetricCard
+              icon={<UsersRound size={18} />}
+              label="Total de usuários"
+              value={users.length}
+              detail="cadastros no sistema"
+              accent="text-blue-300"
+            />
+            <MetricCard
+              icon={<Check size={18} />}
+              label="Acessos ativos"
+              value={activeCount}
+              detail="podem entrar agora"
+              accent="text-emerald-300"
+            />
+            <MetricCard
+              icon={<Mail size={18} />}
+              label="Convites pendentes"
+              value={invitedCount}
+              detail={`${suspendedCount} acesso${suspendedCount === 1 ? '' : 's'} suspenso${suspendedCount === 1 ? '' : 's'}`}
+              accent="text-amber-300"
+            />
+          </>
+        )}
       </section>
 
       {notice && (
@@ -327,9 +331,13 @@ export function UsersView() {
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <h2 className="font-semibold text-slate-100">Todos os usuários</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                {visibleUsers.length} de {users.length} usuários exibidos
-              </p>
+              {loading ? (
+                <SkeletonBlock className="mt-2 h-4 w-36" />
+              ) : (
+                <p className="mt-1 text-sm text-slate-500">
+                  {visibleUsers.length} de {users.length} usuários exibidos
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <label className="relative min-w-0 sm:w-72">
@@ -343,7 +351,7 @@ export function UsersView() {
                   type="search"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Nome, e-mail ou setor"
+                  placeholder="Nome ou e-mail"
                 />
               </label>
               <FilterSelect
@@ -373,7 +381,7 @@ export function UsersView() {
         </div>
 
         {loading ? (
-          <div className="px-5 py-14 text-center text-sm text-slate-500">Carregando usuários…</div>
+          <UsersTableSkeleton />
         ) : visibleUsers.length === 0 ? (
           <div className="px-5 py-14 text-center">
             <UserRound className="mx-auto text-slate-600" size={32} />
@@ -400,7 +408,6 @@ export function UsersView() {
                 <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
                   <th className="px-5 py-3.5 font-medium">Usuário</th>
                   <th className="px-5 py-3.5 font-medium">Perfil</th>
-                  <th className="px-5 py-3.5 font-medium">Setor</th>
                   <th className="px-5 py-3.5 font-medium">Status</th>
                   <th className="w-px whitespace-nowrap px-5 py-3.5 font-medium">Último acesso</th>
                   <th className="w-px whitespace-nowrap px-5 py-3.5 text-right font-medium">
@@ -438,7 +445,6 @@ export function UsersView() {
                           {roleLabels[user.role]}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-400">{user.department}</td>
                       <td className="px-5 py-4">
                         <span className="inline-flex items-center gap-2 text-xs text-slate-300">
                           <span
@@ -456,7 +462,9 @@ export function UsersView() {
                       >
                         {pendingDelete === user.id ? (
                           <div className="flex items-center justify-end gap-2">
-                            <span className="text-xs text-rose-300">Remover?</span>
+                            <span className="text-xs text-rose-300">
+                              {user.status === 'suspended' ? 'Excluir?' : 'Desativar?'}
+                            </span>
                             <button
                               type="button"
                               className="rounded-lg border border-rkmborder px-2.5 py-1.5 text-xs text-slate-300 hover:bg-rkmcard2"
@@ -467,7 +475,7 @@ export function UsersView() {
                             <button
                               type="button"
                               className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300 hover:bg-rose-500/20"
-                              onClick={() => removeUser(user.id)}
+                              onClick={() => void handleUserAction(user)}
                             >
                               Confirmar
                             </button>
@@ -486,8 +494,12 @@ export function UsersView() {
                             <button
                               type="button"
                               className="rounded-lg p-2 text-slate-500 hover:bg-rose-500/10 hover:text-rose-300 disabled:cursor-wait disabled:opacity-50"
-                              aria-label={`Desativar ${user.name}`}
-                              title="Desativar usuário"
+                              aria-label={`${user.status === 'suspended' ? 'Excluir permanentemente' : 'Desativar'} ${user.name}`}
+                              title={
+                                user.status === 'suspended'
+                                  ? 'Excluir permanentemente'
+                                  : 'Desativar usuário'
+                              }
                               disabled={actionLoadingId === user.id}
                               onClick={() => setPendingDelete(user.id)}
                             >
@@ -524,7 +536,9 @@ export function UsersView() {
                                   <button
                                     type="button"
                                     className="block w-full rounded-md px-3 py-2 text-left text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
-                                    disabled={actionLoadingId === user.id}
+                                    disabled={
+                                      user.status !== 'suspended' || actionLoadingId === user.id
+                                    }
                                     onClick={() => {
                                       setOpenMenuId(null);
                                       if (window.confirm(`Excluir ${user.name} permanentemente?`)) {
@@ -543,12 +557,12 @@ export function UsersView() {
                     </tr>
                     {expandedUserId === user.id && (
                       <tr>
-                        <td colSpan={6} className="px-5 pb-4">
+                        <td colSpan={5} className="px-5 pb-4">
                           <UserDetails
                             user={user}
                             onCollapse={() => setExpandedUserId(null)}
                             onEdit={() => openEdit(user.id)}
-                            onDeactivate={() => removeUser(user.id)}
+                            onDeactivate={() => deactivateSelectedUser(user.id)}
                             onDelete={() => permanentlyDeleteUser(user.id)}
                             loading={actionLoadingId === user.id}
                           />
@@ -566,6 +580,66 @@ export function UsersView() {
         </footer>
       </section>
     </main>
+  );
+}
+
+function SkeletonBlock({ className }: { className: string }) {
+  return (
+    <span
+      className={`block animate-pulse rounded bg-slate-700/60 ${className}`}
+      aria-hidden="true"
+    />
+  );
+}
+
+function MetricSkeleton() {
+  return (
+    <div className="rkm-card flex items-center gap-3 p-4">
+      <SkeletonBlock className="h-10 w-10 rounded-lg" />
+      <div className="flex-1 space-y-2">
+        <SkeletonBlock className="h-3 w-28" />
+        <div className="flex items-center gap-2">
+          <SkeletonBlock className="h-6 w-6" />
+          <SkeletonBlock className="h-3 w-32" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UsersTableSkeleton() {
+  return (
+    <div className="overflow-x-auto" aria-label="Carregando usuários" aria-busy="true">
+      <table className="w-full min-w-[850px] text-sm">
+        <tbody>
+          {Array.from({ length: 5 }, (_, index) => (
+            <tr key={index} className="border-t border-rkmborder">
+              <td className="px-5 py-4">
+                <div className="flex items-center gap-3">
+                  <SkeletonBlock className="h-9 w-9 shrink-0 rounded-full" />
+                  <div className="space-y-2">
+                    <SkeletonBlock className="h-4 w-28" />
+                    <SkeletonBlock className="h-3 w-36" />
+                  </div>
+                </div>
+              </td>
+              <td className="px-5 py-4">
+                <SkeletonBlock className="h-6 w-20 rounded-full" />
+              </td>
+              <td className="px-5 py-4">
+                <SkeletonBlock className="h-4 w-14" />
+              </td>
+              <td className="w-px whitespace-nowrap px-5 py-4">
+                <SkeletonBlock className="h-4 w-32" />
+              </td>
+              <td className="w-px whitespace-nowrap px-5 py-4">
+                <SkeletonBlock className="ml-auto h-5 w-20" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -640,13 +714,14 @@ function UserForm({
           name: user.name,
           email: user.email,
           role: user.role,
-          status: user.status,
-          department: user.department,
           password: '',
+          confirmPassword: '',
         }
       : emptyInput,
   );
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const editing = Boolean(user);
   const change = (key: keyof UserInput, value: string) => {
     setInput((current) => ({ ...current, [key]: value }) as UserInput);
@@ -654,12 +729,16 @@ function UserForm({
   };
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!input.name.trim() || !input.email.trim() || !input.department.trim()) {
-      setError('Preencha nome, e-mail e setor para continuar.');
+    if (!input.name.trim() || !input.email.trim()) {
+      setError('Preencha nome e e-mail para continuar.');
       return;
     }
     if (!editing && input.password.length < 8) {
       setError('Informe uma senha com pelo menos 8 caracteres.');
+      return;
+    }
+    if (!editing && input.password !== input.confirmPassword) {
+      setError('As senhas não conferem.');
       return;
     }
     try {
@@ -667,7 +746,6 @@ function UserForm({
         ...input,
         name: input.name.trim(),
         email: input.email.trim(),
-        department: input.department.trim(),
       });
     } catch (saveError) {
       setError(
@@ -746,15 +824,50 @@ function UserForm({
               />
             </FormField>
             {!editing && (
-              <FormField label="Senha inicial" required>
-                <input
-                  className="rkm-input"
-                  type="password"
-                  value={input.password}
-                  onChange={(event) => change('password', event.target.value)}
-                  placeholder="Mínimo de 8 caracteres"
-                />
-              </FormField>
+              <>
+                <FormField label="Senha inicial" required>
+                  <div className="relative">
+                    <input
+                      className="rkm-input pr-10"
+                      type={showPassword ? 'text' : 'password'}
+                      value={input.password}
+                      onChange={(event) => change('password', event.target.value)}
+                      placeholder="Mínimo de 8 caracteres"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-200"
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      onClick={() => setShowPassword((visible) => !visible)}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </FormField>
+                <FormField label="Confirmar senha" required>
+                  <div className="relative">
+                    <input
+                      className="rkm-input pr-10"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={input.confirmPassword}
+                      onChange={(event) => change('confirmPassword', event.target.value)}
+                      placeholder="Repita a senha"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-200"
+                      aria-label={
+                        showConfirmPassword
+                          ? 'Ocultar confirmação de senha'
+                          : 'Mostrar confirmação de senha'
+                      }
+                      onClick={() => setShowConfirmPassword((visible) => !visible)}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </FormField>
+              </>
             )}
             <FormField label="Perfil de acesso" required>
               <select
@@ -763,27 +876,6 @@ function UserForm({
                 onChange={(event) => change('role', event.target.value)}
               >
                 {Object.entries(roleLabels).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-            <FormField label="Setor" required>
-              <input
-                className="rkm-input"
-                value={input.department}
-                onChange={(event) => change('department', event.target.value)}
-                placeholder="Ex.: Oficina"
-              />
-            </FormField>
-            <FormField label="Status da conta">
-              <select
-                className="rkm-input"
-                value={input.status}
-                onChange={(event) => change('status', event.target.value)}
-              >
-                {Object.entries(statusLabels).map(([key, label]) => (
                   <option key={key} value={key}>
                     {label}
                   </option>
@@ -847,7 +939,6 @@ function UserDetails({
       </div>
       <dl className="grid gap-4 py-5 sm:grid-cols-2">
         <DetailItem label="Perfil" value={roleLabels[user.role]} />
-        <DetailItem label="Setor" value={user.department} />
         <DetailItem label="Status" value={statusLabels[user.status]} />
         <DetailItem label="Último acesso" value={user.lastLogin} />
       </dl>
@@ -865,16 +956,18 @@ function UserDetails({
             <Trash2 size={16} /> Desativar
           </button>
         )}
-        <button
-          type="button"
-          className="btn border border-red-500/40 text-red-300 hover:bg-red-500/10"
-          onClick={() => {
-            if (window.confirm(`Excluir ${user.name} permanentemente?`)) onDelete();
-          }}
-          disabled={loading}
-        >
-          Excluir permanentemente
-        </button>
+        {user.status === 'suspended' && (
+          <button
+            type="button"
+            className="btn border border-red-500/40 text-red-300 hover:bg-red-500/10"
+            onClick={() => {
+              if (window.confirm(`Excluir ${user.name} permanentemente?`)) onDelete();
+            }}
+            disabled={loading}
+          >
+            Excluir permanentemente
+          </button>
+        )}
       </div>
     </div>
   );
@@ -900,8 +993,10 @@ function FormField({
 }) {
   return (
     <label className="flex flex-col gap-2 text-sm font-medium text-slate-200">
-      {label}
-      {required && <span className="ml-1 text-rose-400">*</span>}
+      <span>
+        {label}
+        {required && <span className="ml-1 text-rose-400">*</span>}
+      </span>
       {children}
     </label>
   );

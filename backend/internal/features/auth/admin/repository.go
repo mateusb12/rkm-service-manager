@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	userNotFound   = errors.New("user not found")
-	userEmailTaken = errors.New("user email already exists")
+	userNotFound           = errors.New("user not found")
+	userEmailTaken         = errors.New("user email already exists")
+	activeUserCannotDelete = errors.New("active user cannot be hard deleted")
 )
 
 type userRecord struct {
@@ -128,6 +129,9 @@ func (repository *userRepository) hardDelete(id string) error {
 				return userNotFound
 			}
 			return queryError
+		}
+		if user.Active {
+			return activeUserCannotDelete
 		}
 
 		if deleteSessionsError := transaction.

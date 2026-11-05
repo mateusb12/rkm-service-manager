@@ -229,6 +229,8 @@ func writeUserRepositoryError(writer http.ResponseWriter, repositoryError error,
 		httpx.WriteJSON(writer, http.StatusNotFound, map[string]string{"error": "user_not_found"})
 	case userEmailTaken:
 		httpx.WriteJSON(writer, http.StatusConflict, map[string]string{"error": "email_already_exists"})
+	case activeUserCannotDelete:
+		httpx.WriteJSON(writer, http.StatusConflict, map[string]string{"error": "active_user_cannot_be_deleted"})
 	default:
 		httpx.WriteJSON(writer, http.StatusInternalServerError, map[string]string{"error": fallback})
 	}

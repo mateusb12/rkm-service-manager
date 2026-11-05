@@ -6,8 +6,8 @@ services:
       - "127.0.0.1:15432:15432"
     environment:
       SSH_AUTH_SOCK: /run/ssh-agent
-      RKM_PG_PRIVATE_IP: ${RKM_PG_PRIVATE_IP:-127.0.0.1}
-      RKM_PG_PRIVATE_PORT: ${RKM_PG_PRIVATE_PORT:-15432}
+      RKM_PG_PRIVATE_IP: 127.0.0.1
+      RKM_PG_PRIVATE_PORT: 15432
     volumes:
       - type: bind
         source: ${HOME}/.ssh
@@ -33,6 +33,19 @@ services:
         condition: service_healthy
     environment:
       APP_ENV: development
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must point to the Hostinger PostgreSQL instance}
+      DEV_METRICS_DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must point to the Hostinger PostgreSQL instance}
+      DB_PATH: ""
+    volumes: !reset []
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        export DATABASE_URL=$$(printf '%s' "$$DATABASE_URL" | sed -E
+        's#(://[^@]+@)[^:/]+(:[0-9]+)?/#\1postgres-tunnel:15432/#');
+        export DEV_METRICS_DATABASE_URL=$$(printf '%s' "$$DEV_METRICS_DATABASE_URL" | sed -E
+        's#(://[^@]+@)[^:/]+(:[0-9]+)?/#\1postgres-tunnel:15432/#');
+        exec ./rkm-service-manager-api
 
   frontend:
     volumes:

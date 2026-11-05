@@ -371,6 +371,18 @@ func TestAdminUserLifecycle(test *testing.T) {
 		test.Fatalf("update user expected 200, got %d", updateRecorder.Code)
 	}
 
+	activeDeleteRequest := httptest.NewRequest(
+		http.MethodDelete,
+		"/api/admin/users/"+createdUser.ID+"/permanent",
+		nil,
+	)
+	activeDeleteRequest.Header.Set("Authorization", "Bearer "+adminAccess)
+	activeDeleteRecorder := httptest.NewRecorder()
+	mux.ServeHTTP(activeDeleteRecorder, activeDeleteRequest)
+	if activeDeleteRecorder.Code != http.StatusConflict {
+		test.Fatalf("active user hard delete expected 409, got %d", activeDeleteRecorder.Code)
+	}
+
 	deactivateRequest := httptest.NewRequest(http.MethodDelete, "/api/admin/users/"+createdUser.ID, nil)
 	deactivateRequest.Header.Set("Authorization", "Bearer "+adminAccess)
 	deactivateRecorder := httptest.NewRecorder()
