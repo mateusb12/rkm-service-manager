@@ -5,4 +5,6 @@ const (
 	ClientsManage = "clients.manage"
 	DevMetrics    = "dev.metrics"
 	UsersManage   = "users.manage"
+	FilesView     = "files.view"
+	FilesManage   = "files.manage"
 )

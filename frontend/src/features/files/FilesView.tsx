@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Archive,
   CalendarDays,
@@ -9,14 +9,22 @@ import {
   FileSpreadsheet,
   FileText,
   FolderOpen,
-  MoreHorizontal,
+  Trash2,
   Upload,
   UsersRound,
 } from 'lucide-react';
 
 import { CrudTable } from '../../shared/ui/CrudTable';
 import { formatLongDateTimeBR } from '../../utils/formatLongDateTimeBR';
-import { listFiles, type MockFile, type FileKind } from './service';
+import {
+  deleteFile,
+  fetchFile,
+  getStorageHealth,
+  listFiles,
+  uploadFile,
+  type FileRecord,
+  type FileKind,
+} from './service';
 
 const KIND_OPTIONS = ['Todos', 'PDF', 'Imagem', 'Planilha', 'Documento'];
 
@@ -34,7 +42,51 @@ function FileIcon({ kind, size = 18 }: { kind: FileKind; size?: number }) {
   return <File size={size} />;
 }
 
-function FilePreview({ file }: { file: MockFile }) {
+function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void }) {
+  const [previewUrl, setPreviewUrl] = useState('');
+
+  useEffect(() => {
+    if (file.kind !== 'Imagem') {
+      setPreviewUrl('');
+      return undefined;
+    }
+
+    let active = true;
+    let objectUrl = '';
+
+    void fetchFile(file.key)
+      .then((blob) => {
+        if (!active) return;
+        objectUrl = URL.createObjectURL(blob);
+        setPreviewUrl(objectUrl);
+      })
+      .catch(() => {
+        if (active) setPreviewUrl('');
+      });
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [file.key, file.kind]);
+
+  if (file.kind === 'Imagem' && previewUrl) {
+    return (
+      <button
+        type="button"
+        title={`Abrir ${file.name}`}
+        onClick={onClick}
+        className="relative h-14 w-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-900 transition hover:border-blue-300/70 hover:ring-2 hover:ring-blue-400/20"
+      >
+        <img
+          src={previewUrl}
+          alt={`Preview de ${file.name}`}
+          className="h-full w-full object-cover"
+        />
+      </button>
+    );
+  }
+
   return (
     <div
       className={`relative flex h-14 w-[4.5rem] shrink-0 flex-col items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br ${file.color}`}
@@ -49,11 +101,16 @@ function FilePreview({ file }: { file: MockFile }) {
 }
 
 export function FilesView() {
-  const [files, setFiles] = useState<MockFile[]>([]);
+  const [files, setFiles] = useState<FileRecord[]>([]);
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState('Todos');
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
+  const [storageHealth, setStorageHealth] = useState<'loading' | 'healthy' | 'unhealthy'>(
+    'loading',
+  );
+  const [uploading, setUploading] = useState(false);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   async function loadFiles() {
     setLoadingFiles(true);
@@ -69,7 +126,64 @@ export function FilesView() {
 
   useEffect(() => {
     void loadFiles();
+    void getStorageHealth()
+      .then((health) => setStorageHealth(health.status))
+      .catch(() => setStorageHealth('unhealthy'));
   }, []);
+
+  const summary = useMemo(() => {
+    const documents = files.filter((file) => file.kind !== 'Imagem').length;
+    const images = files.filter((file) => file.kind === 'Imagem').length;
+    const collaborators = new Set(files.map((file) => file.uploadedBy)).size;
+    return { documents, images, collaborators };
+  }, [files]);
+
+  async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setUploading(true);
+    setLoadErrorMessage('');
+    try {
+      await uploadFile(file);
+      await loadFiles();
+    } catch {
+      setLoadErrorMessage('Não foi possível enviar o arquivo.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleFileAction(file: FileRecord, download: boolean) {
+    try {
+      const blob = await fetchFile(file.key, download);
+      const objectUrl = URL.createObjectURL(blob);
+      if (download) {
+        const anchor = document.createElement('a');
+        anchor.href = objectUrl;
+        anchor.download = file.name;
+        anchor.click();
+      } else {
+        window.open(objectUrl, '_blank', 'noopener,noreferrer');
+      }
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch {
+      setLoadErrorMessage('Não foi possível acessar o arquivo.');
+    }
+  }
+
+  async function handleDelete(file: FileRecord) {
+    if (!window.confirm(`Excluir o arquivo "${file.name}"?`)) return;
+    try {
+      await deleteFile(file.key);
+      setFiles((currentFiles) =>
+        currentFiles.filter((currentFile) => currentFile.key !== file.key),
+      );
+    } catch {
+      setLoadErrorMessage('Não foi possível excluir o arquivo.');
+    }
+  }
 
   const filteredFiles = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -96,31 +210,44 @@ export function FilesView() {
           <p className="mt-1 text-sm text-slate-400">
             Documentos, imagens e evidências da operação em um só lugar.
           </p>
+          <StorageHealthBadge status={storageHealth} />
         </div>
 
         <button
           type="button"
-          onClick={() => window.alert('Upload demonstrativo: selecione um arquivo para continuar.')}
+          onClick={() => uploadInputRef.current?.click()}
+          disabled={uploading}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
         >
           <Upload size={17} />
-          Enviar arquivo
+          {uploading ? 'Enviando...' : 'Enviar arquivo'}
         </button>
+        <input ref={uploadInputRef} type="file" className="hidden" onChange={handleUpload} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           icon={<Archive size={18} />}
           label="Total de arquivos"
-          value="128"
+          value={String(files.length)}
           accent="blue"
         />
-        <SummaryCard icon={<FileText size={18} />} label="Documentos" value="64" accent="violet" />
-        <SummaryCard icon={<FileImage size={18} />} label="Imagens" value="49" accent="cyan" />
+        <SummaryCard
+          icon={<FileText size={18} />}
+          label="Documentos"
+          value={String(summary.documents)}
+          accent="violet"
+        />
+        <SummaryCard
+          icon={<FileImage size={18} />}
+          label="Imagens"
+          value={String(summary.images)}
+          accent="cyan"
+        />
         <SummaryCard
           icon={<UsersRound size={18} />}
           label="Colaboradores"
-          value="8"
+          value={String(summary.collaborators)}
           accent="emerald"
         />
       </div>
@@ -183,12 +310,47 @@ export function FilesView() {
             </thead>
             <tbody className="divide-y divide-rkmborder/70">
               {filteredFiles.map((file) => (
-                <FileRow key={file.id} file={file} />
+                <FileRow
+                  key={file.key}
+                  file={file}
+                  onPreview={() => void handleFileAction(file, false)}
+                  onDownload={() => void handleFileAction(file, true)}
+                  onDelete={() => void handleDelete(file)}
+                />
               ))}
             </tbody>
           </table>
         </div>
       </CrudTable>
+    </div>
+  );
+}
+
+function StorageHealthBadge({ status }: { status: 'loading' | 'healthy' | 'unhealthy' }) {
+  const content = {
+    loading: {
+      label: 'Verificando Garage...',
+      classes: 'border-slate-400/30 bg-slate-400/10 text-slate-300',
+      dot: 'bg-slate-400',
+    },
+    healthy: {
+      label: 'Garage conectado',
+      classes: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
+      dot: 'bg-emerald-400',
+    },
+    unhealthy: {
+      label: 'Garage indisponível',
+      classes: 'border-rose-400/30 bg-rose-400/10 text-rose-300',
+      dot: 'bg-rose-400',
+    },
+  }[status];
+
+  return (
+    <div
+      className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${content.classes}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${content.dot}`} />
+      {content.label}
     </div>
   );
 }
@@ -219,12 +381,22 @@ function SummaryCard({
   );
 }
 
-function FileRow({ file }: { file: MockFile }) {
+function FileRow({
+  file,
+  onPreview,
+  onDownload,
+  onDelete,
+}: {
+  file: FileRecord;
+  onPreview: () => void;
+  onDownload: () => void;
+  onDelete: () => void;
+}) {
   return (
     <tr className="group transition hover:bg-white/[0.025]">
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <FilePreview file={file} />
+          <FilePreview file={file} onClick={onPreview} />
           <div className="min-w-0">
             <div className="truncate text-sm font-medium text-slate-200">{file.name}</div>
             <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
@@ -250,18 +422,27 @@ function FileRow({ file }: { file: MockFile }) {
       </td>
       <td className="px-4 py-3 text-sm text-slate-400">{file.size}</td>
       <td className="px-4 py-3">
-        <FileActions />
+        <FileActions onPreview={onPreview} onDownload={onDownload} onDelete={onDelete} />
       </td>
     </tr>
   );
 }
 
-function FileActions() {
+function FileActions({
+  onPreview,
+  onDownload,
+  onDelete,
+}: {
+  onPreview: () => void;
+  onDownload: () => void;
+  onDelete: () => void;
+}) {
   return (
     <div className="flex items-center justify-end gap-1">
       <button
         type="button"
         title="Visualizar"
+        onClick={onPreview}
         className="rounded-md p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300"
       >
         <Eye size={16} />
@@ -269,16 +450,18 @@ function FileActions() {
       <button
         type="button"
         title="Baixar"
+        onClick={onDownload}
         className="rounded-md p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300"
       >
         <Download size={16} />
       </button>
       <button
         type="button"
-        title="Mais opções"
+        title="Excluir"
+        onClick={onDelete}
         className="rounded-md p-2 text-slate-500 hover:bg-white/5 hover:text-slate-300"
       >
-        <MoreHorizontal size={16} />
+        <Trash2 size={16} />
       </button>
     </div>
   );

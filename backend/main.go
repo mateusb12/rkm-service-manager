@@ -8,6 +8,7 @@ import (
 	"rkm-service-manager/backend/internal/features/auth"
 	"rkm-service-manager/backend/internal/features/clients"
 	"rkm-service-manager/backend/internal/features/devmetrics"
+	"rkm-service-manager/backend/internal/features/files"
 	"rkm-service-manager/backend/internal/shared/config"
 	"rkm-service-manager/backend/internal/shared/database"
 	"rkm-service-manager/backend/internal/shared/httpx"
@@ -31,6 +32,11 @@ func newHandler(
 	if clientsInitError != nil {
 		return nil, clientsInitError
 	}
+
+	filesModule := files.New(
+		files.NewGarageObjectStorage(files.GarageConfigFromEnv()),
+		authModule,
+	)
 
 	var devMetricsModule *devmetrics.Module
 
@@ -56,6 +62,7 @@ func newHandler(
 
 	authModule.Register(mux)
 	clientsModule.Register(mux)
+	filesModule.Register(mux)
 
 	if devMetricsModule != nil {
 		devMetricsModule.Register(mux)

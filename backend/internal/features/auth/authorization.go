@@ -5,6 +5,15 @@ import (
 	"rkm-service-manager/backend/internal/shared/httpx"
 )
 
+func (module *Module) CurrentUser(request *http.Request) (string, string, bool) {
+	user, authenticated := module.authenticatedUser(request)
+	if !authenticated {
+		return "", "", false
+	}
+
+	return user.ID, user.Name, true
+}
+
 func (module *Module) RequirePermission(
 	permission string,
 	next http.HandlerFunc,
