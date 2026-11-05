@@ -88,15 +88,18 @@ function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void
   }
 
   return (
-    <div
-      className={`relative flex h-14 w-[4.5rem] shrink-0 flex-col items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br ${file.color}`}
+    <button
+      type="button"
+      title={`Abrir ${file.name}`}
+      onClick={onClick}
+      className={`relative flex h-14 w-[4.5rem] shrink-0 flex-col items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br ${file.color} transition hover:border-blue-300/70 hover:ring-2 hover:ring-blue-400/20`}
     >
       <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(135deg,transparent_25%,currentColor_25%,currentColor_26%,transparent_26%,transparent_55%,currentColor_55%,currentColor_56%,transparent_56%)]" />
       <FileIcon kind={file.kind} />
       <span className="relative mt-0.5 text-[9px] font-bold leading-tight tracking-wide text-center whitespace-pre-line">
         {file.preview}
       </span>
-    </div>
+    </button>
   );
 }
 
