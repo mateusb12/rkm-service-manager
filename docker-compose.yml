@@ -21,6 +21,12 @@ services:
       SESSION_TTL: 8h
       SESSION_ABSOLUTE_TTL: 168h
       COOKIE_SECURE: "${COOKIE_SECURE:-true}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8787/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     volumes:
       - rkm_data:/data
       - rkm_dev_data:/dev-data
