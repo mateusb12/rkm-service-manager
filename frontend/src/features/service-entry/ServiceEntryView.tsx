@@ -967,6 +967,7 @@ export const ServiceEntryView = () => {
                   value={form.disassemblyOperator}
                   onSelect={(user) => set('disassemblyOperator', user.name)}
                   onClear={() => set('disassemblyOperator', '')}
+                  roleFilter="mechanic"
                 />
               </Field>
               <Field label="Início">

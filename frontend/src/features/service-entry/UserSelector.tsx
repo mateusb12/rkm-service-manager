@@ -7,9 +7,10 @@ type Props = {
   value: string;
   onSelect: (user: ActiveUser) => void;
   onClear: () => void;
+  roleFilter?: ActiveUser['role'];
 };
 
-export function UserSelector({ value, onSelect, onClear }: Props) {
+export function UserSelector({ value, onSelect, onClear, roleFilter }: Props) {
   const listboxId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const [users, setUsers] = useState<ActiveUser[]>([]);
@@ -54,10 +55,12 @@ export function UserSelector({ value, onSelect, onClear }: Props) {
   }, []);
 
   const normalizedSearch = searchTerm.trim().toLocaleLowerCase('pt-BR');
-  const visibleUsers = users.filter((user) =>
-    `${user.name} ${user.email} ${user.roleLabel}`
-      .toLocaleLowerCase('pt-BR')
-      .includes(normalizedSearch),
+  const visibleUsers = users.filter(
+    (user) =>
+      (!roleFilter || user.role === roleFilter) &&
+      `${user.name} ${user.email} ${user.roleLabel}`
+        .toLocaleLowerCase('pt-BR')
+        .includes(normalizedSearch),
   );
 
   return (
@@ -95,7 +98,7 @@ export function UserSelector({ value, onSelect, onClear }: Props) {
         <div
           id={listboxId}
           role="listbox"
-          className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-rkmborder bg-rkmcard shadow-xl"
+          className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-rkmborder bg-[var(--zenit-color-page)] shadow-xl"
         >
           {loading && <div className="px-3 py-3 text-xs text-slate-500">Carregando usuários…</div>}
           {error && <div className="px-3 py-3 text-xs text-rose-300">{error}</div>}
