@@ -4,6 +4,6 @@
   "scripts": {
     "deploy": "bash scripts/deploy.sh",
     "db:pull-prod": "bash scripts/fly-project.sh ssh sftp get /data/rkm.db /tmp/rkm-service-manager-prod.sqlite --app rkm-service-manager",
-    "db:restore-prod": "bash scripts/fly-project.sh ssh sftp put backend/rkm.db /data/rkm-import.sqlite --app rkm-service-manager && bash scripts/fly-project.sh apps restart rkm-service-manager"
+    "db:restore-prod": "bash scripts/fly-project.sh ssh sftp put deprecated/golang/rkm.db /data/rkm-import.sqlite --app rkm-service-manager && bash scripts/fly-project.sh apps restart rkm-service-manager"
   }
 }

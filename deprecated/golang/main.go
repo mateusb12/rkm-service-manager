@@ -104,7 +104,7 @@ func main() {
 				database.OpenPath(
 					config.Env(
 						"DEV_METRICS_DB_PATH",
-						"backend/rkm-dev.db",
+						"rkm-dev.db",
 					),
 				)
 		}

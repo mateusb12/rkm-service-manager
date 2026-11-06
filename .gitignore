@@ -4,6 +4,9 @@ frontend/dist/
 backend/*.db
 backend/.env
 backend/tmp/
+/deprecated/golang/*.db
+/deprecated/golang/.env
+/deprecated/golang/tmp/
 .env.deploy.local
 .idea/
 /codebase.md

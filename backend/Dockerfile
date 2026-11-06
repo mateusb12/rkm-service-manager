@@ -1,25 +1,14 @@
-FROM node:22-alpine AS frontend
+FROM python:3.12-slim
 
-WORKDIR /frontend
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-ARG VITE_COMMIT_SHA=unknown
-RUN VITE_COMMIT_SHA="$VITE_COMMIT_SHA" npm run build
-
-FROM golang:1.25-alpine AS build
-
-WORKDIR /src
-COPY backend/go.mod backend/go.sum ./
-RUN go mod download
-COPY backend/ ./
-RUN go build -trimpath -ldflags="-s -w" -o /out/rkm-service-manager-api .
-
-FROM alpine:3.22
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
-COPY --from=build /out/rkm-service-manager-api ./rkm-service-manager-api
-COPY --from=frontend /frontend/dist ./public
+
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev
+
+COPY backend/ ./
 
 EXPOSE 8787
-CMD ["./rkm-service-manager-api"]
+
+CMD ["uv", "run", "--no-sync", "flask", "--app", "app:app", "run", "--host=0.0.0.0", "--port=8787"]

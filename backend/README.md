@@ -1,20 +1,36 @@
-# Backend
+# RKM Service Manager — Python backend
 
-API Go da autenticação do RKM Service Manager. Em desenvolvimento, o primeiro start cria o SQLite e faz o seed idempotente dos quatro usuários demonstrativos.
+Backend Flask inicial para a migração incremental do serviço Go.
+
+## Desenvolvimento
 
 ```bash
-go run .
+uv sync
+uv run pytest
+uv run flask --app app:app run --debug --port 8788
+uv run flask --app app:app auth-init
 ```
 
-Variáveis principais estão em [.env.example](.env.example). O backend usa `8787` por padrão.
+Endpoints iniciais:
 
-## Arquitetura
+- `GET /health`
+- `GET /docs/`
+- `GET /openapi.json`
 
-- `main.go`: inicialização, roteamento e servidor HTTP.
-- `internal/features/auth`: autenticação, usuários, sessões, cargos e permissões.
-- `internal/shared/config`: configuração por variáveis de ambiente.
-- `internal/shared/database`: abertura da conexão SQLite.
-- `internal/shared/httpx`: respostas HTTP, CORS e arquivos estáticos.
+O middleware HTTP adiciona o cabeçalho `X-Request-ID`, registra duração/status das requisições e converte erros para uma resposta JSON consistente. Configure origens CORS separadas por vírgula em `CORS_ORIGINS`.
 
-Os endpoints permanecem em `/api/auth/*`. O SQLite e seus dados
-continuam no mesmo caminho configurado por `DB_PATH`.
+## Migração do auth
+
+O módulo Python reutiliza as tabelas `users` e `sessions` do backend Go. Em produção, configure `DATABASE_URL` para o PostgreSQL; o override do Docker pode apontar essa URL para o túnel SSH. SQLite fica reservado para desenvolvimento local e testes.
+
+O contrato migrado inclui login, refresh com rotação, logout, usuário atual, usuários ativos, credenciais de desenvolvimento e administração de usuários.
+
+O schema e os usuários iniciais são preparados explicitamente pelo comando `auth-init`; importar a aplicação não cria banco nem executa seed.
+
+Estrutura do módulo:
+
+- `features/auth/model.py`: modelos ORM, papéis e serialização;
+- `features/auth/schema.py`: schemas, normalização e validação dos payloads;
+- `features/auth/repository.py`: persistência ORM e primitivas de segurança;
+- `features/auth/controller.py`: controllers Flask e autorização.
+
