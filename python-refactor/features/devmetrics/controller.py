@@ -9,8 +9,8 @@ try:
     from ..auth.controller import require_permission
     from ..auth.repository import session
 except ImportError:
-    from auth.controller import require_permission
-    from auth.repository import session
+    from features.auth.controller import require_permission
+    from features.auth.repository import session
 
 from .model import serialize_metric
 from .repository import (

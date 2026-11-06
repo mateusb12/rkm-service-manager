@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy import select
 
 from app import app, create_app
-from auth.model import AuthSession, ROLE_LABELS, ROLE_PERMISSIONS, User
-from auth.repository import auth_database, password_hash, session, verify_password
+from features.auth.model import AuthSession, ROLE_LABELS, ROLE_PERMISSIONS, User
+from features.auth.repository import auth_database, password_hash, session, verify_password
 
 
 @pytest.fixture

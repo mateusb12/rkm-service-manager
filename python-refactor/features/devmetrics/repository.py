@@ -9,7 +9,7 @@ from sqlalchemy import select
 try:
     from ..auth.repository import now, session
 except ImportError:
-    from auth.repository import now, session
+    from features.auth.repository import now, session
 
 from .model import FeatureMetric
 

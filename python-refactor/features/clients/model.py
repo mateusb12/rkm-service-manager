@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 try:
     from ..auth.model import Base
 except ImportError:
-    from auth.model import Base
+    from ..auth.model import Base
 
 
 class Client(Base):

@@ -14,8 +14,8 @@ try:
     from ..auth.controller import require_permission
     from ..auth.repository import authenticate, session
 except ImportError:
-    from auth.controller import require_permission
-    from auth.repository import authenticate, session
+    from features.auth.controller import require_permission
+    from features.auth.repository import authenticate, session
 
 from .schema import FileResponseSchema, FileUploadSchema, StorageHealthSchema
 from .model import File

@@ -1,6 +1,6 @@
 import pytest
 
-from auth.schema import CreateUserSchema, LoginSchema, SchemaError, UpdateUserSchema
+from features.auth.schema import CreateUserSchema, LoginSchema, SchemaError, UpdateUserSchema
 
 
 def test_schema_contract(subtests):

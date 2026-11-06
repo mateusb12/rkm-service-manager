@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 try:
     from ..auth.repository import session
 except ImportError:
-    from auth.repository import session
+    from features.auth.repository import session
 
 from .model import File
 from .storage import ObjectMetadata, ObjectStorage

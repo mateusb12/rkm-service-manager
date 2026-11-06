@@ -1,7 +1,7 @@
 import pytest
 
 from app import app
-from auth.repository import auth_database
+from features.auth.repository import auth_database
 
 
 @pytest.fixture

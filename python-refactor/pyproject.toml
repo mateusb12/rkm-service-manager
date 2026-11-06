@@ -14,6 +14,7 @@ dependencies = [
     "SQLAlchemy>=2,<3",
     "flask-swagger-ui>=4,<5",
     "flask-smorest>=0.47,<1",
+    "marshmallow-sqlalchemy>=1.4,<2",
 ]
 
 [dependency-groups]

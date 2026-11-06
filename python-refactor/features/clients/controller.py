@@ -10,8 +10,8 @@ try:
     from ..auth.controller import require_permission, schema_error_response
     from ..auth.repository import session
 except ImportError:
-    from auth.controller import require_permission, schema_error_response
-    from auth.repository import session
+    from features.auth.controller import require_permission, schema_error_response
+    from features.auth.repository import session
 
 from .model import Client, serialize_client
 from .repository import (

@@ -4,9 +4,9 @@ from io import BytesIO
 import pytest
 
 from app import app
-from auth.repository import auth_database
-from file_storage.controller import FILE_STORAGE_BLUEPRINT
-from file_storage.storage import ObjectMetadata
+from features.auth.repository import auth_database
+from features.file_storage.controller import FILE_STORAGE_BLUEPRINT
+from features.file_storage.storage import ObjectMetadata
 
 
 class FakeStorage:

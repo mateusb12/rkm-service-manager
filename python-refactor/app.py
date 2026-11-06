@@ -14,20 +14,20 @@ from flask_cors import CORS
 from werkzeug.exceptions import BadRequest, HTTPException
 
 try:
-    from .api_docs import init_api, register_api_docs
+    from .swagger.api_docs import init_api, register_api_docs
 except ImportError:
-    from api_docs import init_api, register_api_docs
+    from swagger.api_docs import init_api, register_api_docs
 
 try:
-    from .auth import register_auth
-    from .clients import register_clients
-    from .devmetrics import register_devmetrics
-    from .file_storage import register_file_storage
+    from .features.auth import register_auth
+    from .features.clients import register_clients
+    from .features.devmetrics import register_devmetrics
+    from .features.file_storage import register_file_storage
 except ImportError:
-    from auth import register_auth
-    from clients import register_clients
-    from devmetrics import register_devmetrics
-    from file_storage import register_file_storage
+    from features.auth import register_auth
+    from features.clients import register_clients
+    from features.devmetrics import register_devmetrics
+    from features.file_storage import register_file_storage
 
 
 LOGGER = logging.getLogger(__name__)

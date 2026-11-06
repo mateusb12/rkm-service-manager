@@ -6,6 +6,11 @@ from flask import jsonify
 from flask_smorest import Api
 from flask_swagger_ui import get_swaggerui_blueprint
 
+try:
+    from .openapi_entities import ENTITY_SCHEMAS
+except ImportError:
+    from swagger.openapi_entities import ENTITY_SCHEMAS
+
 
 SWAGGER_BLUEPRINT = get_swaggerui_blueprint(
     "/docs",
@@ -27,6 +32,8 @@ def init_api(app) -> None:
 
 def register_api_docs(app) -> None:
     api = app.extensions["rkm_openapi"]
+    for name, schema in ENTITY_SCHEMAS.items():
+        api.spec.components.schema(name, schema=schema)
     app.add_url_rule(
         "/openapi.json",
         endpoint="openapi_json",

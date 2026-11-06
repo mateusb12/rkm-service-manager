@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 try:
     from ..auth.repository import session
 except ImportError:
-    from auth.repository import session
+    from features.auth.repository import session
 
 from .model import Client
 from .schema import normalize_search

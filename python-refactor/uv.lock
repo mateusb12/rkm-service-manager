@@ -447,6 +447,19 @@ wheels = [
 ]
 
 [[package]]
+name = "marshmallow-sqlalchemy"
+version = "1.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "marshmallow" },
+    { name = "sqlalchemy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a1/6d/097b9792559b6eef8c6c130d659be0ed8c9fe65b14ad4c425f6cfbc6e90c/marshmallow_sqlalchemy-1.6.0.tar.gz", hash = "sha256:adebc7e36a7ec5662de93b00b850b50e36f4e8fe67ccf6e9e8e5ff42a78b1696", size = 50981, upload-time = "2026-10-19T17:21:14.182Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/ef/7bf44661d2983a6ccf34a886bd848a344726ab21a952fbfa6eb1501fe406/marshmallow_sqlalchemy-1.6.0-py3-none-any.whl", hash = "sha256:09ce8cddb9f8f2cf415261ea939542527f722943488b70a5ad69106486d259ea", size = 17715, upload-time = "2026-10-19T17:21:12.682Z" },
+]
+
+[[package]]
 name = "packaging"
 version = "26.3"
 source = { registry = "https://pypi.org/simple" }
@@ -621,6 +634,7 @@ dependencies = [
     { name = "flask-cors" },
     { name = "flask-smorest" },
     { name = "flask-swagger-ui" },
+    { name = "marshmallow-sqlalchemy" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pyjwt" },
     { name = "python-dotenv" },
@@ -641,6 +655,7 @@ requires-dist = [
     { name = "flask-cors", specifier = ">=6,<7" },
     { name = "flask-smorest", specifier = ">=0.47,<1" },
     { name = "flask-swagger-ui", specifier = ">=4,<5" },
+    { name = "marshmallow-sqlalchemy", specifier = ">=1.4,<2" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
     { name = "pyjwt", specifier = ">=2.10,<3" },
     { name = "python-dotenv", specifier = ">=1,<2" },
