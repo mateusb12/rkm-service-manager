@@ -10,12 +10,14 @@ type ClientErrorPayload = {
 export class ClientServiceError extends Error {
   readonly errorCode: string;
   readonly fieldErrors: ClientErrors;
+  readonly status: number;
 
-  constructor(errorCode: string, fieldErrors: ClientErrors = {}) {
+  constructor(errorCode: string, status: number, fieldErrors: ClientErrors = {}) {
     super(errorCode);
 
     this.name = 'ClientServiceError';
     this.errorCode = errorCode;
+    this.status = status;
     this.fieldErrors = fieldErrors;
   }
 }
@@ -23,7 +25,11 @@ export class ClientServiceError extends Error {
 async function throwClientServiceError(response: Response, fallbackCode: string): Promise<never> {
   const errorPayload = (await response.json().catch(() => null)) as ClientErrorPayload | null;
 
-  throw new ClientServiceError(errorPayload?.error || fallbackCode, errorPayload?.fields || {});
+  throw new ClientServiceError(
+    errorPayload?.error || fallbackCode,
+    response.status,
+    errorPayload?.fields || {},
+  );
 }
 
 export async function listClients(searchTerm = ''): Promise<Client[]> {

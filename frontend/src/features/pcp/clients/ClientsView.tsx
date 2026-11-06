@@ -4,7 +4,13 @@ import { CrudTable, CrudTableActions } from '../../../shared/ui/CrudTable';
 import { normalizeText } from '../../../utils/text';
 import { ClientForm } from './ClientForm';
 import { formatCnpj, onlyDigits, type Client, type ClientInput } from './clientModel';
-import { createClient, deleteClient, listClients, updateClient } from './service';
+import {
+  ClientServiceError,
+  createClient,
+  deleteClient,
+  listClients,
+  updateClient,
+} from './service';
 
 type ClientPage = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; clientId: number };
 
@@ -32,8 +38,12 @@ export function ClientsView() {
     setLoadErrorMessage('');
     try {
       setClients(sortClients(await listClients()));
-    } catch {
-      setLoadErrorMessage('Não foi possível carregar os clientes.');
+    } catch (error) {
+      if (error instanceof ClientServiceError && error.status === 404) {
+        setLoadErrorMessage('A funcionalidade de clientes ainda não está disponível.');
+      } else {
+        setLoadErrorMessage('Não foi possível carregar os clientes.');
+      }
     } finally {
       setLoadingClients(false);
     }
@@ -185,7 +195,10 @@ export function ClientsView() {
           loadErrorMessage
             ? {
                 message: loadErrorMessage,
-                hint: 'Verifique a conexão com o backend e tente novamente.',
+                hint:
+                  loadErrorMessage === 'A funcionalidade de clientes ainda não está disponível.'
+                    ? 'A rota de clientes ainda não foi migrada para o backend atual.'
+                    : 'Verifique a conexão com o backend e tente novamente.',
                 onRetry: () => void loadClients(),
               }
             : undefined

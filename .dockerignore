@@ -2,5 +2,10 @@ backend/tmp
 backend/*.db
 frontend/node_modules
 frontend/dist
+python-refactor/.venv
+python-refactor/__pycache__
+python-refactor/auth/__pycache__
+python-refactor/tests/__pycache__
+python-refactor/.pytest_cache
 
 .git
