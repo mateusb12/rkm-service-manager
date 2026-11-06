@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Python backend under incremental migration from the Go service"
 requires-python = ">=3.12"
 dependencies = [
+    "boto3>=1.40,<2",
     "flask>=3.1,<4",
     "flask-cors>=6,<7",
     "argon2-cffi>=25,<26",
