@@ -45,7 +45,7 @@ services:
         's#(://[^@]+@)[^:/]+(:[0-9]+)?/#\1postgres-tunnel:15432/#');
         export DEV_METRICS_DATABASE_URL=$$(printf '%s' "$$DEV_METRICS_DATABASE_URL" | sed -E
         's#(://[^@]+@)[^:/]+(:[0-9]+)?/#\1postgres-tunnel:15432/#');
-        exec ./rkm-service-manager-api
+        exec uv run --no-sync flask --app app:app run --host=0.0.0.0 --port=8787
 
   frontend:
     volumes:
