@@ -30,8 +30,9 @@ def test_schema_contract(subtests):
 
     with subtests.test(msg="2.4 schemas devem rejeitar campos desconhecidos"):
         with pytest.raises(SchemaError) as error:
-            LoginSchema.from_payload(
-                {"email": "user@example.com", "password": "x", "role": "admin"}
+            CreateUserSchema.from_payload(
+                {"name": "User", "email": "user@example.com", "role": "admin",
+                 "password": "password", "unknown": True}
             )
 
         assert error.value.error == "invalid_json"

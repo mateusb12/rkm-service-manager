@@ -51,6 +51,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     app.config.from_mapping(
         APP_ENV=os.getenv("APP_ENV", "development"),
         CORS_ORIGINS=_cors_origins(),
+        AUTH_JWT_SECRET=os.getenv("AUTH_JWT_SECRET", ""),
+        DATABASE_URL=os.getenv("DATABASE_URL", ""),
+        DB_PATH=os.getenv("DB_PATH", ""),
     )
     if test_config:
         app.config.update(test_config)
@@ -86,6 +89,8 @@ def finish_request(response):
 
 @app.errorhandler(HTTPException)
 def handle_http_error(error: HTTPException):
+    if error.code == 405 and request.path.startswith(("/api/auth/", "/api/admin/")):
+        return jsonify({"error": "method_not_allowed"}), 405
     return _error_payload(error.description, error.code or 500)
 
 

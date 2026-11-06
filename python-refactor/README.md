@@ -21,7 +21,7 @@ O middleware HTTP adiciona o cabeçalho `X-Request-ID`, registra duração/statu
 
 ## Migração do auth
 
-O módulo Python reutiliza as tabelas `users` e `sessions` do backend Go. Para testar os dois backends contra o mesmo banco, configure `DB_PATH` para o arquivo SQLite compartilhado e use o mesmo `AUTH_JWT_SECRET`.
+O módulo Python reutiliza as tabelas `users` e `sessions` do backend Go. Em produção, configure `DATABASE_URL` para o PostgreSQL; o override do Docker pode apontar essa URL para o túnel SSH. SQLite fica reservado para desenvolvimento local e testes.
 
 O contrato migrado inclui login, refresh com rotação, logout, usuário atual, usuários ativos, credenciais de desenvolvimento e administração de usuários.
 

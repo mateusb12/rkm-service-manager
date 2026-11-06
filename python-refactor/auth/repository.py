@@ -14,7 +14,8 @@ from typing import Any
 import jwt
 from argon2.low_level import Type, hash_secret_raw
 from flask import current_app
-from sqlalchemy import create_engine, event, select
+from sqlalchemy import create_engine, delete, event, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -41,9 +42,16 @@ def duration(name: str, fallback: int) -> int:
         return fallback
 
 
-def database_path() -> str:
-    configured = current_app.config.get("DB_PATH") or os.getenv("DB_PATH")
-    return configured or str(Path(__file__).resolve().parents[2] / "rkm.db")
+def database_url() -> str:
+    configured = current_app.config.get("DATABASE_URL") or os.getenv("DATABASE_URL")
+    if configured:
+        return configured.replace("postgres://", "postgresql+psycopg://", 1)
+    if current_app.config.get("APP_ENV") == "production":
+        raise RuntimeError("DATABASE_URL is required in production")
+    database_path = current_app.config.get("DB_PATH") or os.getenv("DB_PATH")
+    if database_path == ":memory:":
+        return "sqlite:///:memory:"
+    return f"sqlite:///{Path(database_path or ':memory:').expanduser().resolve()}"
 
 
 def _configure_sqlite(engine: Engine) -> None:
@@ -63,6 +71,9 @@ class AuthDatabase:
     def init_app(self, app) -> None:
         app.extensions[self.extension_key] = self
 
+        if app.config["APP_ENV"] == "production" and not app.config.get("AUTH_JWT_SECRET"):
+            raise RuntimeError("AUTH_JWT_SECRET is required in production")
+
         @app.cli.command("auth-init")
         def auth_init_command() -> None:
             self.create_schema()
@@ -70,26 +81,24 @@ class AuthDatabase:
             print("Initialized auth database.")
 
     def engine(self) -> Engine:
-        path = database_path()
+        url = database_url()
         engines = current_app.extensions.setdefault("auth_engines", {})
-        if path not in engines:
-            if path == ":memory:":
-                database_engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+        if url not in engines:
+            if url.startswith("sqlite:"):
+                database_engine = create_engine(url, connect_args={"check_same_thread": False})
             else:
-                database_engine = create_engine(
-                    f"sqlite:///{Path(path).expanduser().resolve()}",
-                    connect_args={"check_same_thread": False, "timeout": 5},
-                )
-            _configure_sqlite(database_engine)
-            engines[path] = database_engine
-        return engines[path]
+                database_engine = create_engine(url, pool_pre_ping=True)
+            if url.startswith("sqlite:"):
+                _configure_sqlite(database_engine)
+            engines[url] = database_engine
+        return engines[url]
 
     def session(self) -> Session:
-        path = database_path()
+        url = database_url()
         factories = current_app.extensions.setdefault("auth_sessionmakers", {})
-        if path not in factories:
-            factories[path] = sessionmaker(bind=self.engine(), expire_on_commit=False)
-        return factories[path]()
+        if url not in factories:
+            factories[url] = sessionmaker(bind=self.engine(), expire_on_commit=False)
+        return factories[url]()
 
     def create_schema(self) -> None:
         Base.metadata.create_all(self.engine())
@@ -175,12 +184,18 @@ def create_access_token(user: dict[str, Any], expires_at: int) -> str:
         "exp": expires_at, "iat": issued_at, "nbf": issued_at,
         "jti": f"{user['id']}-{time.time_ns()}",
     }
-    return jwt.encode(claims, os.getenv("AUTH_JWT_SECRET", "development-only-jwt-secret"), algorithm="HS256")
+    return jwt.encode(claims, jwt_secret(), algorithm="HS256")
+
+
+def jwt_secret() -> str:
+    return current_app.config.get("AUTH_JWT_SECRET") or os.getenv(
+        "AUTH_JWT_SECRET", "development-only-jwt-secret"
+    )
 
 
 def parse_access_token(value: str) -> dict[str, Any] | None:
     try:
-        return jwt.decode(value, os.getenv("AUTH_JWT_SECRET", "development-only-jwt-secret"),
+        return jwt.decode(value, jwt_secret(),
                           algorithms=["HS256"], audience=AUTH_AUDIENCE, issuer=AUTH_ISSUER)
     except jwt.PyJWTError:
         return None
@@ -194,6 +209,10 @@ def find_user(database: Session, email: str) -> User | None:
 def find_user_by_id(database: Session, user_id: str) -> User | None:
     user = database.get(User, user_id)
     return user if user and user.active and serialize_user(user) else None
+
+
+def find_any_user(database: Session, user_id: str) -> User | None:
+    return database.get(User, user_id)
 
 
 def find_active_session_by_refresh_token(database: Session, refresh_token: str) -> AuthSession | None:
@@ -219,6 +238,63 @@ def user_exists_with_email(database: Session, email: str, excluding_id: str | No
     if excluding_id:
         query = query.where(User.id != excluding_id)
     return database.scalar(query) is not None
+
+
+def create_user(database: Session, user: User) -> User:
+    database.add(user)
+    try:
+        database.flush()
+    except IntegrityError:
+        database.rollback()
+        raise
+    return user
+
+
+def update_user(database: Session, user: User, changes: dict[str, str]) -> User:
+    for key, value in changes.items():
+        setattr(user, key, value)
+    database.flush()
+    return user
+
+
+def deactivate_user(database: Session, user: User) -> User:
+    user.active = False
+    database.flush()
+    return user
+
+
+def hard_delete_user(database: Session, user: User) -> None:
+    database.execute(delete(AuthSession).where(AuthSession.user_id == user.id))
+    database.delete(user)
+    database.flush()
+
+
+def rotate_session_tokens(
+    database: Session,
+    auth_session: AuthSession,
+    old_refresh_hash: str,
+    access_hash: str,
+    refresh_hash: str,
+    last_used_at: int,
+    access_expires_at: int,
+    expires_at: int,
+) -> int:
+    result = database.execute(
+        update(AuthSession)
+        .where(
+            AuthSession.id == auth_session.id,
+            AuthSession.refresh_hash == old_refresh_hash,
+            AuthSession.revoked_at.is_(None),
+        )
+        .values(
+            access_hash=access_hash,
+            refresh_hash=refresh_hash,
+            last_used_at=last_used_at,
+            access_expires_at=access_expires_at,
+            expires_at=expires_at,
+        )
+    )
+    return result.rowcount or 0
 
 
 def authenticate(database: Session, access: str) -> User | None:

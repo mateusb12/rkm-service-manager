@@ -47,8 +47,9 @@ class LoginSchema:
 
     @classmethod
     def from_payload(cls, payload: Any) -> "LoginSchema":
-        data = _ensure_object(payload)
-        _reject_unknown(data, {"email", "password"})
+        if not isinstance(payload, dict):
+            raise SchemaError("email_and_password_required")
+        data = payload
         email = str(data.get("email", "")).strip().lower()
         password = data.get("password", "")
         if not email or not password:

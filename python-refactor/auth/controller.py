@@ -9,7 +9,30 @@ from typing import Any, Callable
 
 from flask import Blueprint, current_app, jsonify, request
 from .model import ROLE_LABELS, ROLE_PERMISSIONS, AuthSession, User, serialize_user, summarize_user
-from .repository import auth_database, authenticate, create_access_token, duration, find_active_session_by_access_token, find_active_session_by_refresh_token, find_user, find_user_by_id, list_active_users as list_active_user_records, list_users as list_user_records, now, password_hash, session, sha256, user_exists_with_email, verify_password
+from .repository import (
+    auth_database,
+    authenticate,
+    create_access_token,
+    create_user as create_user_record,
+    deactivate_user as deactivate_user_record,
+    duration,
+    find_active_session_by_access_token,
+    find_active_session_by_refresh_token,
+    find_any_user,
+    find_user,
+    find_user_by_id,
+    hard_delete_user as hard_delete_user_record,
+    list_active_users as list_active_user_records,
+    list_users as list_user_records,
+    now,
+    password_hash,
+    rotate_session_tokens,
+    session,
+    sha256,
+    update_user as update_user_record,
+    user_exists_with_email,
+    verify_password,
+)
 from .schema import CreateUserSchema, LoginSchema, SchemaError, UpdateUserSchema
 
 
@@ -96,11 +119,23 @@ def refresh():
         serialized = serialize_user(user)
         access = create_access_token(serialized, current_time + duration("ACCESS_TTL", 15 * 60))
         rotated_refresh = secrets.token_hex(32)
-        auth_session.access_hash = sha256(access)
-        auth_session.refresh_hash = sha256(rotated_refresh)
-        auth_session.last_used_at = current_time
-        auth_session.access_expires_at = current_time + duration("ACCESS_TTL", 15 * 60)
-        auth_session.expires_at = min(current_time + duration("SESSION_TTL", 8 * 3600), auth_session.absolute_expires_at)
+        refresh_expires_at = min(
+            current_time + duration("SESSION_TTL", 8 * 3600),
+            auth_session.absolute_expires_at,
+        )
+        updated_sessions = rotate_session_tokens(
+            database,
+            auth_session,
+            sha256(refresh_token),
+            sha256(access),
+            sha256(rotated_refresh),
+            current_time,
+            current_time + duration("ACCESS_TTL", 15 * 60),
+            refresh_expires_at,
+        )
+        if updated_sessions != 1:
+            database.rollback()
+            return jsonify({"error": "refresh_expired"}), 401
         database.commit()
         return jsonify(token_response(serialized, access, rotated_refresh))
     finally:
@@ -184,7 +219,7 @@ def create_user():
         user = User(id="u-" + secrets.token_hex(12), email=input_data.email, name=input_data.name,
                     role=input_data.role, password_hash=password_hash(input_data.password),
                     active=True, created_at=now())
-        database.add(user)
+        create_user_record(database, user)
         database.commit()
         return jsonify(summarize_user(user)), 201
     finally:
@@ -196,7 +231,7 @@ def create_user():
 def get_user(user_id: str):
     database = session()
     try:
-        user = database.get(User, user_id)
+        user = find_any_user(database, user_id)
         return jsonify(summarize_user(user)) if user else (jsonify({"error": "user_not_found"}), 404)
     finally:
         database.close()
@@ -211,7 +246,7 @@ def update_user(user_id: str):
         return schema_error_response(error)
     database = session()
     try:
-        user = database.get(User, user_id)
+        user = find_any_user(database, user_id)
         if not user:
             return jsonify({"error": "user_not_found"}), 404
         changes = dict(input_data.changes)
@@ -219,8 +254,7 @@ def update_user(user_id: str):
             changes["password_hash"] = password_hash(changes["password_hash"])
         if "email" in changes and user_exists_with_email(database, changes["email"], excluding_id=user_id):
             return jsonify({"error": "email_already_exists"}), 409
-        for key, value in changes.items():
-            setattr(user, key, value)
+        update_user_record(database, user, changes)
         database.commit()
         return jsonify(summarize_user(user))
     finally:
@@ -232,10 +266,10 @@ def update_user(user_id: str):
 def deactivate_user(user_id: str):
     database = session()
     try:
-        user = database.get(User, user_id)
+        user = find_any_user(database, user_id)
         if not user:
             return jsonify({"error": "user_not_found"}), 404
-        user.active = False
+        deactivate_user_record(database, user)
         database.commit()
         return jsonify(summarize_user(user))
     finally:
@@ -247,12 +281,12 @@ def deactivate_user(user_id: str):
 def hard_delete_user(user_id: str):
     database = session()
     try:
-        user = database.get(User, user_id)
+        user = find_any_user(database, user_id)
         if not user:
             return jsonify({"error": "user_not_found"}), 404
         if user.active:
             return jsonify({"error": "active_user_cannot_be_deleted"}), 409
-        database.delete(user)
+        hard_delete_user_record(database, user)
         database.commit()
         return "", 204
     finally:
