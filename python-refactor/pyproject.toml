@@ -11,6 +11,8 @@ dependencies = [
     "psycopg[binary]>=3.2,<4",
     "python-dotenv>=1,<2",
     "SQLAlchemy>=2,<3",
+    "flask-swagger-ui>=4,<5",
+    "flask-smorest>=0.47,<1",
 ]
 
 [dependency-groups]

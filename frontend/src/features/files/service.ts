@@ -97,11 +97,11 @@ export async function uploadFile(file: File): Promise<FileRecord> {
 
 export function fileUrl(key: string, download = false): string {
   const encodedKey = key.split('/').map(encodeURIComponent).join('/');
-  return `/api/files/${encodedKey}${download ? '?download=1' : ''}`;
+  return `/files/${encodedKey}${download ? '?download=1' : ''}`;
 }
 
 export async function fetchFile(key: string, download = false): Promise<Blob> {
-  const response = await apiRequest(fileUrl(key, download).replace('/api', ''));
+  const response = await apiRequest(fileUrl(key, download));
   if (!response.ok) throw new Error('file_download_failed');
   return response.blob();
 }

@@ -11,12 +11,19 @@ from typing import Any
 from dotenv import load_dotenv
 from flask import Flask, current_app, g, jsonify, request
 from flask_cors import CORS
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
+
+try:
+    from .api_docs import init_api, register_api_docs
+except ImportError:
+    from api_docs import init_api, register_api_docs
 
 try:
     from .auth import register_auth
+    from .clients import register_clients
 except ImportError:
     from auth import register_auth
+    from clients import register_clients
 
 
 LOGGER = logging.getLogger(__name__)
@@ -59,7 +66,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         app.config.update(test_config)
 
     CORS(app, origins=app.config["CORS_ORIGINS"])
+    init_api(app)
     register_auth(app)
+    register_clients(app)
+    register_api_docs(app)
     return app
 
 
@@ -89,9 +99,22 @@ def finish_request(response):
 
 @app.errorhandler(HTTPException)
 def handle_http_error(error: HTTPException):
-    if error.code == 405 and request.path.startswith(("/api/auth/", "/api/admin/")):
+    if error.code == 405 and request.path.startswith(("/auth/", "/admin/", "/clients")):
         return jsonify({"error": "method_not_allowed"}), 405
     return _error_payload(error.description, error.code or 500)
+
+
+@app.errorhandler(BadRequest)
+def handle_bad_request(error: BadRequest):
+    data = getattr(error, "data", {}) or {}
+    messages = data.get("messages") or data.get("errors")
+    if request.path.startswith("/clients") and messages:
+        fields = {
+            field: values[0] if isinstance(values, list) else values
+            for field, values in messages.get("json", messages).items()
+        }
+        return jsonify({"error": "validation_failed", "fields": fields}), 400
+    return handle_http_error(error)
 
 
 @app.errorhandler(Exception)
@@ -103,12 +126,20 @@ def handle_unexpected_error(error: Exception):
 
 
 @app.get("/health")
-@app.get("/api/health")
 def health():
     return jsonify({"status": "ok", "service": "rkm-service-manager-python"})
 
 
-@app.get("/api")
-def api_root():
-    return jsonify({"service": "rkm-service-manager-python", "status": "ok"})
+@app.get("/")
+def root():
+    return jsonify(
+        {
+            "service": "rkm-service-manager-python",
+            "status": "ok",
+            "message": "RKM Service Manager API",
+            "health": "/health",
+            "swagger": "/docs/",
+            "openapi": "/openapi.json",
+        }
+    )
 

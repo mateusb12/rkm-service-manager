@@ -7,7 +7,8 @@ import secrets
 from functools import wraps
 from typing import Any, Callable
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import current_app, jsonify, request
+from flask_smorest import Blueprint
 from .model import ROLE_LABELS, ROLE_PERMISSIONS, AuthSession, User, serialize_user, summarize_user
 from .repository import (
     auth_database,
@@ -38,8 +39,8 @@ from .schema import CreateUserSchema, LoginSchema, SchemaError, UpdateUserSchema
 
 AUTH_TRANSPORT_HEADER = "X-Auth-Transport"
 REFRESH_TOKEN_HEADER = "X-Refresh-Token"
-AUTH_BLUEPRINT = Blueprint("auth", __name__, url_prefix="/api/auth")
-ADMIN_BLUEPRINT = Blueprint("auth_admin", __name__, url_prefix="/api/admin")
+AUTH_BLUEPRINT = Blueprint("auth", __name__, url_prefix="/auth")
+ADMIN_BLUEPRINT = Blueprint("auth_admin", __name__, url_prefix="/admin")
 
 
 def schema_error_response(error: SchemaError):
@@ -295,6 +296,7 @@ def hard_delete_user(user_id: str):
 
 def register_auth(app) -> None:
     auth_database.init_app(app)
-    app.register_blueprint(AUTH_BLUEPRINT)
-    app.register_blueprint(ADMIN_BLUEPRINT)
+    api = app.extensions["rkm_openapi"]
+    api.register_blueprint(AUTH_BLUEPRINT)
+    api.register_blueprint(ADMIN_BLUEPRINT)
 

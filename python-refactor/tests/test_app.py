@@ -18,7 +18,7 @@ def test_http_contract(subtests):
 
     with subtests.test(msg="0.2 X-Request-ID recebido deve ser propagado"):
         response = client().get(
-            "/api/health", headers={"X-Request-ID": "test-request"}
+            "/health", headers={"X-Request-ID": "test-request"}
         )
 
         assert response.headers["X-Request-ID"] == "test-request"
