@@ -21,9 +21,11 @@ except ImportError:
 try:
     from .auth import register_auth
     from .clients import register_clients
+    from .devmetrics import register_devmetrics
 except ImportError:
     from auth import register_auth
     from clients import register_clients
+    from devmetrics import register_devmetrics
 
 
 LOGGER = logging.getLogger(__name__)
@@ -69,6 +71,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     init_api(app)
     register_auth(app)
     register_clients(app)
+    register_devmetrics(app)
     register_api_docs(app)
     return app
 

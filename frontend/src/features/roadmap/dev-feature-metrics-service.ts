@@ -44,6 +44,20 @@ export type DevFeatureSettings = {
   functionPoints?: number | null;
 };
 
+export type WakatimeMetric = {
+  project: string;
+  branch: string;
+  start: string;
+  end: string;
+  totalSeconds: number;
+  editors: EditorTime[];
+  nextRefreshAt: number;
+};
+
+const WAKATIME_PROJECT = 'rkm-service-manager';
+const WAKATIME_START_DATE = '2026-09-01';
+const WAKATIME_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Fortaleza';
+
 async function readJSON<T>(response: Response, fallbackMessage: string): Promise<T> {
   const payload = (await response.json().catch(() => null)) as ({ error?: string } & T) | null;
 
@@ -112,22 +126,29 @@ export async function unlockFeatureMetric(featureId: string): Promise<DevFeature
   return readJSON<DevFeatureMetric>(response, 'Não foi possível reabrir a métrica.');
 }
 
+export async function getWakatimeMetric(
+  branch: string,
+  forceRefresh = false,
+  signal?: AbortSignal,
+): Promise<WakatimeMetric> {
+  const query = new URLSearchParams({
+    branch,
+    project: WAKATIME_PROJECT,
+    startDate: WAKATIME_START_DATE,
+    timezone: WAKATIME_TIMEZONE,
+  });
+  if (forceRefresh) query.set('refresh', '1');
+
+  const response = await apiRequest(`/dev/feature-metrics/wakatime?${query}`, { signal });
+  return readJSON<WakatimeMetric>(response, 'Falha ao consultar WakaTime.');
+}
+
 export async function getLiveFeatureMetric(
   featureId: string,
   branch: string,
   signal?: AbortSignal,
 ): Promise<FeatureMetricDraft> {
-  const query = new URLSearchParams({ branch });
-  const wakatimeResponse = await fetch(`/__dev/wakatime?${query}`, { signal });
-  const wakatimeResult = (await wakatimeResponse.json()) as {
-    totalSeconds?: number;
-    editors?: EditorTime[];
-    error?: string;
-  };
-
-  if (!wakatimeResponse.ok) {
-    throw new Error(wakatimeResult.error || 'Falha ao consultar WakaTime.');
-  }
+  const wakatimeResult = await getWakatimeMetric(branch, false, signal);
 
   const wakatimeSeconds = Number(wakatimeResult.totalSeconds);
   if (!Number.isFinite(wakatimeSeconds) || wakatimeSeconds < 0) {

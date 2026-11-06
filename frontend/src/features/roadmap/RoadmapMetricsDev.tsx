@@ -5,6 +5,7 @@ import { FunctionPointsDev } from './FunctionPointsDev';
 import { getChatGptActivity } from './chatgpt-activity-service';
 import {
   getPersistedFeatureMetric,
+  getWakatimeMetric,
   saveFeatureSettings,
   type ChatGptEntry,
   type FeatureMetricDraft,
@@ -277,17 +278,7 @@ export default function RoadmapMetricsDev({
       }));
 
       try {
-        const query = new URLSearchParams({ branch: activeBranch });
-        if (force) query.set('refresh', '1');
-        const response = await fetch(`/__dev/wakatime?${query}`, {
-          signal: requestAbortController.signal,
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Falha ao consultar WakaTime.');
-        }
+        const result = await getWakatimeMetric(activeBranch, force, requestAbortController.signal);
 
         const seconds = Number(result.totalSeconds);
         const nextAt = Number(result.nextRefreshAt);

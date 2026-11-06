@@ -21,6 +21,7 @@ services:
       SESSION_TTL: 8h
       SESSION_ABSOLUTE_TTL: 168h
       COOKIE_SECURE: "${COOKIE_SECURE:-true}"
+      WAKATIME_ACCESS_TOKEN: ${WAKATIME_ACCESS_TOKEN:-}
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8787/health || exit 1"]
       interval: 30s
@@ -40,13 +41,6 @@ services:
       - "127.0.0.1:${RKM_FRONTEND_PORT:-4173}:4173"
     environment:
       BACKEND_URL: http://backend:8787
-      WAKATIME_ACCESS_TOKEN: ${WAKATIME_ACCESS_TOKEN:-}
-      WAKATIME_EXPIRES_AT: ${WAKATIME_EXPIRES_AT:-}
-      WAKATIME_SCOPE: ${WAKATIME_SCOPE:-}
-      WAKATIME_API_KEY: ${WAKATIME_API_KEY:-}
-      WAKATIME_PROJECT: ${WAKATIME_PROJECT:-rkm-service-manager}
-      WAKATIME_START_DATE: ${WAKATIME_START_DATE:-2026-09-01}
-      WAKATIME_TIMEZONE: ${WAKATIME_TIMEZONE:-America/Fortaleza}
     volumes:
       - ./frontend:/app
       - ./.git:/app/.git:ro

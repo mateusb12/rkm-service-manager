@@ -1,7 +1,6 @@
 import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { wakatimeDevPlugin } from './dev/wakatime-plugin.js';
 
 const git = (format) => {
   try {
@@ -64,7 +63,7 @@ const commitTitle =
   (localCommitTitle !== 'unknown' ? localCommitTitle : githubCommit?.title || 'unknown');
 
 export default defineConfig({
-  plugins: [react(), wakatimeDevPlugin()],
+  plugins: [react()],
   define: {
     'import.meta.env.VITE_COMMIT_SHA': JSON.stringify(commit),
     'import.meta.env.VITE_COMMIT_DATE': JSON.stringify(commitDate),
@@ -77,6 +76,16 @@ export default defineConfig({
     watch: { usePolling: true, interval: 120 },
     proxy: {
       '/api': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/auth': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/admin': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/clients':
+        process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/dev': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/health':
+        process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/openapi.json':
+        process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/docs': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
     },
   },
   preview: { port: Number(process.env.FRONTEND_PORT || 4173) },
