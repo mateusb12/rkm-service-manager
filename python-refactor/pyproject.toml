@@ -1,0 +1,23 @@
+[project]
+name = "rkm-service-manager-python"
+version = "0.1.0"
+description = "Python backend under incremental migration from the Go service"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1,<4",
+    "flask-cors>=6,<7",
+    "python-dotenv>=1,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8,<9",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
