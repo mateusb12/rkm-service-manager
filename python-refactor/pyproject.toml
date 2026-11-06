@@ -6,12 +6,16 @@ requires-python = ">=3.12"
 dependencies = [
     "flask>=3.1,<4",
     "flask-cors>=6,<7",
+    "argon2-cffi>=25,<26",
+    "PyJWT>=2.10,<3",
     "python-dotenv>=1,<2",
+    "SQLAlchemy>=2,<3",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8,<9",
+    "pytest-subtests>=0.14,<1",
 ]
 
 [tool.uv]

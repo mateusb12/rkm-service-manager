@@ -13,6 +13,11 @@ from flask import Flask, current_app, g, jsonify, request
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
+try:
+    from .auth import register_auth
+except ImportError:
+    from auth import register_auth
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +56,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         app.config.update(test_config)
 
     CORS(app, origins=app.config["CORS_ORIGINS"])
+    register_auth(app)
     return app
 
 
