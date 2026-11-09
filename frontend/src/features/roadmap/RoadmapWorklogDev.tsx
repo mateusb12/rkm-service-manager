@@ -171,6 +171,16 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
+        'Vinculação obrigatória da OS ao cliente por chave estrangeira no ORM e na API, com clientId obrigatório no payload, remoção do fallback por nome e persistência do vínculo no banco.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Migração manual da OS existente no PostgreSQL remoto para a nova FK de cliente, remoção das migrações automáticas em runtime e validação do backend estrito com testes automatizados.',
+    },
+    {
+      category: 'Produto',
+      description:
         'Ajuste do carregamento inicial para buscar todas as OS e as etapas na abertura da página, permitindo selecionar uma OS usando os dados já carregados em memória, sem uma nova chamada de detalhe.',
     },
     {
