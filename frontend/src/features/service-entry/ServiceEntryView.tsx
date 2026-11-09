@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
@@ -8,14 +8,15 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 registerLocale('pt-BR', ptBR);
 
-import {
-  SERVICE_ENTRY_STEPS,
-  createEmptyServiceEntry,
-  getFurthestServiceEntryStep,
-  normalizeOrderNumber,
-} from './model';
+import { createEmptyServiceEntry, getServiceEntryStageIndex, normalizeOrderNumber } from './model';
 
-import { deleteServiceEntry, loadServiceEntries, saveServiceEntry } from './service';
+import {
+  deleteServiceEntry,
+  getServiceEntry,
+  loadServiceEntries,
+  loadServiceEntryStages,
+  saveServiceEntry,
+} from './service';
 
 import { Field, TextArea, TextInput } from '../../shared/ui/form-controls';
 
@@ -24,8 +25,11 @@ import { useLocalDevelopment } from '../../shared/dev/local-development';
 
 import { ClientSelector } from '../pcp/clients';
 import { UserSelector } from './UserSelector';
-
-const SERVICE_ENTRY_PHOTO_DB = 'rkm-service-entry-photo-store-v1';
+import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage';
+import { ServiceEntryStageNavigator } from './ServiceEntryStageNavigator';
+import { getMissingServiceEntryFields } from './validation';
+import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
+import { createDemoServiceEntry } from './demo-fixture';
 
 const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
   Cilindro: '/assets/cilindro.png',
@@ -47,210 +51,26 @@ const CYLINDER_HEALTH_COMPONENTS = [
   'Outros',
 ];
 
-const openServiceEntryPhotoDb = () =>
-  new Promise((resolve, reject) => {
-    if (!('indexedDB' in window)) {
-      reject(new Error('Este navegador não oferece armazenamento local para fotos.'));
-      return;
-    }
-
-    const request = window.indexedDB.open(SERVICE_ENTRY_PHOTO_DB, 1);
-    request.onupgradeneeded = () => {
-      if (!request.result.objectStoreNames.contains('photos')) {
-        request.result.createObjectStore('photos');
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () =>
-      reject(request.error || new Error('Não foi possível abrir o armazenamento de fotos.'));
-  });
-
-const storeServiceEntryPhoto = async (id, file) => {
-  const db = await openServiceEntryPhotoDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('photos', 'readwrite');
-    tx.objectStore('photos').put(file, id);
-    tx.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    tx.onerror = () => {
-      db.close();
-      reject(tx.error || new Error('Não foi possível salvar a foto.'));
-    };
-  });
-};
-
-const deleteServiceEntryPhoto = async (id) => {
-  const db = await openServiceEntryPhotoDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('photos', 'readwrite');
-    tx.objectStore('photos').delete(id);
-    tx.oncomplete = () => {
-      db.close();
-      resolve();
-    };
-    tx.onerror = () => {
-      db.close();
-      reject(tx.error || new Error('Não foi possível remover a foto.'));
-    };
-  });
-};
-
-const createDemoServiceEntry = () => {
-  const now = new Date();
-  const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-  const expectedDate = new Date(now);
-  expectedDate.setDate(expectedDate.getDate() + 10);
-  const localExpectedDate = new Date(
-    expectedDate.getTime() - expectedDate.getTimezoneOffset() * 60000,
-  )
-    .toISOString()
-    .slice(0, 10);
-  const orderNumber = `DEV-${String(now.getTime()).slice(-6)}`;
-  const photoCategories = {
-    arrival: 'Chegada',
-    disassembly: 'Desmontagem',
-    diagnosis: 'Achados',
-    execution: 'Execução e teste',
-    dispatch: 'Expedição',
-  };
-
-  return {
-    ...createEmptyServiceEntry(),
-    orderType: 'Acumulador',
-    orderNumber,
-    previousOrderNumber: 'OS-DEV-ANTERIOR',
-    expectedDeliveryDate: localExpectedDate,
-    urgent: true,
-    client: 'Cliente de demonstração DEV',
-    clientReference: 'PED-DEV-001',
-    requester: 'Solicitante de exemplo',
-    invoiceNumber: 'NF-DEV-001',
-    serialNumber: 'AC-DEV-042',
-    manufacturer: 'Parker (exemplo)',
-    equipment: 'Acumulador hidráulico',
-    model: 'Série de demonstração',
-    claimedDefect: 'Perda de pressão relatada pelo cliente (exemplo).',
-    shippingNotes: 'Acondicionar e enviar pela transportadora de exemplo.',
-    equipmentLocation: 'Área de recebimento — DEV',
-    serviceResponsible: 'Responsável de exemplo',
-    expertTechnician: 'Técnico perito de exemplo',
-    hydraulic: true,
-    pneumatic: false,
-    fluidApplication: 'Óleo hidráulico — aplicação de demonstração',
-    receivedBy: 'Operador de recebimento DEV',
-    deliveredBy: 'Transportadora de exemplo',
-    receivedAccessories: 'Conexões e tampa de proteção (exemplo).',
-    disassemblyOperator: 'Técnico de desmontagem DEV',
-    disassemblyStartedAt: localDateTime,
-    disassemblyComplete: true,
-    disassemblyControlled: true,
-    partsSeparated: true,
-    oilCollected: true,
-    disassemblyNotes: 'Desmontagem controlada; componentes identificados por OS (exemplo).',
-    partsDisposition: 'Substituir',
-    diagnosis: 'Vedação desgastada e perda de pressão. Diagnóstico demonstrativo.',
-    measurements: 'Medições dimensionais registradas — valores fictícios para DEV.',
-    repairRecommendation: 'Substituir jogo de vedações e executar teste de estanqueidade.',
-    approvalRequired: true,
-    approvalStatus: 'Aprovada',
-    approvalReference: 'AUT-DEV-001',
-    materialStatus: 'Disponível',
-    workPerformed: 'Jogo de vedações substituído e conjunto remontado (exemplo DEV).',
-    testResult: 'Aprovado',
-    qualityApproved: true,
-    dispatchMethod: 'Transportadora',
-    dispatchReference: 'RASTREIO-DEV-001',
-    dispatchNotes: 'Embalagem conferida; comprovante fictício de demonstração.',
-    dispatched: true,
-    photos: Object.fromEntries(
-      Object.entries(photoCategories).map(([category, label]) => [
-        category,
-        [
-          {
-            id: `${orderNumber}:${category}:demo`,
-            name: `EXEMPLO DEV — ${label} (substituir por foto)`,
-            type: 'application/x-demo',
-            size: 0,
-            lastModified: now.getTime(),
-            demo: true,
-          },
-        ],
-      ]),
-    ),
-    currentStep: 0,
-    status: 'Recebido',
-  };
-};
-
-const serviceEntryDateLabel = (value) => {
-  if (!value) return '—';
-
-  const date = new Date(`${value}T12:00:00`);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString('pt-BR');
-};
-
-const parseStoredDateTime = (value) => {
-  const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-
-  if (!match) return null;
-
-  const date = new Date(
-    Number(match[1]),
-    Number(match[2]) - 1,
-    Number(match[3]),
-    Number(match[4]),
-    Number(match[5]),
-  );
-
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
-const serializeDateTime = (date) => {
-  if (!date) return '';
-
-  const pad = (value) => String(value).padStart(2, '0');
-
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-};
-
-const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, className }, ref) => (
-  <input
-    ref={ref}
-    type="text"
-    value={value || ''}
-    placeholder={placeholder}
-    className={className || 'rkm-input zenit-field'}
-    onClick={onClick}
-    onMouseDown={(event) => event.preventDefault()}
-    readOnly
-  />
-));
-
 const ServiceEntrySection = ({ title, description, children }) => (
   <section className="service-entry-section">
     <div className="service-entry-section-header">
       <div>
         <h2>{title}</h2>
-
         {description && <p>{description}</p>}
       </div>
     </div>
-
     <div className="service-entry-grid">{children}</div>
   </section>
 );
 
 const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint }) => {
   const [previews, setPreviews] = useState({});
+  const previewUrls = useRef([]);
+
+  useEffect(
+    () => () => previewUrls.current.forEach((previewUrl) => URL.revokeObjectURL(previewUrl)),
+    [],
+  );
 
   const selectFiles = async (event) => {
     const files = Array.from(event.target.files || []);
@@ -258,6 +78,7 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
     files.forEach((file) => {
       const key = `${file.name}-${file.lastModified}-${file.size}`;
       nextPreviews[key] = URL.createObjectURL(file);
+      previewUrls.current.push(nextPreviews[key]);
     });
     setPreviews((prev) => ({ ...prev, ...nextPreviews }));
     await onFiles(files);
@@ -300,22 +121,39 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
   );
 };
 
+const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, className }, ref) => (
+  <input
+    ref={ref}
+    type="text"
+    value={value || ''}
+    placeholder={placeholder}
+    className={className || 'rkm-input zenit-field'}
+    onClick={onClick}
+    onMouseDown={(event) => event.preventDefault()}
+    readOnly
+  />
+));
+
 export const ServiceEntryView = () => {
   const showDevGuides = useLocalDevelopment();
   const [form, setForm] = useState(() => createEmptyServiceEntry());
   const [entries, setEntries] = useState([]);
+  const [stages, setStages] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
   const [savedOrder, setSavedOrder] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
+  const [openingOrderId, setOpeningOrderId] = useState('');
 
   useEffect(() => {
     let active = true;
     setLoadingEntries(true);
-    loadServiceEntries()
-      .then((loadedEntries) => {
-        if (active) setEntries(loadedEntries);
+    Promise.all([loadServiceEntries(), loadServiceEntryStages()])
+      .then(([loadedEntries, loadedStages]) => {
+        if (!active) return;
+        setEntries(loadedEntries);
+        setStages(loadedStages);
       })
       .catch(() => {
         if (active) setError('Não foi possível carregar as ordens do servidor.');
@@ -360,36 +198,7 @@ export const ServiceEntryView = () => {
   };
 
   const validateStep = () => {
-    const requiredByStep = {
-      0: [
-        ['orderNumber', 'Nº da OS'],
-        ['client', 'Cliente'],
-      ],
-      1: [
-        ['orderType', 'Categoria do equipamento'],
-        ['equipment', 'Equipamento'],
-        ['receivedBy', 'Responsável pelo recebimento'],
-      ],
-      2: [['disassemblyOperator', 'Responsável pela desmontagem']],
-      3: [
-        ['diagnosis', 'Diagnóstico'],
-        ['partsDisposition', 'Destino das peças'],
-      ],
-      4: [
-        ['workPerformed', 'Serviço executado'],
-        ['testResult', 'Resultado dos testes'],
-      ],
-      5: [['dispatchMethod', 'Forma de expedição']],
-    };
-    const missing = (requiredByStep[step] || [])
-      .filter(([key]) => !String(form[key] || '').trim())
-      .map(([, label]) => label);
-
-    if (step === 4) {
-      if (form.testResult !== 'Aprovado') missing.push('teste aprovado');
-      if ((form.photos.execution || []).length === 0)
-        missing.push('evidência fotográfica da execução/teste');
-    }
+    const missing = getMissingServiceEntryFields(form, step);
 
     if (missing.length) {
       setError(`Para avançar, complete: ${missing.join(', ')}.`);
@@ -437,8 +246,8 @@ export const ServiceEntryView = () => {
       id: normalizedId,
       orderNumber: normalizeOrderNumber(form.orderNumber),
       photos,
-      status: statusOverride || SERVICE_ENTRY_STEPS[stepOverride].status,
-      currentStep: stepOverride,
+      status: statusOverride || stages[stepOverride].status,
+      stage: stages[stepOverride].id,
       createdAt: form.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -505,29 +314,44 @@ export const ServiceEntryView = () => {
 
   const advance = async () => {
     if (!validateStep()) return;
-    if (step === SERVICE_ENTRY_STEPS.length - 1) {
+    if (step === stages.length - 1) {
       if (await persistEntry('Finalizado')) setError('');
       return;
     }
     const nextStep = step + 1;
     if (await persistEntry(undefined, nextStep)) {
       setStep(nextStep);
-      setForm((prev) => ({ ...prev, currentStep: nextStep }));
     }
   };
 
-  const openEntry = (entry) => {
+  const openEntry = async (entry) => {
+    setOpeningOrderId(entry.id);
+    setError('');
+    let detailedEntry;
+    try {
+      detailedEntry = await getServiceEntry(entry.id);
+    } catch (openError) {
+      setError(
+        openError.message === 'service_order_details_restricted'
+          ? 'Os detalhes desta OS estão restritos ao PCP nesta etapa.'
+          : 'Não foi possível abrir a OS no servidor.',
+      );
+      setOpeningOrderId('');
+      return;
+    }
     const emptyEntry = createEmptyServiceEntry();
 
     setForm({
       ...emptyEntry,
-      ...entry,
-      disassemblyStartedAt: entry.disassemblyStartedAt || emptyEntry.disassemblyStartedAt,
-      photos: { ...emptyEntry.photos, ...(entry.photos || {}) },
+      ...detailedEntry,
+      disassemblyStartedAt: detailedEntry.disassemblyStartedAt || emptyEntry.disassemblyStartedAt,
+      photos: { ...emptyEntry.photos, ...(detailedEntry.photos || {}) },
     });
-    setStep(Math.max(0, Math.min(entry.currentStep || 0, SERVICE_ENTRY_STEPS.length - 1)));
-    setError('');
-    setSavedOrder(entry.id);
+    setStep(
+      getServiceEntryStageIndex(stages, detailedEntry.availableThroughStage || detailedEntry.stage),
+    );
+    setSavedOrder(detailedEntry.id);
+    setOpeningOrderId('');
     requestAnimationFrame(() =>
       document
         .querySelector('.service-entry-stepper')
@@ -563,15 +387,20 @@ export const ServiceEntryView = () => {
   };
 
   const changeStep = (nextStep) => {
-    const furthestReachedStep = getFurthestServiceEntryStep(step, form.currentStep);
-    if (nextStep <= furthestReachedStep) {
+    if (!form.id || stages[nextStep]?.canView) {
       setStep(nextStep);
       setError('');
     }
   };
 
-  const currentStep = SERVICE_ENTRY_STEPS[step];
-  const furthestReachedStep = getFurthestServiceEntryStep(step, form.currentStep);
+  const currentStep = stages[step];
+  const progressStep = form.id
+    ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage)
+    : 0;
+
+  if (stages.length === 0) {
+    return <div className="p-6 service-entry-page">Carregando etapas da ordem de serviço...</div>;
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-5 service-entry-page">
@@ -644,10 +473,7 @@ export const ServiceEntryView = () => {
               <tbody>
                 {entries.slice(0, 8).map((entry) => {
                   const isSelected = form.id === entry.id;
-                  const entryStep = Math.min(
-                    Math.max(Number(entry.currentStep) || 0, 0),
-                    SERVICE_ENTRY_STEPS.length - 1,
-                  );
+                  const entryStep = Math.max(0, getServiceEntryStageIndex(stages, entry.stage));
                   return (
                     <tr
                       key={entry.id}
@@ -692,7 +518,7 @@ export const ServiceEntryView = () => {
                         </div>
                       </td>
 
-                      <td>{serviceEntryDateLabel(entry.expectedDeliveryDate)}</td>
+                      <td>{formatDateLabel(entry.expectedDeliveryDate)}</td>
 
                       <td className="service-entry-status-cell">
                         <span
@@ -701,7 +527,7 @@ export const ServiceEntryView = () => {
                           {entry.status || 'Recebido'}
                         </span>
                         <small className="service-entry-stage-count">
-                          {entryStep + 1}/{SERVICE_ENTRY_STEPS.length}
+                          {entryStep + 1}/{stages.length}
                         </small>
                       </td>
                       <td>
@@ -714,9 +540,13 @@ export const ServiceEntryView = () => {
                               openEntry(entry);
                             }}
                             aria-pressed={isSelected}
-                            disabled={isSelected}
+                            disabled={isSelected || openingOrderId === entry.id}
                           >
-                            {isSelected ? 'Selecionada' : 'Abrir OS'}
+                            {isSelected
+                              ? 'Selecionada'
+                              : openingOrderId === entry.id
+                                ? 'Abrindo...'
+                                : 'Abrir OS'}
                           </button>
                           {isSelected && (
                             <button
@@ -785,10 +615,7 @@ export const ServiceEntryView = () => {
               {savedOrder} · {form.status === 'Finalizado' ? 'OS finalizada' : 'progresso salvo'}
             </strong>
 
-            <span>
-              A OS e as fotos estão salvas neste navegador. O fluxo ainda não sincroniza com
-              servidor.
-            </span>
+            <span>A OS está salva no servidor; as fotos ficam armazenadas neste navegador.</span>
           </div>
         </div>
       )}
@@ -811,33 +638,17 @@ export const ServiceEntryView = () => {
         </div>
       )}
 
-      <div
-        className="service-entry-stepper service-entry-amazon-stepper"
-        aria-label="Etapas do ciclo operacional"
-      >
-        {SERVICE_ENTRY_STEPS.map((item, index) => (
-          <button
-            type="button"
-            key={item.id}
-            className={`service-entry-step ${step === index && furthestReachedStep <= index ? 'is-active' : ''} ${furthestReachedStep === index ? 'is-current' : ''} ${step === index && furthestReachedStep === index ? 'is-selected-current' : ''} ${furthestReachedStep > index ? 'is-done' : ''} ${step === index && furthestReachedStep > index ? 'is-selected-done' : ''} ${furthestReachedStep < index ? 'is-locked' : ''}`}
-            onClick={() => changeStep(index)}
-            aria-current={step === index ? 'step' : undefined}
-            aria-disabled={furthestReachedStep < index ? 'true' : undefined}
-            title={
-              furthestReachedStep < index
-                ? 'Conclua a etapa anterior para liberar esta etapa'
-                : undefined
-            }
-          >
-            <span>{furthestReachedStep > index ? '✓' : index + 1}</span>
-            <strong>{item.label}</strong>
-          </button>
-        ))}
-      </div>
+      <ServiceEntryStageNavigator
+        stages={stages}
+        step={step}
+        progressStep={progressStep}
+        hasEntry={Boolean(form.id)}
+        onChangeStep={changeStep}
+      />
 
       <div className="service-entry-step-context">
         <span>
-          ETAPA {step + 1} DE {SERVICE_ENTRY_STEPS.length}
+          ETAPA {step + 1} DE {stages.length}
         </span>
         <strong>{currentStep.label}</strong>
         <small>
@@ -991,7 +802,7 @@ export const ServiceEntryView = () => {
         {step === 2 && (
           <>
             <ServiceEntrySection
-              title="Desmontagem controlada"
+              title="Desmontagem"
               description="Preserve a identidade da OS e registre como os componentes foram encontrados."
             >
               <Field label="Responsável pela desmontagem *">
@@ -1059,8 +870,8 @@ export const ServiceEntryView = () => {
         {step === 3 && (
           <>
             <ServiceEntrySection
-              title="Diagnóstico e destino dos componentes"
-              description="Documente achados, medições e recomendação do técnico."
+              title="Orçamento"
+              description="Registre os achados, a recomendação de reparo e a aprovação do cliente."
             >
               <Field label="Diagnóstico técnico *" className="md:col-span-3">
                 <TextArea
@@ -1145,8 +956,8 @@ export const ServiceEntryView = () => {
         {step === 4 && (
           <>
             <ServiceEntrySection
-              title="Execução, teste e qualidade"
-              description="Registre o que foi feito e só libere após teste e validação da Qualidade."
+              title="Reparo"
+              description="Registre o serviço executado e os resultados da validação."
             >
               <Field label="Serviço executado *" className="md:col-span-3">
                 <TextArea
@@ -1183,10 +994,10 @@ export const ServiceEntryView = () => {
         {step === 5 && (
           <>
             <ServiceEntrySection
-              title="Expedição e encerramento"
-              description="Registre acondicionamento, saída e confirmação de entrega."
+              title="Entrega"
+              description="Registre como a ordem foi entregue e a confirmação de saída."
             >
-              <Field label="Forma de expedição *">
+              <Field label="Forma de entrega *">
                 <select
                   className="rkm-input zenit-field"
                   value={form.dispatchMethod}
@@ -1205,7 +1016,7 @@ export const ServiceEntryView = () => {
                   placeholder="Código ou referência de entrega"
                 />
               </Field>
-              <Field label="Observações de expedição" className="md:col-span-3">
+              <Field label="Observações de entrega" className="md:col-span-3">
                 <TextArea
                   rows={3}
                   value={form.dispatchNotes}

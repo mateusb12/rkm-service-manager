@@ -8,15 +8,6 @@
  * the same defaults and normalization rules.
  */
 
-export const SERVICE_ENTRY_STEPS = [
-  { id: 'receiving', label: 'Recebimento', status: 'Recebido' },
-  { id: 'triage', label: 'Identificação e segurança', status: 'Em triagem' },
-  { id: 'disassembly', label: 'Desmontagem', status: 'Aguardando desmontagem' },
-  { id: 'diagnosis', label: 'Diagnóstico e aprovação', status: 'Em diagnóstico' },
-  { id: 'execution', label: 'Execução e qualidade', status: 'Em execução' },
-  { id: 'dispatch', label: 'Expedição', status: 'Pronto para expedição' },
-];
-
 export const generateOrderNumber = () => String(Math.floor(100000 + Math.random() * 900000));
 
 const currentLocalDateTime = () => {
@@ -79,7 +70,6 @@ export const createEmptyServiceEntry = () => ({
   dispatchNotes: '',
   dispatched: false,
   photos: { arrival: [], disassembly: [], diagnosis: [], execution: [], dispatch: [] },
-  currentStep: 0,
 });
 
 export const normalizeOrderNumber = (value) => {
@@ -92,5 +82,7 @@ export const normalizeOrderNumber = (value) => {
   return clean.startsWith('OS-') ? clean : `OS-${clean}`;
 };
 
-export const getFurthestServiceEntryStep = (currentStep, persistedStep = 0) =>
-  Math.max(Number(currentStep) || 0, Number(persistedStep) || 0);
+export const getServiceEntryStageIndex = (stages, stage) => {
+  const index = stages.findIndex((item) => item.id === stage);
+  return index < 0 ? 0 : index;
+};

@@ -16,12 +16,30 @@ export const loadServiceEntries = async () => {
   return Array.isArray(parsed) ? parsed : [];
 };
 
+export const loadServiceEntryStages = async () => {
+  const response = await apiRequest('/service-orders/stages');
+  if (!response.ok) throw new Error('service_order_stages_query_failed');
+  const parsed = await response.json();
+  return Array.isArray(parsed) ? parsed : [];
+};
+
+export const getServiceEntry = async (id) => {
+  const response = await apiRequest(`/service-orders/${encodeURIComponent(id)}`);
+  if (!response.ok) {
+    if (response.status === 403) throw new Error('service_order_details_restricted');
+    if (response.status === 404) throw new Error('service_order_not_found');
+    throw new Error('service_order_query_failed');
+  }
+  return response.json();
+};
+
 export const saveServiceEntry = async (entry, update = Boolean(entry.id)) => {
+  const { availableThroughStage, ...payload } = entry;
   const response = await apiRequest(
     update && entry.id ? `/service-orders/${encodeURIComponent(entry.id)}` : '/service-orders',
     {
       method: update && entry.id ? 'PUT' : 'POST',
-      body: JSON.stringify(entry),
+      body: JSON.stringify(payload),
     },
   );
   if (!response.ok) {

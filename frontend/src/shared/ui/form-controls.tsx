@@ -25,7 +25,7 @@ export const TextInput = ({ value, onChange, placeholder, type = 'text', disable
     value: value || '',
     placeholder: placeholder || '',
     disabled,
-    onChange: (e) => onChange(e.target.value),
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
   });
 export const TextArea = ({ value, onChange, placeholder, rows = 3 }) =>
   React.createElement('textarea', {
@@ -33,7 +33,7 @@ export const TextArea = ({ value, onChange, placeholder, rows = 3 }) =>
     rows: rows,
     value: value || '',
     placeholder: placeholder || '',
-    onChange: (e) => onChange(e.target.value),
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value),
   });
 export const Select = ({ value, onChange, options, placeholder = 'Selecione...' }) =>
   React.createElement(
@@ -41,7 +41,7 @@ export const Select = ({ value, onChange, options, placeholder = 'Selecione...' 
     {
       className: 'rkm-input zenit-field',
       value: value || '',
-      onChange: (e) => onChange(e.target.value),
+      onChange: (e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value),
     },
     React.createElement('option', { value: '' }, placeholder),
     options.map((o) => React.createElement('option', { key: o, value: o }, o)),

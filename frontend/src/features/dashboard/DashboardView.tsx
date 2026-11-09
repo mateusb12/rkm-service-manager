@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useState } from 'react';
-import { loadServiceEntries } from '../service-entry/service';
+import { loadServiceEntries, loadServiceEntryStages } from '../service-entry/service';
 import { mapServiceEntryToDashboardService } from './model';
 import { PriorityTag, StatusTag } from '../../shared/ui/tags';
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
@@ -20,14 +20,17 @@ const KPICard = ({ label, value, hint, accent, icon }) => (
 export const DashboardView = ({ onOpenServiceEntry }) => {
   const showDevGuides = useLocalDevelopment();
   const [entries, setEntries] = useState([]);
+  const [stages, setStages] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
 
   useEffect(() => {
     let active = true;
     const refreshServiceOrders = () => {
-      loadServiceEntries()
-        .then((loadedEntries) => {
-          if (active) setEntries(loadedEntries);
+      Promise.all([loadServiceEntries(), loadServiceEntryStages()])
+        .then(([loadedEntries, loadedStages]) => {
+          if (!active) return;
+          setEntries(loadedEntries);
+          setStages(loadedStages);
         })
         .catch(() => {
           if (active) setEntries([]);
@@ -44,7 +47,10 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
     };
   }, []);
 
-  const services = useMemo(() => entries.map(mapServiceEntryToDashboardService), [entries]);
+  const services = useMemo(
+    () => entries.map((entry) => mapServiceEntryToDashboardService(entry, stages)),
+    [entries, stages],
+  );
   const open = services.filter((s) => /(execu|análise|recebido|pendente)/i.test(s.status)).length;
   const blocked = services.filter((s) => /bloque/i.test(s.status)).length;
   const approved = services.filter((s) => /(aprovad|liberad|finalizad)/i.test(s.status)).length;
