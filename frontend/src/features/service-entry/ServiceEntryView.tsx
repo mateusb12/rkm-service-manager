@@ -139,6 +139,403 @@ const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, class
   />
 ));
 
+const ServiceEntryArrivalStep = ({ form, set, addPhotos, removePhoto }) => (
+  <ServiceEntrySection
+    title="Recebimento PCP"
+    description="Registre somente o necessário para abrir a OS. A identificação técnica fica para a oficina."
+  >
+    <Field label="Cliente" required className="md:col-span-2">
+      <ClientSelector
+        value={form.client}
+        onSelect={(client) => set('client', client.nomeFantasia)}
+        onClear={() => set('client', '')}
+      />
+    </Field>
+    <Field
+      label="Nº da OS"
+      required
+      hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}
+    >
+      <TextInput
+        value={form.orderNumber}
+        onChange={(value) => set('orderNumber', value)}
+        placeholder="Ex.: 254186"
+        disabled={!!form.id}
+      />
+    </Field>
+    <Field
+      label="Nota fiscal / documento"
+      className="md:col-span-2"
+      hint="Opcional — informe o número da NF quando houver. Você também pode usar N/A para registrar ausência de documento."
+    >
+      <TextInput
+        value={form.invoiceNumber}
+        onChange={(value) => set('invoiceNumber', value)}
+        placeholder="Número da NF, N/A ou deixe em branco"
+      />
+    </Field>
+    <div className="md:col-span-3">
+      <ServiceEntryPhotoField
+        label="Fotos da peça"
+        hint="Opcional no recebimento — pode ser adicionada depois, se necessário."
+        photos={form.photos.arrival}
+        onFiles={(files) => addPhotos('arrival', files)}
+        onRemove={(photo) => removePhoto('arrival', photo)}
+      />
+    </div>
+  </ServiceEntrySection>
+);
+
+const ServiceEntryIdentificationStep = ({ form, set }) => (
+  <>
+    <ServiceEntrySection
+      title="Identificação inicial"
+      description="A oficina identifica o tipo de peça antes da avaliação e desmontagem."
+    >
+      <Field label="Categoria do equipamento" required className="md:col-span-3">
+        <div
+          className="service-entry-order-types"
+          role="radiogroup"
+          aria-label="Categoria do equipamento"
+        >
+          {Object.entries(SERVICE_ENTRY_ORDER_TYPE_ICONS).map(([type, icon]) => {
+            const selected = form.orderType === type;
+
+            return (
+              <button
+                key={type}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                  selected
+                    ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
+                    : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                }`}
+                onClick={() => set('orderType', type)}
+              >
+                <span className="flex h-20 w-20 items-center justify-center p-1">
+                  <img
+                    src={icon}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-full w-full object-contain"
+                  />
+                </span>
+                <span className="text-xs font-medium">{type}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <Field label="Equipamento" required className="md:col-span-2">
+        <TextInput
+          value={form.equipment}
+          onChange={(value) => set('equipment', value)}
+          placeholder="Descrição do equipamento"
+        />
+      </Field>
+    </ServiceEntrySection>
+    <ServiceEntrySection
+      title="Dados da chegada"
+      description="Registre a cadeia de recebimento antes da avaliação e desmontagem."
+    >
+      <Field label="Como chegou" required className="md:col-span-3">
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Como chegou">
+          {[
+            ['coleta_cliente', 'Coleta no cliente', '/assets/coleta-no-cliente.png'],
+            [
+              'cliente_entregou',
+              'Cliente trouxe à oficina',
+              '/assets/cliente-trouxe-pra-oficina.png',
+            ],
+          ].map(([value, label, icon]) => {
+            const selected = form.arrivalMethod === value;
+
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                  selected
+                    ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
+                    : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                }`}
+                onClick={() => set('arrivalMethod', value)}
+              >
+                <span className="flex h-20 w-20 items-center justify-center p-1">
+                  <img
+                    src={icon}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-full w-full object-contain"
+                  />
+                </span>
+                <span className={`text-xs font-medium ${selected ? 'text-sky-300' : 'text-white'}`}>
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <Field label="Recebido por" required>
+        <UserSelector
+          value={form.receivedBy}
+          onSelect={(user) => set('receivedBy', user.name)}
+          onClear={() => set('receivedBy', '')}
+        />
+      </Field>
+      <Field label="Entregue por">
+        <TextInput
+          value={form.deliveredBy}
+          onChange={(value) => set('deliveredBy', value)}
+          placeholder="Motorista / cliente"
+        />
+      </Field>
+      <Field label="Acessórios / itens recebidos" className="md:col-span-2">
+        <TextArea
+          rows={2}
+          value={form.receivedAccessories}
+          onChange={(value) => set('receivedAccessories', value)}
+          placeholder="Conexões, válvulas, peças soltas, embalagem..."
+        />
+      </Field>
+    </ServiceEntrySection>
+  </>
+);
+
+const ServiceEntryDisassemblyStep = ({ form, set, addPhotos, removePhoto }) => (
+  <ServiceEntrySection
+    title="Desmontagem"
+    description="Preserve a identidade da OS e registre como os componentes foram encontrados."
+  >
+    <Field label="Responsável pela desmontagem *">
+      <UserSelector
+        value={form.disassemblyOperator}
+        onSelect={(user) => set('disassemblyOperator', user.name)}
+        onClear={() => set('disassemblyOperator', '')}
+        roleFilter="mechanic"
+      />
+    </Field>
+    <Field label="Início">
+      <DatePicker
+        selected={parseStoredDateTime(form.disassemblyStartedAt)}
+        onChange={(value) => set('disassemblyStartedAt', serializeDateTime(value))}
+        dateFormat="dd 'de' MMMM 'de' yyyy 'às' HH'h'mm"
+        locale="pt-BR"
+        showTimeSelect
+        timeFormat="HH:mm"
+        timeIntervals={15}
+        timeCaption="Horário"
+        placeholderText="DD de mês de YYYY às HHhmm"
+        customInput={<ReadOnlyDatePickerInput />}
+        wrapperClassName="service-entry-date-picker"
+      />
+    </Field>
+    {form.orderType === 'Cilindro' && (
+      <div className="md:col-span-3">
+        <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+          Checklist de saúde do cilindro
+        </span>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {CYLINDER_HEALTH_COMPONENTS.map((component) => (
+            <button
+              key={component}
+              type="button"
+              className="rounded-lg border border-rkmborder bg-rkmcard2/40 px-3 py-3 text-left text-sm text-slate-300 transition hover:border-blue-400/50 hover:bg-rkmcard2"
+            >
+              {component}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+    <Field label="Observações da desmontagem" className="md:col-span-3">
+      <TextArea
+        rows={3}
+        value={form.disassemblyNotes}
+        onChange={(value) => set('disassemblyNotes', value)}
+        placeholder="Sequência, travamentos, danos observados ao abrir..."
+      />
+    </Field>
+    <div className="md:col-span-3">
+      <ServiceEntryPhotoField
+        label="Evidências da desmontagem *"
+        hint="Registre a abertura e os componentes antes de limpar ou substituir peças."
+        photos={form.photos.disassembly}
+        onFiles={(files) => addPhotos('disassembly', files)}
+        onRemove={(photo) => removePhoto('disassembly', photo)}
+      />
+    </div>
+  </ServiceEntrySection>
+);
+
+const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
+  <ServiceEntrySection
+    title="Orçamento"
+    description="Registre os achados, a recomendação de reparo e a aprovação do cliente."
+  >
+    <Field label="Diagnóstico técnico *" className="md:col-span-3">
+      <TextArea
+        rows={4}
+        value={form.diagnosis}
+        onChange={(value) => set('diagnosis', value)}
+        placeholder="Causa provável, danos e conclusão da peritagem..."
+      />
+    </Field>
+    <Field label="Medições / tolerâncias" className="md:col-span-2">
+      <TextArea
+        rows={3}
+        value={form.measurements}
+        onChange={(value) => set('measurements', value)}
+        placeholder="Dimensões, folgas, pressão, valores de referência..."
+      />
+    </Field>
+    <Field label="Destino das peças *">
+      <select
+        className="rkm-input zenit-field"
+        value={form.partsDisposition}
+        onChange={(event) => set('partsDisposition', event.target.value)}
+      >
+        <option value="">Selecione</option>
+        <option>Reaproveitar</option>
+        <option>Substituir</option>
+        <option>Enviar para análise</option>
+        <option>Condenar</option>
+      </select>
+    </Field>
+    <Field label="Recomendação / escopo" className="md:col-span-3">
+      <TextArea
+        rows={3}
+        value={form.repairRecommendation}
+        onChange={(value) => set('repairRecommendation', value)}
+        placeholder="Serviços e peças recomendados para orçamento/laudo..."
+      />
+    </Field>
+    <Field label="Status da aprovação">
+      <select
+        className="rkm-input zenit-field"
+        value={form.approvalStatus}
+        onChange={(event) => set('approvalStatus', event.target.value)}
+      >
+        <option>Pendente</option>
+        <option>Aprovada</option>
+        <option>Reprovada</option>
+        <option>Ajuste solicitado</option>
+      </select>
+    </Field>
+    <Field label="Referência da aprovação">
+      <TextInput
+        value={form.approvalReference}
+        onChange={(value) => set('approvalReference', value)}
+        placeholder="E-mail, pedido ou autorização"
+      />
+    </Field>
+    <Field label="Disponibilidade de material">
+      <select
+        className="rkm-input zenit-field"
+        value={form.materialStatus}
+        onChange={(event) => set('materialStatus', event.target.value)}
+      >
+        <option>A verificar</option>
+        <option>Disponível</option>
+        <option>Aguardando compra</option>
+        <option>Não necessário</option>
+      </select>
+    </Field>
+    <div className="md:col-span-3">
+      <ServiceEntryPhotoField
+        label="Fotos dos achados"
+        photos={form.photos.diagnosis}
+        onFiles={(files) => addPhotos('diagnosis', files)}
+        onRemove={(photo) => removePhoto('diagnosis', photo)}
+      />
+    </div>
+  </ServiceEntrySection>
+);
+
+const ServiceEntryRepairStep = ({ form, set, addPhotos, removePhoto }) => (
+  <ServiceEntrySection
+    title="Reparo"
+    description="Registre o serviço executado e os resultados da validação."
+  >
+    <Field label="Serviço executado *" className="md:col-span-3">
+      <TextArea
+        rows={4}
+        value={form.workPerformed}
+        onChange={(value) => set('workPerformed', value)}
+        placeholder="Reparo, componentes substituídos, ajustes e referência à IT aplicada..."
+      />
+    </Field>
+    <Field label="Resultado dos testes *">
+      <select
+        className="rkm-input zenit-field"
+        value={form.testResult}
+        onChange={(event) => set('testResult', event.target.value)}
+      >
+        <option value="">Selecione</option>
+        <option>Aprovado</option>
+        <option>Reprovado</option>
+        <option>Não aplicável</option>
+      </select>
+    </Field>
+    <div className="md:col-span-3">
+      <ServiceEntryPhotoField
+        label="Fotos da execução e teste *"
+        photos={form.photos.execution}
+        onFiles={(files) => addPhotos('execution', files)}
+        onRemove={(photo) => removePhoto('execution', photo)}
+      />
+    </div>
+  </ServiceEntrySection>
+);
+
+const ServiceEntryDispatchStep = ({ form, set, addPhotos, removePhoto }) => (
+  <ServiceEntrySection
+    title="Entrega"
+    description="Registre como a ordem foi entregue e a confirmação de saída."
+  >
+    <Field label="Forma de entrega *">
+      <select
+        className="rkm-input zenit-field"
+        value={form.dispatchMethod}
+        onChange={(event) => set('dispatchMethod', event.target.value)}
+      >
+        <option value="">Selecione</option>
+        <option>Retirada pelo cliente</option>
+        <option>Transportadora</option>
+        <option>Entrega RKM</option>
+      </select>
+    </Field>
+    <Field label="Rastreio / comprovante">
+      <TextInput
+        value={form.dispatchReference}
+        onChange={(value) => set('dispatchReference', value)}
+        placeholder="Código ou referência de entrega"
+      />
+    </Field>
+    <Field label="Observações de entrega" className="md:col-span-3">
+      <TextArea
+        rows={3}
+        value={form.dispatchNotes}
+        onChange={(value) => set('dispatchNotes', value)}
+        placeholder="Embalagem, responsável pela retirada e observações..."
+      />
+    </Field>
+    <div className="md:col-span-3">
+      <ServiceEntryPhotoField
+        label="Evidência final / embalagem"
+        photos={form.photos.dispatch}
+        onFiles={(files) => addPhotos('dispatch', files)}
+        onRemove={(photo) => removePhoto('dispatch', photo)}
+      />
+    </div>
+  </ServiceEntrySection>
+);
+
 export const ServiceEntryView = () => {
   const showDevGuides = useLocalDevelopment();
   const [form, setForm] = useState(() => createEmptyServiceEntry());
@@ -645,417 +1042,45 @@ export const ServiceEntryView = () => {
         }}
       >
         {step === 0 && (
-          <>
-            <ServiceEntrySection
-              title="Recebimento PCP"
-              description="Registre somente o necessário para abrir a OS. A identificação técnica fica para a oficina."
-            >
-              <Field label="Cliente" required className="md:col-span-2">
-                <ClientSelector
-                  value={form.client}
-                  onSelect={(client) => set('client', client.nomeFantasia)}
-                  onClear={() => set('client', '')}
-                />
-              </Field>
-
-              <Field
-                label="Nº da OS"
-                required
-                hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}
-              >
-                <TextInput
-                  value={form.orderNumber}
-                  onChange={(value) => set('orderNumber', value)}
-                  placeholder="Ex.: 254186"
-                  disabled={!!form.id}
-                />
-              </Field>
-
-              <Field
-                label="Nota fiscal / documento"
-                className="md:col-span-2"
-                hint="Opcional — informe o número da NF quando houver. Você também pode usar N/A para registrar ausência de documento."
-              >
-                <TextInput
-                  value={form.invoiceNumber}
-                  onChange={(value) => set('invoiceNumber', value)}
-                  placeholder="Número da NF, N/A ou deixe em branco"
-                />
-              </Field>
-
-              <div className="md:col-span-3">
-                <ServiceEntryPhotoField
-                  label="Fotos da peça"
-                  hint="Opcional no recebimento — pode ser adicionada depois, se necessário."
-                  photos={form.photos.arrival}
-                  onFiles={(files) => addPhotos('arrival', files)}
-                  onRemove={(photo) => removePhoto('arrival', photo)}
-                />
-              </div>
-            </ServiceEntrySection>
-          </>
+          <ServiceEntryArrivalStep
+            form={form}
+            set={set}
+            addPhotos={addPhotos}
+            removePhoto={removePhoto}
+          />
         )}
-
-        {step === 1 && (
-          <>
-            <ServiceEntrySection
-              title="Identificação inicial"
-              description="A oficina identifica o tipo de peça antes da avaliação e desmontagem."
-            >
-              <Field label="Categoria do equipamento" required className="md:col-span-3">
-                <div
-                  className="service-entry-order-types"
-                  role="radiogroup"
-                  aria-label="Categoria do equipamento"
-                >
-                  {Object.entries(SERVICE_ENTRY_ORDER_TYPE_ICONS).map(([type, icon]) => {
-                    const selected = form.orderType === type;
-
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
-                          selected
-                            ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
-                            : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
-                        }`}
-                        onClick={() => set('orderType', type)}
-                      >
-                        <span className="flex h-20 w-20 items-center justify-center p-1">
-                          <img
-                            src={icon}
-                            alt=""
-                            aria-hidden="true"
-                            className="h-full w-full object-contain"
-                          />
-                        </span>
-                        <span className="text-xs font-medium">{type}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </Field>
-
-              <Field label="Equipamento" required className="md:col-span-2">
-                <TextInput
-                  value={form.equipment}
-                  onChange={(value) => set('equipment', value)}
-                  placeholder="Descrição do equipamento"
-                />
-              </Field>
-            </ServiceEntrySection>
-
-            <ServiceEntrySection
-              title="Dados da chegada"
-              description="Registre a cadeia de recebimento antes da avaliação e desmontagem."
-            >
-              <Field label="Como chegou" required className="md:col-span-3">
-                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Como chegou">
-                  {[
-                    ['coleta_cliente', 'Coleta no cliente', '/assets/coleta-no-cliente.png'],
-                    [
-                      'cliente_entregou',
-                      'Cliente trouxe à oficina',
-                      '/assets/cliente-trouxe-pra-oficina.png',
-                    ],
-                  ].map(([value, label, icon]) => {
-                    const selected = form.arrivalMethod === value;
-
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
-                          selected
-                            ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
-                            : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
-                        }`}
-                        onClick={() => set('arrivalMethod', value)}
-                      >
-                        <span className="flex h-20 w-20 items-center justify-center p-1">
-                          <img
-                            src={icon}
-                            alt=""
-                            aria-hidden="true"
-                            className="h-full w-full object-contain"
-                          />
-                        </span>
-                        <span
-                          className={`text-xs font-medium ${selected ? 'text-sky-300' : 'text-white'}`}
-                        >
-                          {label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </Field>
-              <Field label="Recebido por" required>
-                <UserSelector
-                  value={form.receivedBy}
-                  onSelect={(user) => set('receivedBy', user.name)}
-                  onClear={() => set('receivedBy', '')}
-                />
-              </Field>
-              <Field label="Entregue por">
-                <TextInput
-                  value={form.deliveredBy}
-                  onChange={(value) => set('deliveredBy', value)}
-                  placeholder="Motorista / cliente"
-                />
-              </Field>
-              <Field label="Acessórios / itens recebidos" className="md:col-span-2">
-                <TextArea
-                  rows={2}
-                  value={form.receivedAccessories}
-                  onChange={(value) => set('receivedAccessories', value)}
-                  placeholder="Conexões, válvulas, peças soltas, embalagem..."
-                />
-              </Field>
-            </ServiceEntrySection>
-          </>
-        )}
-
+        {step === 1 && <ServiceEntryIdentificationStep form={form} set={set} />}
         {step === 2 && (
-          <>
-            <ServiceEntrySection
-              title="Desmontagem"
-              description="Preserve a identidade da OS e registre como os componentes foram encontrados."
-            >
-              <Field label="Responsável pela desmontagem *">
-                <UserSelector
-                  value={form.disassemblyOperator}
-                  onSelect={(user) => set('disassemblyOperator', user.name)}
-                  onClear={() => set('disassemblyOperator', '')}
-                  roleFilter="mechanic"
-                />
-              </Field>
-              <Field label="Início">
-                <DatePicker
-                  selected={parseStoredDateTime(form.disassemblyStartedAt)}
-                  onChange={(value) => set('disassemblyStartedAt', serializeDateTime(value))}
-                  dateFormat="dd 'de' MMMM 'de' yyyy 'às' HH'h'mm"
-                  locale="pt-BR"
-                  showTimeSelect
-                  timeFormat="HH:mm"
-                  timeIntervals={15}
-                  timeCaption="Horário"
-                  placeholderText="DD de mês de YYYY às HHhmm"
-                  customInput={<ReadOnlyDatePickerInput />}
-                  wrapperClassName="service-entry-date-picker"
-                />
-              </Field>
-              {form.orderType === 'Cilindro' && (
-                <div className="md:col-span-3">
-                  <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">
-                    Checklist de saúde do cilindro
-                  </span>
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {CYLINDER_HEALTH_COMPONENTS.map((component) => (
-                      <button
-                        key={component}
-                        type="button"
-                        className="rounded-lg border border-rkmborder bg-rkmcard2/40 px-3 py-3 text-left text-sm text-slate-300 transition hover:border-blue-400/50 hover:bg-rkmcard2"
-                      >
-                        {component}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <Field label="Observações da desmontagem" className="md:col-span-3">
-                <TextArea
-                  rows={3}
-                  value={form.disassemblyNotes}
-                  onChange={(value) => set('disassemblyNotes', value)}
-                  placeholder="Sequência, travamentos, danos observados ao abrir..."
-                />
-              </Field>
-              <div className="md:col-span-3">
-                <ServiceEntryPhotoField
-                  label="Evidências da desmontagem *"
-                  hint="Registre a abertura e os componentes antes de limpar ou substituir peças."
-                  photos={form.photos.disassembly}
-                  onFiles={(files) => addPhotos('disassembly', files)}
-                  onRemove={(photo) => removePhoto('disassembly', photo)}
-                />
-              </div>
-            </ServiceEntrySection>
-          </>
+          <ServiceEntryDisassemblyStep
+            form={form}
+            set={set}
+            addPhotos={addPhotos}
+            removePhoto={removePhoto}
+          />
         )}
-
         {step === 3 && (
-          <>
-            <ServiceEntrySection
-              title="Orçamento"
-              description="Registre os achados, a recomendação de reparo e a aprovação do cliente."
-            >
-              <Field label="Diagnóstico técnico *" className="md:col-span-3">
-                <TextArea
-                  rows={4}
-                  value={form.diagnosis}
-                  onChange={(value) => set('diagnosis', value)}
-                  placeholder="Causa provável, danos e conclusão da peritagem..."
-                />
-              </Field>
-              <Field label="Medições / tolerâncias" className="md:col-span-2">
-                <TextArea
-                  rows={3}
-                  value={form.measurements}
-                  onChange={(value) => set('measurements', value)}
-                  placeholder="Dimensões, folgas, pressão, valores de referência..."
-                />
-              </Field>
-              <Field label="Destino das peças *">
-                <select
-                  className="rkm-input zenit-field"
-                  value={form.partsDisposition}
-                  onChange={(event) => set('partsDisposition', event.target.value)}
-                >
-                  <option value="">Selecione</option>
-                  <option>Reaproveitar</option>
-                  <option>Substituir</option>
-                  <option>Enviar para análise</option>
-                  <option>Condenar</option>
-                </select>
-              </Field>
-              <Field label="Recomendação / escopo" className="md:col-span-3">
-                <TextArea
-                  rows={3}
-                  value={form.repairRecommendation}
-                  onChange={(value) => set('repairRecommendation', value)}
-                  placeholder="Serviços e peças recomendados para orçamento/laudo..."
-                />
-              </Field>
-              <Field label="Status da aprovação">
-                <select
-                  className="rkm-input zenit-field"
-                  value={form.approvalStatus}
-                  onChange={(event) => set('approvalStatus', event.target.value)}
-                >
-                  <option>Pendente</option>
-                  <option>Aprovada</option>
-                  <option>Reprovada</option>
-                  <option>Ajuste solicitado</option>
-                </select>
-              </Field>
-              <Field label="Referência da aprovação">
-                <TextInput
-                  value={form.approvalReference}
-                  onChange={(value) => set('approvalReference', value)}
-                  placeholder="E-mail, pedido ou autorização"
-                />
-              </Field>
-              <Field label="Disponibilidade de material">
-                <select
-                  className="rkm-input zenit-field"
-                  value={form.materialStatus}
-                  onChange={(event) => set('materialStatus', event.target.value)}
-                >
-                  <option>A verificar</option>
-                  <option>Disponível</option>
-                  <option>Aguardando compra</option>
-                  <option>Não necessário</option>
-                </select>
-              </Field>
-              <div className="md:col-span-3">
-                <ServiceEntryPhotoField
-                  label="Fotos dos achados"
-                  photos={form.photos.diagnosis}
-                  onFiles={(files) => addPhotos('diagnosis', files)}
-                  onRemove={(photo) => removePhoto('diagnosis', photo)}
-                />
-              </div>
-            </ServiceEntrySection>
-          </>
+          <ServiceEntryBudgetStep
+            form={form}
+            set={set}
+            addPhotos={addPhotos}
+            removePhoto={removePhoto}
+          />
         )}
-
         {step === 4 && (
-          <>
-            <ServiceEntrySection
-              title="Reparo"
-              description="Registre o serviço executado e os resultados da validação."
-            >
-              <Field label="Serviço executado *" className="md:col-span-3">
-                <TextArea
-                  rows={4}
-                  value={form.workPerformed}
-                  onChange={(value) => set('workPerformed', value)}
-                  placeholder="Reparo, componentes substituídos, ajustes e referência à IT aplicada..."
-                />
-              </Field>
-              <Field label="Resultado dos testes *">
-                <select
-                  className="rkm-input zenit-field"
-                  value={form.testResult}
-                  onChange={(event) => set('testResult', event.target.value)}
-                >
-                  <option value="">Selecione</option>
-                  <option>Aprovado</option>
-                  <option>Reprovado</option>
-                  <option>Não aplicável</option>
-                </select>
-              </Field>
-              <div className="md:col-span-3">
-                <ServiceEntryPhotoField
-                  label="Fotos da execução e teste *"
-                  photos={form.photos.execution}
-                  onFiles={(files) => addPhotos('execution', files)}
-                  onRemove={(photo) => removePhoto('execution', photo)}
-                />
-              </div>
-            </ServiceEntrySection>
-          </>
+          <ServiceEntryRepairStep
+            form={form}
+            set={set}
+            addPhotos={addPhotos}
+            removePhoto={removePhoto}
+          />
         )}
-
         {step === 5 && (
-          <>
-            <ServiceEntrySection
-              title="Entrega"
-              description="Registre como a ordem foi entregue e a confirmação de saída."
-            >
-              <Field label="Forma de entrega *">
-                <select
-                  className="rkm-input zenit-field"
-                  value={form.dispatchMethod}
-                  onChange={(event) => set('dispatchMethod', event.target.value)}
-                >
-                  <option value="">Selecione</option>
-                  <option>Retirada pelo cliente</option>
-                  <option>Transportadora</option>
-                  <option>Entrega RKM</option>
-                </select>
-              </Field>
-              <Field label="Rastreio / comprovante">
-                <TextInput
-                  value={form.dispatchReference}
-                  onChange={(value) => set('dispatchReference', value)}
-                  placeholder="Código ou referência de entrega"
-                />
-              </Field>
-              <Field label="Observações de entrega" className="md:col-span-3">
-                <TextArea
-                  rows={3}
-                  value={form.dispatchNotes}
-                  onChange={(value) => set('dispatchNotes', value)}
-                  placeholder="Embalagem, responsável pela retirada e observações..."
-                />
-              </Field>
-              <div className="md:col-span-3">
-                <ServiceEntryPhotoField
-                  label="Evidência final / embalagem"
-                  photos={form.photos.dispatch}
-                  onFiles={(files) => addPhotos('dispatch', files)}
-                  onRemove={(photo) => removePhoto('dispatch', photo)}
-                />
-              </div>
-            </ServiceEntrySection>
-          </>
+          <ServiceEntryDispatchStep
+            form={form}
+            set={set}
+            addPhotos={addPhotos}
+            removePhoto={removePhoto}
+          />
         )}
 
         <div className="service-entry-actions service-entry-step-actions">
