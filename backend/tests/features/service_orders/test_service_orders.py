@@ -1,8 +1,11 @@
+from datetime import datetime, timezone
+
 import pytest
 
 from app import app
 from features.auth.repository import auth_database
 from features.clients.model import Client
+from features.file_storage.model import File
 from features.service_orders.model import ServiceOrder
 
 
@@ -82,6 +85,45 @@ def test_arrival_method_is_persisted_as_a_column(service_orders_client):
             assert order.client_id == 1
             assert "arrivalMethod" not in order.payload
             assert "client" not in order.payload
+        finally:
+            database.close()
+
+
+def test_service_order_links_invoice_file_by_foreign_key(service_orders_client):
+    with app.app_context():
+        database = auth_database.session()
+        database.add(
+            File(
+                id="f-invoice-1",
+                storage_key="files/invoice-1.png",
+                original_name="nota-fiscal.png",
+                content_type="image/png",
+                size=128,
+                etag="etag-1",
+                uploaded_by_id="u2",
+                uploaded_by_name="Mecanico RKM",
+                uploaded_at=datetime.now(timezone.utc),
+            )
+        )
+        database.commit()
+        database.close()
+
+    response = service_orders_client.post(
+        "/service-orders",
+        headers=login(service_orders_client),
+        json={**order_payload("20265587"), "invoiceFileId": "f-invoice-1"},
+    )
+
+    assert response.status_code == 201
+    assert response.json["invoiceFileId"] == "f-invoice-1"
+    assert response.json["invoiceFile"]["name"] == "nota-fiscal.png"
+
+    with app.app_context():
+        database = auth_database.session()
+        try:
+            order = database.get(ServiceOrder, "OS-20265587")
+            assert order.invoice_file_id == "f-invoice-1"
+            assert "invoiceFileId" not in order.payload
         finally:
             database.close()
 
@@ -186,4 +228,58 @@ def test_pcp_can_create_initial_service_order(service_orders_client):
         json={**order_payload("20265585"), "stage": "orcamento"},
     )
     assert blocked.status_code == 403
-    assert blocked.json == {"error": "service_order_update_restricted"}
+
+
+def test_pcp_can_update_receiving_on_advanced_order_without_editing_workshop_data(service_orders_client):
+    create = service_orders_client.post(
+        "/service-orders",
+        headers=login(service_orders_client),
+        json={
+            **order_payload("20265588"),
+            "disassemblyNotes": "Registrado pela oficina",
+        },
+    )
+    assert create.status_code == 201
+
+    with app.app_context():
+        database = auth_database.session()
+        database.add(
+            File(
+                id="f-invoice-pcp-1",
+                storage_key="files/invoice-pcp-1.png",
+                original_name="nota-pcp.png",
+                content_type="image/png",
+                size=128,
+                etag="etag-pcp-1",
+                uploaded_by_id="u4",
+                uploaded_by_name="PCP RKM",
+                uploaded_at=datetime.now(timezone.utc),
+            )
+        )
+        database.commit()
+        database.close()
+
+    update = service_orders_client.put(
+        "/service-orders/OS-20265588",
+        headers=login(service_orders_client, "pcp@rkm.com.br"),
+        json={
+            **order_payload("20265588"),
+            "stage": "identificacao",
+            "invoiceFileId": "f-invoice-pcp-1",
+            "invoiceNumber": "NF-PCP-1",
+            "disassemblyNotes": "Tentativa indevida do PCP",
+        },
+    )
+
+    assert update.status_code == 200
+    assert update.json["stage"] == "desmontagem"
+    assert update.json["invoiceFileId"] == "f-invoice-pcp-1"
+    assert update.json["invoiceNumber"] == "NF-PCP-1"
+
+    with app.app_context():
+        database = auth_database.session()
+        try:
+            order = database.get(ServiceOrder, "OS-20265588")
+            assert order.payload["disassemblyNotes"] == "Registrado pela oficina"
+        finally:
+            database.close()

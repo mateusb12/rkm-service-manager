@@ -4,6 +4,7 @@ from marshmallow import Schema, fields
 
 
 class FileResponseSchema(Schema):
+    id = fields.String(required=True)
     key = fields.String(required=True)
     name = fields.String(required=True)
     size = fields.Integer(required=True)

@@ -1911,6 +1911,312 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   font-size: var(--font-xs);
 }
 
+.service-entry-photo-picker.is-dragging {
+  border-color: rgba(56, 189, 248, 0.9);
+  background: rgba(56, 189, 248, 0.14);
+  color: #bae6fd;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.service-entry-invoice-card {
+  display: flex;
+  gap: 12px;
+  min-height: 150px;
+  padding: 10px;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.service-entry-invoice-library {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.service-entry-invoice-existing-card {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.service-entry-invoice-selected-card {
+  display: flex;
+  width: min(100%, 190px);
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.service-entry-invoice-selected-card .service-entry-invoice-preview {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.service-entry-invoice-selected-card .service-entry-invoice-preview img,
+.service-entry-invoice-selected-card .service-entry-invoice-preview iframe {
+  min-height: 0;
+}
+
+.service-entry-invoice-selected-card .service-entry-invoice-details {
+  flex: 0 0 auto;
+  gap: 3px;
+  padding: 0 2px 2px;
+}
+
+.service-entry-invoice-selected-card .service-entry-invoice-details > div {
+  align-self: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.service-entry-invoice-action {
+  display: inline-flex;
+  width: 36px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 8px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.service-entry-invoice-deselect {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: rgba(59, 130, 246, 0.1);
+  color: #93c5fd;
+}
+
+.service-entry-invoice-deselect:hover {
+  border-color: rgba(125, 211, 252, 0.9);
+  background: rgba(59, 130, 246, 0.25);
+  color: #e0f2fe;
+}
+
+.service-entry-invoice-delete {
+  border-color: rgba(251, 113, 133, 0.45);
+  background: rgba(244, 63, 94, 0.08);
+  color: #fda4af;
+}
+
+.service-entry-invoice-delete:hover {
+  border-color: rgba(251, 113, 133, 0.9);
+  background: rgba(244, 63, 94, 0.2);
+  color: #ffe4e6;
+}
+
+.service-entry-invoice-existing-card .service-entry-invoice-preview {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.service-entry-invoice-existing-card .service-entry-invoice-preview img,
+.service-entry-invoice-existing-card .service-entry-invoice-preview iframe {
+  min-height: 0;
+}
+
+.service-entry-invoice-existing-card .service-entry-invoice-details button {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.service-entry-invoice-select {
+  display: inline-flex;
+  width: 44px;
+  height: 36px;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  margin: 8px auto 0;
+  border: 1px solid rgba(96, 165, 250, 0.55);
+  border-radius: 9px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #bfdbfe;
+  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.12);
+}
+
+.service-entry-invoice-select:hover {
+  border-color: rgba(125, 211, 252, 0.95);
+  background: rgba(59, 130, 246, 0.28);
+  color: #e0f2fe;
+  transform: translateY(-1px);
+}
+
+.service-entry-invoice-existing-card .service-entry-invoice-details {
+  flex: 0 0 auto;
+  gap: 3px;
+  padding: 0 2px 2px;
+}
+
+.service-entry-invoice-existing-card .service-entry-invoice-details strong {
+  font-size: 12px;
+}
+
+.service-entry-invoice-existing-card .service-entry-invoice-details small {
+  font-size: 11px;
+}
+
+.service-entry-invoice-existing-card .service-entry-invoice-details button {
+  margin-top: 6px;
+}
+
+.service-entry-invoice-add-card {
+  position: relative;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  color: #93c5fd;
+  cursor: pointer;
+  text-align: center;
+}
+
+.service-entry-invoice-add-card.is-dragging {
+  border-color: rgba(56, 189, 248, 0.9);
+  background: rgba(56, 189, 248, 0.14);
+  color: #bae6fd;
+}
+
+.service-entry-invoice-add-card input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.service-entry-invoice-add-icon {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.service-entry-invoice-add-card strong,
+.service-entry-invoice-add-card small {
+  display: block;
+}
+
+.service-entry-invoice-add-card small {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: var(--font-xs);
+}
+
+.service-entry-invoice-preview {
+  display: flex;
+  width: 130px;
+  min-width: 130px;
+  min-height: 130px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 7px;
+  background: #0f172a;
+  cursor: pointer;
+}
+
+.service-entry-invoice-card.is-uploading {
+  max-width: 430px;
+}
+
+.service-entry-invoice-uploading-preview {
+  cursor: default;
+}
+
+.service-entry-invoice-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(147, 197, 253, 0.25);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: service-entry-invoice-spin 0.8s linear infinite;
+}
+
+@keyframes service-entry-invoice-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.service-entry-invoice-preview img,
+.service-entry-invoice-preview iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 130px;
+  border: 0;
+  object-fit: cover;
+}
+
+.service-entry-invoice-document {
+  color: #93c5fd;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.service-entry-invoice-details {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 2px;
+}
+
+.service-entry-invoice-details strong {
+  overflow: hidden;
+  color: #dbeafe;
+  font-size: var(--font-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-entry-invoice-details small {
+  color: #64748b;
+  font-size: var(--font-xs);
+}
+
+.service-entry-invoice-details div {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.service-entry-invoice-remove {
+  align-self: flex-end;
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(251, 113, 133, 0.35);
+  border-radius: 999px;
+  color: #fda4af;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.service-entry-invoice-remove:hover {
+  border-color: rgba(251, 113, 133, 0.8);
+  background: rgba(244, 63, 94, 0.12);
+}
+
+.service-entry-invoice-details button {
+  color: #93c5fd;
+  font-size: var(--font-xs);
+}
+
 .service-entry-photo-picker input {
   position: absolute;
   width: 1px;

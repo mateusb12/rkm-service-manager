@@ -39,6 +39,8 @@ export const createEmptyServiceEntry = () => ({
   requester: '',
   openingDate: new Date().toISOString().slice(0, 10),
   invoiceNumber: '',
+  invoiceFileId: null,
+  invoiceFile: null,
 
   serialNumber: '',
   manufacturer: '',

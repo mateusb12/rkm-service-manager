@@ -32,6 +32,9 @@ def find_record(database: Session, key: str) -> File | None:
     return database.scalar(select(File).where(File.storage_key == key))
 
 
+def find_record_by_id(database: Session, file_id: str) -> File | None:
+    return database.get(File, file_id)
+
 def save_record(
     database: Session,
     *,

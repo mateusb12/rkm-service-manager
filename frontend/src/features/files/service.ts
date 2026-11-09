@@ -3,9 +3,12 @@ import { apiRequest } from '../../shared/api/http';
 export type FileKind = 'PDF' | 'Imagem' | 'Planilha' | 'Documento';
 
 export type FileRecord = {
+  id: string;
   key: string;
   name: string;
+  contentType: string;
   kind: FileKind;
+  bytes: number;
   size: string;
   uploadedBy: string;
   initials: string;
@@ -16,6 +19,7 @@ export type FileRecord = {
 };
 
 type BackendFile = {
+  id: string;
   key: string;
   name: string;
   size: number;
@@ -66,9 +70,12 @@ function toFileRecord(file: BackendFile): FileRecord {
     .join('');
 
   return {
+    id: file.id,
     key: file.key,
     name: file.name,
+    contentType: file.contentType,
     kind,
+    bytes: file.size,
     size: formatSize(file.size),
     uploadedBy: file.uploadedBy || 'Usuário não identificado',
     initials: initials || '??',

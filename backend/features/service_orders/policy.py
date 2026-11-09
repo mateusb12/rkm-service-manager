@@ -41,16 +41,16 @@ def can_update_service_order(
 ) -> bool:
     if role in {"admin", "mechanic"}:
         return True
-    return (
-        role == "pcp"
-        and current_stage in INITIAL_STAGES
-        and target_stage
-        in {
+    if role != "pcp":
+        return False
+    if current_stage in INITIAL_STAGES:
+        return target_stage in {
             ServiceOrderStage.RECEBIMENTO,
             ServiceOrderStage.IDENTIFICACAO,
             ServiceOrderStage.DESMONTAGEM,
         }
-    )
+    # PCP may return to its receiving section without reopening the workflow.
+    return target_stage == current_stage
 
 
 def visible_sections(role: str) -> set[ServiceOrderSection]:

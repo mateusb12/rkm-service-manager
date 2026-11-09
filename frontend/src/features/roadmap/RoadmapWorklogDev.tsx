@@ -171,6 +171,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
+        'Inclusão do upload opcional de nota fiscal no recebimento, reutilizando o sistema de arquivos existente e vinculando o arquivo à OS por chave estrangeira, com acesso para PCP e Mecânico.',
+    },
+    {
+      category: 'Produto',
+      description:
         'Vinculação obrigatória da OS ao cliente por chave estrangeira no ORM e na API, com clientId obrigatório no payload, remoção do fallback por nome e persistência do vínculo no banco.',
     },
     {

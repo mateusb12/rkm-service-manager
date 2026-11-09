@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from .model import ServiceOrder
+from ..file_storage.model import serialize_file
 from .policy import ServiceOrderSection, visible_sections
 from .stages import SERVICE_ORDER_STAGES, STAGE_LABELS, STAGE_STATUSES, ServiceOrderStage
 
@@ -48,6 +49,8 @@ def _build_service_order_payload(order: ServiceOrder) -> dict[str, Any]:
     if order.client:
         payload["client"] = order.client.nome_fantasia or order.client.razao_social
     payload["clientId"] = order.client_id
+    payload["invoiceFileId"] = order.invoice_file_id
+    payload["invoiceFile"] = serialize_file(order.invoice_file) if order.invoice_file else None
     if order.arrival_method:
         payload["arrivalMethod"] = order.arrival_method.value
     return payload
@@ -57,7 +60,8 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
     ServiceOrderSection.RECEBIMENTO: lambda payload: _section(
         payload,
         (
-            "client", "orderNumber", "invoiceNumber", "expectedDeliveryDate", "urgent",
+            "client", "orderNumber", "invoiceNumber", "invoiceFileId", "invoiceFile",
+            "expectedDeliveryDate", "urgent",
             "requester", "openingDate", "arrivalMethod", "receivedBy", "deliveredBy",
             "receivedAccessories",
         ),
@@ -121,6 +125,8 @@ def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
             "razaoSocial": order.client.razao_social,
             "nomeFantasia": order.client.nome_fantasia,
         } if order.client else None,
+        "invoiceFileId": order.invoice_file_id,
+        "invoiceFile": serialize_file(order.invoice_file) if order.invoice_file else None,
         "equipment": payload.get("equipment", ""),
         "status": order.status,
         "stage": stage.value,

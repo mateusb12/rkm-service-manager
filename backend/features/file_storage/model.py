@@ -26,3 +26,17 @@ class File(Base):
     uploaded_by_id: Mapped[str | None] = mapped_column(String, nullable=True)
     uploaded_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
     uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+def serialize_file(record: File) -> dict:
+    return {
+        "id": record.id,
+        "key": record.storage_key,
+        "name": record.original_name,
+        "size": record.size,
+        "etag": record.etag,
+        "contentType": record.content_type,
+        "uploadedById": record.uploaded_by_id,
+        "uploadedBy": record.uploaded_by_name,
+        "uploadedAt": record.uploaded_at,
+    }

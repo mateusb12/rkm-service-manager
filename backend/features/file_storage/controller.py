@@ -18,7 +18,7 @@ except ImportError:
     from features.auth.repository import authenticate, session
 
 from .schema import FileResponseSchema, FileUploadSchema, StorageHealthSchema
-from .model import File
+from .model import File, serialize_file
 from .repository import (
     delete_record,
     ensure_schema,
@@ -51,16 +51,7 @@ def _original_name(metadata: ObjectMetadata) -> str:
 
 
 def _file_response(record: File) -> dict:
-    return {
-        "key": record.storage_key,
-        "name": record.original_name,
-        "size": record.size,
-        "etag": record.etag,
-        "contentType": record.content_type,
-        "uploadedById": record.uploaded_by_id,
-        "uploadedBy": record.uploaded_by_name,
-        "uploadedAt": record.uploaded_at,
-    }
+    return serialize_file(record)
 
 
 def _current_user() -> tuple[str, str] | None:
@@ -82,6 +73,23 @@ def _safe_filename(filename: str) -> str:
 
 def _new_object_key(file: FileStorage) -> str:
     return f"files/{secrets.token_hex(12)}-{_safe_filename(file.filename or '')}"
+
+
+def _file_size(file: FileStorage) -> int | None:
+    """Return the uploaded stream size instead of trusting multipart metadata."""
+    stream = file.stream
+    try:
+        current_position = stream.tell()
+        stream.seek(0, 2)
+        size = stream.tell()
+        stream.seek(0)
+        return size
+    except (AttributeError, OSError):
+        try:
+            stream.seek(current_position)
+        except (AttributeError, OSError, UnboundLocalError):
+            pass
+        return file.content_length
 
 
 @FILE_STORAGE_BLUEPRINT.get("/storage-health")
@@ -143,11 +151,12 @@ def upload_file(data):
     original_name = _safe_filename(file.filename or "")
     database = session()
     try:
+        size = _file_size(file)
         etag = _storage().put(
             key,
             file.stream,
             content_type=content_type,
-            size=file.content_length,
+            size=size,
             metadata={},
         )
         ensure_schema(database)
@@ -156,7 +165,7 @@ def upload_file(data):
             key=key,
             original_name=original_name,
             content_type=content_type,
-            size=file.content_length or 0,
+            size=size or 0,
             etag=etag,
             uploaded_by_id=user[0],
             uploaded_by_name=user[1],

@@ -3,6 +3,7 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
+import { FileCheck2, Trash2, X } from 'lucide-react';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -35,6 +36,7 @@ import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
 import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
 import { createDemoServiceEntry } from './demo-fixture';
+import { deleteFile, fetchFile, listFiles, uploadFile } from '../files/service';
 
 const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
   Cilindro: '/assets/cilindro.png',
@@ -126,6 +128,204 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
   );
 };
 
+const ServiceEntryInvoicePreview = ({ file }) => {
+  const [previewUrl, setPreviewUrl] = useState('');
+
+  useEffect(() => {
+    if (!file?.key) {
+      setPreviewUrl('');
+      return undefined;
+    }
+
+    let active = true;
+    let objectUrl = '';
+    void fetchFile(file.key)
+      .then((blob) => {
+        if (!active) return;
+        objectUrl = URL.createObjectURL(blob);
+        setPreviewUrl(objectUrl);
+      })
+      .catch(() => {
+        if (active) setPreviewUrl('');
+      });
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [file?.key]);
+
+  return (
+    <button
+      type="button"
+      className="service-entry-invoice-preview"
+      title={`Abrir ${file.name}`}
+      onClick={() => previewUrl && window.open(previewUrl, '_blank', 'noopener,noreferrer')}
+    >
+      {previewUrl && file.contentType?.startsWith('image/') ? (
+        <img src={previewUrl} alt={`Prévia da nota fiscal ${file.name}`} />
+      ) : previewUrl && file.contentType === 'application/pdf' ? (
+        <iframe title={`Prévia da nota fiscal ${file.name}`} src={previewUrl} />
+      ) : (
+        <span className="service-entry-invoice-document">NF</span>
+      )}
+    </button>
+  );
+};
+
+const ServiceEntryInvoiceFileField = ({
+  file,
+  onUpload,
+  onDeselect,
+  onDelete,
+  onSelectExisting,
+}) => {
+  const [uploading, setUploading] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [existingFiles, setExistingFiles] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    void listFiles()
+      .then((files) => {
+        if (!active) return;
+        setExistingFiles(
+          files.filter(
+            (candidate) =>
+              candidate.bytes > 0 &&
+              (candidate.contentType?.startsWith('image/') ||
+                candidate.contentType === 'application/pdf'),
+          ),
+        );
+      })
+      .catch(() => {
+        if (active) setExistingFiles([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const uploadSelectedFile = async (selectedFile) => {
+    if (!selectedFile) return;
+    setUploading(true);
+    try {
+      await onUpload(selectedFile);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const selectFile = async (event) => {
+    const selectedFile = event.target.files?.[0];
+    event.target.value = '';
+    await uploadSelectedFile(selectedFile);
+  };
+
+  const dropFile = async (event) => {
+    event.preventDefault();
+    setDragging(false);
+    await uploadSelectedFile(event.dataTransfer.files?.[0]);
+  };
+
+  return (
+    <div className="service-entry-photo-field">
+      <label className="service-entry-photo-label">Arquivo da nota fiscal</label>
+      <p>Opcional — imagem ou PDF armazenado no sistema de arquivos.</p>
+      {uploading ? (
+        <div className="service-entry-invoice-card is-uploading" aria-live="polite">
+          <div className="service-entry-invoice-preview service-entry-invoice-uploading-preview">
+            <span className="service-entry-invoice-spinner" aria-hidden="true" />
+          </div>
+          <div className="service-entry-invoice-details">
+            <strong>Enviando nota fiscal...</strong>
+            <small>Aguarde enquanto o arquivo é armazenado.</small>
+          </div>
+        </div>
+      ) : !file ? (
+        <div className="service-entry-invoice-library">
+          {existingFiles.map((existingFile) => (
+            <div
+              className="service-entry-invoice-card service-entry-invoice-existing-card"
+              key={existingFile.id}
+            >
+              <ServiceEntryInvoicePreview file={existingFile} />
+              <div className="service-entry-invoice-details">
+                <strong title={existingFile.name}>{existingFile.name}</strong>
+                <small>{existingFile.size}</small>
+                <button
+                  type="button"
+                  className="service-entry-invoice-select"
+                  aria-label={`Selecionar ${existingFile.name}`}
+                  title="Selecionar nota fiscal"
+                  onClick={() => onSelectExisting(existingFile)}
+                >
+                  <FileCheck2 size={23} strokeWidth={1.9} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          ))}
+          <label
+            className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}`}
+            onDragEnter={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDragLeave={(event) => {
+              if (event.currentTarget === event.target) setDragging(false);
+            }}
+            onDrop={dropFile}
+          >
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={selectFile}
+              disabled={uploading}
+            />
+            <span className="service-entry-invoice-add-icon" aria-hidden="true">
+              ＋
+            </span>
+            <strong>Adicionar nota fiscal</strong>
+            <small>Clique ou arraste uma imagem ou PDF</small>
+          </label>
+        </div>
+      ) : (
+        <div className="service-entry-invoice-card service-entry-invoice-selected-card">
+          <ServiceEntryInvoicePreview file={file} />
+          <div className="service-entry-invoice-details">
+            <strong title={file.name}>{file.name}</strong>
+            <small>
+              {file.contentType === 'application/pdf' ? 'Documento PDF' : 'Imagem da nota fiscal'}
+            </small>
+            <div>
+              <button
+                type="button"
+                className="service-entry-invoice-action service-entry-invoice-deselect"
+                aria-label={`Desselecionar ${file.name}`}
+                title="Desselecionar nota fiscal"
+                onClick={onDeselect}
+              >
+                <X size={19} strokeWidth={2} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="service-entry-invoice-action service-entry-invoice-delete"
+                aria-label={`Apagar ${file.name}`}
+                title="Apagar arquivo da nota fiscal"
+                onClick={onDelete}
+              >
+                <Trash2 size={18} strokeWidth={1.9} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, className }, ref) => (
   <input
     ref={ref}
@@ -139,7 +339,14 @@ const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, class
   />
 ));
 
-const ServiceEntryArrivalStep = ({ form, set, addPhotos, removePhoto }) => (
+const ServiceEntryArrivalStep = ({
+  form,
+  set,
+  onInvoiceFileUpload,
+  onInvoiceFileRemove,
+  addPhotos,
+  removePhoto,
+}) => (
   <ServiceEntrySection
     title="Recebimento PCP"
     description="Registre somente o necessário para abrir a OS. A identificação técnica fica para a oficina."
@@ -180,6 +387,21 @@ const ServiceEntryArrivalStep = ({ form, set, addPhotos, removePhoto }) => (
         placeholder="Número da NF, N/A ou deixe em branco"
       />
     </Field>
+    <div className="md:col-span-3">
+      <ServiceEntryInvoiceFileField
+        file={form.invoiceFile}
+        onUpload={onInvoiceFileUpload}
+        onDeselect={() => {
+          set('invoiceFileId', null);
+          set('invoiceFile', null);
+        }}
+        onDelete={onInvoiceFileRemove}
+        onSelectExisting={(existingFile) => {
+          set('invoiceFileId', existingFile.id);
+          set('invoiceFile', existingFile);
+        }}
+      />
+    </div>
     <div className="md:col-span-3">
       <ServiceEntryPhotoField
         label="Fotos da peça"
@@ -600,6 +822,28 @@ export const ServiceEntryView = () => {
     setError('');
   };
 
+  const uploadInvoiceFile = async (file) => {
+    try {
+      const uploaded = await uploadFile(file);
+      setForm((prev) => ({ ...prev, invoiceFileId: uploaded.id, invoiceFile: uploaded }));
+      setError('');
+    } catch {
+      setError('Não foi possível enviar o arquivo da nota fiscal.');
+      throw new Error('invoice_file_upload_failed');
+    }
+  };
+
+  const removeInvoiceFile = async () => {
+    const file = form.invoiceFile;
+    try {
+      if (file?.key) await deleteFile(file.key);
+      setForm((prev) => ({ ...prev, invoiceFileId: null, invoiceFile: null }));
+      setError('');
+    } catch {
+      setError('Não foi possível remover o arquivo da nota fiscal.');
+    }
+  };
+
   const validateStep = () => {
     const missing = getMissingServiceEntryFields(form, step);
 
@@ -654,14 +898,23 @@ export const ServiceEntryView = () => {
       createdAt: form.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    const previousInvoiceFile = form.id
+      ? entries.find((item) => item.id === form.id)?.invoiceFile
+      : null;
     try {
       const persistedEntry = await saveServiceEntry(entry, Boolean(form.id));
+      if (previousInvoiceFile?.key && previousInvoiceFile.key !== persistedEntry.invoiceFile?.key) {
+        await deleteFile(previousInvoiceFile.key).catch(() => undefined);
+      }
       const next = [persistedEntry, ...entries.filter((item) => item.id !== normalizedId)];
       setEntries(next);
       setForm(persistedEntry);
       window.dispatchEvent(new Event('service-orders-changed'));
       return true;
     } catch (saveError) {
+      if (form.invoiceFile?.key && form.invoiceFile.key !== previousInvoiceFile?.key) {
+        await deleteFile(form.invoiceFile.key).catch(() => undefined);
+      }
       setError(
         saveError.message === 'service_order_already_exists'
           ? `A ${normalizeOrderNumber(form.orderNumber)} já foi cadastrada.`
@@ -1051,6 +1304,8 @@ export const ServiceEntryView = () => {
           <ServiceEntryArrivalStep
             form={form}
             set={set}
+            onInvoiceFileUpload={uploadInvoiceFile}
+            onInvoiceFileRemove={removeInvoiceFile}
             addPhotos={addPhotos}
             removePhoto={removePhoto}
           />

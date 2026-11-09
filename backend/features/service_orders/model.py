@@ -11,6 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from ..clients.model import Client
+    from ..file_storage.model import File
 
 try:
     from ..auth.model import Base
@@ -33,6 +34,10 @@ class ServiceOrder(Base):
     order_number: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
     client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"), nullable=False, index=True)
     client: Mapped["Client"] = relationship("Client")
+    invoice_file_id: Mapped[str | None] = mapped_column(
+        ForeignKey("files.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    invoice_file: Mapped["File | None"] = relationship("File")
     created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     created_by_user: Mapped["User"] = relationship("User", foreign_keys=[created_by])
     status: Mapped[str] = mapped_column(String, nullable=False, default="Recebido")

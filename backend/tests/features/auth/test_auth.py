@@ -198,6 +198,8 @@ def test_auth_contract(auth_client, subtests):
                 "service.edit_assigned",
                 "authorization.request",
                 "dashboard.mybench",
+                    "files.view",
+                    "files.manage",
             ],
             "pcp": [
                 "service.view_status",
@@ -207,6 +209,8 @@ def test_auth_contract(auth_client, subtests):
                 "dashboard.pcp",
                 "clients.view",
                 "clients.manage",
+                    "files.view",
+                    "files.manage",
             ],
             "commercial": ["dashboard.view"],
         }
