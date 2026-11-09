@@ -117,6 +117,68 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Inclusão do acompanhamento de atividade local do frontend em localhost:4173 no cálculo de tempo da feature, separado das atividades do ChatGPT.',
     },
   ],
+  'pcp/fila': [
+    {
+      category: 'Produto',
+      description:
+        'Criação do módulo persistente de ordens de serviço no backend, com model, repositório, endpoints de listagem, consulta, criação, atualização e exclusão e catálogo das etapas operacionais.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Inclusão da normalização do número da OS, validação do payload, prevenção de duplicidade, validação de etapa e tratamento dos erros de criação e atualização na API.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Definição das regras de acesso por perfil e etapa: Admin e Mecânico podem acompanhar o fluxo completo, enquanto o PCP fica limitado às etapas iniciais e aos avanços permitidos pela operação.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Implementação da serialização por seção e por perfil, com status, etapa atual, etapas disponíveis e somente os campos operacionais permitidos para cada papel do sistema.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Criação dos testes automatizados do ciclo de ordens de serviço, cobrindo listagem, criação, atualização, exclusão, normalização, duplicidade e restrições de acesso.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Migração da tela de entrada para o novo serviço de ordens de serviço, substituindo o repositório local pela API persistente e mantendo a criação, edição, exclusão e acompanhamento da OS no fluxo existente.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Implementação do stepper operacional com seis etapas, indicação da etapa atual e do maior progresso alcançado, navegação entre etapas permitidas e validações específicas antes de avançar.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Inclusão do salvamento progressivo por etapa, preservando o estado do formulário, o status da OS e os dados já registrados ao avançar pelo ciclo operacional.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Implementação do armazenamento local das fotos por OS e categoria, com upload, recuperação de metadados, remoção dos arquivos e integração das evidências ao salvamento do progresso.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Inclusão da autoria da OS com chave estrangeira para o usuário criador, retorno do nome e da data de criação pela API e exibição dessas informações na fila.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Ajuste do carregamento inicial para buscar todas as OS e as etapas na abertura da página, permitindo selecionar uma OS usando os dados já carregados em memória, sem uma nova chamada de detalhe.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Refinamento da fila com skeleton somente para os dados do backend, fallback local das etapas, data de criação por extenso, badge do criador e bloqueio visual e funcional das etapas futuras.',
+    },
+  ],
   'admin/usuarios': [
     {
       category: 'Produto',
