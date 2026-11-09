@@ -752,6 +752,49 @@ export const ServiceEntryView = () => {
               title="Dados da chegada"
               description="Registre a cadeia de recebimento antes da avaliação e desmontagem."
             >
+              <Field label="Como chegou" required className="md:col-span-3">
+                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Como chegou">
+                  {[
+                    ['coleta_cliente', 'Coleta no cliente', '/assets/coleta-no-cliente.png'],
+                    [
+                      'cliente_entregou',
+                      'Cliente trouxe à oficina',
+                      '/assets/cliente-trouxe-pra-oficina.png',
+                    ],
+                  ].map(([value, label, icon]) => {
+                    const selected = form.arrivalMethod === value;
+
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                          selected
+                            ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
+                            : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                        }`}
+                        onClick={() => set('arrivalMethod', value)}
+                      >
+                        <span className="flex h-20 w-20 items-center justify-center p-1">
+                          <img
+                            src={icon}
+                            alt=""
+                            aria-hidden="true"
+                            className="h-full w-full object-contain"
+                          />
+                        </span>
+                        <span
+                          className={`text-xs font-medium ${selected ? 'text-sky-300' : 'text-white'}`}
+                        >
+                          {label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Field>
               <Field label="Recebido por" required>
                 <UserSelector
                   value={form.receivedBy}

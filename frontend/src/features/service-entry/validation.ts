@@ -6,6 +6,7 @@ const REQUIRED_FIELDS_BY_STAGE = {
   1: [
     ['orderType', 'Categoria do equipamento'],
     ['equipment', 'Equipamento'],
+    ['arrivalMethod', 'Como chegou'],
     ['receivedBy', 'Responsável pelo recebimento'],
   ],
   2: [['disassemblyOperator', 'Responsável pela desmontagem']],

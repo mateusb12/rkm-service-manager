@@ -44,6 +44,7 @@ export const createDemoServiceEntry = () => {
     hydraulic: true,
     pneumatic: false,
     fluidApplication: 'Óleo hidráulico — aplicação de demonstração',
+    arrivalMethod: 'coleta_cliente',
     receivedBy: 'Operador de recebimento DEV',
     deliveredBy: 'Transportadora de exemplo',
     receivedAccessories: 'Conexões e tampa de proteção (exemplo).',

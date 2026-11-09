@@ -53,6 +53,7 @@ export const createEmptyServiceEntry = () => ({
   hydraulic: true,
   pneumatic: false,
   fluidApplication: '',
+  arrivalMethod: '',
   receivedBy: '',
   deliveredBy: '',
   receivedAccessories: '',
