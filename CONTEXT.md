@@ -48,3 +48,13 @@ _Evitar_: usuários reais
 **Operador / Técnico**:
 Cargo responsável pela execução e registro das etapas técnicas atribuídas.
 _Evitar_: técnico, quando o contexto exigir o cargo formal
+
+## Ordem de serviço
+
+**Orçamento**:
+Etapa em que o diagnóstico, a recomendação de reparo, os materiais e a necessidade de aprovação são registrados para definir o serviço a ser executado.
+_Evitar_: Diagnóstico e aprovação, diagnóstico
+
+**Entrega**:
+Etapa em que a ordem de serviço concluída é devolvida ao cliente ou encaminhada pela forma de saída definida.
+_Evitar_: Expedição
