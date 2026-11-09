@@ -45,6 +45,9 @@ def _section(
 
 def _build_service_order_payload(order: ServiceOrder) -> dict[str, Any]:
     payload = dict(order.payload or {})
+    if order.client:
+        payload["client"] = order.client.nome_fantasia or order.client.razao_social
+    payload["clientId"] = order.client_id
     if order.arrival_method:
         payload["arrivalMethod"] = order.arrival_method.value
     return payload
@@ -112,6 +115,12 @@ def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
             "name": order.created_by_user.name if order.created_by_user else "",
         },
         "client": payload.get("client", ""),
+        "clientId": order.client_id,
+        "clientDetails": {
+            "id": order.client.id,
+            "razaoSocial": order.client.razao_social,
+            "nomeFantasia": order.client.nome_fantasia,
+        } if order.client else None,
         "equipment": payload.get("equipment", ""),
         "status": order.status,
         "stage": stage.value,

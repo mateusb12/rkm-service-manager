@@ -14,6 +14,11 @@ class ServiceOrderInputSchema(Schema):
         unknown = INCLUDE
 
     orderNumber = fields.String(required=True, validate=validate.Length(min=1, max=80))
+    clientId = fields.Integer(
+        required=True,
+        strict=True,
+        validate=validate.Range(min=1),
+    )
     status = fields.String(load_default="Recebido", validate=validate.Length(min=1, max=120))
     stage = fields.String(load_default="recebimento", validate=validate.Length(min=1, max=80))
     arrivalMethod = fields.String(

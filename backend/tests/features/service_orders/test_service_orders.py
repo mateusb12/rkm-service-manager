@@ -2,6 +2,7 @@ import pytest
 
 from app import app
 from features.auth.repository import auth_database
+from features.clients.model import Client
 from features.service_orders.model import ServiceOrder
 
 
@@ -13,6 +14,10 @@ def service_orders_client(tmp_path, monkeypatch):
     with app.app_context():
         auth_database.create_schema()
         auth_database.seed_users()
+        database = auth_database.session()
+        database.add(Client(id=1, cnpj="10203040000150", razao_social="RKM HIDRAULICA LTDA", nome_fantasia="RKM HIDRAULICA"))
+        database.commit()
+        database.close()
     return app.test_client()
 
 
@@ -28,6 +33,7 @@ def login(client, email="mecanico@rkm.com.br"):
 def order_payload(order_number="20265584"):
     return {
         "orderNumber": order_number,
+        "clientId": 1,
         "client": "RKM HIDRAULICA",
         "invoiceNumber": "NF-123",
         "status": "Aguardando desmontagem",
@@ -46,6 +52,7 @@ def test_service_order_persists_flexible_document(service_orders_client):
     assert create.status_code == 201
     assert create.json["id"] == "OS-20265584"
     assert create.json["futureField"]["canChangeWithoutMigration"] is True
+    assert create.json["clientId"] == 1
 
     listed = service_orders_client.get("/service-orders", headers=headers)
     assert listed.status_code == 200
@@ -72,7 +79,9 @@ def test_arrival_method_is_persisted_as_a_column(service_orders_client):
         try:
             order = database.get(ServiceOrder, "OS-20265586")
             assert order.arrival_method.value == "coleta_cliente"
+            assert order.client_id == 1
             assert "arrivalMethod" not in order.payload
+            assert "client" not in order.payload
         finally:
             database.close()
 

@@ -34,6 +34,7 @@ export const createEmptyServiceEntry = () => ({
   urgent: false,
 
   client: '',
+  clientId: null,
   clientReference: '',
   requester: '',
   openingDate: new Date().toISOString().slice(0, 10),

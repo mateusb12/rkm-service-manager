@@ -16,11 +16,15 @@ except ImportError:
     from features.auth.repository import session
 
 from .model import ArrivalMethod, ServiceOrder
+try:
+    from ..clients.repository import find_client
+except ImportError:
+    from features.clients.repository import find_client
 from .policy import (
     can_create_service_order,
     can_update_service_order,
 )
-from .repository import ensure_schema, find_service_order, list_service_orders, save_service_order
+from .repository import find_service_order, list_service_orders, save_service_order
 from .schema import ServiceOrderInputSchema, normalize_order_number
 from .serialization import (
     get_service_order_stage,
@@ -48,26 +52,28 @@ def list_stages():
 def _validated_payload():
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
-        return None, (jsonify({"error": "invalid_json"}), 400)
+        return None, None, (jsonify({"error": "invalid_json"}), 400)
     try:
         data = ServiceOrderInputSchema().load(payload)
     except Exception:
-        return None, (jsonify({"error": "validation_failed"}), 400)
+        return None, None, (jsonify({"error": "validation_failed"}), 400)
     order_number = normalize_order_number(data["orderNumber"])
     if not order_number:
-        return None, (jsonify({"error": "order_number_required"}), 400)
+        return None, None, (jsonify({"error": "order_number_required"}), 400)
     try:
         stage = parse_stage(data["stage"])
     except ValueError as error:
-        return None, (jsonify({"error": str(error)}), 400)
+        return None, None, (jsonify({"error": str(error)}), 400)
     normalized = {
         **payload,
         **data,
         "orderNumber": order_number,
         "stage": stage.value,
     }
+    normalized.pop("clientId", None)
+    normalized.pop("client", None)
     normalized.pop("arrivalMethod", None)
-    return normalized, None
+    return normalized, data["clientId"], None
 
 
 @SERVICE_ORDERS_BLUEPRINT.get("")
@@ -75,7 +81,6 @@ def _validated_payload():
 def list_orders():
     database = session()
     try:
-        ensure_schema(database)
         orders = list_service_orders(database, request.args.get("status", "").strip())
         role = g.current_user.role
         return jsonify(
@@ -95,7 +100,6 @@ def list_orders():
 def get_order(order_id: str):
     database = session()
     try:
-        ensure_schema(database)
         order = find_service_order(database, normalize_order_number(order_id))
         if not order:
             return jsonify({"error": "service_order_not_found"}), 404
@@ -108,15 +112,21 @@ def get_order(order_id: str):
 @require_specific_permission("service.create")
 def create_order():
     raw_payload = request.get_json(silent=True) or {}
-    payload, error = _validated_payload()
+    payload, client_id, error = _validated_payload()
     if error:
         return error
     if not can_create_service_order(g.current_user.role, parse_stage(payload["stage"])):
         return jsonify({"error": "service_order_stage_restricted"}), 403
+    database = session()
+    client = find_client(database, client_id)
+    if not client:
+        database.close()
+        return jsonify({"error": "client_required_or_not_found"}), 400
     now = datetime.now(timezone.utc)
     order = ServiceOrder(
         id=payload["orderNumber"],
         order_number=payload["orderNumber"],
+        client_id=client.id,
         created_by=g.current_user.id,
         status=payload.get("status", "Recebido"),
         stage=payload["stage"],
@@ -127,9 +137,7 @@ def create_order():
         created_at=now,
         updated_at=now,
     )
-    database = session()
     try:
-        ensure_schema(database)
         save_service_order(database, order)
         database.commit()
         return jsonify(serialize_service_order(order, g.current_user.role)), 201
@@ -144,7 +152,7 @@ def create_order():
 @require_one_of_permissions("service.edit_assigned", "service.update_initial")
 def update_order(order_id: str):
     raw_payload = request.get_json(silent=True) or {}
-    payload, error = _validated_payload()
+    payload, client_id, error = _validated_payload()
     if error:
         return error
     normalized_id = normalize_order_number(order_id)
@@ -152,7 +160,6 @@ def update_order(order_id: str):
         return jsonify({"error": "order_number_cannot_change"}), 400
     database = session()
     try:
-        ensure_schema(database)
         order = find_service_order(database, normalized_id)
         if not order:
             return jsonify({"error": "service_order_not_found"}), 404
@@ -164,6 +171,10 @@ def update_order(order_id: str):
             return jsonify({"error": "service_order_update_restricted"}), 403
         order.status = payload.get("status", order.status)
         order.stage = payload["stage"]
+        client = find_client(database, client_id)
+        if not client:
+            return jsonify({"error": "client_required_or_not_found"}), 400
+        order.client_id = client.id
         order.arrival_method = (
             ArrivalMethod(raw_payload["arrivalMethod"])
             if raw_payload.get("arrivalMethod")
@@ -182,7 +193,6 @@ def update_order(order_id: str):
 def delete_order(order_id: str):
     database = session()
     try:
-        ensure_schema(database)
         order = find_service_order(database, normalize_order_number(order_id))
         if not order:
             return jsonify({"error": "service_order_not_found"}), 404

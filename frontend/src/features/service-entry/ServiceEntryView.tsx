@@ -147,8 +147,14 @@ const ServiceEntryArrivalStep = ({ form, set, addPhotos, removePhoto }) => (
     <Field label="Cliente" required className="md:col-span-2">
       <ClientSelector
         value={form.client}
-        onSelect={(client) => set('client', client.nomeFantasia)}
-        onClear={() => set('client', '')}
+        onSelect={(client) => {
+          set('client', client.nomeFantasia);
+          set('clientId', client.id);
+        }}
+        onClear={() => {
+          set('client', '');
+          set('clientId', null);
+        }}
       />
     </Field>
     <Field

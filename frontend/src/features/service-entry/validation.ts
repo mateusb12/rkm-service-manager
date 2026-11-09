@@ -1,6 +1,7 @@
 const REQUIRED_FIELDS_BY_STAGE = {
   0: [
     ['orderNumber', 'Nº da OS'],
+    ['clientId', 'Cliente'],
     ['client', 'Cliente'],
   ],
   1: [

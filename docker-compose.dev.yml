@@ -6,8 +6,8 @@ services:
       - "127.0.0.1:15434:15432"
     environment:
       SSH_AUTH_SOCK: /run/ssh-agent
-      RKM_PG_PRIVATE_IP: 127.0.0.1
-      RKM_PG_PRIVATE_PORT: 15432
+      RKM_PG_PRIVATE_IP: 172.16.1.5
+      RKM_PG_PRIVATE_PORT: 5432
     volumes:
       - type: bind
         source: ${HOME}/.ssh

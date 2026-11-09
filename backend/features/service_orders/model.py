@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from ..clients.model import Client
 
 try:
     from ..auth.model import Base
@@ -28,6 +31,8 @@ class ServiceOrder(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     order_number: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"), nullable=False, index=True)
+    client: Mapped["Client"] = relationship("Client")
     created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     created_by_user: Mapped["User"] = relationship("User", foreign_keys=[created_by])
     status: Mapped[str] = mapped_column(String, nullable=False, default="Recebido")
