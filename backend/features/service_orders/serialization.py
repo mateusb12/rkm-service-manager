@@ -9,7 +9,7 @@ from .policy import ServiceOrderSection, visible_sections
 from .stages import SERVICE_ORDER_STAGES, STAGE_LABELS, STAGE_STATUSES, ServiceOrderStage
 
 
-def serialize_stage_catalog(role: str) -> list[dict[str, Any]]:
+def serialize_service_order_stage_catalog(role: str) -> list[dict[str, Any]]:
     initial_stage_ids = {ServiceOrderStage.RECEBIMENTO, ServiceOrderStage.IDENTIFICACAO}
     can_access_all = role in {"admin", "mechanic"}
     can_create_or_update = role in {"admin", "mechanic", "pcp"}
@@ -43,12 +43,20 @@ def _section(
     return result
 
 
+def _build_service_order_payload(order: ServiceOrder) -> dict[str, Any]:
+    payload = dict(order.payload or {})
+    if order.arrival_method:
+        payload["arrivalMethod"] = order.arrival_method.value
+    return payload
+
+
 SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[str, Any]]] = {
     ServiceOrderSection.RECEBIMENTO: lambda payload: _section(
         payload,
         (
             "client", "orderNumber", "invoiceNumber", "expectedDeliveryDate", "urgent",
-            "requester", "openingDate", "receivedBy", "deliveredBy", "receivedAccessories",
+            "requester", "openingDate", "arrivalMethod", "receivedBy", "deliveredBy",
+            "receivedAccessories",
         ),
         "arrival",
     ),
@@ -88,13 +96,13 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
 }
 
 
-def order_stage(order: ServiceOrder) -> ServiceOrderStage:
+def get_service_order_stage(order: ServiceOrder) -> ServiceOrderStage:
     return ServiceOrderStage(order.stage)
 
 
 def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
-    payload = order.payload or {}
-    stage = order_stage(order)
+    payload = _build_service_order_payload(order)
+    stage = get_service_order_stage(order)
     return {
         "id": order.id,
         "orderNumber": order.order_number,
@@ -113,8 +121,8 @@ def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
 
 
 def serialize_service_order(order: ServiceOrder, role: str) -> dict[str, Any]:
-    payload = order.payload or {}
-    stage = order_stage(order)
+    payload = _build_service_order_payload(order)
+    stage = get_service_order_stage(order)
     result = {
         **serialize_service_order_summary(order),
         "createdAt": order.created_at.isoformat() if order.created_at else None,

@@ -2,6 +2,7 @@ import pytest
 
 from app import app
 from features.auth.repository import auth_database
+from features.service_orders.model import ServiceOrder
 
 
 @pytest.fixture
@@ -53,6 +54,27 @@ def test_service_order_persists_flexible_document(service_orders_client):
     fetched = service_orders_client.get("/service-orders/20265584", headers=headers)
     assert fetched.status_code == 200
     assert fetched.json["photos"]["arrival"][0]["id"] == "photo-1"
+
+
+def test_arrival_method_is_persisted_as_a_column(service_orders_client):
+    headers = login(service_orders_client)
+    create = service_orders_client.post(
+        "/service-orders",
+        headers=headers,
+        json={**order_payload("20265586"), "arrivalMethod": "coleta_cliente"},
+    )
+
+    assert create.status_code == 201
+    assert create.json["arrivalMethod"] == "coleta_cliente"
+
+    with app.app_context():
+        database = auth_database.session()
+        try:
+            order = database.get(ServiceOrder, "OS-20265586")
+            assert order.arrival_method.value == "coleta_cliente"
+            assert "arrivalMethod" not in order.payload
+        finally:
+            database.close()
 
 
 def test_stage_catalog_exposes_role_capabilities(service_orders_client):

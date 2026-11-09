@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Index, JSON, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 try:
     from ..auth.model import Base
 except ImportError:
     from features.auth.model import Base
+
+
+class ArrivalMethod(StrEnum):
+    COLETA_CLIENTE = "coleta_cliente"
+    CLIENTE_ENTREGOU = "cliente_entregou"
 
 
 class ServiceOrder(Base):
@@ -26,6 +32,15 @@ class ServiceOrder(Base):
     created_by_user: Mapped["User"] = relationship("User", foreign_keys=[created_by])
     status: Mapped[str] = mapped_column(String, nullable=False, default="Recebido")
     stage: Mapped[str] = mapped_column(String, nullable=False, default="recebimento")
+    arrival_method: Mapped[ArrivalMethod | None] = mapped_column(
+        Enum(
+            ArrivalMethod,
+            native_enum=False,
+            validate_strings=True,
+            values_callable=lambda enum: [method.value for method in enum],
+        ),
+        nullable=True,
+    )
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

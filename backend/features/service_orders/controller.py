@@ -15,7 +15,7 @@ except ImportError:
     from features.auth.controller import require_one_of_permissions, require_specific_permission
     from features.auth.repository import session
 
-from .model import ServiceOrder
+from .model import ArrivalMethod, ServiceOrder
 from .policy import (
     can_create_service_order,
     can_update_service_order,
@@ -23,10 +23,10 @@ from .policy import (
 from .repository import ensure_schema, find_service_order, list_service_orders, save_service_order
 from .schema import ServiceOrderInputSchema, normalize_order_number
 from .serialization import (
-    order_stage,
+    get_service_order_stage,
     serialize_service_order,
     serialize_service_order_summary,
-    serialize_stage_catalog,
+    serialize_service_order_stage_catalog,
 )
 from .stages import parse_stage
 
@@ -42,7 +42,7 @@ SERVICE_ORDERS_BLUEPRINT = Blueprint(
 @SERVICE_ORDERS_BLUEPRINT.get("/stages")
 @require_one_of_permissions("service.view_assigned", "service.view_status")
 def list_stages():
-    return jsonify(serialize_stage_catalog(g.current_user.role))
+    return jsonify(serialize_service_order_stage_catalog(g.current_user.role))
 
 
 def _validated_payload():
@@ -66,6 +66,7 @@ def _validated_payload():
         "orderNumber": order_number,
         "stage": stage.value,
     }
+    normalized.pop("arrivalMethod", None)
     return normalized, None
 
 
@@ -106,6 +107,7 @@ def get_order(order_id: str):
 @SERVICE_ORDERS_BLUEPRINT.post("")
 @require_specific_permission("service.create")
 def create_order():
+    raw_payload = request.get_json(silent=True) or {}
     payload, error = _validated_payload()
     if error:
         return error
@@ -118,6 +120,9 @@ def create_order():
         created_by=g.current_user.id,
         status=payload.get("status", "Recebido"),
         stage=payload["stage"],
+        arrival_method=ArrivalMethod(raw_payload["arrivalMethod"])
+        if raw_payload.get("arrivalMethod")
+        else None,
         payload=payload,
         created_at=now,
         updated_at=now,
@@ -138,6 +143,7 @@ def create_order():
 @SERVICE_ORDERS_BLUEPRINT.put("/<order_id>")
 @require_one_of_permissions("service.edit_assigned", "service.update_initial")
 def update_order(order_id: str):
+    raw_payload = request.get_json(silent=True) or {}
     payload, error = _validated_payload()
     if error:
         return error
@@ -152,12 +158,17 @@ def update_order(order_id: str):
             return jsonify({"error": "service_order_not_found"}), 404
         if not can_update_service_order(
             g.current_user.role,
-            order_stage(order),
+            get_service_order_stage(order),
             parse_stage(payload["stage"]),
         ):
             return jsonify({"error": "service_order_update_restricted"}), 403
         order.status = payload.get("status", order.status)
         order.stage = payload["stage"]
+        order.arrival_method = (
+            ArrivalMethod(raw_payload["arrivalMethod"])
+            if raw_payload.get("arrivalMethod")
+            else None
+        )
         order.payload = payload
         order.updated_at = datetime.now(timezone.utc)
         database.commit()
