@@ -11,10 +11,10 @@ from flask_smorest import Blueprint
 from werkzeug.datastructures import FileStorage
 
 try:
-    from ..auth.controller import require_permission
+    from ..auth.controller import require_specific_permission
     from ..auth.repository import authenticate, session
 except ImportError:
-    from features.auth.controller import require_permission
+    from features.auth.controller import require_specific_permission
     from features.auth.repository import authenticate, session
 
 from .schema import FileResponseSchema, FileUploadSchema, StorageHealthSchema
@@ -90,7 +90,7 @@ def _new_object_key(file: FileStorage) -> str:
     description="Confirma se o bucket Garage está acessível pelo backend.",
 )
 @FILE_STORAGE_BLUEPRINT.response(200, StorageHealthSchema)
-@require_permission("files.view")
+@require_specific_permission("files.view")
 def storage_health():
     try:
         _storage().health()
@@ -105,7 +105,7 @@ def storage_health():
     description="Lista os objetos armazenados, opcionalmente filtrados por prefixo.",
 )
 @FILE_STORAGE_BLUEPRINT.response(200, FileResponseSchema(many=True))
-@require_permission("files.view")
+@require_specific_permission("files.view")
 def list_files():
     database = session()
     try:
@@ -122,7 +122,7 @@ def list_files():
 
 
 @FILE_STORAGE_BLUEPRINT.post("")
-@require_permission("files.manage")
+@require_specific_permission("files.manage")
 @FILE_STORAGE_BLUEPRINT.doc(
     summary="Envia um arquivo",
     description="Armazena um arquivo no Garage com metadados do usuário autenticado.",
@@ -180,7 +180,7 @@ def upload_file(data):
     summary="Baixa ou visualiza um arquivo",
     description="Retorna o conteúdo do arquivo; use `download=1` para forçar download.",
 )
-@require_permission("files.view")
+@require_specific_permission("files.view")
 def download_file(key: str):
     database = session()
     try:
@@ -209,7 +209,7 @@ def download_file(key: str):
 @FILE_STORAGE_BLUEPRINT.delete("/<path:key>")
 @FILE_STORAGE_BLUEPRINT.doc(summary="Exclui um arquivo")
 @FILE_STORAGE_BLUEPRINT.response(204)
-@require_permission("files.manage")
+@require_specific_permission("files.manage")
 def delete_file(key: str):
     database = session()
     try:

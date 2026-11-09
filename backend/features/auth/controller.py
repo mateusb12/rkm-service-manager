@@ -7,7 +7,7 @@ import secrets
 from functools import wraps
 from typing import Any, Callable
 
-from flask import current_app, jsonify, request
+from flask import current_app, g, jsonify, request
 from flask_smorest import Blueprint
 from .model import ROLE_LABELS, ROLE_PERMISSIONS, AuthSession, User, serialize_user, summarize_user
 from .repository import (
@@ -55,7 +55,7 @@ def token_response(user: dict[str, Any], access: str, refresh: str) -> dict[str,
             "expiresIn": duration("ACCESS_TTL", 15 * 60)}
 
 
-def require_permission(permission: str) -> Callable:
+def require_specific_permission(permission: str) -> Callable:
     def decorator(view: Callable) -> Callable:
         @wraps(view)
         def wrapped(*args, **kwargs):
@@ -68,6 +68,31 @@ def require_permission(permission: str) -> Callable:
             try:
                 if "*" not in ROLE_PERMISSIONS[user.role] and permission not in ROLE_PERMISSIONS[user.role]:
                     return jsonify({"error": "permission_denied"}), 403
+                g.current_user = user
+                return view(*args, **kwargs)
+            finally:
+                database.close()
+        return wrapped
+    return decorator
+
+
+def require_one_of_permissions(*permissions: str) -> Callable:
+    """Authorize a route when the user has at least one permission."""
+
+    def decorator(view: Callable) -> Callable:
+        @wraps(view)
+        def wrapped(*args, **kwargs):
+            database = session()
+            authorization = request.headers.get("Authorization", "")
+            user = authenticate(database, authorization[7:].strip()) if authorization.lower().startswith("bearer ") else None
+            if not user:
+                database.close()
+                return jsonify({"error": "authentication_required"}), 401
+            try:
+                granted = ROLE_PERMISSIONS[user.role]
+                if "*" not in granted and not any(permission in granted for permission in permissions):
+                    return jsonify({"error": "permission_denied"}), 403
+                g.current_user = user
                 return view(*args, **kwargs)
             finally:
                 database.close()
@@ -197,7 +222,7 @@ def dev_credentials():
 
 
 @ADMIN_BLUEPRINT.get("/users")
-@require_permission("users.manage")
+@require_specific_permission("users.manage")
 def list_users():
     database = session()
     try:
@@ -207,7 +232,7 @@ def list_users():
 
 
 @ADMIN_BLUEPRINT.post("/users")
-@require_permission("users.manage")
+@require_specific_permission("users.manage")
 def create_user():
     try:
         input_data = CreateUserSchema.from_payload(request.get_json(silent=True))
@@ -228,7 +253,7 @@ def create_user():
 
 
 @ADMIN_BLUEPRINT.get("/users/<user_id>")
-@require_permission("users.manage")
+@require_specific_permission("users.manage")
 def get_user(user_id: str):
     database = session()
     try:
@@ -239,7 +264,7 @@ def get_user(user_id: str):
 
 
 @ADMIN_BLUEPRINT.patch("/users/<user_id>")
-@require_permission("users.manage")
+@require_specific_permission("users.manage")
 def update_user(user_id: str):
     try:
         input_data = UpdateUserSchema.from_payload(request.get_json(silent=True))
@@ -263,7 +288,7 @@ def update_user(user_id: str):
 
 
 @ADMIN_BLUEPRINT.delete("/users/<user_id>")
-@require_permission("users.manage")
+@require_specific_permission("users.manage")
 def deactivate_user(user_id: str):
     database = session()
     try:
@@ -278,7 +303,7 @@ def deactivate_user(user_id: str):
 
 
 @ADMIN_BLUEPRINT.delete("/users/<user_id>/permanent")
-@require_permission("users.manage")
+@require_specific_permission("users.manage")
 def hard_delete_user(user_id: str):
     database = session()
     try:

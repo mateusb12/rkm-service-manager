@@ -6,10 +6,10 @@ from flask import jsonify, request
 from flask_smorest import Blueprint
 
 try:
-    from ..auth.controller import require_permission
+    from ..auth.controller import require_specific_permission
     from ..auth.repository import session
 except ImportError:
-    from features.auth.controller import require_permission
+    from features.auth.controller import require_specific_permission
     from features.auth.repository import session
 
 from .model import serialize_metric
@@ -47,7 +47,7 @@ DEV_METRICS_BLUEPRINT = Blueprint(
     ),
 )
 @DEV_METRICS_BLUEPRINT.arguments(WakaTimeQuerySchema, location="query")
-@require_permission("dev.metrics")
+@require_specific_permission("dev.metrics")
 def wakatime_metric(data):
     try:
         return jsonify(
@@ -71,7 +71,7 @@ def wakatime_metric(data):
         "retorna somente a métrica da feature solicitada."
     ),
 )
-@require_permission("dev.metrics")
+@require_specific_permission("dev.metrics")
 def list_metrics():
     feature_id = request.args.get("feature", "").strip()
     if feature_id:
@@ -96,7 +96,7 @@ def list_metrics():
 )
 @DEV_METRICS_BLUEPRINT.arguments(FeatureSettingsSchema, error_status_code=422)
 @DEV_METRICS_BLUEPRINT.response(200, FeatureMetricSchema)
-@require_permission("dev.metrics")
+@require_specific_permission("dev.metrics")
 def save_settings(data):
     database = session()
     try:
@@ -117,7 +117,7 @@ def save_settings(data):
 )
 @DEV_METRICS_BLUEPRINT.arguments(FreezeMetricSchema, error_status_code=422)
 @DEV_METRICS_BLUEPRINT.response(200, FeatureMetricSchema)
-@require_permission("dev.metrics")
+@require_specific_permission("dev.metrics")
 def freeze_metric(data):
     database = session()
     try:
@@ -135,7 +135,7 @@ def freeze_metric(data):
 )
 @DEV_METRICS_BLUEPRINT.arguments(UnlockMetricSchema, error_status_code=422)
 @DEV_METRICS_BLUEPRINT.response(200, FeatureMetricSchema)
-@require_permission("dev.metrics")
+@require_specific_permission("dev.metrics")
 def unlock_metric(data):
     database = session()
     try:

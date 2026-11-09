@@ -23,11 +23,13 @@ try:
     from .features.clients import register_clients
     from .features.devmetrics import register_devmetrics
     from .features.file_storage import register_file_storage
+    from .features.service_orders import register_service_orders
 except ImportError:
     from features.auth import register_auth
     from features.clients import register_clients
     from features.devmetrics import register_devmetrics
     from features.file_storage import register_file_storage
+    from features.service_orders import register_service_orders
 
 
 LOGGER = logging.getLogger(__name__)
@@ -75,6 +77,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     register_clients(app)
     register_devmetrics(app)
     register_file_storage(app)
+    register_service_orders(app)
     register_api_docs(app)
     return app
 

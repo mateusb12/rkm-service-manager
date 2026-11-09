@@ -7,10 +7,10 @@ from flask_smorest import Blueprint
 from sqlalchemy.exc import IntegrityError
 
 try:
-    from ..auth.controller import require_permission, schema_error_response
+    from ..auth.controller import require_specific_permission, schema_error_response
     from ..auth.repository import session
 except ImportError:
-    from features.auth.controller import require_permission, schema_error_response
+    from features.auth.controller import require_specific_permission, schema_error_response
     from features.auth.repository import session
 
 from .model import Client, serialize_client
@@ -41,14 +41,14 @@ def _client_id(value: str) -> int | None:
 
 @CLIENTS_BLUEPRINT.get("")
 @CLIENTS_BLUEPRINT.response(200, ClientOpenAPISchema(many=True))
-@require_permission("clients.view")
+@require_specific_permission("clients.view")
 def list_clients():
     return jsonify([serialize_client(client) for client in list_client_records(request.args.get("search", ""))])
 
 
 @CLIENTS_BLUEPRINT.get("/<client_id>")
 @CLIENTS_BLUEPRINT.response(200, ClientOpenAPISchema)
-@require_permission("clients.view")
+@require_specific_permission("clients.view")
 def get_client(client_id: str):
     parsed_id = _client_id(client_id)
     if parsed_id is None:
@@ -64,7 +64,7 @@ def get_client(client_id: str):
 @CLIENTS_BLUEPRINT.post("")
 @CLIENTS_BLUEPRINT.arguments(ClientInputOpenAPISchema, error_status_code=400)
 @CLIENTS_BLUEPRINT.response(201, ClientOpenAPISchema)
-@require_permission("clients.manage")
+@require_specific_permission("clients.manage")
 def create_client(data):
     try:
         parsed = ClientSchema.from_payload(
@@ -90,7 +90,7 @@ def create_client(data):
 @CLIENTS_BLUEPRINT.put("/<client_id>")
 @CLIENTS_BLUEPRINT.arguments(ClientInputOpenAPISchema, error_status_code=400)
 @CLIENTS_BLUEPRINT.response(200, ClientOpenAPISchema)
-@require_permission("clients.manage")
+@require_specific_permission("clients.manage")
 def update_client(data, client_id: str):
     parsed_id = _client_id(client_id)
     if parsed_id is None:
@@ -124,7 +124,7 @@ def update_client(data, client_id: str):
 
 @CLIENTS_BLUEPRINT.delete("/<client_id>")
 @CLIENTS_BLUEPRINT.response(204)
-@require_permission("clients.manage")
+@require_specific_permission("clients.manage")
 def delete_client(client_id: str):
     parsed_id = _client_id(client_id)
     if parsed_id is None:
