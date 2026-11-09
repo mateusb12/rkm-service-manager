@@ -15,7 +15,7 @@ import {
   normalizeOrderNumber,
 } from './model';
 
-import { loadServiceEntries, saveServiceEntries } from './repository';
+import { deleteServiceEntry, loadServiceEntries, saveServiceEntry } from './service';
 
 import { Field, TextArea, TextInput } from '../../shared/ui/form-controls';
 
@@ -303,11 +303,30 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
 export const ServiceEntryView = () => {
   const showDevGuides = useLocalDevelopment();
   const [form, setForm] = useState(() => createEmptyServiceEntry());
-  const [entries, setEntries] = useState(() => loadServiceEntries());
+  const [entries, setEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
   const [savedOrder, setSavedOrder] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    setLoadingEntries(true);
+    loadServiceEntries()
+      .then((loadedEntries) => {
+        if (active) setEntries(loadedEntries);
+      })
+      .catch(() => {
+        if (active) setError('Não foi possível carregar as ordens do servidor.');
+      })
+      .finally(() => {
+        if (active) setLoadingEntries(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!error) return undefined;
@@ -423,12 +442,22 @@ export const ServiceEntryView = () => {
       createdAt: form.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    const next = [entry, ...entries.filter((item) => item.id !== normalizedId)];
-    setEntries(next);
-    saveServiceEntries(next);
-    setForm(entry);
-    setSavedOrder(normalizedId);
-    return true;
+    try {
+      const persistedEntry = await saveServiceEntry(entry, Boolean(form.id));
+      const next = [persistedEntry, ...entries.filter((item) => item.id !== normalizedId)];
+      setEntries(next);
+      setForm(persistedEntry);
+      setSavedOrder(normalizedId);
+      window.dispatchEvent(new Event('service-orders-changed'));
+      return true;
+    } catch (saveError) {
+      setError(
+        saveError.message === 'service_order_already_exists'
+          ? `A ${normalizeOrderNumber(form.orderNumber)} já foi cadastrada.`
+          : 'Não foi possível salvar a OS no servidor.',
+      );
+      return false;
+    }
   };
 
   const addPhotos = async (category, files) => {
@@ -521,9 +550,10 @@ export const ServiceEntryView = () => {
       const photoIds = new Set(photos.map((photo) => photo.id).filter(Boolean));
       for (const photoId of photoIds) await deleteServiceEntryPhoto(photoId);
 
+      await deleteServiceEntry(entry);
       const next = entries.filter((item) => item.id !== entry.id);
       setEntries(next);
-      saveServiceEntries(next);
+      window.dispatchEvent(new Event('service-orders-changed'));
       if (form.id === entry.id) reset();
     } catch {
       setError(`Não foi possível excluir a OS ${entry.orderNumber}. Tente novamente.`);
@@ -593,7 +623,9 @@ export const ServiceEntryView = () => {
           <span className="service-entry-count">{entries.length}</span>
         </div>
 
-        {entries.length === 0 ? (
+        {loadingEntries ? (
+          <div className="service-entry-empty">Carregando OS...</div>
+        ) : entries.length === 0 ? (
           <div className="service-entry-empty">Nenhuma ordem criada ainda.</div>
         ) : (
           <div className="overflow-x-auto">

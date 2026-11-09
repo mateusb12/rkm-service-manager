@@ -1,6 +1,10 @@
 // @ts-nocheck
 
-import { loadServiceEntries, saveServiceEntries } from '../service-entry/repository';
+import {
+  deleteServiceEntry,
+  loadServiceEntries,
+  saveServiceEntries,
+} from '../service-entry/service';
 
 import { normalizeOrderNumber } from '../service-entry/model';
 
@@ -34,7 +38,7 @@ const migrateLegacyLizyEntry = (entry) => {
   };
 };
 
-export const planLizyPopulation = (existingEntries = loadServiceEntries()) => {
+export const planLizyPopulation = (existingEntries = []) => {
   const migratedExistingEntries = (existingEntries || []).map(migrateLegacyLizyEntry);
 
   const existingIds = new Set(
@@ -119,8 +123,8 @@ export const planLizyPopulation = (existingEntries = loadServiceEntries()) => {
   };
 };
 
-export const populateLizyServiceEntries = () => {
-  const existingEntries = loadServiceEntries();
+export const populateLizyServiceEntries = async () => {
+  const existingEntries = await loadServiceEntries();
 
   const plan = planLizyPopulation(existingEntries);
 
@@ -145,7 +149,7 @@ export const populateLizyServiceEntries = () => {
     };
   }
 
-  const persisted = saveServiceEntries(plan.nextEntries);
+  const persisted = await saveServiceEntries(plan.nextEntries);
 
   return {
     ...plan,
@@ -154,8 +158,8 @@ export const populateLizyServiceEntries = () => {
   };
 };
 
-export const overwriteLizyServiceEntries = () => {
-  const existingEntries = loadServiceEntries();
+export const overwriteLizyServiceEntries = async () => {
+  const existingEntries = await loadServiceEntries();
   const existingById = new Map(
     existingEntries.map((entry) => [orderIdentity(entry.orderNumber || entry.id), entry]),
   );
@@ -210,7 +214,7 @@ export const overwriteLizyServiceEntries = () => {
     if (!existingById.has(id)) nextEntries.unshift(entry);
   }
 
-  const persisted = saveServiceEntries(nextEntries);
+  const persisted = await saveServiceEntries(nextEntries);
 
   return {
     persisted,
@@ -221,11 +225,11 @@ export const overwriteLizyServiceEntries = () => {
   };
 };
 
-export const deleteLizyServiceEntries = () => {
-  const existingEntries = loadServiceEntries();
+export const deleteLizyServiceEntries = async () => {
+  const existingEntries = await loadServiceEntries();
   const lizyEntries = existingEntries.filter(isLizyEntry);
-  const nextEntries = existingEntries.filter((entry) => !isLizyEntry(entry));
-  const persisted = saveServiceEntries(nextEntries);
+  await Promise.all(lizyEntries.map((entry) => deleteServiceEntry(entry)));
+  const persisted = true;
 
   return {
     persisted,

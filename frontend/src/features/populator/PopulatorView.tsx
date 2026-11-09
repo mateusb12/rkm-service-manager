@@ -1,6 +1,8 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import { loadServiceEntries } from '../service-entry/service';
 
 import {
   deleteLizyServiceEntries,
@@ -37,13 +39,18 @@ const StatCard = ({ label, value, hint }) => (
 );
 
 export const PopulatorView = () => {
-  const [plan, setPlan] = useState(() => planLizyPopulation());
+  const [plan, setPlan] = useState(() => planLizyPopulation([]));
 
   const [lastResult, setLastResult] = useState(null);
 
-  const refresh = () => {
-    setPlan(planLizyPopulation());
+  const refresh = async () => {
+    const entries = await loadServiceEntries();
+    setPlan(planLizyPopulation(entries));
   };
+
+  useEffect(() => {
+    void refresh();
+  }, []);
 
   const execute = () => {
     if (plan.entriesToInsert.length === 0) {
@@ -60,11 +67,10 @@ export const PopulatorView = () => {
       return;
     }
 
-    const result = populateLizyServiceEntries();
-
-    setLastResult(result);
-
-    setPlan(planLizyPopulation());
+    void populateLizyServiceEntries().then((result) => {
+      setLastResult(result);
+      void refresh();
+    });
   };
 
   const overwrite = () => {
@@ -79,9 +85,10 @@ export const PopulatorView = () => {
 
     if (!confirmed) return;
 
-    const result = overwriteLizyServiceEntries();
-    setLastResult(result);
-    setPlan(planLizyPopulation());
+    void overwriteLizyServiceEntries().then((result) => {
+      setLastResult(result);
+      void refresh();
+    });
   };
 
   const remove = () => {
@@ -98,9 +105,10 @@ export const PopulatorView = () => {
 
     if (!confirmed) return;
 
-    const result = deleteLizyServiceEntries();
-    setLastResult(result);
-    setPlan(planLizyPopulation());
+    void deleteLizyServiceEntries().then((result) => {
+      setLastResult(result);
+      void refresh();
+    });
   };
 
   const hasDatasetDuplicates = plan.duplicateDatasetRecords.length > 0;

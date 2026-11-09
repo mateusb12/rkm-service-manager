@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useState } from 'react';
-import { loadServiceEntries } from '../service-entry/repository';
+import { loadServiceEntries } from '../service-entry/service';
 import { mapServiceEntryToDashboardService } from './model';
 import { PriorityTag, StatusTag } from '../../shared/ui/tags';
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
@@ -19,12 +19,29 @@ const KPICard = ({ label, value, hint, accent, icon }) => (
 
 export const DashboardView = ({ onOpenServiceEntry }) => {
   const showDevGuides = useLocalDevelopment();
-  const [entries, setEntries] = useState(() => loadServiceEntries());
+  const [entries, setEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
 
   useEffect(() => {
-    const refreshEntries = () => setEntries(loadServiceEntries());
-    window.addEventListener('storage', refreshEntries);
-    return () => window.removeEventListener('storage', refreshEntries);
+    let active = true;
+    const refreshServiceOrders = () => {
+      loadServiceEntries()
+        .then((loadedEntries) => {
+          if (active) setEntries(loadedEntries);
+        })
+        .catch(() => {
+          if (active) setEntries([]);
+        })
+        .finally(() => {
+          if (active) setLoadingEntries(false);
+        });
+    };
+    refreshServiceOrders();
+    window.addEventListener('service-orders-changed', refreshServiceOrders);
+    return () => {
+      active = false;
+      window.removeEventListener('service-orders-changed', refreshServiceOrders);
+    };
   }, []);
 
   const services = useMemo(() => entries.map(mapServiceEntryToDashboardService), [entries]);
@@ -100,7 +117,9 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
             {services.length} OS cadastrada{services.length === 1 ? '' : 's'}
           </span>
         </div>
-        {services.length === 0 ? (
+        {loadingEntries ? (
+          <div className="px-5 py-10 text-center text-sm text-slate-500">Carregando OS...</div>
+        ) : services.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-slate-500">
             Nenhuma OS cadastrada ainda. Crie uma ordem de serviço para acompanhar o andamento aqui.
           </div>
