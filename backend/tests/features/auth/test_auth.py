@@ -194,12 +194,15 @@ def test_auth_contract(auth_client, subtests):
             "admin": ["*"],
             "mechanic": [
                 "service.view_assigned",
+                "service.create",
                 "service.edit_assigned",
                 "authorization.request",
                 "dashboard.mybench",
             ],
             "pcp": [
                 "service.view_status",
+                "service.create",
+                "service.update_initial",
                 "service.close_administrative",
                 "dashboard.pcp",
                 "clients.view",
