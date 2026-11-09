@@ -2286,6 +2286,172 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   text-align: center;
 }
 
+.service-entry-skeleton-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.service-entry-skeleton {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(51, 65, 85, 0.32),
+    rgba(100, 116, 139, 0.22),
+    rgba(51, 65, 85, 0.32)
+  );
+  background-size: 220% 100%;
+  animation: service-entry-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.service-entry-skeleton-kicker {
+  width: 150px;
+  height: 10px;
+}
+.service-entry-skeleton-title {
+  width: min(320px, 60%);
+  height: 28px;
+  margin-top: 14px;
+}
+.service-entry-skeleton-line {
+  width: min(520px, 80%);
+  height: 12px;
+  margin-top: 14px;
+}
+.service-entry-skeleton-line-short {
+  width: min(390px, 60%);
+  margin-top: 8px;
+}
+.service-entry-skeleton-status {
+  width: 110px;
+  height: 30px;
+  margin-left: auto;
+}
+.service-entry-skeleton-heading {
+  width: 190px;
+  height: 16px;
+}
+.service-entry-skeleton-subheading {
+  width: 250px;
+  height: 10px;
+  margin-top: 9px;
+}
+.service-entry-skeleton-count {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.service-entry-skeleton-table {
+  padding: 8px 16px 16px;
+}
+.service-entry-skeleton-table-head {
+  width: 92%;
+  height: 10px;
+  margin: 8px 0 18px;
+}
+.service-entry-skeleton-table-row {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr 1.8fr 0.9fr 0.7fr;
+  gap: 28px;
+  align-items: center;
+  min-height: 58px;
+  border-top: 1px solid rgba(51, 65, 85, 0.3);
+}
+.service-entry-skeleton-table-row .service-entry-skeleton {
+  width: 100%;
+  height: 12px;
+}
+.service-entry-skeleton-table-row .service-entry-skeleton-wide {
+  width: 82%;
+}
+
+.service-entry-skeleton-stepper {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+.service-entry-skeleton-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  border-radius: 12px;
+}
+.service-entry-skeleton-step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  flex: none;
+}
+.service-entry-skeleton-step-label {
+  width: 70%;
+  height: 11px;
+}
+.service-entry-skeleton-context-title {
+  width: 150px;
+  height: 16px;
+  margin-top: 4px;
+}
+.service-entry-skeleton-context-line {
+  width: 280px;
+  max-width: 75%;
+  height: 10px;
+  margin-top: 10px;
+}
+.service-entry-step-context-loading {
+  min-height: 68px;
+}
+.service-entry-skeleton-content {
+  padding: 24px;
+}
+.service-entry-skeleton-section-title {
+  width: 170px;
+  height: 18px;
+}
+.service-entry-skeleton-section-line {
+  width: 300px;
+  max-width: 75%;
+  height: 10px;
+  margin-top: 10px;
+}
+.service-entry-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 28px;
+}
+.service-entry-skeleton-field-label {
+  width: 90px;
+  height: 10px;
+  margin-bottom: 9px;
+}
+.service-entry-skeleton-field-input {
+  width: 100%;
+  height: 38px;
+  border-radius: 8px;
+}
+
+@keyframes service-entry-skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .service-entry-skeleton-stepper {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .service-entry-skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .service-entry-table {
   width: 100%;
   min-width: 760px;
@@ -2338,6 +2504,12 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   margin-top: 3px;
   color: #64748b;
   font-size: var(--font-xs);
+}
+
+.service-entry-creation-date {
+  color: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit;
 }
 
 .service-entry-urgent-tag {

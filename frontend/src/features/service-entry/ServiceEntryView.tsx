@@ -8,11 +8,15 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 registerLocale('pt-BR', ptBR);
 
-import { createEmptyServiceEntry, getServiceEntryStageIndex, normalizeOrderNumber } from './model';
+import {
+  createEmptyServiceEntry,
+  getServiceEntryStageIndex,
+  normalizeOrderNumber,
+  SERVICE_ENTRY_DEFAULT_STAGES,
+} from './model';
 
 import {
   deleteServiceEntry,
-  getServiceEntry,
   loadServiceEntries,
   loadServiceEntryStages,
   saveServiceEntry,
@@ -29,6 +33,7 @@ import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage
 import { ServiceEntryStageNavigator } from './ServiceEntryStageNavigator';
 import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
+import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
 import { createDemoServiceEntry } from './demo-fixture';
 
 const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
@@ -138,13 +143,11 @@ export const ServiceEntryView = () => {
   const showDevGuides = useLocalDevelopment();
   const [form, setForm] = useState(() => createEmptyServiceEntry());
   const [entries, setEntries] = useState([]);
-  const [stages, setStages] = useState([]);
+  const [stages, setStages] = useState(SERVICE_ENTRY_DEFAULT_STAGES);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
-  const [savedOrder, setSavedOrder] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
-  const [openingOrderId, setOpeningOrderId] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -153,7 +156,7 @@ export const ServiceEntryView = () => {
       .then(([loadedEntries, loadedStages]) => {
         if (!active) return;
         setEntries(loadedEntries);
-        setStages(loadedStages);
+        setStages(loadedStages.length > 0 ? loadedStages : SERVICE_ENTRY_DEFAULT_STAGES);
       })
       .catch(() => {
         if (active) setError('Não foi possível carregar as ordens do servidor.');
@@ -180,21 +183,18 @@ export const ServiceEntryView = () => {
     }));
 
     if (error) setError('');
-    if (savedOrder) setSavedOrder('');
   };
 
   const reset = () => {
     setForm(createEmptyServiceEntry());
     setStep(0);
     setError('');
-    setSavedOrder('');
   };
 
   const fillDemo = () => {
     setForm(createDemoServiceEntry());
     setStep(0);
     setError('');
-    setSavedOrder('');
   };
 
   const validateStep = () => {
@@ -256,7 +256,6 @@ export const ServiceEntryView = () => {
       const next = [persistedEntry, ...entries.filter((item) => item.id !== normalizedId)];
       setEntries(next);
       setForm(persistedEntry);
-      setSavedOrder(normalizedId);
       window.dispatchEvent(new Event('service-orders-changed'));
       return true;
     } catch (saveError) {
@@ -324,34 +323,17 @@ export const ServiceEntryView = () => {
     }
   };
 
-  const openEntry = async (entry) => {
-    setOpeningOrderId(entry.id);
+  const openEntry = (entry) => {
     setError('');
-    let detailedEntry;
-    try {
-      detailedEntry = await getServiceEntry(entry.id);
-    } catch (openError) {
-      setError(
-        openError.message === 'service_order_details_restricted'
-          ? 'Os detalhes desta OS estão restritos ao PCP nesta etapa.'
-          : 'Não foi possível abrir a OS no servidor.',
-      );
-      setOpeningOrderId('');
-      return;
-    }
     const emptyEntry = createEmptyServiceEntry();
 
     setForm({
       ...emptyEntry,
-      ...detailedEntry,
-      disassemblyStartedAt: detailedEntry.disassemblyStartedAt || emptyEntry.disassemblyStartedAt,
-      photos: { ...emptyEntry.photos, ...(detailedEntry.photos || {}) },
+      ...entry,
+      disassemblyStartedAt: entry.disassemblyStartedAt || emptyEntry.disassemblyStartedAt,
+      photos: { ...emptyEntry.photos, ...(entry.photos || {}) },
     });
-    setStep(
-      getServiceEntryStageIndex(stages, detailedEntry.availableThroughStage || detailedEntry.stage),
-    );
-    setSavedOrder(detailedEntry.id);
-    setOpeningOrderId('');
+    setStep(getServiceEntryStageIndex(stages, entry.availableThroughStage || entry.stage));
     requestAnimationFrame(() =>
       document
         .querySelector('.service-entry-stepper')
@@ -386,21 +368,17 @@ export const ServiceEntryView = () => {
     }
   };
 
-  const changeStep = (nextStep) => {
-    if (!form.id || stages[nextStep]?.canView) {
-      setStep(nextStep);
-      setError('');
-    }
-  };
-
-  const currentStep = stages[step];
+  const currentStep = stages[step] || { label: '', status: '' };
   const progressStep = form.id
     ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage)
     : 0;
 
-  if (stages.length === 0) {
-    return <div className="p-6 service-entry-page">Carregando etapas da ordem de serviço...</div>;
-  }
+  const changeStep = (nextStep) => {
+    if (nextStep <= progressStep && stages[nextStep]?.canView) {
+      setStep(nextStep);
+      setError('');
+    }
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-5 service-entry-page">
@@ -453,7 +431,18 @@ export const ServiceEntryView = () => {
         </div>
 
         {loadingEntries ? (
-          <div className="service-entry-empty">Carregando OS...</div>
+          <div className="service-entry-skeleton-table" aria-label="Carregando ordens de serviço">
+            <div className="service-entry-skeleton service-entry-skeleton-table-head" />
+            {[1, 2].map((row) => (
+              <div className="service-entry-skeleton-table-row" key={row}>
+                <div className="service-entry-skeleton" />
+                <div className="service-entry-skeleton" />
+                <div className="service-entry-skeleton service-entry-skeleton-wide" />
+                <div className="service-entry-skeleton" />
+                <div className="service-entry-skeleton" />
+              </div>
+            ))}
+          </div>
         ) : entries.length === 0 ? (
           <div className="service-entry-empty">Nenhuma ordem criada ainda.</div>
         ) : (
@@ -464,6 +453,7 @@ export const ServiceEntryView = () => {
                   <th>OS</th>
                   <th>Cliente</th>
                   <th>Equipamento</th>
+                  <th>Criação</th>
                   <th>Entrega</th>
                   <th>Status</th>
                   <th>Ações</th>
@@ -518,6 +508,13 @@ export const ServiceEntryView = () => {
                         </div>
                       </td>
 
+                      <td className="service-entry-creation-cell">
+                        <span className="tag tag-slate">{entry.createdBy?.name || '—'}</span>
+                        <small className="service-entry-creation-date">
+                          {formatLongDateBR(entry.createdAt)}
+                        </small>
+                      </td>
+
                       <td>{formatDateLabel(entry.expectedDeliveryDate)}</td>
 
                       <td className="service-entry-status-cell">
@@ -540,13 +537,9 @@ export const ServiceEntryView = () => {
                               openEntry(entry);
                             }}
                             aria-pressed={isSelected}
-                            disabled={isSelected || openingOrderId === entry.id}
+                            disabled={isSelected}
                           >
-                            {isSelected
-                              ? 'Selecionada'
-                              : openingOrderId === entry.id
-                                ? 'Abrindo...'
-                                : 'Abrir OS'}
+                            {isSelected ? 'Selecionada' : 'Abrir OS'}
                           </button>
                           {isSelected && (
                             <button
@@ -605,20 +598,6 @@ export const ServiceEntryView = () => {
           </div>
         )}
       </section>
-
-      {savedOrder && (
-        <div className="service-entry-success">
-          <div className="service-entry-success-icon">✓</div>
-
-          <div>
-            <strong>
-              {savedOrder} · {form.status === 'Finalizado' ? 'OS finalizada' : 'progresso salvo'}
-            </strong>
-
-            <span>A OS está salva no servidor; as fotos ficam armazenadas neste navegador.</span>
-          </div>
-        </div>
-      )}
 
       {error && (
         <div

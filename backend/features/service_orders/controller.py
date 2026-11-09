@@ -80,7 +80,7 @@ def list_orders():
         return jsonify(
             [
                 serialize_service_order(order, role)
-                if role in {"admin", "mechanic"}
+                if role in {"admin", "mechanic", "pcp"}
                 else serialize_service_order_summary(order)
                 for order in orders
             ]
@@ -115,6 +115,7 @@ def create_order():
     order = ServiceOrder(
         id=payload["orderNumber"],
         order_number=payload["orderNumber"],
+        created_by=g.current_user.id,
         status=payload.get("status", "Recebido"),
         stage=payload["stage"],
         payload=payload,

@@ -10,7 +10,7 @@ export const ServiceEntryStageNavigator = ({
     aria-label="Etapas do ciclo operacional"
   >
     {stages.map((stage, index) => {
-      const isLocked = Boolean(hasEntry) && !stage.canView;
+      const isLocked = index > progressStep || (Boolean(hasEntry) && !stage.canView);
       return (
         <button
           type="button"

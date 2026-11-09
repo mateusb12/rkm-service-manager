@@ -5,8 +5,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Index, JSON, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, Index, JSON, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 try:
     from ..auth.model import Base
@@ -22,6 +22,8 @@ class ServiceOrder(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     order_number: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    created_by_user: Mapped["User"] = relationship("User", foreign_keys=[created_by])
     status: Mapped[str] = mapped_column(String, nullable=False, default="Recebido")
     stage: Mapped[str] = mapped_column(String, nullable=False, default="recebimento")
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

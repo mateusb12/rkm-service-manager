@@ -10,6 +10,15 @@
 
 export const generateOrderNumber = () => String(Math.floor(100000 + Math.random() * 900000));
 
+export const SERVICE_ENTRY_DEFAULT_STAGES = [
+  { id: 'recebimento', label: 'Recebimento', status: 'Recebido', canView: true },
+  { id: 'identificacao', label: 'Identificação', status: 'Em identificação', canView: true },
+  { id: 'desmontagem', label: 'Desmontagem', status: 'Em desmontagem', canView: true },
+  { id: 'orcamento', label: 'Orçamento', status: 'Em orçamento', canView: true },
+  { id: 'reparo', label: 'Reparo', status: 'Em reparo', canView: true },
+  { id: 'entrega', label: 'Entrega', status: 'Em entrega', canView: true },
+];
+
 const currentLocalDateTime = () => {
   const now = new Date();
   const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);

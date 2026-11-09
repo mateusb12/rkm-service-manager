@@ -98,6 +98,11 @@ def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
     return {
         "id": order.id,
         "orderNumber": order.order_number,
+        "createdAt": order.created_at.isoformat() if order.created_at else None,
+        "createdBy": {
+            "id": order.created_by,
+            "name": order.created_by_user.name if order.created_by_user else "",
+        },
         "client": payload.get("client", ""),
         "equipment": payload.get("equipment", ""),
         "status": order.status,
