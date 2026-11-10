@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { FileCheck2, Trash2, X } from 'lucide-react';
+import { FileCheck2, Pencil, Trash2, X } from 'lucide-react';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -183,6 +183,7 @@ const ServiceEntryInvoiceFileField = ({
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [existingFiles, setExistingFiles] = useState([]);
+  const [editingSelection, setEditingSelection] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -243,63 +244,23 @@ const ServiceEntryInvoiceFileField = ({
             <small>Aguarde enquanto o arquivo é armazenado.</small>
           </div>
         </div>
-      ) : !file ? (
-        <div className="service-entry-invoice-library">
-          {existingFiles.map((existingFile) => (
-            <div
-              className="service-entry-invoice-card service-entry-invoice-existing-card"
-              key={existingFile.id}
-            >
-              <ServiceEntryInvoicePreview file={existingFile} />
-              <div className="service-entry-invoice-details">
-                <strong title={existingFile.name}>{existingFile.name}</strong>
-                <small>{existingFile.size}</small>
-                <button
-                  type="button"
-                  className="service-entry-invoice-select"
-                  aria-label={`Selecionar ${existingFile.name}`}
-                  title="Selecionar nota fiscal"
-                  onClick={() => onSelectExisting(existingFile)}
-                >
-                  <FileCheck2 size={23} strokeWidth={1.9} aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          ))}
-          <label
-            className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}`}
-            onDragEnter={(event) => {
-              event.preventDefault();
-              setDragging(true);
-            }}
-            onDragOver={(event) => event.preventDefault()}
-            onDragLeave={(event) => {
-              if (event.currentTarget === event.target) setDragging(false);
-            }}
-            onDrop={dropFile}
-          >
-            <input
-              type="file"
-              accept="image/*,application/pdf"
-              onChange={selectFile}
-              disabled={uploading}
-            />
-            <span className="service-entry-invoice-add-icon" aria-hidden="true">
-              ＋
-            </span>
-            <strong>Adicionar nota fiscal</strong>
-            <small>Clique ou arraste uma imagem ou PDF</small>
-          </label>
-        </div>
-      ) : (
+      ) : file && !editingSelection ? (
         <div className="service-entry-invoice-card service-entry-invoice-selected-card">
+          <div className="service-entry-invoice-lock-badge">NF selecionada</div>
           <ServiceEntryInvoicePreview file={file} />
           <div className="service-entry-invoice-details">
             <strong title={file.name}>{file.name}</strong>
-            <small>
-              {file.contentType === 'application/pdf' ? 'Documento PDF' : 'Imagem da nota fiscal'}
-            </small>
+            <small>Arquivo vinculado a esta OS</small>
             <div>
+              <button
+                type="button"
+                className="service-entry-invoice-action service-entry-invoice-edit"
+                aria-label={`Trocar ${file.name}`}
+                title="Trocar nota fiscal"
+                onClick={() => setEditingSelection(true)}
+              >
+                <Pencil size={18} strokeWidth={1.9} aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 className="service-entry-invoice-action service-entry-invoice-deselect"
@@ -321,6 +282,68 @@ const ServiceEntryInvoiceFileField = ({
             </div>
           </div>
         </div>
+      ) : (
+        <>
+          {file && editingSelection && (
+            <button
+              type="button"
+              className="service-entry-invoice-cancel-edit"
+              onClick={() => setEditingSelection(false)}
+            >
+              Cancelar troca
+            </button>
+          )}
+          <div className="service-entry-invoice-library">
+            {existingFiles.map((existingFile) => (
+              <div
+                className="service-entry-invoice-card service-entry-invoice-existing-card"
+                key={existingFile.id}
+              >
+                <ServiceEntryInvoicePreview file={existingFile} />
+                <div className="service-entry-invoice-details">
+                  <strong title={existingFile.name}>{existingFile.name}</strong>
+                  <small>{existingFile.size}</small>
+                  <button
+                    type="button"
+                    className="service-entry-invoice-select"
+                    aria-label={`Selecionar ${existingFile.name}`}
+                    title="Selecionar nota fiscal"
+                    onClick={() => {
+                      onSelectExisting(existingFile);
+                      setEditingSelection(false);
+                    }}
+                  >
+                    <FileCheck2 size={23} strokeWidth={1.9} aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            <label
+              className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}`}
+              onDragEnter={(event) => {
+                event.preventDefault();
+                setDragging(true);
+              }}
+              onDragOver={(event) => event.preventDefault()}
+              onDragLeave={(event) => {
+                if (event.currentTarget === event.target) setDragging(false);
+              }}
+              onDrop={dropFile}
+            >
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={selectFile}
+                disabled={uploading}
+              />
+              <span className="service-entry-invoice-add-icon" aria-hidden="true">
+                ＋
+              </span>
+              <strong>Adicionar nota fiscal</strong>
+              <small>Clique ou arraste uma imagem ou PDF</small>
+            </label>
+          </div>
+        </>
       )}
     </div>
   );
@@ -908,7 +931,11 @@ export const ServiceEntryView = () => {
       }
       const next = [persistedEntry, ...entries.filter((item) => item.id !== normalizedId)];
       setEntries(next);
-      setForm(persistedEntry);
+      setForm((previous) => ({
+        ...previous,
+        ...persistedEntry,
+        photos: { ...previous.photos, ...(persistedEntry.photos || {}) },
+      }));
       window.dispatchEvent(new Event('service-orders-changed'));
       return true;
     } catch (saveError) {
@@ -974,8 +1001,12 @@ export const ServiceEntryView = () => {
       return;
     }
     const nextStep = step + 1;
-    if (await persistEntry(undefined, nextStep)) {
-      setStep(nextStep);
+    const nextStage = stages[nextStep];
+    const canAdvanceToNextStep =
+      nextStep < stages.length && nextStep <= progressStep + 1 && nextStage?.canAdvanceTo !== false;
+    if (await persistEntry(undefined, canAdvanceToNextStep ? nextStep : step)) {
+      if (!canAdvanceToNextStep) return;
+      setStep(Math.min(nextStep, visibleProgressStep));
     }
   };
 
@@ -1025,12 +1056,13 @@ export const ServiceEntryView = () => {
   };
 
   const currentStep = stages[step] || { label: '', status: '' };
-  const progressStep = form.id
+  const progressStep = form.id ? getServiceEntryStageIndex(stages, form.stage) : 0;
+  const visibleProgressStep = form.id
     ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage)
     : 0;
 
   const changeStep = (nextStep) => {
-    if (nextStep <= progressStep && stages[nextStep]?.canView) {
+    if (nextStep <= visibleProgressStep && stages[nextStep]?.canView) {
       setStep(nextStep);
       setError('');
     }

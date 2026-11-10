@@ -1943,12 +1943,33 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 }
 
 .service-entry-invoice-selected-card {
+  position: relative;
   display: flex;
   width: min(100%, 190px);
   min-height: 0;
   flex-direction: column;
   gap: 8px;
   padding: 8px;
+}
+
+.service-entry-invoice-lock-badge {
+  align-self: flex-start;
+  margin: 0 0 -2px 2px;
+  color: #93c5fd;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.service-entry-invoice-cancel-edit {
+  margin-bottom: 8px;
+  color: #93c5fd;
+  font-size: var(--font-xs);
+}
+
+.service-entry-invoice-cancel-edit:hover {
+  color: #e0f2fe;
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-preview {
@@ -1993,6 +2014,18 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   border-color: rgba(96, 165, 250, 0.5);
   background: rgba(59, 130, 246, 0.1);
   color: #93c5fd;
+}
+
+.service-entry-invoice-edit {
+  border-color: rgba(45, 212, 191, 0.55);
+  background: rgba(20, 184, 166, 0.1);
+  color: #99f6e4;
+}
+
+.service-entry-invoice-edit:hover {
+  border-color: rgba(94, 234, 212, 0.9);
+  background: rgba(20, 184, 166, 0.24);
+  color: #ccfbf1;
 }
 
 .service-entry-invoice-deselect:hover {
@@ -3315,6 +3348,28 @@ html:not(.dark) .app-shell .service-entry-delete {
   box-shadow: none;
 }
 
+/* O PCP acompanha o avanço da OS, mas não abre o conteúdo técnico atual. */
+.service-entry-amazon-stepper .service-entry-step.is-current-locked {
+  opacity: 1;
+  border-color: rgba(100, 116, 139, 0.58);
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.22), rgba(15, 31, 50, 0.96));
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.06);
+}
+
+.service-entry-amazon-stepper .service-entry-step.is-current-locked > span:first-child {
+  border-color: rgba(148, 163, 184, 0.55);
+  background: rgba(71, 85, 105, 0.32);
+  color: #cbd5e1;
+  box-shadow: none;
+}
+
+.service-entry-amazon-stepper .service-entry-step.is-current-locked::after {
+  background: #475569;
+  box-shadow: none;
+}
+
 /* ==================================================================
    ACTIVE
    ================================================================== */
@@ -3368,6 +3423,26 @@ html:not(.dark) .app-shell .service-entry-delete {
 /* The current-but-unselected step stays visually faint. */
 .service-entry-amazon-stepper .service-entry-step.is-current:not(.is-selected-current) {
   border-color: rgba(191, 163, 107, 0.42);
+}
+
+/* A restrição do PCP prevalece sobre a aparência amarela do step atual. */
+.service-entry-amazon-stepper .service-entry-step.is-current.is-current-locked {
+  border-color: rgba(100, 116, 139, 0.58);
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.22), rgba(15, 31, 50, 0.96));
+  color: #94a3b8;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.06);
+}
+
+.service-entry-amazon-stepper .service-entry-step.is-current.is-current-locked > span:first-child {
+  border-color: rgba(148, 163, 184, 0.55);
+  background: rgba(71, 85, 105, 0.32);
+  color: #cbd5e1;
+  box-shadow: none;
+}
+
+.service-entry-amazon-stepper .service-entry-step.is-current.is-current-locked::after {
+  background: #475569;
+  box-shadow: none;
 }
 
 /* ==================================================================
