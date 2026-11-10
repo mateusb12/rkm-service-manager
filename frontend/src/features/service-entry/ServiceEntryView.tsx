@@ -36,7 +36,7 @@ import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
 import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
 import { createDemoServiceEntry } from './demo-fixture';
-import { deleteFile, fetchFile, listFiles, uploadFile } from '../files/service';
+import { deleteFile, getFilePreviewUrl, listFiles, uploadFile } from '../files/service';
 
 const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
   Cilindro: '/assets/cilindro.png',
@@ -138,12 +138,10 @@ const ServiceEntryInvoicePreview = ({ file }) => {
     }
 
     let active = true;
-    let objectUrl = '';
-    void fetchFile(file.key)
-      .then((blob) => {
+    void getFilePreviewUrl(file.key)
+      .then((cachedPreviewUrl) => {
         if (!active) return;
-        objectUrl = URL.createObjectURL(blob);
-        setPreviewUrl(objectUrl);
+        setPreviewUrl(cachedPreviewUrl);
       })
       .catch(() => {
         if (active) setPreviewUrl('');
@@ -151,7 +149,7 @@ const ServiceEntryInvoicePreview = ({ file }) => {
 
     return () => {
       active = false;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      // A URL de preview é mantida em cache pelo serviço para reutilização entre steps.
     };
   }, [file?.key]);
 

@@ -35,6 +35,11 @@ const FILE_COLORS = {
   Documento: 'from-blue-500/30 to-indigo-500/20 text-blue-200',
 };
 
+let filesCache: FileRecord[] | null = null;
+let filesRequest: Promise<FileRecord[]> | null = null;
+const previewUrlCache = new Map<string, string>();
+const previewRequests = new Map<string, Promise<string>>();
+
 function fileKind(file: BackendFile): FileKind {
   if (file.contentType === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))
     return 'PDF';
@@ -87,10 +92,21 @@ function toFileRecord(file: BackendFile): FileRecord {
 }
 
 export async function listFiles(): Promise<FileRecord[]> {
-  const response = await apiRequest('/files');
-  if (!response.ok) throw new Error('files_query_failed');
-  const files = (await response.json()) as BackendFile[];
-  return files.map(toFileRecord);
+  if (filesCache) return filesCache;
+  if (filesRequest) return filesRequest;
+
+  filesRequest = apiRequest('/files')
+    .then(async (response) => {
+      if (!response.ok) throw new Error('files_query_failed');
+      const files = (await response.json()) as BackendFile[];
+      filesCache = files.map(toFileRecord);
+      return filesCache;
+    })
+    .finally(() => {
+      filesRequest = null;
+    });
+
+  return filesRequest;
 }
 
 export async function uploadFile(file: File): Promise<FileRecord> {
@@ -99,7 +115,9 @@ export async function uploadFile(file: File): Promise<FileRecord> {
 
   const response = await apiRequest('/files', { method: 'POST', body: formData });
   if (!response.ok) throw new Error('file_upload_failed');
-  return toFileRecord((await response.json()) as BackendFile);
+  const uploaded = toFileRecord((await response.json()) as BackendFile);
+  if (filesCache) filesCache = [uploaded, ...filesCache];
+  return uploaded;
 }
 
 export function fileUrl(key: string, download = false): string {
@@ -113,10 +131,38 @@ export async function fetchFile(key: string, download = false): Promise<Blob> {
   return response.blob();
 }
 
+export async function getFilePreviewUrl(key: string): Promise<string> {
+  const cachedUrl = previewUrlCache.get(key);
+  if (cachedUrl) return cachedUrl;
+
+  const pendingRequest = previewRequests.get(key);
+  if (pendingRequest) return pendingRequest;
+
+  const request = fetchFile(key)
+    .then((blob) => {
+      const previewUrl = URL.createObjectURL(blob);
+      previewUrlCache.set(key, previewUrl);
+      return previewUrl;
+    })
+    .finally(() => {
+      previewRequests.delete(key);
+    });
+
+  previewRequests.set(key, request);
+  return request;
+}
+
 export async function deleteFile(key: string): Promise<void> {
   const encodedKey = key.split('/').map(encodeURIComponent).join('/');
   const response = await apiRequest(`/files/${encodedKey}`, { method: 'DELETE' });
   if (!response.ok) throw new Error('file_delete_failed');
+
+  if (filesCache) filesCache = filesCache.filter((file) => file.key !== key);
+  const previewUrl = previewUrlCache.get(key);
+  if (previewUrl) {
+    URL.revokeObjectURL(previewUrl);
+    previewUrlCache.delete(key);
+  }
 }
 
 export type StorageHealth = {
