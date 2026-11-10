@@ -1945,10 +1945,12 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 .service-entry-invoice-selected-card {
   position: relative;
   display: flex;
-  width: min(100%, 190px);
+  width: 100%;
+  aspect-ratio: 1 / 1;
   min-height: 0;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
   padding: 8px;
 }
 
@@ -1973,15 +1975,19 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-preview {
+  flex: 1 1 auto;
   width: 100%;
   min-width: 0;
   min-height: 0;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: auto;
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-preview img,
 .service-entry-invoice-selected-card .service-entry-invoice-preview iframe {
+  width: 100%;
+  height: 100%;
   min-height: 0;
+  object-fit: cover;
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-details {
@@ -2518,6 +2524,15 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   background: rgba(16, 185, 129, 0.08);
 }
 
+.service-entry-checklist-space {
+  box-sizing: border-box;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 30px;
+}
+
 .service-entry-toast {
   position: fixed;
   top: 24px;
@@ -2528,6 +2543,16 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   background: #000;
   overflow: hidden;
   box-shadow: 0 12px 30px rgba(2, 8, 23, 0.38);
+}
+
+.service-entry-toast-success {
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: #052e2b;
+  color: #a7f3d0;
+}
+
+.service-entry-toast-success .service-entry-toast-progress {
+  background: #34d399;
 }
 
 .service-entry-toast-close {

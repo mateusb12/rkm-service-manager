@@ -90,7 +90,7 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
         (
             "disassemblyOperator", "disassemblyStartedAt", "disassemblyComplete",
             "disassemblyControlled", "partsSeparated", "oilCollected", "disassemblyNotes",
-            "partsDisposition",
+            "partsDisposition", "disassemblyChecklist",
         ),
         "disassembly",
     ),

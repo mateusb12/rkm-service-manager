@@ -16,7 +16,7 @@ exec ssh -N \
   -o "User=${RKM_PG_SSH_USER:-${RKM_SSH_USER:-root}}" \
   -o IdentitiesOnly=no \
   -o IdentityAgent=/run/ssh-agent \
-  -o IdentityFile=/root/.ssh/id_ed25519_rkm \
+  -o IdentityFile=/root/.ssh/id_ed25519 \
   -o ExitOnForwardFailure=yes \
   -o ServerAliveInterval=30 \
   -o ServerAliveCountMax=3 \

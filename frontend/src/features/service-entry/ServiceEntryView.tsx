@@ -33,6 +33,7 @@ import { ClientSelector } from '../pcp/clients';
 import { UserSelector } from './UserSelector';
 import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage';
 import { ServiceEntryStageNavigator } from './ServiceEntryStageNavigator';
+import { ServiceEntryUploadFile } from './ServiceEntryUploadFile';
 import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
 import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
@@ -77,7 +78,7 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
       previewUrls.current.push(nextPreviews[key]);
     });
     setPreviews((prev) => ({ ...prev, ...nextPreviews }));
-    await onFiles(files);
+    await onFiles(files.slice(0, 1));
     event.target.value = '';
   };
 
@@ -85,12 +86,14 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
     <div className="service-entry-photo-field">
       <label className="service-entry-photo-label">{label}</label>
       {hint && <p>{hint}</p>}
-      <label className="service-entry-photo-picker">
-        <input type="file" accept="image/*" capture="environment" multiple onChange={selectFiles} />
-        <span aria-hidden="true">＋</span>
-        <strong>Adicionar fotos</strong>
-        <small>JPG, PNG ou HEIC · armazenadas neste navegador</small>
-      </label>
+      {photos.length === 0 && (
+        <label className="service-entry-photo-picker">
+          <input type="file" accept="image/*" capture="environment" onChange={selectFiles} />
+          <span aria-hidden="true">＋</span>
+          <strong>Adicionar foto</strong>
+          <small>JPG, PNG ou HEIC · armazenada neste navegador</small>
+        </label>
+      )}
       {photos.length > 0 && (
         <div className="service-entry-photo-list">
           {photos.map((photo) => {
@@ -160,7 +163,7 @@ const ServiceEntryInvoicePreview = ({ file }) => {
   );
 };
 
-const ServiceEntryInvoiceFileField = ({
+export const LegacyServiceEntryInvoiceFileField = ({
   file,
   onUpload,
   onDeselect,
@@ -221,12 +224,24 @@ const ServiceEntryInvoiceFileField = ({
 
   const dropFile = async (event) => {
     event.preventDefault();
+    event.stopPropagation();
     setDragging(false);
     await uploadSelectedFile(event.dataTransfer.files?.[0]);
   };
 
+  const dragOverFile = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'copy';
+    setDragging(true);
+  };
+
   return (
-    <div className="service-entry-photo-field">
+    <div
+      className="service-entry-photo-field"
+      onDragOverCapture={dragOverFile}
+      onDropCapture={dropFile}
+    >
       <label className="service-entry-photo-label">{label}</label>
       <p>{hint}</p>
       {uploading ? (
@@ -319,7 +334,7 @@ const ServiceEntryInvoiceFileField = ({
                 event.preventDefault();
                 setDragging(true);
               }}
-              onDragOver={(event) => event.preventDefault()}
+              onDragOver={dragOverFile}
               onDragLeave={(event) => {
                 if (event.currentTarget === event.target) setDragging(false);
               }}
@@ -339,23 +354,41 @@ const ServiceEntryInvoiceFileField = ({
   );
 };
 
-const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove }) => {
+const ServiceEntryInvoiceFileField = (props) => (
+  <ServiceEntryUploadFile
+    {...props}
+    uploadingLabel="Enviando nota fiscal..."
+    uploadingHint="Aguarde enquanto o arquivo é armazenado."
+  />
+);
+
+const ServiceEntryChecklistFileField = ({
+  label,
+  files = [],
+  category,
+  onFiles,
+  onRemove,
+  onSelectExisting,
+}) => {
   const file = files[0];
 
   return (
-    <ServiceEntryInvoiceFileField
+    <ServiceEntryUploadFile
       file={file}
       onUpload={(selectedFile) => onFiles([selectedFile])}
       onDeselect={() => file && onRemove(file)}
       onDelete={() => file && onRemove(file)}
-      onSelectExisting={() => undefined}
       label={label}
       hint="Opcional — foto da evidência."
       selectedBadge="Foto selecionada"
       addLabel="Adicionar foto"
       addHint="Clique ou arraste uma imagem"
+      uploadingLabel="Enviando foto..."
+      uploadingHint="Aguarde enquanto a foto é armazenada."
       accept="image/*"
-      showLibrary={false}
+      category={category}
+      onSelectExisting={onSelectExisting}
+      showLibrary
     />
   );
 };
@@ -669,19 +702,27 @@ const ServiceEntryDisassemblyChecklist = ({
                   </div>
                   {item.status === 'Não conforme' && (
                     <textarea
-                      className="rkm-input zenit-field mt-3 min-h-20 w-full resize-y"
+                      rows={1}
+                      className="rkm-input zenit-field service-entry-checklist-space mt-3 h-8 min-h-0 w-full resize-y"
                       value={item.notes}
                       onChange={(event) => updateItem(index, 'notes', event.target.value)}
                       placeholder="Explique o motivo da não conformidade..."
                       aria-label={`Motivo da não conformidade em ${item.component}`}
                     />
                   )}
+                  {item.status !== 'Não conforme' && (
+                    <div className="service-entry-checklist-space mt-3 h-8" aria-hidden="true" />
+                  )}
                   <div className="mt-3">
                     <ServiceEntryChecklistFileField
                       label={`Foto de ${item.component} (opcional)`}
                       files={form.photos[photoCategory] || []}
-                      onFiles={(files) => addChecklistPhotos(photoCategory, files)}
+                      category={`desmontagem (${item.component.toLowerCase()})`}
+                      onFiles={(files) => addChecklistPhotos(photoCategory, item.component, files)}
                       onRemove={(file) => removeChecklistPhoto(photoCategory, file)}
+                      onSelectExisting={(file) =>
+                        set('photos', { ...form.photos, [photoCategory]: [file] })
+                      }
                     />
                   </div>
                 </div>
@@ -884,6 +925,7 @@ export const ServiceEntryView = () => {
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
 
   useEffect(() => {
@@ -912,6 +954,13 @@ export const ServiceEntryView = () => {
     const timeoutId = window.setTimeout(() => setError(''), 5000);
     return () => window.clearTimeout(timeoutId);
   }, [error]);
+
+  useEffect(() => {
+    if (!successMessage) return undefined;
+
+    const timeoutId = window.setTimeout(() => setSuccessMessage(''), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [successMessage]);
 
   const set = (key, value) => {
     setForm((prev) => ({
@@ -968,6 +1017,7 @@ export const ServiceEntryView = () => {
   };
 
   const persistEntry = async (statusOverride, stepOverride = step) => {
+    setSuccessMessage('');
     const normalizedId = form.id || normalizeOrderNumber(form.orderNumber);
     if (!normalizedId) {
       setError('Informe o número da OS antes de salvar o progresso.');
@@ -1025,6 +1075,7 @@ export const ServiceEntryView = () => {
         ...persistedEntry,
         photos: { ...previous.photos, ...(persistedEntry.photos || {}) },
       }));
+      setSuccessMessage('Alterações salvas com sucesso.');
       window.dispatchEvent(new Event('service-orders-changed'));
       return true;
     } catch (saveError) {
@@ -1070,9 +1121,10 @@ export const ServiceEntryView = () => {
     }
   };
 
-  const addChecklistPhotos = async (category, files) => {
+  const addChecklistPhotos = async (category, component, files) => {
     try {
-      const uploaded = await Promise.all(files.map((file) => uploadFile(file, 'desmontagem')));
+      const uploadCategory = `desmontagem (${component.toLowerCase()})`;
+      const uploaded = await Promise.all(files.map((file) => uploadFile(file, uploadCategory)));
       setForm((prev) => ({
         ...prev,
         photos: { ...prev.photos, [category]: [...(prev.photos[category] || []), ...uploaded] },
@@ -1128,6 +1180,10 @@ export const ServiceEntryView = () => {
     }
   };
 
+  const saveProgress = async () => {
+    if (await persistEntry(undefined, step)) setError('');
+  };
+
   const openEntry = (entry) => {
     setError('');
     const emptyEntry = createEmptyServiceEntry();
@@ -1181,6 +1237,8 @@ export const ServiceEntryView = () => {
 
   const currentStep = stages[step] || { label: '', status: '' };
   const canEditCurrentStep = currentStep.canEdit !== false;
+  const currentStepMissingFields = getMissingServiceEntryFields(form, step);
+  const canAdvanceCurrentStep = canEditCurrentStep && currentStepMissingFields.length === 0;
   const progressStep = form.id ? getServiceEntryStageIndex(stages, form.stage) : 0;
   const visibleProgressStep = form.id
     ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage)
@@ -1430,6 +1488,24 @@ export const ServiceEntryView = () => {
         </div>
       )}
 
+      {successMessage && (
+        <div
+          role="status"
+          className="service-entry-toast service-entry-toast-success rounded-lg p-4 pr-10 text-sm"
+        >
+          {successMessage}
+          <button
+            type="button"
+            className="service-entry-toast-close"
+            aria-label="Fechar mensagem de sucesso"
+            onClick={() => setSuccessMessage('')}
+          >
+            ×
+          </button>
+          <span className="service-entry-toast-progress" aria-hidden="true" />
+        </div>
+      )}
+
       <ServiceEntryStageNavigator
         stages={stages}
         step={step}
@@ -1487,6 +1563,8 @@ export const ServiceEntryView = () => {
             set={set}
             addPhotos={addPhotos}
             removePhoto={removePhoto}
+            addChecklistPhotos={addChecklistPhotos}
+            removeChecklistPhoto={removeChecklistPhoto}
           />
         )}
         {canEditCurrentStep && step === 3 && (
@@ -1522,12 +1600,18 @@ export const ServiceEntryView = () => {
               </button>
             )}
             <button
-              type="submit"
+              type="button"
               className="btn btn-primary service-entry-save"
               disabled={!canEditCurrentStep}
+              onClick={saveProgress}
             >
               Salvar
             </button>
+            {canAdvanceCurrentStep && (
+              <button type="submit" className="btn btn-primary service-entry-advance">
+                {step === stages.length - 1 ? 'Finalizar OS' : 'Avançar'}
+              </button>
+            )}
           </div>
         </div>
       </form>

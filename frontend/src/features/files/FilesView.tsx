@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 import { CrudTable } from '../../shared/ui/CrudTable';
+import { RainbowBadge } from '../../shared/ui/RainbowBadge';
 import { formatLongDateTimeBR } from '../../utils/formatLongDateTimeBR';
 import {
   deleteFile,
@@ -40,6 +41,14 @@ function FileIcon({ kind, size = 18 }: { kind: FileKind; size?: number }) {
   if (kind === 'Imagem') return <FileImage size={size} />;
   if (kind === 'Planilha') return <FileSpreadsheet size={size} />;
   return <File size={size} />;
+}
+
+function formatCategory(category: string): string {
+  return category
+    .trim()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase());
 }
 
 function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void }) {
@@ -194,7 +203,7 @@ export function FilesView() {
       const matchesKind = kind === 'Todos' || file.kind === kind;
       const matchesQuery =
         !normalizedQuery ||
-        [file.name, file.kind, file.uploadedBy].some((value) =>
+        [file.name, file.kind, file.category ?? '', file.uploadedBy].some((value) =>
           value.toLowerCase().includes(normalizedQuery),
         );
       return matchesKind && matchesQuery;
@@ -301,10 +310,19 @@ export function FilesView() {
         footer="Dados demonstrativos para validação da tela de arquivos."
       >
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left">
+          <table className="w-full min-w-[860px] table-fixed text-left">
+            <colgroup>
+              <col className="w-[32%]" />
+              <col className="w-[14%]" />
+              <col className="w-[15%]" />
+              <col className="w-[23%]" />
+              <col className="w-[9%]" />
+              <col className="w-[7%]" />
+            </colgroup>
             <thead className="border-b border-rkmborder bg-rkmbg/50 text-[11px] uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-4 py-3 font-medium">Arquivo</th>
+                <th className="px-4 py-3 font-medium">Categoria</th>
                 <th className="px-4 py-3 font-medium">Enviado por</th>
                 <th className="px-4 py-3 font-medium">Data e horário</th>
                 <th className="px-4 py-3 font-medium">Tamanho</th>
@@ -407,6 +425,11 @@ function FileRow({
             </div>
           </div>
         </div>
+      </td>
+      <td className="px-4 py-3 text-sm text-slate-300">
+        <RainbowBadge colorKey={file.category ?? 'sem-categoria'}>
+          {file.category ? formatCategory(file.category) : 'Sem categoria'}
+        </RainbowBadge>
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">

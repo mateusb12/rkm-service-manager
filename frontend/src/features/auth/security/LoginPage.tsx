@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -54,8 +54,12 @@ export function LoginPage() {
       return false;
     }
   });
+
+  useEffect(() => {
+    if (user) navigate('/', { replace: true });
+  }, [navigate, user]);
+
   if (user) {
-    navigate('/', { replace: true });
     return null;
   }
   const submit = async (event: FormEvent) => {

@@ -89,6 +89,31 @@ def test_arrival_method_is_persisted_as_a_column(service_orders_client):
             database.close()
 
 
+def test_disassembly_checklist_is_returned_to_mechanic(service_orders_client):
+    checklist = [
+        {
+            "component": "Haste",
+            "status": "Não conforme",
+            "notes": "Veio quebrada",
+        }
+    ]
+    create = service_orders_client.post(
+        "/service-orders",
+        headers=login(service_orders_client, "admin@rkm.com.br"),
+        json={**order_payload("20265588"), "disassemblyChecklist": checklist},
+    )
+
+    assert create.status_code == 201
+
+    fetched = service_orders_client.get(
+        "/service-orders/20265588",
+        headers=login(service_orders_client),
+    )
+
+    assert fetched.status_code == 200
+    assert fetched.json["disassemblyChecklist"] == checklist
+
+
 def test_service_order_links_invoice_file_by_foreign_key(service_orders_client):
     with app.app_context():
         database = auth_database.session()
