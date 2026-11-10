@@ -21,6 +21,7 @@ class File(Base):
     storage_key: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     original_name: Mapped[str] = mapped_column(String, nullable=False)
     content_type: Mapped[str] = mapped_column(String, nullable=False)
+    category: Mapped[str | None] = mapped_column(String(80), nullable=True, index=True)
     size: Mapped[int] = mapped_column(BigInteger, nullable=False)
     etag: Mapped[str] = mapped_column(String, nullable=False, default="")
     uploaded_by_id: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -36,6 +37,7 @@ def serialize_file(record: File) -> dict:
         "size": record.size,
         "etag": record.etag,
         "contentType": record.content_type,
+        "category": record.category,
         "uploadedById": record.uploaded_by_id,
         "uploadedBy": record.uploaded_by_name,
         "uploadedAt": record.uploaded_at,

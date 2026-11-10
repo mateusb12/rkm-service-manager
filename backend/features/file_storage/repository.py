@@ -5,7 +5,7 @@ from __future__ import annotations
 import secrets
 from datetime import datetime, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session
 
 try:
@@ -18,7 +18,12 @@ from .storage import ObjectMetadata, ObjectStorage
 
 
 def ensure_schema(database: Session) -> None:
-    File.__table__.create(database.get_bind(), checkfirst=True)
+    bind = database.get_bind()
+    File.__table__.create(bind, checkfirst=True)
+    columns = {column["name"] for column in inspect(bind).get_columns(File.__tablename__)}
+    if "category" not in columns:
+        database.connection().execute(text("ALTER TABLE files ADD COLUMN category VARCHAR(80)"))
+        database.commit()
 
 
 def list_records(database: Session, prefix: str = "") -> list[File]:
@@ -43,6 +48,7 @@ def save_record(
     content_type: str,
     size: int,
     etag: str,
+    category: str | None = None,
     uploaded_by_id: str | None,
     uploaded_by_name: str | None,
     uploaded_at: datetime,
@@ -54,6 +60,7 @@ def save_record(
         content_type=content_type,
         size=size,
         etag=etag,
+        category=category,
         uploaded_by_id=uploaded_by_id,
         uploaded_by_name=uploaded_by_name,
         uploaded_at=uploaded_at,
@@ -91,6 +98,7 @@ def migrate_legacy_objects(database: Session, storage: ObjectStorage) -> int:
             content_type=metadata.content_type or "application/octet-stream",
             size=metadata.size,
             etag=metadata.etag,
+            category=None,
             uploaded_by_id=metadata.metadata.get("uploaded-by-id"),
             uploaded_by_name=metadata.metadata.get("uploaded-by-name"),
             uploaded_at=uploaded_at,

@@ -11,6 +11,7 @@ registerLocale('pt-BR', ptBR);
 
 import {
   createEmptyServiceEntry,
+  createEmptyDisassemblyChecklist,
   getServiceEntryStageIndex,
   normalizeOrderNumber,
   SERVICE_ENTRY_DEFAULT_STAGES,
@@ -45,18 +46,6 @@ const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
   'Motor hidráulico': '/assets/motor-hidraulico.png',
   Outro: '/assets/outro.png',
 };
-
-const CYLINDER_HEALTH_COMPONENTS = [
-  'Camisa',
-  'Haste',
-  'Êmbolo',
-  'Cabeçote dianteiro',
-  'Cabeçote traseiro',
-  'Vedações',
-  'Articulação dianteira',
-  'Articulação traseira',
-  'Outros',
-];
 
 const ServiceEntrySection = ({ title, description, children }) => (
   <section className="service-entry-section">
@@ -177,6 +166,13 @@ const ServiceEntryInvoiceFileField = ({
   onDeselect,
   onDelete,
   onSelectExisting,
+  label = 'Arquivo da nota fiscal',
+  hint = 'Opcional — imagem ou PDF armazenado no sistema de arquivos.',
+  selectedBadge = 'NF selecionada',
+  addLabel = 'Adicionar nota fiscal',
+  addHint = 'Clique ou arraste uma imagem ou PDF',
+  accept = 'image/*,application/pdf',
+  showLibrary = true,
 }) => {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -184,6 +180,7 @@ const ServiceEntryInvoiceFileField = ({
   const [editingSelection, setEditingSelection] = useState(false);
 
   useEffect(() => {
+    if (!showLibrary) return undefined;
     let active = true;
     void listFiles()
       .then((files) => {
@@ -204,7 +201,7 @@ const ServiceEntryInvoiceFileField = ({
     return () => {
       active = false;
     };
-  }, []);
+  }, [showLibrary]);
 
   const uploadSelectedFile = async (selectedFile) => {
     if (!selectedFile) return;
@@ -230,8 +227,8 @@ const ServiceEntryInvoiceFileField = ({
 
   return (
     <div className="service-entry-photo-field">
-      <label className="service-entry-photo-label">Arquivo da nota fiscal</label>
-      <p>Opcional — imagem ou PDF armazenado no sistema de arquivos.</p>
+      <label className="service-entry-photo-label">{label}</label>
+      <p>{hint}</p>
       {uploading ? (
         <div className="service-entry-invoice-card is-uploading" aria-live="polite">
           <div className="service-entry-invoice-preview service-entry-invoice-uploading-preview">
@@ -244,7 +241,7 @@ const ServiceEntryInvoiceFileField = ({
         </div>
       ) : file && !editingSelection ? (
         <div className="service-entry-invoice-card service-entry-invoice-selected-card">
-          <div className="service-entry-invoice-lock-badge">NF selecionada</div>
+          <div className="service-entry-invoice-lock-badge">{selectedBadge}</div>
           <ServiceEntryInvoicePreview file={file} />
           <div className="service-entry-invoice-details">
             <strong title={file.name}>{file.name}</strong>
@@ -328,22 +325,38 @@ const ServiceEntryInvoiceFileField = ({
               }}
               onDrop={dropFile}
             >
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={selectFile}
-                disabled={uploading}
-              />
+              <input type="file" accept={accept} onChange={selectFile} disabled={uploading} />
               <span className="service-entry-invoice-add-icon" aria-hidden="true">
                 ＋
               </span>
-              <strong>Adicionar nota fiscal</strong>
-              <small>Clique ou arraste uma imagem ou PDF</small>
+              <strong>{addLabel}</strong>
+              <small>{addHint}</small>
             </label>
           </div>
         </>
       )}
     </div>
+  );
+};
+
+const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove }) => {
+  const file = files[0];
+
+  return (
+    <ServiceEntryInvoiceFileField
+      file={file}
+      onUpload={(selectedFile) => onFiles([selectedFile])}
+      onDeselect={() => file && onRemove(file)}
+      onDelete={() => file && onRemove(file)}
+      onSelectExisting={() => undefined}
+      label={label}
+      hint="Opcional — foto da evidência."
+      selectedBadge="Foto selecionada"
+      addLabel="Adicionar foto"
+      addHint="Clique ou arraste uma imagem"
+      accept="image/*"
+      showLibrary={false}
+    />
   );
 };
 
@@ -556,71 +569,149 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
   </>
 );
 
-const ServiceEntryDisassemblyStep = ({ form, set, addPhotos, removePhoto }) => (
-  <ServiceEntrySection
-    title="Desmontagem"
-    description="Preserve a identidade da OS e registre como os componentes foram encontrados."
-  >
-    <Field label="Responsável pela desmontagem *">
-      <UserSelector
-        value={form.disassemblyOperator}
-        onSelect={(user) => set('disassemblyOperator', user.name)}
-        onClear={() => set('disassemblyOperator', '')}
-        roleFilter="mechanic"
-      />
-    </Field>
-    <Field label="Início">
-      <DatePicker
-        selected={parseStoredDateTime(form.disassemblyStartedAt)}
-        onChange={(value) => set('disassemblyStartedAt', serializeDateTime(value))}
-        dateFormat="dd 'de' MMMM 'de' yyyy 'às' HH'h'mm"
-        locale="pt-BR"
-        showTimeSelect
-        timeFormat="HH:mm"
-        timeIntervals={15}
-        timeCaption="Horário"
-        placeholderText="DD de mês de YYYY às HHhmm"
-        customInput={<ReadOnlyDatePickerInput />}
-        wrapperClassName="service-entry-date-picker"
-      />
-    </Field>
-    {form.orderType === 'Cilindro' && (
-      <div className="md:col-span-3">
-        <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-300">
-          Checklist de saúde do cilindro
-        </span>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {CYLINDER_HEALTH_COMPONENTS.map((component) => (
-            <button
-              key={component}
-              type="button"
-              className="rounded-lg border border-rkmborder bg-rkmcard2/40 px-3 py-3 text-left text-sm text-slate-300 transition hover:border-blue-400/50 hover:bg-rkmcard2"
-            >
-              {component}
-            </button>
-          ))}
+const ServiceEntryDisassemblyChecklist = ({
+  form,
+  set,
+  addPhotos,
+  removePhoto,
+  addChecklistPhotos,
+  removeChecklistPhoto,
+}) => {
+  const checklist = Array.isArray(form.disassemblyChecklist)
+    ? form.disassemblyChecklist
+    : createEmptyDisassemblyChecklist();
+
+  const updateItem = (index, key, value) => {
+    const next = checklist.map((item, itemIndex) =>
+      itemIndex === index
+        ? {
+            ...item,
+            [key]: value,
+            ...(key === 'status' && value === 'Conforme' ? { notes: '' } : {}),
+          }
+        : item,
+    );
+    set('disassemblyChecklist', next);
+  };
+
+  return (
+    <ServiceEntrySection
+      title="Desmontagem"
+      description="Preserve a identidade da OS e registre como os componentes foram encontrados."
+    >
+      <Field label="Responsável pela desmontagem *">
+        <UserSelector
+          value={form.disassemblyOperator}
+          onSelect={(user) => set('disassemblyOperator', user.name)}
+          onClear={() => set('disassemblyOperator', '')}
+          roleFilter="mechanic"
+        />
+      </Field>
+      <Field label="Início">
+        <DatePicker
+          selected={parseStoredDateTime(form.disassemblyStartedAt)}
+          onChange={(value) => set('disassemblyStartedAt', serializeDateTime(value))}
+          dateFormat="dd 'de' MMMM 'de' yyyy 'às' HH'h'mm"
+          locale="pt-BR"
+          showTimeSelect
+          timeFormat="HH:mm"
+          timeIntervals={15}
+          timeCaption="Horário"
+          placeholderText="DD de mês de YYYY às HHhmm"
+          customInput={<ReadOnlyDatePickerInput />}
+          wrapperClassName="service-entry-date-picker"
+        />
+      </Field>
+      {form.orderType === 'Cilindro' && (
+        <div className="md:col-span-3 space-y-3">
+          <div>
+            <span className="block text-xs font-semibold uppercase tracking-wide text-slate-300">
+              Checklist de saúde do cilindro *
+            </span>
+            <p className="mt-1 text-xs text-slate-500">
+              Avalie todos os itens. A foto é opcional; a justificativa é obrigatória quando estiver
+              não conforme.
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {checklist.map((item, index) => {
+              const photoCategory = `disassemblyChecklist-${index}`;
+              return (
+                <div
+                  key={item.component}
+                  className="flex min-h-[260px] h-full flex-col rounded-lg border border-rkmborder bg-rkmcard2/40 p-4"
+                >
+                  <div>
+                    <span className="font-medium text-slate-200">{item.component}</span>
+                    <div
+                      className="mt-3 flex flex-wrap gap-2"
+                      role="group"
+                      aria-label={`Resultado de ${item.component}`}
+                    >
+                      {['Conforme', 'Não conforme'].map((status) => (
+                        <button
+                          key={status}
+                          type="button"
+                          aria-pressed={item.status === status}
+                          onClick={() => updateItem(index, 'status', status)}
+                          className={`rounded-md border px-3 py-2 text-xs font-semibold transition ${
+                            item.status === status
+                              ? status === 'Conforme'
+                                ? 'border-emerald-400/70 bg-emerald-400/15 text-emerald-300'
+                                : 'border-rose-400/70 bg-rose-400/15 text-rose-300'
+                              : 'border-rkmborder text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {item.status === 'Não conforme' && (
+                    <textarea
+                      className="rkm-input zenit-field mt-3 min-h-20 w-full resize-y"
+                      value={item.notes}
+                      onChange={(event) => updateItem(index, 'notes', event.target.value)}
+                      placeholder="Explique o motivo da não conformidade..."
+                      aria-label={`Motivo da não conformidade em ${item.component}`}
+                    />
+                  )}
+                  <div className="mt-3">
+                    <ServiceEntryChecklistFileField
+                      label={`Foto de ${item.component} (opcional)`}
+                      files={form.photos[photoCategory] || []}
+                      onFiles={(files) => addChecklistPhotos(photoCategory, files)}
+                      onRemove={(file) => removeChecklistPhoto(photoCategory, file)}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
+      )}
+      <Field label="Observações da desmontagem" className="md:col-span-3">
+        <TextArea
+          rows={3}
+          value={form.disassemblyNotes}
+          onChange={(value) => set('disassemblyNotes', value)}
+          placeholder="Sequência, travamentos, danos observados ao abrir..."
+        />
+      </Field>
+      <div className="md:col-span-3">
+        <ServiceEntryPhotoField
+          label="Evidências da desmontagem *"
+          hint="Registre a abertura e os componentes antes de limpar ou substituir peças."
+          photos={form.photos.disassembly}
+          onFiles={(files) => addPhotos('disassembly', files)}
+          onRemove={(photo) => removePhoto('disassembly', photo)}
+        />
       </div>
-    )}
-    <Field label="Observações da desmontagem" className="md:col-span-3">
-      <TextArea
-        rows={3}
-        value={form.disassemblyNotes}
-        onChange={(value) => set('disassemblyNotes', value)}
-        placeholder="Sequência, travamentos, danos observados ao abrir..."
-      />
-    </Field>
-    <div className="md:col-span-3">
-      <ServiceEntryPhotoField
-        label="Evidências da desmontagem *"
-        hint="Registre a abertura e os componentes antes de limpar ou substituir peças."
-        photos={form.photos.disassembly}
-        onFiles={(files) => addPhotos('disassembly', files)}
-        onRemove={(photo) => removePhoto('disassembly', photo)}
-      />
-    </div>
-  </ServiceEntrySection>
-);
+    </ServiceEntrySection>
+  );
+};
+
+const ServiceEntryDisassemblyStep = (props) => <ServiceEntryDisassemblyChecklist {...props} />;
 
 const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
   <ServiceEntrySection
@@ -845,7 +936,7 @@ export const ServiceEntryView = () => {
 
   const uploadInvoiceFile = async (file) => {
     try {
-      const uploaded = await uploadFile(file);
+      const uploaded = await uploadFile(file, 'nota_fiscal');
       setForm((prev) => ({ ...prev, invoiceFileId: uploaded.id, invoiceFile: uploaded }));
       setError('');
     } catch {
@@ -979,6 +1070,35 @@ export const ServiceEntryView = () => {
     }
   };
 
+  const addChecklistPhotos = async (category, files) => {
+    try {
+      const uploaded = await Promise.all(files.map((file) => uploadFile(file, 'desmontagem')));
+      setForm((prev) => ({
+        ...prev,
+        photos: { ...prev.photos, [category]: [...(prev.photos[category] || []), ...uploaded] },
+      }));
+      setError('');
+    } catch {
+      setError('Não foi possível enviar as fotos do checklist.');
+    }
+  };
+
+  const removeChecklistPhoto = async (category, file) => {
+    try {
+      if (file.key) await deleteFile(file.key);
+      setForm((prev) => ({
+        ...prev,
+        photos: {
+          ...prev.photos,
+          [category]: (prev.photos[category] || []).filter((item) => item.id !== file.id),
+        },
+      }));
+      setError('');
+    } catch {
+      setError('Não foi possível remover a foto do checklist.');
+    }
+  };
+
   const removePhoto = async (category, photo) => {
     try {
       await deleteServiceEntryPhoto(photo.id);
@@ -1038,8 +1158,14 @@ export const ServiceEntryView = () => {
         ...Object.values(entry.photos || {}).flat(),
         ...(form.id === entry.id ? Object.values(form.photos || {}).flat() : []),
       ];
-      const photoIds = new Set(photos.map((photo) => photo.id).filter(Boolean));
-      for (const photoId of photoIds) await deleteServiceEntryPhoto(photoId);
+      const deletedPhotos = new Set();
+      for (const photo of photos) {
+        const photoReference = photo.key || photo.id;
+        if (!photoReference || deletedPhotos.has(photoReference)) continue;
+        deletedPhotos.add(photoReference);
+        if (photo.key) await deleteFile(photo.key);
+        else await deleteServiceEntryPhoto(photo.id);
+      }
 
       await deleteServiceEntry(entry);
       const next = entries.filter((item) => item.id !== entry.id);
@@ -1348,6 +1474,8 @@ export const ServiceEntryView = () => {
             onInvoiceFileRemove={removeInvoiceFile}
             addPhotos={addPhotos}
             removePhoto={removePhoto}
+            addChecklistPhotos={addChecklistPhotos}
+            removeChecklistPhoto={removeChecklistPhoto}
           />
         ) : null}
         {!canEditCurrentStep ? null : step === 1 ? (

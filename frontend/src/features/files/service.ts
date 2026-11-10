@@ -7,6 +7,7 @@ export type FileRecord = {
   key: string;
   name: string;
   contentType: string;
+  category?: string | null;
   kind: FileKind;
   bytes: number;
   size: string;
@@ -24,6 +25,7 @@ type BackendFile = {
   name: string;
   size: number;
   contentType: string;
+  category?: string | null;
   uploadedBy: string;
   uploadedAt: string;
 };
@@ -79,6 +81,7 @@ function toFileRecord(file: BackendFile): FileRecord {
     key: file.key,
     name: file.name,
     contentType: file.contentType,
+    category: file.category ?? null,
     kind,
     bytes: file.size,
     size: formatSize(file.size),
@@ -109,9 +112,10 @@ export async function listFiles(): Promise<FileRecord[]> {
   return filesRequest;
 }
 
-export async function uploadFile(file: File): Promise<FileRecord> {
+export async function uploadFile(file: File, category?: string): Promise<FileRecord> {
   const formData = new FormData();
   formData.append('file', file);
+  if (category) formData.append('category', category);
 
   const response = await apiRequest('/files', { method: 'POST', body: formData });
   if (!response.ok) throw new Error('file_upload_failed');

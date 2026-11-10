@@ -149,6 +149,7 @@ def upload_file(data):
     uploaded_at = datetime.now(timezone.utc)
     content_type = file.mimetype or "application/octet-stream"
     original_name = _safe_filename(file.filename or "")
+    category = data.get("category") or request.form.get("category") or None
     database = session()
     try:
         size = _file_size(file)
@@ -167,6 +168,7 @@ def upload_file(data):
             content_type=content_type,
             size=size or 0,
             etag=etag,
+            category=category,
             uploaded_by_id=user[0],
             uploaded_by_name=user[1],
             uploaded_at=uploaded_at,

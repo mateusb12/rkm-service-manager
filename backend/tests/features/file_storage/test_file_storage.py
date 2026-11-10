@@ -89,12 +89,26 @@ def test_file_storage_lifecycle(files_client):
     assert upload.status_code == 201
     assert upload.json["name"] == "manual.txt"
     assert upload.json["contentType"] == "text/plain"
+    assert upload.json["category"] is None
     key = upload.json["key"]
     assert storage.objects[key]["metadata"] == {}
 
+    categorized_upload = client.post(
+        "/files",
+        headers=headers,
+        data={
+            "file": (BytesIO(b"disassembly evidence"), "evidence.jpg"),
+            "category": "desmontagem",
+        },
+        content_type="multipart/form-data",
+    )
+    assert categorized_upload.status_code == 201
+    assert categorized_upload.json["category"] == "desmontagem"
+
     listing = client.get("/files", headers=headers)
     assert listing.status_code == 200
-    assert listing.json[0]["key"] == key
+    assert key in {record["key"] for record in listing.json}
+    assert categorized_upload.json["key"] in {record["key"] for record in listing.json}
 
     download = client.get(f"/files/{key}", headers=headers)
     assert download.status_code == 200

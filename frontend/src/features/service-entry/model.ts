@@ -19,6 +19,25 @@ export const SERVICE_ENTRY_DEFAULT_STAGES = [
   { id: 'entrega', label: 'Entrega', status: 'Em entrega', canView: true },
 ];
 
+export const CYLINDER_HEALTH_COMPONENTS = [
+  'Camisa',
+  'Haste',
+  'Êmbolo',
+  'Cabeçote dianteiro',
+  'Cabeçote traseiro',
+  'Vedações',
+  'Articulação dianteira',
+  'Articulação traseira',
+  'Outros',
+];
+
+export const createEmptyDisassemblyChecklist = () =>
+  CYLINDER_HEALTH_COMPONENTS.map((component) => ({
+    component,
+    status: '',
+    notes: '',
+  }));
+
 const currentLocalDateTime = () => {
   const now = new Date();
   const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
@@ -67,6 +86,7 @@ export const createEmptyServiceEntry = () => ({
   partsSeparated: false,
   oilCollected: false,
   disassemblyNotes: '',
+  disassemblyChecklist: createEmptyDisassemblyChecklist(),
   partsDisposition: '',
   diagnosis: '',
   measurements: '',
