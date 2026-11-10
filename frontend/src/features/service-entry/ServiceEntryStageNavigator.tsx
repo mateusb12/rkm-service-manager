@@ -10,7 +10,7 @@ export const ServiceEntryStageNavigator = ({
     aria-label="Etapas do ciclo operacional"
   >
     {stages.map((stage, index) => {
-      const isLocked = index > progressStep || (Boolean(hasEntry) && !stage.canView);
+      const isLocked = index > progressStep || (Boolean(hasEntry) && stage.canView === false);
       const isCurrentLocked = Boolean(hasEntry) && progressStep === index && !stage.canView;
       return (
         <button
@@ -23,7 +23,7 @@ export const ServiceEntryStageNavigator = ({
           aria-label={stage.label}
           title={
             isCurrentLocked
-              ? 'Etapa bloqueada para o PCP'
+              ? 'Etapa bloqueada para este cargo'
               : isLocked
                 ? 'Etapa ainda não alcançada'
                 : undefined

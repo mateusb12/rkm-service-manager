@@ -6,13 +6,13 @@ from typing import Any, Callable
 
 from .model import ServiceOrder
 from ..file_storage.model import serialize_file
-from .policy import ServiceOrderSection, visible_sections
+from .policy import MECHANIC_EDITABLE_STAGE, ServiceOrderSection, visible_sections
 from .stages import SERVICE_ORDER_STAGES, STAGE_LABELS, STAGE_STATUSES, ServiceOrderStage
 
 
 def serialize_service_order_stage_catalog(role: str) -> list[dict[str, Any]]:
     initial_stage_ids = {ServiceOrderStage.RECEBIMENTO, ServiceOrderStage.IDENTIFICACAO}
-    can_access_all = role in {"admin", "mechanic"}
+    can_access_all = role == "admin"
     can_create_or_update = role in {"admin", "mechanic", "pcp"}
 
     return [
@@ -21,11 +21,21 @@ def serialize_service_order_stage_catalog(role: str) -> list[dict[str, Any]]:
             "label": STAGE_LABELS[stage],
             "status": STAGE_STATUSES[stage],
             "position": position,
-            "canView": can_access_all or stage in initial_stage_ids,
-            "canEdit": can_access_all or stage in initial_stage_ids,
-            "canComplete": can_access_all or stage in initial_stage_ids,
+            "canView": can_access_all
+            or (role == "mechanic" and stage not in initial_stage_ids)
+            or (role == "pcp" and stage in initial_stage_ids),
+            "canEdit": can_access_all
+            or (role == "mechanic" and stage == MECHANIC_EDITABLE_STAGE)
+            or (role == "pcp" and stage in initial_stage_ids),
+            "canComplete": can_access_all
+            or (role == "mechanic" and stage == MECHANIC_EDITABLE_STAGE)
+            or (role == "pcp" and stage in initial_stage_ids),
             "canAdvanceTo": can_create_or_update
-            and (can_access_all or stage in initial_stage_ids or stage == ServiceOrderStage.DESMONTAGEM),
+            and (
+                can_access_all
+                or (role == "pcp" and (stage in initial_stage_ids or stage == ServiceOrderStage.DESMONTAGEM))
+                or (role == "mechanic" and stage == MECHANIC_EDITABLE_STAGE)
+            ),
         }
         for position, stage in enumerate(SERVICE_ORDER_STAGES, start=1)
     ]
@@ -127,6 +137,7 @@ def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
         } if order.client else None,
         "invoiceFileId": order.invoice_file_id,
         "invoiceFile": serialize_file(order.invoice_file) if order.invoice_file else None,
+        "orderType": payload.get("orderType", ""),
         "equipment": payload.get("equipment", ""),
         "status": order.status,
         "stage": stage.value,
@@ -147,12 +158,12 @@ def serialize_service_order(order: ServiceOrder, role: str) -> dict[str, Any]:
     for section in visible_sections(role):
         section_payload = SECTION_SERIALIZERS[section](payload)
         result[section.value] = section_payload
-        if role == "pcp":
+        if role in {"pcp", "mechanic"}:
             # Keep the current form compatible while exposing only permitted fields.
             result.update(section_payload)
 
     # Keep the existing flat response for roles that can inspect the full OS.
-    if role in {"admin", "mechanic"}:
+    if role == "admin":
         result.update(payload)
         result.update(
             {

@@ -1054,6 +1054,7 @@ export const ServiceEntryView = () => {
   };
 
   const currentStep = stages[step] || { label: '', status: '' };
+  const canEditCurrentStep = currentStep.canEdit !== false;
   const progressStep = form.id ? getServiceEntryStageIndex(stages, form.stage) : 0;
   const visibleProgressStep = form.id
     ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage)
@@ -1330,7 +1331,16 @@ export const ServiceEntryView = () => {
           advance();
         }}
       >
-        {step === 0 && (
+        {!canEditCurrentStep ? (
+          <ServiceEntrySection
+            title="Etapa somente para consulta"
+            description="Seu cargo pode acompanhar os dados gerais da OS, mas não pode editar o conteúdo desta etapa."
+          >
+            <div className="md:col-span-3 text-sm text-slate-400">
+              Selecione uma etapa permitida para continuar.
+            </div>
+          </ServiceEntrySection>
+        ) : step === 0 ? (
           <ServiceEntryArrivalStep
             form={form}
             set={set}
@@ -1339,9 +1349,11 @@ export const ServiceEntryView = () => {
             addPhotos={addPhotos}
             removePhoto={removePhoto}
           />
-        )}
-        {step === 1 && <ServiceEntryIdentificationStep form={form} set={set} />}
-        {step === 2 && (
+        ) : null}
+        {!canEditCurrentStep ? null : step === 1 ? (
+          <ServiceEntryIdentificationStep form={form} set={set} />
+        ) : null}
+        {canEditCurrentStep && step === 2 && (
           <ServiceEntryDisassemblyStep
             form={form}
             set={set}
@@ -1349,7 +1361,7 @@ export const ServiceEntryView = () => {
             removePhoto={removePhoto}
           />
         )}
-        {step === 3 && (
+        {canEditCurrentStep && step === 3 && (
           <ServiceEntryBudgetStep
             form={form}
             set={set}
@@ -1357,7 +1369,7 @@ export const ServiceEntryView = () => {
             removePhoto={removePhoto}
           />
         )}
-        {step === 4 && (
+        {canEditCurrentStep && step === 4 && (
           <ServiceEntryRepairStep
             form={form}
             set={set}
@@ -1365,7 +1377,7 @@ export const ServiceEntryView = () => {
             removePhoto={removePhoto}
           />
         )}
-        {step === 5 && (
+        {canEditCurrentStep && step === 5 && (
           <ServiceEntryDispatchStep
             form={form}
             set={set}
@@ -1381,7 +1393,11 @@ export const ServiceEntryView = () => {
                 Voltar
               </button>
             )}
-            <button type="submit" className="btn btn-primary service-entry-save">
+            <button
+              type="submit"
+              className="btn btn-primary service-entry-save"
+              disabled={!canEditCurrentStep}
+            >
               Salvar
             </button>
           </div>

@@ -47,7 +47,7 @@ def order_payload(order_number="20265584"):
 
 
 def test_service_order_persists_flexible_document(service_orders_client):
-    headers = login(service_orders_client)
+    headers = login(service_orders_client, "admin@rkm.com.br")
     create = service_orders_client.post(
         "/service-orders", headers=headers, json=order_payload()
     )
@@ -152,13 +152,13 @@ def test_stage_catalog_exposes_role_capabilities(service_orders_client):
         "/service-orders/stages", headers=login(service_orders_client)
     )
     assert mechanic.status_code == 200
-    assert all(stage["canView"] for stage in mechanic.json)
-    assert all(stage["canEdit"] for stage in mechanic.json)
-    assert all(stage["canComplete"] for stage in mechanic.json)
+    assert [stage["canView"] for stage in mechanic.json] == [False, False, True, True, True, True]
+    assert [stage["canEdit"] for stage in mechanic.json] == [False, False, True, False, False, False]
+    assert [stage["canComplete"] for stage in mechanic.json] == [False, False, True, False, False, False]
 
 
 def test_service_order_updates_without_changing_identity(service_orders_client):
-    headers = login(service_orders_client)
+    headers = login(service_orders_client, "admin@rkm.com.br")
     assert service_orders_client.post(
         "/service-orders", headers=headers, json=order_payload()
     ).status_code == 201
@@ -201,6 +201,32 @@ def test_pcp_opens_order_but_gets_only_initial_details_after_identification(serv
     assert details.json["stage"] == "desmontagem"
     assert details.json["availableThroughStage"] == "identificacao"
     assert "diagnosis" not in details.json
+
+
+def test_mechanic_gets_general_order_data_but_only_step_three_details(service_orders_client):
+    create = service_orders_client.post(
+        "/service-orders",
+        headers=login(service_orders_client),
+        json={
+            **order_payload("20265589"),
+            "orderType": "Cilindro",
+            "equipment": "Cilindro hidráulico",
+            "serialNumber": "SER-1",
+            "disassemblyNotes": "Abrir e registrar os componentes.",
+            "diagnosis": "Informação restrita ao orçamento.",
+        },
+    )
+    assert create.status_code == 201
+
+    details = service_orders_client.get(
+        "/service-orders/OS-20265589", headers=login(service_orders_client)
+    )
+    assert details.status_code == 200
+    assert details.json["orderType"] == "Cilindro"
+    assert details.json["equipment"] == "Cilindro hidráulico"
+    assert "serialNumber" not in details.json
+    assert details.json["disassemblyNotes"] == "Abrir e registrar os componentes."
+    assert "diagnosis" in details.json
 
 
 def test_pcp_can_create_initial_service_order(service_orders_client):
