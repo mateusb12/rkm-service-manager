@@ -23,7 +23,7 @@ services:
       COOKIE_SECURE: "${COOKIE_SECURE:-true}"
       WAKATIME_ACCESS_TOKEN: ${WAKATIME_ACCESS_TOKEN:-}
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8787/health || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8787/health')"]
       interval: 30s
       timeout: 5s
       retries: 3
