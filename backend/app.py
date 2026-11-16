@@ -6,12 +6,14 @@ import logging
 import os
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from flask import Flask, current_app, g, jsonify, request
+from flask import Flask, abort, current_app, g, jsonify, request, send_from_directory
 from flask_cors import CORS
 from werkzeug.exceptions import BadRequest, HTTPException
+from werkzeug.utils import safe_join
 
 try:
     from .swagger.api_docs import init_api, register_api_docs
@@ -33,6 +35,19 @@ except ImportError:
 
 
 LOGGER = logging.getLogger(__name__)
+FRONTEND_DIRECTORY = Path(__file__).resolve().parent / "public"
+FRONTEND_API_PREFIXES = (
+    "/api",
+    "/auth",
+    "/admin",
+    "/clients",
+    "/dev",
+    "/files",
+    "/service-orders",
+    "/health",
+    "/openapi.json",
+    "/docs",
+)
 
 
 def _cors_origins() -> list[str]:
@@ -134,6 +149,34 @@ def handle_unexpected_error(error: Exception):
     return _error_payload("Internal server error", 500)
 
 
+def serve_frontend(path: str = ""):
+    """Serve the Vite build, falling back to the SPA entry point for client routes."""
+
+    index_path = FRONTEND_DIRECTORY / "index.html"
+    if not index_path.is_file():
+        abort(404)
+
+    request_path = f"/{path}" if path else "/"
+    if any(
+        request_path == prefix or request_path.startswith(f"{prefix}/")
+        for prefix in FRONTEND_API_PREFIXES
+    ):
+        abort(404)
+
+    file_path = safe_join(str(FRONTEND_DIRECTORY), path) if path else None
+    if file_path and os.path.isfile(file_path):
+        response = send_from_directory(str(FRONTEND_DIRECTORY), path)
+        if path.startswith("assets/"):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        else:
+            response.headers["Cache-Control"] = "no-cache, must-revalidate"
+        return response
+
+    response = send_from_directory(str(FRONTEND_DIRECTORY), "index.html")
+    response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
+
+
 @app.get("/health")
 def health():
     return jsonify({"status": "ok", "service": "rkm-service-manager-python"})
@@ -141,6 +184,9 @@ def health():
 
 @app.get("/")
 def root():
+    if (FRONTEND_DIRECTORY / "index.html").is_file():
+        return serve_frontend()
+
     return jsonify(
         {
             "service": "rkm-service-manager-python",
@@ -151,4 +197,9 @@ def root():
             "openapi": "/openapi.json",
         }
     )
+
+
+@app.get("/<path:frontend_path>")
+def frontend_route(frontend_path: str):
+    return serve_frontend(frontend_path)
 
