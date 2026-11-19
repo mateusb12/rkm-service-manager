@@ -32,7 +32,7 @@ import { useLocalDevelopment } from '../../shared/dev/local-development';
 import { ClientSelector } from '../pcp/clients';
 import { UserSelector } from './UserSelector';
 import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage';
-import { ServiceOrderStageNavigator } from './ServiceOrderStageNavigator';
+import { ServiceOrderStepNavigator } from './ServiceOrderStepNavigator';
 import { ServiceOrderFileUpload } from './ServiceOrderFileUpload';
 import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
@@ -1507,7 +1507,7 @@ export const ServiceOrderView = () => {
         </div>
       )}
 
-      <ServiceOrderStageNavigator
+      <ServiceOrderStepNavigator
         stages={stages}
         step={step}
         progressStep={progressStep}
