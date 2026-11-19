@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { FileCheck2, Pencil, Trash2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, FileCheck2, Pencil, Save, Trash2, X } from 'lucide-react';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -526,7 +526,7 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
         <TextInput
           value={form.equipment}
           onChange={(value) => set('equipment', value)}
-          placeholder="Descrição do equipamento"
+          placeholder="Ex.: Cilindro hidráulico soldado, dupla ação — Ø80/50 x 500 mm"
         />
       </Field>
     </ServiceEntrySection>
@@ -1180,7 +1180,11 @@ export const ServiceOrderView = () => {
   };
 
   const saveProgress = async () => {
-    if (await persistEntry(undefined, step)) setError('');
+    // Voltar para editar uma etapa anterior não deve regredir o estágio
+    // operacional já salvo para a OS. Para uma OS nova, o passo atual ainda
+    // é o estágio correto a persistir.
+    const persistedStep = form.id ? getServiceEntryStageIndex(stages, form.stage) : step;
+    if (await persistEntry(undefined, persistedStep)) setError('');
   };
 
   const openEntry = (entry) => {
@@ -1594,21 +1598,35 @@ export const ServiceOrderView = () => {
         <div className="service-entry-actions service-entry-step-actions">
           <div className="service-entry-action-group">
             {step > 0 && (
-              <button type="button" className="btn btn-ghost" onClick={() => changeStep(step - 1)}>
+              <button
+                type="button"
+                className="btn btn-ghost service-entry-action-back"
+                onClick={() => changeStep(step - 1)}
+              >
+                <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
                 Voltar
               </button>
             )}
             <button
               type="button"
-              className="btn btn-primary service-entry-save"
+              className="btn btn-primary service-entry-save service-entry-action-save"
               disabled={!canEditCurrentStep}
               onClick={saveProgress}
             >
+              <Save size={16} strokeWidth={2} aria-hidden="true" />
               Salvar
             </button>
             {canAdvanceCurrentStep && (
-              <button type="submit" className="btn btn-primary service-entry-advance">
+              <button
+                type="submit"
+                className="btn btn-primary service-entry-advance service-entry-action-advance"
+              >
                 {step === stages.length - 1 ? 'Finalizar OS' : 'Avançar'}
+                {step === stages.length - 1 ? (
+                  <Check size={17} strokeWidth={2.2} aria-hidden="true" />
+                ) : (
+                  <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
+                )}
               </button>
             )}
           </div>
