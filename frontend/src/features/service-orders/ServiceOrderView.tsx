@@ -1043,7 +1043,7 @@ export const ServiceOrderView = () => {
         <div className="flex-1 min-w-0">
           <div className="service-entry-kicker">Ciclo operacional · Entrada</div>
 
-          <h1>{form.id ? `OS ${form.orderNumber}` : 'Criar ordem de serviço'}</h1>
+          <h1>{form.id ? form.orderNumber : 'Criar ordem de serviço'}</h1>
 
           <p>Registre a entrada da peça ou equipamento e reúna as informações necessárias antes da peritagem.</p>
         </div>
@@ -1263,7 +1263,7 @@ export const ServiceOrderView = () => {
         <strong>{currentStep.label}</strong>
         <small>
           {form.id
-            ? `OS ${form.orderNumber} · ${form.status || currentStep.status}`
+            ? `${form.orderNumber} · ${form.status || currentStep.status}`
             : 'Salve a primeira etapa para abrir a OS e continuar o acompanhamento.'}
         </small>
       </div>
