@@ -32,8 +32,8 @@ import { useLocalDevelopment } from '../../shared/dev/local-development';
 import { ClientSelector } from '../pcp/clients';
 import { UserSelector } from './UserSelector';
 import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage';
-import { ServiceEntryStageNavigator } from './ServiceEntryStageNavigator';
-import { ServiceEntryUploadFile } from './ServiceEntryUploadFile';
+import { ServiceOrderStageNavigator } from './ServiceOrderStageNavigator';
+import { ServiceOrderFileUpload } from './ServiceOrderFileUpload';
 import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
 import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
@@ -354,8 +354,8 @@ export const LegacyServiceEntryInvoiceFileField = ({
   );
 };
 
-const ServiceEntryInvoiceFileField = (props) => (
-  <ServiceEntryUploadFile
+const ServiceOrderInvoiceFileField = (props) => (
+  <ServiceOrderFileUpload
     {...props}
     uploadingLabel="Enviando nota fiscal..."
     uploadingHint="Aguarde enquanto o arquivo é armazenado."
@@ -373,7 +373,7 @@ const ServiceEntryChecklistFileField = ({
   const file = files[0];
 
   return (
-    <ServiceEntryUploadFile
+    <ServiceOrderFileUpload
       file={file}
       onUpload={(selectedFile) => onFiles([selectedFile])}
       onDeselect={() => file && onRemove(file)}
@@ -455,7 +455,7 @@ const ServiceEntryArrivalStep = ({
       />
     </Field>
     <div className="md:col-span-3">
-      <ServiceEntryInvoiceFileField
+      <ServiceOrderInvoiceFileField
         file={form.invoiceFile}
         showLibrary={Boolean(form.id)}
         onUpload={onInvoiceFileUpload}
@@ -918,7 +918,7 @@ const ServiceEntryDispatchStep = ({ form, set, addPhotos, removePhoto }) => (
   </ServiceEntrySection>
 );
 
-export const ServiceEntryView = () => {
+export const ServiceOrderView = () => {
   const showDevGuides = useLocalDevelopment();
   const [form, setForm] = useState(() => createEmptyServiceEntry());
   const [entries, setEntries] = useState([]);
@@ -1507,7 +1507,7 @@ export const ServiceEntryView = () => {
         </div>
       )}
 
-      <ServiceEntryStageNavigator
+      <ServiceOrderStageNavigator
         stages={stages}
         step={step}
         progressStep={progressStep}

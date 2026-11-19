@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { loadServiceEntries } from '../service-entry/service';
+import { loadServiceEntries } from '../service-orders/service';
 
 import {
   deleteLizyServiceEntries,

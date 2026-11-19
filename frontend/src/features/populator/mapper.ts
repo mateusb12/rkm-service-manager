@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { createEmptyServiceEntry, normalizeOrderNumber } from '../service-entry/model';
+import { createEmptyServiceEntry, normalizeOrderNumber } from '../service-orders/model';
 
 export const REQUIRED_POPULATOR_FIELDS = [
   ['orderType', 'Categoria do equipamento'],

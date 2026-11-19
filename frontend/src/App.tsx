@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { RoadmapView } from './features/roadmap';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ServiceEntryView } from './features/service-entry';
+import { ServiceOrderView } from './features/service-orders';
 import { PopulatorView } from './features/populator';
 import { DashboardView } from './features/dashboard';
 import { initialRecordIT002, computeAlertsIT002 } from './features/its/it002';
@@ -768,7 +768,7 @@ const App = () => {
     }
 
     if (view === 'receiving') {
-      return React.createElement(ServiceEntryView);
+      return React.createElement(ServiceOrderView);
     }
     if (view === 'dashboard') {
       return React.createElement(DashboardView, {

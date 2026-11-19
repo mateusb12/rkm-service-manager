@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useState } from 'react';
-import { loadServiceEntries, loadServiceEntryStages } from '../service-entry/service';
+import { loadServiceEntries, loadServiceEntryStages } from '../service-orders/service';
 import { mapServiceEntryToDashboardService } from './model';
 import { PriorityTag, StatusTag } from '../../shared/ui/tags';
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';

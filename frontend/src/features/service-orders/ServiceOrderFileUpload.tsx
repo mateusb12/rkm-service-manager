@@ -3,7 +3,7 @@ import { FileCheck2, Pencil, Trash2, X } from 'lucide-react';
 
 import { getFilePreviewUrl, listFiles, type FileRecord } from '../files/service';
 
-type ServiceEntryUploadFileProps = {
+type ServiceOrderFileUploadProps = {
   file?: FileRecord;
   onUpload: (file: File) => Promise<void>;
   onDeselect: () => void;
@@ -21,7 +21,7 @@ type ServiceEntryUploadFileProps = {
   showLibrary?: boolean;
 };
 
-function ServiceEntryFilePreview({ file, previewLabel, documentLabel }) {
+function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
   const [previewUrl, setPreviewUrl] = useState('');
 
   useEffect(() => {
@@ -62,7 +62,7 @@ function ServiceEntryFilePreview({ file, previewLabel, documentLabel }) {
   );
 }
 
-export function ServiceEntryUploadFile({
+export function ServiceOrderFileUpload({
   file,
   onUpload,
   onDeselect,
@@ -78,7 +78,7 @@ export function ServiceEntryUploadFile({
   accept = '*/*',
   category,
   showLibrary = true,
-}: ServiceEntryUploadFileProps) {
+}: ServiceOrderFileUploadProps) {
   const onSelectExistingRef = useRef(onSelectExisting);
   const fileId = file?.id;
   const [uploading, setUploading] = useState(false);
@@ -174,7 +174,7 @@ export function ServiceEntryUploadFile({
       ) : selectedFile && !editingSelection ? (
         <div className="service-entry-invoice-card service-entry-invoice-selected-card">
           <div className="service-entry-invoice-lock-badge">{selectedBadge}</div>
-          <ServiceEntryFilePreview
+          <ServiceOrderFilePreview
             file={selectedFile}
             previewLabel={label}
             documentLabel={selectedFile.kind === 'Imagem' ? 'IMG' : 'FILE'}
@@ -236,7 +236,7 @@ export function ServiceEntryUploadFile({
                 className="service-entry-invoice-card service-entry-invoice-existing-card"
                 key={existingFile.id}
               >
-                <ServiceEntryFilePreview
+                <ServiceOrderFilePreview
                   file={existingFile}
                   previewLabel={label}
                   documentLabel={existingFile.kind === 'Imagem' ? 'IMG' : 'FILE'}

@@ -1,4 +1,4 @@
-export const ServiceEntryStageNavigator = ({
+export const ServiceOrderStageNavigator = ({
   stages,
   step,
   progressStep,

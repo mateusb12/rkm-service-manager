@@ -4,7 +4,7 @@
  * Shared Service Entry domain primitives.
  *
  * Keep this module free from React and browser persistence so
- * ServiceEntryView and import/populator workflows can reuse
+ * ServiceOrderView and import/populator workflows can reuse
  * the same defaults and normalization rules.
  */
 

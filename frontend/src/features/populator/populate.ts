@@ -4,9 +4,9 @@ import {
   deleteServiceEntry,
   loadServiceEntries,
   saveServiceEntries,
-} from '../service-entry/service';
+} from '../service-orders/service';
 
-import { normalizeOrderNumber } from '../service-entry/model';
+import { normalizeOrderNumber } from '../service-orders/model';
 
 import { LIZY_ORDERS } from './data/lizy-orders';
 
