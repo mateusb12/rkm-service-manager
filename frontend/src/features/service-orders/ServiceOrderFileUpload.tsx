@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { FileCheck2, Pencil, Trash2, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CircleCheck, Images, Pencil, Trash2, Upload, X } from 'lucide-react';
 
 import { getFilePreviewUrl, listFiles, type FileRecord } from '../files/service';
 
@@ -62,6 +62,116 @@ function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
   );
 }
 
+type FilePickerMode = 'upload' | 'existing';
+
+const ServiceOrderFileSourceToggle = ({ mode, onChange }) => (
+  <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-700/80 bg-slate-950/25 px-3 py-2.5 shadow-inner shadow-slate-950/20">
+    <div className="flex min-w-0 items-center gap-2.5">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-sky-400/20 bg-sky-400/10 text-sky-300">
+        {mode === 'existing' ? <Images size={16} /> : <Upload size={16} />}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-xs font-semibold text-slate-200">
+          {mode === 'existing' ? 'Biblioteca de arquivos' : 'Novo upload'}
+        </span>
+        <span className="block truncate text-[11px] text-slate-500">
+          {mode === 'existing'
+            ? 'Escolha um arquivo já armazenado'
+            : 'Adicionar uma nova foto ou arquivo'}
+        </span>
+      </span>
+    </div>
+    <label className="relative inline-flex shrink-0 cursor-pointer items-center">
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={mode === 'existing'}
+        onChange={(event) => onChange(event.target.checked ? 'existing' : 'upload')}
+      />
+      <span
+        className={`relative flex h-8 w-14 items-center rounded-full border p-1 transition-all duration-200 ${
+          mode === 'existing'
+            ? 'border-sky-300/70 bg-sky-400/20 shadow-[0_0_16px_rgba(56,189,248,0.22)]'
+            : 'border-slate-600 bg-slate-800/90'
+        }`}
+      >
+        <span
+          className={`flex h-6 w-6 items-center justify-center rounded-full shadow-md transition-all duration-200 ${
+            mode === 'existing'
+              ? 'translate-x-6 bg-sky-200 text-sky-950'
+              : 'translate-x-0 bg-slate-200 text-slate-700'
+          }`}
+        >
+          {mode === 'existing' ? <Images size={13} /> : <Upload size={13} />}
+        </span>
+      </span>
+    </label>
+  </div>
+);
+
+const ServiceOrderExistingFileList = ({ files, label, onSelect }) => (
+  <div className="service-entry-invoice-library">
+    {files.map((existingFile) => (
+      <div
+        className="service-entry-invoice-card service-entry-invoice-existing-card"
+        key={existingFile.id}
+      >
+        <ServiceOrderFilePreview
+          file={existingFile}
+          previewLabel={label}
+          documentLabel={existingFile.kind === 'Imagem' ? 'IMG' : 'FILE'}
+        />
+        <div className="service-entry-invoice-details">
+          <strong title={existingFile.name}>{existingFile.name}</strong>
+          <small>{existingFile.size}</small>
+          <button
+            type="button"
+            className="service-entry-invoice-select"
+            aria-label={`Usar a foto ${existingFile.name}`}
+            title="Usar esta foto"
+            onClick={() => onSelect(existingFile)}
+          >
+            <CircleCheck size={23} strokeWidth={1.9} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    ))}
+    {files.length === 0 && (
+      <div className="service-entry-invoice-empty">
+        Nenhum arquivo existente disponível para este campo.
+      </div>
+    )}
+  </div>
+);
+
+const ServiceOrderFileDropzone = ({
+  accept,
+  addLabel,
+  addHint,
+  dragging,
+  uploading,
+  onChange,
+  onDragEnter,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+}) => (
+  <label
+    className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}`}
+    onDragEnter={onDragEnter}
+    onDragOver={onDragOver}
+    onDragLeave={onDragLeave}
+    onDrop={onDrop}
+  >
+    <input type="file" accept={accept} onChange={onChange} disabled={uploading} />
+    <span className="service-entry-invoice-add-icon" aria-hidden="true">
+      ＋
+    </span>
+    <strong>{addLabel}</strong>
+    <small>{addHint}</small>
+  </label>
+);
+
 export function ServiceOrderFileUpload({
   file,
   onUpload,
@@ -79,22 +189,17 @@ export function ServiceOrderFileUpload({
   category,
   showLibrary = true,
 }: ServiceOrderFileUploadProps) {
-  const onSelectExistingRef = useRef(onSelectExisting);
-  const fileId = file?.id;
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [existingFiles, setExistingFiles] = useState<FileRecord[]>([]);
-  const [autoSelectedFile, setAutoSelectedFile] = useState<FileRecord>();
   const [editingSelection, setEditingSelection] = useState(false);
-  const selectedFile = file ?? autoSelectedFile;
-
-  onSelectExistingRef.current = onSelectExisting;
+  const [selectionMode, setSelectionMode] = useState<FilePickerMode>('upload');
+  const selectedFile = file;
+  const showingExistingFiles = showLibrary && selectionMode === 'existing';
 
   useEffect(() => {
-    if (!showLibrary) {
+    if (!showingExistingFiles) {
       setExistingFiles([]);
-      setAutoSelectedFile(undefined);
-      setEditingSelection(false);
       return undefined;
     }
     let active = true;
@@ -104,15 +209,11 @@ export function ServiceOrderFileUpload({
         const availableFiles = files.filter(
           (candidate) =>
             candidate.bytes > 0 &&
+            (accept !== 'image/*' || candidate.kind === 'Imagem') &&
             (!category ||
               candidate.category?.trim().toLowerCase() === category.trim().toLowerCase()),
         );
         setExistingFiles(availableFiles);
-        const matchingFile = availableFiles[0];
-        if (category && !fileId && matchingFile) {
-          setAutoSelectedFile(matchingFile);
-          onSelectExistingRef.current(matchingFile);
-        }
       })
       .catch(() => {
         if (active) setExistingFiles([]);
@@ -121,7 +222,7 @@ export function ServiceOrderFileUpload({
     return () => {
       active = false;
     };
-  }, [category, fileId, showLibrary]);
+  }, [accept, category, showingExistingFiles]);
 
   const uploadSelectedFile = async (selectedFile?: File) => {
     if (!selectedFile) return;
@@ -161,6 +262,15 @@ export function ServiceOrderFileUpload({
     >
       <label className="service-entry-photo-label">{label}</label>
       <p>{hint}</p>
+      {showLibrary && !selectedFile && (
+        <ServiceOrderFileSourceToggle
+          mode={selectionMode}
+          onChange={(mode) => {
+            setSelectionMode(mode);
+            setEditingSelection(false);
+          }}
+        />
+      )}
       {uploading ? (
         <div className="service-entry-invoice-card is-uploading" aria-live="polite">
           <div className="service-entry-invoice-preview service-entry-invoice-uploading-preview">
@@ -188,7 +298,10 @@ export function ServiceOrderFileUpload({
                 className="service-entry-invoice-action service-entry-invoice-edit"
                 aria-label={`Trocar ${selectedFile.name}`}
                 title="Trocar arquivo"
-                onClick={() => setEditingSelection(true)}
+                onClick={() => {
+                  setEditingSelection(true);
+                  setSelectionMode('existing');
+                }}
               >
                 <Pencil size={18} strokeWidth={1.9} aria-hidden="true" />
               </button>
@@ -198,7 +311,8 @@ export function ServiceOrderFileUpload({
                 aria-label={`Desselecionar ${selectedFile.name}`}
                 title="Desselecionar arquivo"
                 onClick={() => {
-                  setAutoSelectedFile(undefined);
+                  setEditingSelection(false);
+                  setSelectionMode('upload');
                   onDeselect();
                 }}
               >
@@ -210,7 +324,8 @@ export function ServiceOrderFileUpload({
                 aria-label={`Apagar ${selectedFile.name}`}
                 title="Apagar arquivo"
                 onClick={() => {
-                  setAutoSelectedFile(undefined);
+                  setEditingSelection(false);
+                  setSelectionMode('upload');
                   onDelete();
                 }}
               >
@@ -230,37 +345,24 @@ export function ServiceOrderFileUpload({
               Cancelar troca
             </button>
           )}
-          <div className="service-entry-invoice-library">
-            {existingFiles.map((existingFile) => (
-              <div
-                className="service-entry-invoice-card service-entry-invoice-existing-card"
-                key={existingFile.id}
-              >
-                <ServiceOrderFilePreview
-                  file={existingFile}
-                  previewLabel={label}
-                  documentLabel={existingFile.kind === 'Imagem' ? 'IMG' : 'FILE'}
-                />
-                <div className="service-entry-invoice-details">
-                  <strong title={existingFile.name}>{existingFile.name}</strong>
-                  <small>{existingFile.size}</small>
-                  <button
-                    type="button"
-                    className="service-entry-invoice-select"
-                    aria-label={`Selecionar ${existingFile.name}`}
-                    title="Selecionar arquivo"
-                    onClick={() => {
-                      onSelectExisting(existingFile);
-                      setEditingSelection(false);
-                    }}
-                  >
-                    <FileCheck2 size={23} strokeWidth={1.9} aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-            ))}
-            <label
-              className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}`}
+          {showingExistingFiles ? (
+            <ServiceOrderExistingFileList
+              files={existingFiles}
+              label={label}
+              onSelect={(existingFile) => {
+                onSelectExisting(existingFile);
+                setEditingSelection(false);
+                setSelectionMode('upload');
+              }}
+            />
+          ) : (
+            <ServiceOrderFileDropzone
+              accept={accept}
+              addLabel={addLabel}
+              addHint={addHint}
+              dragging={dragging}
+              uploading={uploading}
+              onChange={selectFile}
               onDragEnter={(event) => {
                 event.preventDefault();
                 setDragging(true);
@@ -270,15 +372,8 @@ export function ServiceOrderFileUpload({
                 if (event.currentTarget === event.target) setDragging(false);
               }}
               onDrop={dropFile}
-            >
-              <input type="file" accept={accept} onChange={selectFile} disabled={uploading} />
-              <span className="service-entry-invoice-add-icon" aria-hidden="true">
-                ＋
-              </span>
-              <strong>{addLabel}</strong>
-              <small>{addHint}</small>
-            </label>
-          </div>
+            />
+          )}
         </>
       )}
     </div>

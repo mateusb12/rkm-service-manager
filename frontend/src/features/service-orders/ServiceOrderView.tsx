@@ -365,7 +365,6 @@ const ServiceOrderInvoiceFileField = (props) => (
 const ServiceEntryChecklistFileField = ({
   label,
   files = [],
-  category,
   onFiles,
   onRemove,
   onSelectExisting,
@@ -386,7 +385,6 @@ const ServiceEntryChecklistFileField = ({
       uploadingLabel="Enviando foto..."
       uploadingHint="Aguarde enquanto a foto é armazenada."
       accept="image/*"
-      category={category}
       onSelectExisting={onSelectExisting}
       showLibrary
     />
