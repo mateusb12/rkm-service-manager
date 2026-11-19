@@ -7,13 +7,7 @@ function isClientes(id: string) {
   return id === 'pcp-clientes' || id === 'pcp/clientes';
 }
 
-export function FunctionPointsDev({
-  featureId,
-  editable = false,
-}: {
-  featureId: string;
-  editable?: boolean;
-}) {
+export function FunctionPointsDev({ featureId, editable = false }: { featureId: string; editable?: boolean }) {
   const localDevelopmentEnabled = useLocalDevelopment();
   const [points, setPoints] = useState<number | null>(null);
 
@@ -49,18 +43,14 @@ export function FunctionPointsDev({
 
     setPoints(next);
 
-    void saveFeatureSettings(featureId, { functionPoints: next }).catch((error) =>
-      console.error('Erro ao salvar PF:', error),
-    );
+    void saveFeatureSettings(featureId, { functionPoints: next }).catch((error) => console.error('Erro ao salvar PF:', error));
   };
 
   return (
     <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
       <div>
         <div className="text-xs font-medium text-slate-300">Pontos de função estimados</div>
-        <div className="mt-1 text-[11px] text-slate-500">
-          Apenas localhost · tamanho funcional preliminar
-        </div>
+        <div className="mt-1 text-[11px] text-slate-500">Apenas localhost · tamanho funcional preliminar</div>
       </div>
 
       <div className="flex w-full min-w-0 flex-1 items-center gap-4">
@@ -87,11 +77,7 @@ export function FunctionPointsDev({
 
               return (
                 <div key={index} className="absolute top-0" style={{ left: position }}>
-                  <span
-                    className={`block w-px -translate-x-1/2 rounded-full ${
-                      major ? 'h-3 bg-sky-400/80' : 'h-1.5 bg-slate-500/60'
-                    }`}
-                  />
+                  <span className={`block w-px -translate-x-1/2 rounded-full ${major ? 'h-3 bg-sky-400/80' : 'h-1.5 bg-slate-500/60'}`} />
 
                   {major && (
                     <span
@@ -107,9 +93,7 @@ export function FunctionPointsDev({
             })}
           </div>
         </div>
-        <span className="min-w-[65px] shrink-0 text-right text-sm font-semibold tabular-nums text-sky-300">
-          {points ?? '—'} PF
-        </span>
+        <span className="min-w-[65px] shrink-0 text-right text-sm font-semibold tabular-nums text-sky-300">{points ?? '—'} PF</span>
       </div>
     </div>
   );

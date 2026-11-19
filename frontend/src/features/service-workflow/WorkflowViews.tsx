@@ -10,36 +10,20 @@ import { AuthRequestButton, StepAuthorizationHistory, getStepAuthorizationState 
 import { AlertBox } from '../../shared/ui/feedback';
 
 import { StatusTag } from '../../shared/ui/tags';
-const Stepper = ({
-  currentStep,
-  setStep,
-  alertsByStep,
-  steps,
-  itLabel,
-  onStepClick,
-  blockedInfo,
-}) =>
+const Stepper = ({ currentStep, setStep, alertsByStep, steps, itLabel, onStepClick, blockedInfo }) =>
   React.createElement(
     'aside',
     {
-      className:
-        'rkm-card p-3 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[80px]',
+      className: 'rkm-card p-3 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:sticky lg:top-[80px]',
     },
-    React.createElement(
-      'div',
-      { className: 'text-xs uppercase tracking-wider text-slate-500 px-2 py-1 mb-1' },
-      'Etapas \u2014 ',
-      itLabel || 'IT001',
-    ),
+    React.createElement('div', { className: 'text-xs uppercase tracking-wider text-slate-500 px-2 py-1 mb-1' }, 'Etapas \u2014 ', itLabel || 'IT001'),
     React.createElement(
       'div',
       { className: 'flex flex-col gap-1' },
       steps.map((s) => {
         const isActive = currentStep === s.id;
         const stepAlerts = alertsByStep[s.id] || 0;
-        const forwardBlocked =
-          (blockedInfo === null || blockedInfo === void 0 ? void 0 : blockedInfo.blocked) &&
-          s.id > currentStep;
+        const forwardBlocked = (blockedInfo === null || blockedInfo === void 0 ? void 0 : blockedInfo.blocked) && s.id > currentStep;
         return React.createElement(
           'button',
           {
@@ -47,20 +31,14 @@ const Stepper = ({
             onClick: () => (onStepClick || setStep)(s.id),
             className:
               'flex items-center gap-2 px-2.5 py-2 rounded-md text-left text-xs border transition ' +
-              (isActive
-                ? 'step-active border-blue-500 text-blue-100'
-                : 'border-transparent text-slate-300 hover:bg-rkmcard2') +
+              (isActive ? 'step-active border-blue-500 text-blue-100' : 'border-transparent text-slate-300 hover:bg-rkmcard2') +
               (forwardBlocked ? ' opacity-60' : ''),
             title: forwardBlocked ? 'Avanço bloqueado por autorização da etapa atual' : '',
           },
           React.createElement(
             'span',
             {
-              className:
-                'badge-num ' +
-                (isActive
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-rkmcard2 text-slate-400 border border-rkmborder'),
+              className: 'badge-num ' + (isActive ? 'bg-blue-500 text-white' : 'bg-rkmcard2 text-slate-400 border border-rkmborder'),
             },
             s.id,
           ),
@@ -70,34 +48,14 @@ const Stepper = ({
               className: 'w-1.5 h-1.5 rounded-full bg-rose-400',
               title: 'Etapa cr\u00EDtica',
             }),
-          stepAlerts > 0 &&
-            React.createElement(
-              'span',
-              { className: 'text-xs px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded' },
-              stepAlerts,
-            ),
-          forwardBlocked &&
-            React.createElement(
-              'span',
-              { className: 'text-xs px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded' },
-              'bloq.',
-            ),
+          stepAlerts > 0 && React.createElement('span', { className: 'text-xs px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded' }, stepAlerts),
+          forwardBlocked && React.createElement('span', { className: 'text-xs px-1.5 py-0.5 bg-rose-500/20 text-rose-300 rounded' }, 'bloq.'),
         );
       }),
     ),
   );
 
-export const ITForm = ({
-  record,
-  setRecord,
-  currentStep,
-  setCurrentStep,
-  alerts,
-  onFinish,
-  itCode,
-  activeRole,
-  onRequestAuth,
-}) => {
+export const ITForm = ({ record, setRecord, currentStep, setCurrentStep, alerts, onFinish, itCode, activeRole, onRequestAuth }) => {
   const cfg = IT_CONFIG[itCode || 'IT001'];
   const set = (path, value) => setRecord((prev) => setIn(prev, path, value));
   const Renderer = cfg.renderers[currentStep];
@@ -143,8 +101,7 @@ export const ITForm = ({
       osNumber: record.identification.osNumber || '',
       client: record.identification.client || '',
       stepId: (alert && alert.step) || currentStep,
-      stepLabel:
-        (cfg.steps.find((s) => s.id === ((alert && alert.step) || currentStep)) || {}).label || '',
+      stepLabel: (cfg.steps.find((s) => s.id === ((alert && alert.step) || currentStep)) || {}).label || '',
       alertMessage: (alert && alert.msg) || '',
       requestType: alert && alert.severity === 'critical' ? 'Validação técnica' : 'Dúvida técnica',
       suggestedReason: (alert && alert.msg) || '',
@@ -181,26 +138,14 @@ export const ITForm = ({
             ' de ',
             lastStep,
           ),
-          React.createElement(
-            'div',
-            { className: 'text-base font-semibold mt-0.5' },
-            stepInfo.label,
-          ),
+          React.createElement('div', { className: 'text-base font-semibold mt-0.5' }, stepInfo.label),
           React.createElement(
             'div',
             { className: 'text-xs text-slate-400' },
             'OS: ',
-            React.createElement(
-              'b',
-              { className: 'text-slate-200' },
-              record.identification.osNumber || '—',
-            ),
+            React.createElement('b', { className: 'text-slate-200' }, record.identification.osNumber || '—'),
             ' \u00B7 Cliente: ',
-            React.createElement(
-              'b',
-              { className: 'text-slate-200' },
-              record.identification.client || '—',
-            ),
+            React.createElement('b', { className: 'text-slate-200' }, record.identification.client || '—'),
             ' \u00B7 Status: ',
             React.createElement(StatusTag, { status: record.identification.currentStatus }),
           ),
@@ -242,24 +187,12 @@ export const ITForm = ({
         ),
       ),
       authorizationState.blocked &&
-        React.createElement(
-          AlertBox,
-          { severity: 'critical', title: 'Avan\u00E7o bloqueado por autoriza\u00E7\u00E3o' },
-          authorizationState.message,
-        ),
+        React.createElement(AlertBox, { severity: 'critical', title: 'Avan\u00E7o bloqueado por autoriza\u00E7\u00E3o' }, authorizationState.message),
       !authorizationState.blocked &&
         authorizationState.status === 'Aprovado' &&
-        React.createElement(
-          AlertBox,
-          { severity: 'info', title: 'Autoriza\u00E7\u00E3o aprovada' },
-          authorizationState.message,
-        ),
+        React.createElement(AlertBox, { severity: 'info', title: 'Autoriza\u00E7\u00E3o aprovada' }, authorizationState.message),
       blockedNavigationMessage &&
-        React.createElement(
-          AlertBox,
-          { severity: 'warn', title: 'Tentativa de avan\u00E7o bloqueada' },
-          blockedNavigationMessage,
-        ),
+        React.createElement(AlertBox, { severity: 'warn', title: 'Tentativa de avan\u00E7o bloqueada' }, blockedNavigationMessage),
       stepAlerts.length > 0 &&
         React.createElement(
           'div',
@@ -317,17 +250,8 @@ export const PendenciesView = ({ alerts, record, goTo, activeIT, activeRole, onR
     React.createElement(
       'div',
       { className: 'rkm-card p-5' },
-      React.createElement(
-        'div',
-        { className: 'text-xs text-blue-300 uppercase tracking-wider' },
-        activeIT || 'IT001',
-        ' \u2022 Pend\u00EAncias',
-      ),
-      React.createElement(
-        'div',
-        { className: 'text-base font-semibold mt-0.5' },
-        'Pend\u00EAncias cr\u00EDticas \u2014 Rascunho atual',
-      ),
+      React.createElement('div', { className: 'text-xs text-blue-300 uppercase tracking-wider' }, activeIT || 'IT001', ' \u2022 Pend\u00EAncias'),
+      React.createElement('div', { className: 'text-base font-semibold mt-0.5' }, 'Pend\u00EAncias cr\u00EDticas \u2014 Rascunho atual'),
       React.createElement(
         'div',
         { className: 'text-xs text-slate-400' },
@@ -351,35 +275,20 @@ export const PendenciesView = ({ alerts, record, goTo, activeIT, activeRole, onR
               'div',
               {
                 key: i,
-                className:
-                  (a.severity === 'critical' ? 'alert-critical' : 'alert-warn') +
-                  ' rounded-lg p-3.5 flex items-center gap-3 flex-wrap',
+                className: (a.severity === 'critical' ? 'alert-critical' : 'alert-warn') + ' rounded-lg p-3.5 flex items-center gap-3 flex-wrap',
               },
               React.createElement(
                 'span',
                 { className: 'tag ' + (a.severity === 'critical' ? 'tag-red' : 'tag-amber') },
                 a.severity === 'critical' ? 'Crítico' : 'Atenção',
               ),
-              React.createElement(
-                'span',
-                { className: 'text-xs text-slate-400' },
-                'Etapa ',
-                a.step,
-              ),
-              React.createElement(
-                'div',
-                { className: 'flex-1 min-w-[200px] text-sm text-slate-200' },
-                a.msg,
-              ),
+              React.createElement('span', { className: 'text-xs text-slate-400' }, 'Etapa ', a.step),
+              React.createElement('div', { className: 'flex-1 min-w-[200px] text-sm text-slate-200' }, a.msg),
               React.createElement(AuthRequestButton, {
                 activeRole: activeRole,
                 onClick: () => handleRequestAuthFor(a),
               }),
-              React.createElement(
-                'button',
-                { className: 'btn btn-ghost text-xs', onClick: () => goTo(a.step) },
-                'Ir para etapa \u2192',
-              ),
+              React.createElement('button', { className: 'btn btn-ghost text-xs', onClick: () => goTo(a.step) }, 'Ir para etapa \u2192'),
             ),
           ),
         ),
@@ -458,17 +367,8 @@ export const EvidencesView = ({ record, activeIT }) => {
       React.createElement(
         'div',
         { className: 'flex-1' },
-        React.createElement(
-          'div',
-          { className: 'text-xs text-blue-300 uppercase tracking-wider' },
-          activeIT || 'IT001',
-          ' \u2022 Evid\u00EAncias',
-        ),
-        React.createElement(
-          'div',
-          { className: 'text-base font-semibold mt-0.5' },
-          'Evid\u00EAncias do servi\u00E7o',
-        ),
+        React.createElement('div', { className: 'text-xs text-blue-300 uppercase tracking-wider' }, activeIT || 'IT001', ' \u2022 Evid\u00EAncias'),
+        React.createElement('div', { className: 'text-base font-semibold mt-0.5' }, 'Evid\u00EAncias do servi\u00E7o'),
         React.createElement(
           'div',
           { className: 'text-xs text-slate-400' },
@@ -478,12 +378,7 @@ export const EvidencesView = ({ record, activeIT }) => {
           ' evid\u00EAncias marcadas (mock \u2014 futuro upload real)',
         ),
       ),
-      React.createElement(
-        'div',
-        { className: 'text-2xl font-semibold' },
-        Math.round((got / items.length) * 100),
-        '%',
-      ),
+      React.createElement('div', { className: 'text-2xl font-semibold' }, Math.round((got / items.length) * 100), '%'),
     ),
     React.createElement(
       'div',
@@ -510,12 +405,7 @@ export const EvidencesView = ({ record, activeIT }) => {
               'tr',
               { key: idx, className: 'border-t border-rkmborder' },
               React.createElement('td', { className: 'px-5 py-3 text-slate-200' }, it.label),
-              React.createElement(
-                'td',
-                { className: 'px-5 py-3 text-slate-400' },
-                'Etapa ',
-                it.step,
-              ),
+              React.createElement('td', { className: 'px-5 py-3 text-slate-400' }, 'Etapa ', it.step),
               React.createElement(
                 'td',
                 { className: 'px-5 py-3' },
@@ -535,14 +425,9 @@ const Row = ({ label, value }) =>
   React.createElement(
     'div',
     {
-      className:
-        'grid grid-cols-1 md:grid-cols-[260px_1fr] py-2 border-b border-rkmborder last:border-b-0',
+      className: 'grid grid-cols-1 md:grid-cols-[260px_1fr] py-2 border-b border-rkmborder last:border-b-0',
     },
-    React.createElement(
-      'div',
-      { className: 'text-xs text-slate-400 uppercase tracking-wide' },
-      label,
-    ),
+    React.createElement('div', { className: 'text-xs text-slate-400 uppercase tracking-wide' }, label),
     React.createElement(
       'div',
       { className: 'text-sm text-slate-100' },
@@ -587,16 +472,8 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
       React.createElement(
         'div',
         { className: 'flex gap-2' },
-        React.createElement(
-          'button',
-          { className: 'btn btn-ghost', onClick: () => onExport(exportable) },
-          'Simular exporta\u00E7\u00E3o (JSON)',
-        ),
-        React.createElement(
-          'button',
-          { className: 'btn btn-primary', onClick: () => window.print() },
-          'Imprimir',
-        ),
+        React.createElement('button', { className: 'btn btn-ghost', onClick: () => onExport(exportable) }, 'Simular exporta\u00E7\u00E3o (JSON)'),
+        React.createElement('button', { className: 'btn btn-primary', onClick: () => window.print() }, 'Imprimir'),
       ),
     ),
     alerts.length > 0 &&
@@ -615,13 +492,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
             ),
           ),
         alerts.length > 5 &&
-          React.createElement(
-            'div',
-            { className: 'text-xs text-slate-400' },
-            '+ ',
-            alerts.length - 5,
-            ' outro(s) \u2014 ver Pend\u00EAncias.',
-          ),
+          React.createElement('div', { className: 'text-xs text-slate-400' }, '+ ', alerts.length - 5, ' outro(s) \u2014 ver Pend\u00EAncias.'),
       ),
     React.createElement(
       'div',
@@ -674,11 +545,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
           React.createElement(
             'div',
             { className: 'rkm-card p-5' },
-            React.createElement(
-              'div',
-              { className: 'font-semibold mb-2' },
-              'Despressuriza\u00E7\u00E3o & Pr\u00E9-carga',
-            ),
+            React.createElement('div', { className: 'font-semibold mb-2' }, 'Despressuriza\u00E7\u00E3o & Pr\u00E9-carga'),
             React.createElement(Row, {
               label: 'Press\u00E3o aliviada',
               value: r.depressurization.pressaoAliviada ? 'Sim' : 'Não',
@@ -712,11 +579,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
           React.createElement(
             'div',
             { className: 'rkm-card p-5' },
-            React.createElement(
-              'div',
-              { className: 'font-semibold mb-2' },
-              'Inspe\u00E7\u00E3o & Decis\u00E3o',
-            ),
+            React.createElement('div', { className: 'font-semibold mb-2' }, 'Inspe\u00E7\u00E3o & Decis\u00E3o'),
             React.createElement(Row, { label: 'Bexiga', value: r.inspection.bladder.decision }),
             React.createElement(Row, { label: 'Carca\u00E7a', value: r.inspection.shell.decision }),
             React.createElement(Row, { label: 'Roscas', value: r.inspection.threads.decision }),
@@ -738,28 +601,20 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
             }),
             React.createElement(Row, {
               label: 'Valida\u00E7\u00E3o supervisor',
-              value: r.technicalDecision.validacaoSupervisor
-                ? `Sim — ${r.technicalDecision.validador || '—'}`
-                : 'Não',
+              value: r.technicalDecision.validacaoSupervisor ? `Sim — ${r.technicalDecision.validador || '—'}` : 'Não',
             }),
           ),
           React.createElement(
             'div',
             { className: 'rkm-card p-5' },
-            React.createElement(
-              'div',
-              { className: 'font-semibold mb-2' },
-              'Verifica\u00E7\u00E3o final & Libera\u00E7\u00E3o',
-            ),
+            React.createElement('div', { className: 'font-semibold mb-2' }, 'Verifica\u00E7\u00E3o final & Libera\u00E7\u00E3o'),
             React.createElement(Row, {
               label: 'Resultado final',
               value: React.createElement(StatusTag, { status: r.finalVerification.resultadoFinal }),
             }),
             React.createElement(Row, {
               label: 'Teste hidr\u00E1ulico',
-              value: r.finalVerification.testeHidraulico
-                ? 'Sim'
-                : 'Não — verificação por pré-carga + estanqueidade (IT001 §21)',
+              value: r.finalVerification.testeHidraulico ? 'Sim' : 'Não — verificação por pré-carga + estanqueidade (IT001 §21)',
             }),
             React.createElement(Row, {
               label: 'Laudo emitido',
@@ -784,11 +639,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
           React.createElement(
             'div',
             { className: 'rkm-card p-5' },
-            React.createElement(
-              'div',
-              { className: 'font-semibold mb-2' },
-              'Isolamento & Carga de N\u2082',
-            ),
+            React.createElement('div', { className: 'font-semibold mb-2' }, 'Isolamento & Carga de N\u2082'),
             React.createElement(Row, {
               label: 'Sistema isolado',
               value: r.safetyIsolation.sistemaIsolado ? 'Sim' : 'Não',
@@ -822,11 +673,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
           React.createElement(
             'div',
             { className: 'rkm-card p-5' },
-            React.createElement(
-              'div',
-              { className: 'font-semibold mb-2' },
-              'Avalia\u00E7\u00E3o t\u00E9cnica & Decis\u00E3o',
-            ),
+            React.createElement('div', { className: 'font-semibold mb-2' }, 'Avalia\u00E7\u00E3o t\u00E9cnica & Decis\u00E3o'),
             React.createElement(Row, { label: 'Pist\u00E3o', value: r.assessment.piston.decision }),
             React.createElement(Row, {
               label: 'Carca\u00E7a/cilindro',
@@ -850,9 +697,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
             }),
             React.createElement(Row, {
               label: 'Valida\u00E7\u00E3o supervisor',
-              value: r.acceptanceDecision.validacaoSupervisor
-                ? `Sim — ${r.acceptanceDecision.validador || '—'}`
-                : 'Não',
+              value: r.acceptanceDecision.validacaoSupervisor ? `Sim — ${r.acceptanceDecision.validador || '—'}` : 'Não',
             }),
             React.createElement(
               'div',
@@ -865,41 +710,17 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
               React.createElement(
                 'div',
                 { className: 'text-xs text-slate-300 grid grid-cols-2 gap-1' },
-                React.createElement(
-                  'div',
-                  null,
-                  r.assemblyIntegrity.semCorteVedacao ? '✓' : '×',
-                  ' Sem corte de veda\u00E7\u00E3o',
-                ),
-                React.createElement(
-                  'div',
-                  null,
-                  r.assemblyIntegrity.vedacaoCorreta ? '✓' : '×',
-                  ' Veda\u00E7\u00E3o n\u00E3o invertida',
-                ),
-                React.createElement(
-                  'div',
-                  null,
-                  r.assemblyIntegrity.lubrificacaoAplicada ? '✓' : '×',
-                  ' Lubrifica\u00E7\u00E3o aplicada',
-                ),
-                React.createElement(
-                  'div',
-                  null,
-                  r.assemblyIntegrity.pistaoAlinhado ? '✓' : '×',
-                  ' Pist\u00E3o alinhado',
-                ),
+                React.createElement('div', null, r.assemblyIntegrity.semCorteVedacao ? '✓' : '×', ' Sem corte de veda\u00E7\u00E3o'),
+                React.createElement('div', null, r.assemblyIntegrity.vedacaoCorreta ? '✓' : '×', ' Veda\u00E7\u00E3o n\u00E3o invertida'),
+                React.createElement('div', null, r.assemblyIntegrity.lubrificacaoAplicada ? '✓' : '×', ' Lubrifica\u00E7\u00E3o aplicada'),
+                React.createElement('div', null, r.assemblyIntegrity.pistaoAlinhado ? '✓' : '×', ' Pist\u00E3o alinhado'),
               ),
             ),
           ),
           React.createElement(
             'div',
             { className: 'rkm-card p-5' },
-            React.createElement(
-              'div',
-              { className: 'font-semibold mb-2' },
-              'Verifica\u00E7\u00E3o final & Valida\u00E7\u00E3o da Qualidade',
-            ),
+            React.createElement('div', { className: 'font-semibold mb-2' }, 'Verifica\u00E7\u00E3o final & Valida\u00E7\u00E3o da Qualidade'),
             React.createElement(Row, {
               label: 'Mant\u00E9m press\u00E3o',
               value: r.finalVerification.mantemPressao,
@@ -934,9 +755,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
             }),
             React.createElement(Row, {
               label: 'Lise',
-              value: r.release.liseLancado
-                ? `Lançado — ${r.release.liseId || 'sem ID'}`
-                : 'Não lançado (sistema em implantação)',
+              value: r.release.liseLancado ? `Lançado — ${r.release.liseId || 'sem ID'}` : 'Não lançado (sistema em implantação)',
             }),
           ),
         ),
@@ -973,11 +792,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
     React.createElement(
       'div',
       { className: 'rkm-card p-5' },
-      React.createElement(
-        'div',
-        { className: 'font-semibold mb-2' },
-        'Estrutura de exporta\u00E7\u00E3o para Google Sheets',
-      ),
+      React.createElement('div', { className: 'font-semibold mb-2' }, 'Estrutura de exporta\u00E7\u00E3o para Google Sheets'),
       React.createElement(
         'div',
         { className: 'text-xs text-slate-400 mb-3' },
@@ -988,8 +803,7 @@ export const SummaryView = ({ record, alerts, onExport, activeIT }) => {
       React.createElement(
         'div',
         {
-          className:
-            'bg-rkmbg border border-rkmborder rounded-lg p-3 text-xs font-mono text-slate-300 overflow-auto max-h-[420px] whitespace-pre',
+          className: 'bg-rkmbg border border-rkmborder rounded-lg p-3 text-xs font-mono text-slate-300 overflow-auto max-h-[420px] whitespace-pre',
         },
         exportable,
       ),

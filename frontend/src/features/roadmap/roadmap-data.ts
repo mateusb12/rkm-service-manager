@@ -1,9 +1,4 @@
-import type {
-  RoadmapAreaProjection,
-  RoadmapFeature,
-  RoadmapFeatureState,
-  RoadmapVersion,
-} from './roadmap-model';
+import type { RoadmapAreaProjection, RoadmapFeature, RoadmapFeatureState, RoadmapVersion } from './roadmap-model';
 
 const feature = (
   id: string,
@@ -33,8 +28,7 @@ const LOCAL_ONLY_ROADMAP_V4: RoadmapVersion | null = import.meta.env.DEV
       ],
       title: 'Gestão e avisos',
       question: 'Como melhorar o desempenho da oficina?',
-      description:
-        'Identificar gargalos, acompanhar indicadores e alertar sobre situações que exigem atenção.',
+      description: 'Identificar gargalos, acompanhar indicadores e alertar sobre situações que exigem atenção.',
       areas: [
         {
           id: 'pcp',
@@ -166,8 +160,7 @@ export const ROADMAP: RoadmapVersion[] = [
       {
         id: 'arquivos',
         title: 'Arquivos',
-        objective:
-          'Disponibilizar um armazenamento centralizado para arquivos enviados pelos usuários.',
+        objective: 'Disponibilizar um armazenamento centralizado para arquivos enviados pelos usuários.',
         features: [
           feature(
             'arquivos/upload',
@@ -189,8 +182,7 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
     title: 'Detalhamento',
     question: 'O que exatamente precisa ser feito?',
-    description:
-      'Aprofundar a peritagem, identificar componentes e registrar as intervenções necessárias.',
+    description: 'Aprofundar a peritagem, identificar componentes e registrar as intervenções necessárias.',
     areas: [
       {
         id: 'oficina',
@@ -238,8 +230,7 @@ export const ROADMAP: RoadmapVersion[] = [
       {
         id: 'pcp',
         title: 'PCP',
-        objective:
-          'Priorizar as OS, controlar prazos e identificar bloqueios e responsáveis pelas ações.',
+        objective: 'Priorizar as OS, controlar prazos e identificar bloqueios e responsáveis pelas ações.',
         features: [
           feature(
             'controle/pendencias',
@@ -357,10 +348,7 @@ export const ROADMAP: RoadmapVersion[] = [
     ],
   },
 
-  ...(import.meta.env.DEV &&
-  typeof window !== 'undefined' &&
-  ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
-  LOCAL_ONLY_ROADMAP_V4
+  ...(import.meta.env.DEV && typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname) && LOCAL_ONLY_ROADMAP_V4
     ? [LOCAL_ONLY_ROADMAP_V4]
     : []),
 ];

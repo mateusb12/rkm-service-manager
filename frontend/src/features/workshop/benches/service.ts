@@ -9,12 +9,7 @@ export class BenchServiceError extends Error {
 
 const demoDate = '2026-10-21T12:00:00.000Z';
 
-function demoBench(
-  id: string,
-  name: string,
-  code: string,
-  occupations: BenchOccupation[] = [],
-): Bench {
+function demoBench(id: string, name: string, code: string, occupations: BenchOccupation[] = []): Bench {
   return {
     id,
     name,
@@ -62,10 +57,7 @@ function assertUnique(input: BenchInput, items: Bench[], ignoredId?: string) {
   const duplicate = items.some((item) => {
     if (item.id === ignoredId) return false;
 
-    return (
-      item.name.trim().toLocaleLowerCase('pt-BR') === name ||
-      (code !== '' && item.code.trim().toLocaleLowerCase('pt-BR') === code)
-    );
+    return item.name.trim().toLocaleLowerCase('pt-BR') === name || (code !== '' && item.code.trim().toLocaleLowerCase('pt-BR') === code);
   });
 
   if (duplicate) throw new BenchServiceError('duplicate');

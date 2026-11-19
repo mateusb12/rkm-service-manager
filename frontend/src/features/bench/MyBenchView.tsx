@@ -225,24 +225,11 @@ const BenchActions = ({ service, onOpenIT, onOpenEvidence, onOpenSummary }) =>
    Paridade inicial: Lizy → Serviços → Desmontagem → Criar Ordem
    ============================================================ */
 
-export const MyBenchView = ({
-  itConfig,
-  services,
-  activeUser,
-  openIT001,
-  openIT002,
-  rec001,
-  rec002,
-  onOpenIT,
-  onOpenEvidence,
-  onOpenSummary,
-}) => {
+export const MyBenchView = ({ itConfig, services, activeUser, openIT001, openIT002, rec001, rec002, onOpenIT, onOpenEvidence, onOpenSummary }) => {
   const showDevGuides = useLocalDevelopment();
   const user = userById(activeUser) || mockUsers[0];
 
-  const mine = services.filter(
-    (service) => service.assignedTo && service.assignedTo.operator === activeUser,
-  );
+  const mine = services.filter((service) => service.assignedTo && service.assignedTo.operator === activeUser);
 
   return React.createElement(
     'div',
@@ -252,9 +239,7 @@ export const MyBenchView = ({
       showDevGuides &&
       React.createElement(LizyReferenceCard, {
         source: 'Serviços → Desmontagem',
-        detail:
-          'A Lizy concentra aqui a lista de OS e o técnico associado; ' +
-          'a Minha Bancada especializa essa visão por operador.',
+        detail: 'A Lizy concentra aqui a lista de OS e o técnico associado; ' + 'a Minha Bancada especializa essa visão por operador.',
       }),
 
     React.createElement(
@@ -512,8 +497,7 @@ export const MyBenchView = ({
                           React.createElement(
                             'span',
                             {
-                              className:
-                                'tag mt-1 ' + (service.it === 'IT001' ? 'tag-blue' : 'tag-violet'),
+                              className: 'tag mt-1 ' + (service.it === 'IT001' ? 'tag-blue' : 'tag-violet'),
                             },
                             service.it,
                           ),
@@ -685,8 +669,7 @@ export const MyBenchView = ({
         React.createElement(
           'li',
           null,
-          'Etapas críticas (despressurização, isolamento, carga, ' +
-            'validação da Qualidade) podem bloquear avanço — siga os alertas.',
+          'Etapas críticas (despressurização, isolamento, carga, ' + 'validação da Qualidade) podem bloquear avanço — siga os alertas.',
         ),
 
         React.createElement(
@@ -696,12 +679,7 @@ export const MyBenchView = ({
             'registre no checklist e acione o supervisor via "Solicitar autorização".',
         ),
 
-        React.createElement(
-          'li',
-          null,
-          'Liberação final depende de validação técnica (supervisor) e ' +
-            'validação da Qualidade (apenas IT002).',
-        ),
+        React.createElement('li', null, 'Liberação final depende de validação técnica (supervisor) e ' + 'validação da Qualidade (apenas IT002).'),
       ),
     ),
   );

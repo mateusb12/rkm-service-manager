@@ -3,20 +3,9 @@
 import React from 'react';
 
 import { SIDEBAR_ITEMS } from './config';
-import {
-  LOCAL_DEVELOPMENT_AVAILABLE,
-  toggleLocalDevelopment,
-  useLocalDevelopment,
-} from '../../shared/dev/local-development';
+import { LOCAL_DEVELOPMENT_AVAILABLE, toggleLocalDevelopment, useLocalDevelopment } from '../../shared/dev/local-development';
 
-export const CleanTopBar = ({
-  view,
-  darkMode,
-  onToggleDarkMode,
-  onHide,
-  subpageTitle,
-  onSubpageBack,
-}) => {
+export const CleanTopBar = ({ view, darkMode, onToggleDarkMode, onHide, subpageTitle, onSubpageBack }) => {
   const localDevelopmentEnabled = useLocalDevelopment();
   const labels = {
     dashboard: 'Painel',
@@ -51,23 +40,14 @@ export const CleanTopBar = ({
                     'truncate text-base font-semibold text-sky-300 transition hover:text-sky-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50',
                   title: 'Voltar para a tabela de preços',
                 },
-                SIDEBAR_ITEMS.find((item) => item.key === view)?.label ||
-                  labels[view] ||
-                  'Operações',
+                SIDEBAR_ITEMS.find((item) => item.key === view)?.label || labels[view] || 'Operações',
               )
             : React.createElement(
                 'div',
                 { className: 'truncate text-base font-semibold text-slate-100' },
-                SIDEBAR_ITEMS.find((item) => item.key === view)?.label ||
-                  labels[view] ||
-                  'Operações',
+                SIDEBAR_ITEMS.find((item) => item.key === view)?.label || labels[view] || 'Operações',
               ),
-          subpageTitle &&
-            React.createElement(
-              'span',
-              { className: 'truncate text-sm text-slate-400' },
-              `/ ${subpageTitle}`,
-            ),
+          subpageTitle && React.createElement('span', { className: 'truncate text-sm text-slate-400' }, `/ ${subpageTitle}`),
         ),
       ),
     ),
@@ -78,12 +58,8 @@ export const CleanTopBar = ({
           ? {
               onClick: toggleLocalDevelopment,
               className: `btn btn-ghost ${localDevelopmentEnabled ? 'text-emerald-300' : 'text-slate-500'}`,
-              title: localDevelopmentEnabled
-                ? 'Ocultar recursos de desenvolvimento'
-                : 'Mostrar recursos de desenvolvimento',
-              'aria-label': localDevelopmentEnabled
-                ? 'Ocultar recursos de desenvolvimento'
-                : 'Mostrar recursos de desenvolvimento',
+              title: localDevelopmentEnabled ? 'Ocultar recursos de desenvolvimento' : 'Mostrar recursos de desenvolvimento',
+              'aria-label': localDevelopmentEnabled ? 'Ocultar recursos de desenvolvimento' : 'Mostrar recursos de desenvolvimento',
             }
           : { style: { display: 'none' } }),
       },

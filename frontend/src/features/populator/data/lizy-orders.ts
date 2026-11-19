@@ -119,13 +119,7 @@ export const LIZY_ORDERS = [
 
     visibleImageCount: 1,
 
-    checklistMarked: [
-      'Erro de Montagem',
-      'Falha de Vedação',
-      'Troca de Vedações',
-      'Teste Hidrostático (ISO 10100)',
-      'Recuperável',
-    ],
+    checklistMarked: ['Erro de Montagem', 'Falha de Vedação', 'Troca de Vedações', 'Teste Hidrostático (ISO 10100)', 'Recuperável'],
 
     checklistUnmarked: [],
     unidentifiedChecklistMarks: 16,
@@ -165,14 +159,7 @@ export const LIZY_ORDERS = [
 
     visibleImageCount: 1,
 
-    checklistMarked: [
-      'Apres. Relatório',
-      'Erro de Montagem',
-      'Falha de Vedação',
-      'Troca de Vedações',
-      'Teste Hidrostático',
-      'Recuperável',
-    ],
+    checklistMarked: ['Apres. Relatório', 'Erro de Montagem', 'Falha de Vedação', 'Troca de Vedações', 'Teste Hidrostático', 'Recuperável'],
 
     checklistUnmarked: [],
     unidentifiedChecklistMarks: 16,

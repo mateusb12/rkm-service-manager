@@ -17,12 +17,7 @@ import {
   SERVICE_ENTRY_DEFAULT_STAGES,
 } from './model';
 
-import {
-  deleteServiceEntry,
-  loadServiceEntries,
-  loadServiceEntryStages,
-  saveServiceEntry,
-} from './service';
+import { deleteServiceEntry, loadServiceEntries, loadServiceEntryStages, saveServiceEntry } from './service';
 
 import { Field, TextArea, TextInput } from '../../shared/ui/form-controls';
 
@@ -64,10 +59,7 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
   const [previews, setPreviews] = useState({});
   const previewUrls = useRef([]);
 
-  useEffect(
-    () => () => previewUrls.current.forEach((previewUrl) => URL.revokeObjectURL(previewUrl)),
-    [],
-  );
+  useEffect(() => () => previewUrls.current.forEach((previewUrl) => URL.revokeObjectURL(previewUrl)), []);
 
   const selectFiles = async (event) => {
     const files = Array.from(event.target.files || []);
@@ -103,9 +95,7 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
                 {previews[previewKey] ? (
                   <img src={previews[previewKey]} alt={`Foto: ${photo.name}`} />
                 ) : (
-                  <span className="service-entry-photo-placeholder">
-                    {photo.demo ? 'DEMO' : 'IMG'}
-                  </span>
+                  <span className="service-entry-photo-placeholder">{photo.demo ? 'DEMO' : 'IMG'}</span>
                 )}
                 <span title={photo.name}>{photo.name}</span>
                 <button type="button" onClick={() => onRemove(photo)}>
@@ -190,10 +180,7 @@ export const LegacyServiceEntryInvoiceFileField = ({
         if (!active) return;
         setExistingFiles(
           files.filter(
-            (candidate) =>
-              candidate.bytes > 0 &&
-              (candidate.contentType?.startsWith('image/') ||
-                candidate.contentType === 'application/pdf'),
+            (candidate) => candidate.bytes > 0 && (candidate.contentType?.startsWith('image/') || candidate.contentType === 'application/pdf'),
           ),
         );
       })
@@ -237,11 +224,7 @@ export const LegacyServiceEntryInvoiceFileField = ({
   };
 
   return (
-    <div
-      className="service-entry-photo-field"
-      onDragOverCapture={dragOverFile}
-      onDropCapture={dropFile}
-    >
+    <div className="service-entry-photo-field" onDragOverCapture={dragOverFile} onDropCapture={dropFile}>
       <label className="service-entry-photo-label">{label}</label>
       <p>{hint}</p>
       {uploading ? (
@@ -295,20 +278,13 @@ export const LegacyServiceEntryInvoiceFileField = ({
       ) : (
         <>
           {file && editingSelection && (
-            <button
-              type="button"
-              className="service-entry-invoice-cancel-edit"
-              onClick={() => setEditingSelection(false)}
-            >
+            <button type="button" className="service-entry-invoice-cancel-edit" onClick={() => setEditingSelection(false)}>
               Cancelar troca
             </button>
           )}
           <div className="service-entry-invoice-library">
             {existingFiles.map((existingFile) => (
-              <div
-                className="service-entry-invoice-card service-entry-invoice-existing-card"
-                key={existingFile.id}
-              >
+              <div className="service-entry-invoice-card service-entry-invoice-existing-card" key={existingFile.id}>
                 <ServiceEntryInvoicePreview file={existingFile} />
                 <div className="service-entry-invoice-details">
                   <strong title={existingFile.name}>{existingFile.name}</strong>
@@ -355,20 +331,10 @@ export const LegacyServiceEntryInvoiceFileField = ({
 };
 
 const ServiceOrderInvoiceFileField = (props) => (
-  <ServiceOrderFileUpload
-    {...props}
-    uploadingLabel="Enviando nota fiscal..."
-    uploadingHint="Aguarde enquanto o arquivo é armazenado."
-  />
+  <ServiceOrderFileUpload {...props} uploadingLabel="Enviando nota fiscal..." uploadingHint="Aguarde enquanto o arquivo é armazenado." />
 );
 
-const ServiceEntryChecklistFileField = ({
-  label,
-  files = [],
-  onFiles,
-  onRemove,
-  onSelectExisting,
-}) => {
+const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, onSelectExisting }) => {
   const file = files[0];
 
   return (
@@ -404,14 +370,7 @@ const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, class
   />
 ));
 
-const ServiceEntryArrivalStep = ({
-  form,
-  set,
-  onInvoiceFileUpload,
-  onInvoiceFileRemove,
-  addPhotos,
-  removePhoto,
-}) => (
+const ServiceEntryArrivalStep = ({ form, set, onInvoiceFileUpload, onInvoiceFileRemove, addPhotos, removePhoto }) => (
   <ServiceEntrySection
     title="Recebimento PCP"
     description="Registre somente o necessário para abrir a OS. A identificação técnica fica para a oficina."
@@ -429,28 +388,15 @@ const ServiceEntryArrivalStep = ({
         }}
       />
     </Field>
-    <Field
-      label="Nº da OS"
-      required
-      hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}
-    >
-      <TextInput
-        value={form.orderNumber}
-        onChange={(value) => set('orderNumber', value)}
-        placeholder="Ex.: 254186"
-        disabled={!!form.id}
-      />
+    <Field label="Nº da OS" required hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}>
+      <TextInput value={form.orderNumber} onChange={(value) => set('orderNumber', value)} placeholder="Ex.: 254186" disabled={!!form.id} />
     </Field>
     <Field
       label="Nota fiscal / documento"
       className="md:col-span-2"
       hint="Opcional — informe o número da NF quando houver. Você também pode usar N/A para registrar ausência de documento."
     >
-      <TextInput
-        value={form.invoiceNumber}
-        onChange={(value) => set('invoiceNumber', value)}
-        placeholder="Número da NF, N/A ou deixe em branco"
-      />
+      <TextInput value={form.invoiceNumber} onChange={(value) => set('invoiceNumber', value)} placeholder="Número da NF, N/A ou deixe em branco" />
     </Field>
     <div className="md:col-span-3">
       <ServiceOrderInvoiceFileField
@@ -482,16 +428,9 @@ const ServiceEntryArrivalStep = ({
 
 const ServiceEntryIdentificationStep = ({ form, set }) => (
   <>
-    <ServiceEntrySection
-      title="Identificação inicial"
-      description="A oficina identifica o tipo de peça antes da avaliação e desmontagem."
-    >
+    <ServiceEntrySection title="Identificação inicial" description="A oficina identifica o tipo de peça antes da avaliação e desmontagem.">
       <Field label="Categoria do equipamento" required className="md:col-span-3">
-        <div
-          className="service-entry-order-types"
-          role="radiogroup"
-          aria-label="Categoria do equipamento"
-        >
+        <div className="service-entry-order-types" role="radiogroup" aria-label="Categoria do equipamento">
           {Object.entries(SERVICE_ENTRY_ORDER_TYPE_ICONS).map(([type, icon]) => {
             const selected = form.orderType === type;
 
@@ -509,12 +448,7 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
                 onClick={() => set('orderType', type)}
               >
                 <span className="flex h-20 w-20 items-center justify-center p-1">
-                  <img
-                    src={icon}
-                    alt=""
-                    aria-hidden="true"
-                    className="h-full w-full object-contain"
-                  />
+                  <img src={icon} alt="" aria-hidden="true" className="h-full w-full object-contain" />
                 </span>
                 <span className="text-xs font-medium">{type}</span>
               </button>
@@ -530,19 +464,12 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
         />
       </Field>
     </ServiceEntrySection>
-    <ServiceEntrySection
-      title="Dados da chegada"
-      description="Registre a cadeia de recebimento antes da avaliação e desmontagem."
-    >
+    <ServiceEntrySection title="Dados da chegada" description="Registre a cadeia de recebimento antes da avaliação e desmontagem.">
       <Field label="Como chegou" required className="md:col-span-3">
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Como chegou">
           {[
             ['coleta_cliente', 'Coleta no cliente', '/assets/coleta-no-cliente.png'],
-            [
-              'cliente_entregou',
-              'Cliente trouxe à oficina',
-              '/assets/cliente-trouxe-pra-oficina.png',
-            ],
+            ['cliente_entregou', 'Cliente trouxe à oficina', '/assets/cliente-trouxe-pra-oficina.png'],
           ].map(([value, label, icon]) => {
             const selected = form.arrivalMethod === value;
 
@@ -560,34 +487,19 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
                 onClick={() => set('arrivalMethod', value)}
               >
                 <span className="flex h-20 w-20 items-center justify-center p-1">
-                  <img
-                    src={icon}
-                    alt=""
-                    aria-hidden="true"
-                    className="h-full w-full object-contain"
-                  />
+                  <img src={icon} alt="" aria-hidden="true" className="h-full w-full object-contain" />
                 </span>
-                <span className={`text-xs font-medium ${selected ? 'text-sky-300' : 'text-white'}`}>
-                  {label}
-                </span>
+                <span className={`text-xs font-medium ${selected ? 'text-sky-300' : 'text-white'}`}>{label}</span>
               </button>
             );
           })}
         </div>
       </Field>
       <Field label="Recebido por" required>
-        <UserSelector
-          value={form.receivedBy}
-          onSelect={(user) => set('receivedBy', user.name)}
-          onClear={() => set('receivedBy', '')}
-        />
+        <UserSelector value={form.receivedBy} onSelect={(user) => set('receivedBy', user.name)} onClear={() => set('receivedBy', '')} />
       </Field>
       <Field label="Entregue por">
-        <TextInput
-          value={form.deliveredBy}
-          onChange={(value) => set('deliveredBy', value)}
-          placeholder="Motorista / cliente"
-        />
+        <TextInput value={form.deliveredBy} onChange={(value) => set('deliveredBy', value)} placeholder="Motorista / cliente" />
       </Field>
       <Field label="Acessórios / itens recebidos" className="md:col-span-2">
         <TextArea
@@ -601,17 +513,8 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
   </>
 );
 
-const ServiceEntryDisassemblyChecklist = ({
-  form,
-  set,
-  addPhotos,
-  removePhoto,
-  addChecklistPhotos,
-  removeChecklistPhoto,
-}) => {
-  const checklist = Array.isArray(form.disassemblyChecklist)
-    ? form.disassemblyChecklist
-    : createEmptyDisassemblyChecklist();
+const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, addChecklistPhotos, removeChecklistPhoto }) => {
+  const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : createEmptyDisassemblyChecklist();
 
   const updateItem = (index, key, value) => {
     const next = checklist.map((item, itemIndex) =>
@@ -627,10 +530,7 @@ const ServiceEntryDisassemblyChecklist = ({
   };
 
   return (
-    <ServiceEntrySection
-      title="Desmontagem"
-      description="Preserve a identidade da OS e registre como os componentes foram encontrados."
-    >
+    <ServiceEntrySection title="Desmontagem" description="Preserve a identidade da OS e registre como os componentes foram encontrados.">
       <Field label="Responsável pela desmontagem *">
         <UserSelector
           value={form.disassemblyOperator}
@@ -657,29 +557,19 @@ const ServiceEntryDisassemblyChecklist = ({
       {form.orderType === 'Cilindro' && (
         <div className="md:col-span-3 space-y-3">
           <div>
-            <span className="block text-xs font-semibold uppercase tracking-wide text-slate-300">
-              Checklist de saúde do cilindro *
-            </span>
+            <span className="block text-xs font-semibold uppercase tracking-wide text-slate-300">Checklist de saúde do cilindro *</span>
             <p className="mt-1 text-xs text-slate-500">
-              Avalie todos os itens. A foto é opcional; a justificativa é obrigatória quando estiver
-              não conforme.
+              Avalie todos os itens. A foto é opcional; a justificativa é obrigatória quando estiver não conforme.
             </p>
           </div>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {checklist.map((item, index) => {
               const photoCategory = `disassemblyChecklist-${index}`;
               return (
-                <div
-                  key={item.component}
-                  className="flex min-h-[260px] h-full flex-col rounded-lg border border-rkmborder bg-rkmcard2/40 p-4"
-                >
+                <div key={item.component} className="flex min-h-[260px] h-full flex-col rounded-lg border border-rkmborder bg-rkmcard2/40 p-4">
                   <div>
                     <span className="font-medium text-slate-200">{item.component}</span>
-                    <div
-                      className="mt-3 flex flex-wrap gap-2"
-                      role="group"
-                      aria-label={`Resultado de ${item.component}`}
-                    >
+                    <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={`Resultado de ${item.component}`}>
                       {['Conforme', 'Não conforme'].map((status) => (
                         <button
                           key={status}
@@ -709,9 +599,7 @@ const ServiceEntryDisassemblyChecklist = ({
                       aria-label={`Motivo da não conformidade em ${item.component}`}
                     />
                   )}
-                  {item.status !== 'Não conforme' && (
-                    <div className="service-entry-checklist-space mt-3 h-8" aria-hidden="true" />
-                  )}
+                  {item.status !== 'Não conforme' && <div className="service-entry-checklist-space mt-3 h-8" aria-hidden="true" />}
                   <div className="mt-3">
                     <ServiceEntryChecklistFileField
                       label={`Foto de ${item.component} (opcional)`}
@@ -719,9 +607,7 @@ const ServiceEntryDisassemblyChecklist = ({
                       category={`desmontagem (${item.component.toLowerCase()})`}
                       onFiles={(files) => addChecklistPhotos(photoCategory, item.component, files)}
                       onRemove={(file) => removeChecklistPhoto(photoCategory, file)}
-                      onSelectExisting={(file) =>
-                        set('photos', { ...form.photos, [photoCategory]: [file] })
-                      }
+                      onSelectExisting={(file) => set('photos', { ...form.photos, [photoCategory]: [file] })}
                     />
                   </div>
                 </div>
@@ -754,10 +640,7 @@ const ServiceEntryDisassemblyChecklist = ({
 const ServiceEntryDisassemblyStep = (props) => <ServiceEntryDisassemblyChecklist {...props} />;
 
 const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
-  <ServiceEntrySection
-    title="Orçamento"
-    description="Registre os achados, a recomendação de reparo e a aprovação do cliente."
-  >
+  <ServiceEntrySection title="Orçamento" description="Registre os achados, a recomendação de reparo e a aprovação do cliente.">
     <Field label="Diagnóstico técnico *" className="md:col-span-3">
       <TextArea
         rows={4}
@@ -775,11 +658,7 @@ const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
       />
     </Field>
     <Field label="Destino das peças *">
-      <select
-        className="rkm-input zenit-field"
-        value={form.partsDisposition}
-        onChange={(event) => set('partsDisposition', event.target.value)}
-      >
+      <select className="rkm-input zenit-field" value={form.partsDisposition} onChange={(event) => set('partsDisposition', event.target.value)}>
         <option value="">Selecione</option>
         <option>Reaproveitar</option>
         <option>Substituir</option>
@@ -796,11 +675,7 @@ const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
       />
     </Field>
     <Field label="Status da aprovação">
-      <select
-        className="rkm-input zenit-field"
-        value={form.approvalStatus}
-        onChange={(event) => set('approvalStatus', event.target.value)}
-      >
+      <select className="rkm-input zenit-field" value={form.approvalStatus} onChange={(event) => set('approvalStatus', event.target.value)}>
         <option>Pendente</option>
         <option>Aprovada</option>
         <option>Reprovada</option>
@@ -808,18 +683,10 @@ const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
       </select>
     </Field>
     <Field label="Referência da aprovação">
-      <TextInput
-        value={form.approvalReference}
-        onChange={(value) => set('approvalReference', value)}
-        placeholder="E-mail, pedido ou autorização"
-      />
+      <TextInput value={form.approvalReference} onChange={(value) => set('approvalReference', value)} placeholder="E-mail, pedido ou autorização" />
     </Field>
     <Field label="Disponibilidade de material">
-      <select
-        className="rkm-input zenit-field"
-        value={form.materialStatus}
-        onChange={(event) => set('materialStatus', event.target.value)}
-      >
+      <select className="rkm-input zenit-field" value={form.materialStatus} onChange={(event) => set('materialStatus', event.target.value)}>
         <option>A verificar</option>
         <option>Disponível</option>
         <option>Aguardando compra</option>
@@ -838,10 +705,7 @@ const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
 );
 
 const ServiceEntryRepairStep = ({ form, set, addPhotos, removePhoto }) => (
-  <ServiceEntrySection
-    title="Reparo"
-    description="Registre o serviço executado e os resultados da validação."
-  >
+  <ServiceEntrySection title="Reparo" description="Registre o serviço executado e os resultados da validação.">
     <Field label="Serviço executado *" className="md:col-span-3">
       <TextArea
         rows={4}
@@ -851,11 +715,7 @@ const ServiceEntryRepairStep = ({ form, set, addPhotos, removePhoto }) => (
       />
     </Field>
     <Field label="Resultado dos testes *">
-      <select
-        className="rkm-input zenit-field"
-        value={form.testResult}
-        onChange={(event) => set('testResult', event.target.value)}
-      >
+      <select className="rkm-input zenit-field" value={form.testResult} onChange={(event) => set('testResult', event.target.value)}>
         <option value="">Selecione</option>
         <option>Aprovado</option>
         <option>Reprovado</option>
@@ -874,16 +734,9 @@ const ServiceEntryRepairStep = ({ form, set, addPhotos, removePhoto }) => (
 );
 
 const ServiceEntryDispatchStep = ({ form, set, addPhotos, removePhoto }) => (
-  <ServiceEntrySection
-    title="Entrega"
-    description="Registre como a ordem foi entregue e a confirmação de saída."
-  >
+  <ServiceEntrySection title="Entrega" description="Registre como a ordem foi entregue e a confirmação de saída.">
     <Field label="Forma de entrega *">
-      <select
-        className="rkm-input zenit-field"
-        value={form.dispatchMethod}
-        onChange={(event) => set('dispatchMethod', event.target.value)}
-      >
+      <select className="rkm-input zenit-field" value={form.dispatchMethod} onChange={(event) => set('dispatchMethod', event.target.value)}>
         <option value="">Selecione</option>
         <option>Retirada pelo cliente</option>
         <option>Transportadora</option>
@@ -891,11 +744,7 @@ const ServiceEntryDispatchStep = ({ form, set, addPhotos, removePhoto }) => (
       </select>
     </Field>
     <Field label="Rastreio / comprovante">
-      <TextInput
-        value={form.dispatchReference}
-        onChange={(value) => set('dispatchReference', value)}
-        placeholder="Código ou referência de entrega"
-      />
+      <TextInput value={form.dispatchReference} onChange={(value) => set('dispatchReference', value)} placeholder="Código ou referência de entrega" />
     </Field>
     <Field label="Observações de entrega" className="md:col-span-3">
       <TextArea
@@ -1023,9 +872,7 @@ export const ServiceOrderView = () => {
       return false;
     }
     const duplicate = entries.find(
-      (entry) =>
-        entry.id !== form.id &&
-        normalizeOrderNumber(entry.orderNumber) === normalizeOrderNumber(form.orderNumber),
+      (entry) => entry.id !== form.id && normalizeOrderNumber(entry.orderNumber) === normalizeOrderNumber(form.orderNumber),
     );
     if (duplicate) {
       setError(`A ${normalizeOrderNumber(form.orderNumber)} já foi cadastrada nesta demonstração.`);
@@ -1059,9 +906,7 @@ export const ServiceOrderView = () => {
       createdAt: form.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    const previousInvoiceFile = form.id
-      ? entries.find((item) => item.id === form.id)?.invoiceFile
-      : null;
+    const previousInvoiceFile = form.id ? entries.find((item) => item.id === form.id)?.invoiceFile : null;
     try {
       const persistedEntry = await saveServiceEntry(entry, Boolean(form.id));
       if (previousInvoiceFile?.key && previousInvoiceFile.key !== persistedEntry.invoiceFile?.key) {
@@ -1171,8 +1016,7 @@ export const ServiceOrderView = () => {
     }
     const nextStep = step + 1;
     const nextStage = stages[nextStep];
-    const canAdvanceToNextStep =
-      nextStep < stages.length && nextStep <= progressStep + 1 && nextStage?.canAdvanceTo !== false;
+    const canAdvanceToNextStep = nextStep < stages.length && nextStep <= progressStep + 1 && nextStage?.canAdvanceTo !== false;
     if (await persistEntry(undefined, canAdvanceToNextStep ? nextStep : step)) {
       if (!canAdvanceToNextStep) return;
       setStep(Math.min(nextStep, visibleProgressStep));
@@ -1198,25 +1042,16 @@ export const ServiceOrderView = () => {
       photos: { ...emptyEntry.photos, ...(entry.photos || {}) },
     });
     setStep(getServiceEntryStageIndex(stages, entry.availableThroughStage || entry.stage));
-    requestAnimationFrame(() =>
-      document
-        .querySelector('.service-entry-stepper')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
-    );
+    requestAnimationFrame(() => document.querySelector('.service-entry-stepper')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
   };
 
   const deleteEntry = async (entry) => {
-    const confirmed = window.confirm(
-      `Excluir a OS ${entry.orderNumber} e as fotos salvas neste navegador? Esta ação não pode ser desfeita.`,
-    );
+    const confirmed = window.confirm(`Excluir a OS ${entry.orderNumber} e as fotos salvas neste navegador? Esta ação não pode ser desfeita.`);
     if (!confirmed) return;
 
     setDeletingOrderId(entry.id);
     try {
-      const photos = [
-        ...Object.values(entry.photos || {}).flat(),
-        ...(form.id === entry.id ? Object.values(form.photos || {}).flat() : []),
-      ];
+      const photos = [...Object.values(entry.photos || {}).flat(), ...(form.id === entry.id ? Object.values(form.photos || {}).flat() : [])];
       const deletedPhotos = new Set();
       for (const photo of photos) {
         const photoReference = photo.key || photo.id;
@@ -1243,9 +1078,7 @@ export const ServiceOrderView = () => {
   const currentStepMissingFields = getMissingServiceEntryFields(form, step);
   const canAdvanceCurrentStep = canEditCurrentStep && currentStepMissingFields.length === 0;
   const progressStep = form.id ? getServiceEntryStageIndex(stages, form.stage) : 0;
-  const visibleProgressStep = form.id
-    ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage)
-    : 0;
+  const visibleProgressStep = form.id ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage) : 0;
 
   const changeStep = (nextStep) => {
     if (nextStep <= visibleProgressStep && stages[nextStep]?.canView) {
@@ -1269,19 +1102,12 @@ export const ServiceOrderView = () => {
 
           <h1>{form.id ? `OS ${form.orderNumber}` : 'Criar ordem de serviço'}</h1>
 
-          <p>
-            Registre a entrada da peça ou equipamento e reúna as informações necessárias antes da
-            peritagem.
-          </p>
+          <p>Registre a entrada da peça ou equipamento e reúna as informações necessárias antes da peritagem.</p>
         </div>
 
         <div className="service-entry-hero-controls">
           {showDevGuides && (
-            <button
-              type="button"
-              className="btn btn-ghost service-entry-demo-fill"
-              onClick={fillDemo}
-            >
+            <button type="button" className="btn btn-ghost service-entry-demo-fill" onClick={fillDemo}>
               Preencher exemplo DEV
             </button>
           )}
@@ -1366,11 +1192,7 @@ export const ServiceOrderView = () => {
                       <td>
                         <div className="service-entry-equipment-cell">
                           {SERVICE_ENTRY_ORDER_TYPE_ICONS[entry.orderType] && (
-                            <img
-                              src={SERVICE_ENTRY_ORDER_TYPE_ICONS[entry.orderType]}
-                              alt=""
-                              aria-hidden="true"
-                            />
+                            <img src={SERVICE_ENTRY_ORDER_TYPE_ICONS[entry.orderType]} alt="" aria-hidden="true" />
                           )}
                           <div>
                             <div>{entry.equipment || 'A identificar'}</div>
@@ -1384,17 +1206,13 @@ export const ServiceOrderView = () => {
 
                       <td className="service-entry-creation-cell">
                         <span className="tag tag-slate">{entry.createdBy?.name || '—'}</span>
-                        <small className="service-entry-creation-date">
-                          {formatLongDateBR(entry.createdAt)}
-                        </small>
+                        <small className="service-entry-creation-date">{formatLongDateBR(entry.createdAt)}</small>
                       </td>
 
                       <td>{formatDateLabel(entry.expectedDeliveryDate)}</td>
 
                       <td className="service-entry-status-cell">
-                        <span
-                          className={`tag ${entry.status === 'Bloqueado por segurança' ? 'tag-red' : 'tag-blue'}`}
-                        >
+                        <span className={`tag ${entry.status === 'Bloqueado por segurança' ? 'tag-red' : 'tag-blue'}`}>
                           {entry.status || 'Recebido'}
                         </span>
                         <small className="service-entry-stage-count">
@@ -1474,17 +1292,9 @@ export const ServiceOrderView = () => {
       </section>
 
       {error && (
-        <div
-          role="alert"
-          className="service-entry-toast alert-critical rounded-lg p-4 pr-10 text-sm"
-        >
+        <div role="alert" className="service-entry-toast alert-critical rounded-lg p-4 pr-10 text-sm">
           {error}
-          <button
-            type="button"
-            className="service-entry-toast-close"
-            aria-label="Fechar mensagem de erro"
-            onClick={() => setError('')}
-          >
+          <button type="button" className="service-entry-toast-close" aria-label="Fechar mensagem de erro" onClick={() => setError('')}>
             ×
           </button>
           <span className="service-entry-toast-progress" aria-hidden="true" />
@@ -1492,30 +1302,16 @@ export const ServiceOrderView = () => {
       )}
 
       {successMessage && (
-        <div
-          role="status"
-          className="service-entry-toast service-entry-toast-success rounded-lg p-4 pr-10 text-sm"
-        >
+        <div role="status" className="service-entry-toast service-entry-toast-success rounded-lg p-4 pr-10 text-sm">
           {successMessage}
-          <button
-            type="button"
-            className="service-entry-toast-close"
-            aria-label="Fechar mensagem de sucesso"
-            onClick={() => setSuccessMessage('')}
-          >
+          <button type="button" className="service-entry-toast-close" aria-label="Fechar mensagem de sucesso" onClick={() => setSuccessMessage('')}>
             ×
           </button>
           <span className="service-entry-toast-progress" aria-hidden="true" />
         </div>
       )}
 
-      <ServiceOrderStepNavigator
-        stages={stages}
-        step={step}
-        progressStep={progressStep}
-        hasEntry={Boolean(form.id)}
-        onChangeStep={changeStep}
-      />
+      <ServiceOrderStepNavigator stages={stages} step={step} progressStep={progressStep} hasEntry={Boolean(form.id)} onChangeStep={changeStep} />
 
       <div className="service-entry-step-context">
         <span>
@@ -1541,9 +1337,7 @@ export const ServiceOrderView = () => {
             title="Etapa somente para consulta"
             description="Seu cargo pode acompanhar os dados gerais da OS, mas não pode editar o conteúdo desta etapa."
           >
-            <div className="md:col-span-3 text-sm text-slate-400">
-              Selecione uma etapa permitida para continuar.
-            </div>
+            <div className="md:col-span-3 text-sm text-slate-400">Selecione uma etapa permitida para continuar.</div>
           </ServiceEntrySection>
         ) : step === 0 ? (
           <ServiceEntryArrivalStep
@@ -1557,9 +1351,7 @@ export const ServiceOrderView = () => {
             removeChecklistPhoto={removeChecklistPhoto}
           />
         ) : null}
-        {!canEditCurrentStep ? null : step === 1 ? (
-          <ServiceEntryIdentificationStep form={form} set={set} />
-        ) : null}
+        {!canEditCurrentStep ? null : step === 1 ? <ServiceEntryIdentificationStep form={form} set={set} /> : null}
         {canEditCurrentStep && step === 2 && (
           <ServiceEntryDisassemblyStep
             form={form}
@@ -1570,39 +1362,14 @@ export const ServiceOrderView = () => {
             removeChecklistPhoto={removeChecklistPhoto}
           />
         )}
-        {canEditCurrentStep && step === 3 && (
-          <ServiceEntryBudgetStep
-            form={form}
-            set={set}
-            addPhotos={addPhotos}
-            removePhoto={removePhoto}
-          />
-        )}
-        {canEditCurrentStep && step === 4 && (
-          <ServiceEntryRepairStep
-            form={form}
-            set={set}
-            addPhotos={addPhotos}
-            removePhoto={removePhoto}
-          />
-        )}
-        {canEditCurrentStep && step === 5 && (
-          <ServiceEntryDispatchStep
-            form={form}
-            set={set}
-            addPhotos={addPhotos}
-            removePhoto={removePhoto}
-          />
-        )}
+        {canEditCurrentStep && step === 3 && <ServiceEntryBudgetStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
+        {canEditCurrentStep && step === 4 && <ServiceEntryRepairStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
+        {canEditCurrentStep && step === 5 && <ServiceEntryDispatchStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
 
         <div className="service-entry-actions service-entry-step-actions">
           <div className="service-entry-action-group">
             {step > 0 && (
-              <button
-                type="button"
-                className="btn btn-ghost service-entry-action-back"
-                onClick={() => changeStep(step - 1)}
-              >
+              <button type="button" className="btn btn-ghost service-entry-action-back" onClick={() => changeStep(step - 1)}>
                 <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
                 Voltar
               </button>
@@ -1617,10 +1384,7 @@ export const ServiceOrderView = () => {
               Salvar
             </button>
             {canAdvanceCurrentStep && (
-              <button
-                type="submit"
-                className="btn btn-primary service-entry-advance service-entry-action-advance"
-              >
+              <button type="submit" className="btn btn-primary service-entry-advance service-entry-action-advance">
                 {step === stages.length - 1 ? 'Finalizar OS' : 'Avançar'}
                 {step === stages.length - 1 ? (
                   <Check size={17} strokeWidth={2.2} aria-hidden="true" />

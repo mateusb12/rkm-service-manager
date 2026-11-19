@@ -1,14 +1,6 @@
 import { useState, type FormEvent } from 'react';
 
-import {
-  EMPTY_CLIENT,
-  formatCnpj,
-  onlyDigits,
-  validateClient,
-  type Client,
-  type ClientErrors,
-  type ClientInput,
-} from './clientModel';
+import { EMPTY_CLIENT, formatCnpj, onlyDigits, validateClient, type Client, type ClientErrors, type ClientInput } from './clientModel';
 
 import { ClientServiceError } from './service';
 
@@ -119,11 +111,7 @@ export function ClientForm({ client, onCancel, onSave }: Props) {
         }
       }
 
-      setSubmissionErrorMessage(
-        editingClient
-          ? 'Não foi possível salvar as alterações do cliente.'
-          : 'Não foi possível cadastrar o cliente.',
-      );
+      setSubmissionErrorMessage(editingClient ? 'Não foi possível salvar as alterações do cliente.' : 'Não foi possível cadastrar o cliente.');
     } finally {
       setSavingClient(false);
     }
@@ -143,32 +131,21 @@ export function ClientForm({ client, onCancel, onSave }: Props) {
 
         <span className="mx-2 text-slate-500">/</span>
 
-        <span className="text-sm text-slate-300">
-          {editingClient ? 'Editar cliente' : 'Novo cliente'}
-        </span>
+        <span className="text-sm text-slate-300">{editingClient ? 'Editar cliente' : 'Novo cliente'}</span>
       </nav>
 
       <header>
-        <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-          PCP · CLIENTES
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">PCP · CLIENTES</p>
 
-        <h1 className="mt-2 text-2xl font-semibold text-slate-100">
-          {editingClient ? client?.nomeFantasia || 'Editar cliente' : 'Novo cliente'}
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold text-slate-100">{editingClient ? client?.nomeFantasia || 'Editar cliente' : 'Novo cliente'}</h1>
 
         <p className="mt-2 text-sm text-slate-400">
-          {editingClient
-            ? 'Atualize os dados cadastrais deste cliente.'
-            : 'Preencha os dados para cadastrar um cliente.'}
+          {editingClient ? 'Atualize os dados cadastrais deste cliente.' : 'Preencha os dados para cadastrar um cliente.'}
         </p>
       </header>
 
       {submissionErrorMessage && (
-        <div
-          role="alert"
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
-        >
+        <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
           {submissionErrorMessage}
         </div>
       )}
@@ -178,9 +155,7 @@ export function ClientForm({ client, onCancel, onSave }: Props) {
           <div className="border-b border-rkmborder p-5 md:px-6">
             <h2 className="font-semibold text-slate-100">Informações da empresa</h2>
 
-            <p className="mt-1 text-sm text-slate-400">
-              Identificação básica para utilização no PCP.
-            </p>
+            <p className="mt-1 text-sm text-slate-400">Identificação básica para utilização no PCP.</p>
           </div>
 
           <div className="grid gap-5 p-5 md:grid-cols-2 md:p-6">
@@ -189,14 +164,8 @@ export function ClientForm({ client, onCancel, onSave }: Props) {
               const inputId = `client-${field.key}`;
 
               return (
-                <div
-                  key={field.key}
-                  className={field.key === 'cnpj' ? 'md:col-span-2 md:max-w-sm' : ''}
-                >
-                  <label
-                    htmlFor={inputId}
-                    className="mb-2 block text-sm font-medium text-slate-200"
-                  >
+                <div key={field.key} className={field.key === 'cnpj' ? 'md:col-span-2 md:max-w-sm' : ''}>
+                  <label htmlFor={inputId} className="mb-2 block text-sm font-medium text-slate-200">
                     {field.label}
                     <span className="ml-1 text-rose-400">*</span>
                   </label>
@@ -206,9 +175,7 @@ export function ClientForm({ client, onCancel, onSave }: Props) {
                     name={field.key}
                     type="text"
                     className={
-                      'rkm-input zenit-field ' +
-                      'focus-visible:ring-2 focus-visible:ring-blue-400/30 ' +
-                      (fieldError ? '!border-rose-500' : '')
+                      'rkm-input zenit-field ' + 'focus-visible:ring-2 focus-visible:ring-blue-400/30 ' + (fieldError ? '!border-rose-500' : '')
                     }
                     value={clientInput[field.key]}
                     placeholder={field.placeholder}
@@ -232,19 +199,13 @@ export function ClientForm({ client, onCancel, onSave }: Props) {
 
           <div className="border-t border-rkmborder p-4 md:px-6">
             <p className="text-xs text-slate-500">
-              * Campos obrigatórios. O CNPJ é verificado por tamanho nesta etapa; duplicidade é
-              validada pelo sistema ao salvar.
+              * Campos obrigatórios. O CNPJ é verificado por tamanho nesta etapa; duplicidade é validada pelo sistema ao salvar.
             </p>
           </div>
         </section>
 
         <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            className="btn btn-ghost justify-center"
-            onClick={onCancel}
-            disabled={savingClient}
-          >
+          <button type="button" className="btn btn-ghost justify-center" onClick={onCancel} disabled={savingClient}>
             Cancelar
           </button>
 

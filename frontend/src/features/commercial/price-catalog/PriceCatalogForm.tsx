@@ -26,22 +26,15 @@ const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogInput['type'], string
 };
 
 export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
-  const [input, setInput] = useState<PriceCatalogInput>(() =>
-    item ? { ...item } : { ...EMPTY_PRICE_CATALOG_INPUT },
-  );
-  const [priceDisplay, setPriceDisplay] = useState(() =>
-    formatPriceInput(item?.unitPriceCents || 0),
-  );
+  const [input, setInput] = useState<PriceCatalogInput>(() => (item ? { ...item } : { ...EMPTY_PRICE_CATALOG_INPUT }));
+  const [priceDisplay, setPriceDisplay] = useState(() => formatPriceInput(item?.unitPriceCents || 0));
   const [errors, setErrors] = useState<PriceCatalogErrors>({});
   const [submissionError, setSubmissionError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const editing = Boolean(item);
 
-  function changeField<Key extends keyof PriceCatalogInput>(
-    key: Key,
-    value: PriceCatalogInput[Key],
-  ) {
+  function changeField<Key extends keyof PriceCatalogInput>(key: Key, value: PriceCatalogInput[Key]) {
     setInput((previous) => ({ ...previous, [key]: value }));
     setErrors((previous) => ({ ...previous, [key]: undefined }));
     setSubmissionError('');
@@ -66,20 +59,12 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
     setSubmissionError('');
 
     try {
-      await onSave(
-        { ...input, name: input.name.trim(), description: input.description.trim() },
-        item?.id || null,
-      );
+      await onSave({ ...input, name: input.name.trim(), description: input.description.trim() }, item?.id || null);
     } catch (error) {
-      if (
-        error instanceof PriceCatalogServiceError &&
-        error.errorCode === 'price_catalog_item_archived'
-      ) {
+      if (error instanceof PriceCatalogServiceError && error.errorCode === 'price_catalog_item_archived') {
         setSubmissionError('Cadastros arquivados ficam disponíveis apenas para consulta.');
       } else {
-        setSubmissionError(
-          editing ? 'Não foi possível salvar as alterações.' : 'Não foi possível criar o cadastro.',
-        );
+        setSubmissionError(editing ? 'Não foi possível salvar as alterações.' : 'Não foi possível criar o cadastro.');
       }
     } finally {
       setSaving(false);
@@ -89,21 +74,14 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
   return (
     <main className="mx-auto max-w-5xl space-y-5 p-4 md:p-6">
       <header>
-        <h1 className="text-2xl font-semibold text-slate-100">
-          {editing ? item?.name : 'Novo cadastro'}
-        </h1>
+        <h1 className="text-2xl font-semibold text-slate-100">{editing ? item?.name : 'Novo cadastro'}</h1>
         <p className="mt-2 text-sm text-slate-400">
-          {editing
-            ? 'Atualize as informações do item do catálogo.'
-            : 'Cadastre uma peça, produto ou serviço no catálogo.'}
+          {editing ? 'Atualize as informações do item do catálogo.' : 'Cadastre uma peça, produto ou serviço no catálogo.'}
         </p>
       </header>
 
       {submissionError && (
-        <div
-          role="alert"
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
-        >
+        <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
           {submissionError}
         </div>
       )}
@@ -112,9 +90,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
         <section className="rkm-card overflow-hidden">
           <div className="border-b border-rkmborder p-5 md:px-6">
             <h2 className="font-semibold text-slate-100">Informações do cadastro</h2>
-            <p className="mt-1 text-sm text-slate-400">
-              O preço será usado como valor fixo em novos orçamentos.
-            </p>
+            <p className="mt-1 text-sm text-slate-400">O preço será usado como valor fixo em novos orçamentos.</p>
           </div>
 
           <div className="grid gap-5 p-5 md:grid-cols-2 md:p-6">
@@ -136,9 +112,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
                 className={fieldClass(Boolean(errors.unit))}
                 value={input.unit}
                 disabled={saving}
-                onChange={(event) =>
-                  changeField('unit', event.target.value as PriceCatalogInput['unit'])
-                }
+                onChange={(event) => changeField('unit', event.target.value as PriceCatalogInput['unit'])}
               >
                 {PRICE_CATALOG_UNITS.map((unit) => (
                   <option key={unit} value={unit}>
@@ -158,9 +132,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
                 disabled={saving}
                 onChange={(event) => changePrice(event.target.value)}
               />
-              <span className="mt-1 block text-xs text-slate-500">
-                Armazenado em centavos, sem arredondamento de ponto flutuante.
-              </span>
+              <span className="mt-1 block text-xs text-slate-500">Armazenado em centavos, sem arredondamento de ponto flutuante.</span>
             </Field>
 
             <Field label="Descrição" className="md:col-span-2">
@@ -177,12 +149,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
             </Field>
 
             <Field label="Tipo" required error={errors.type}>
-              <div
-                id="price-type"
-                role="group"
-                aria-label="Tipo de cadastro"
-                className="grid grid-cols-3 gap-3"
-              >
+              <div id="price-type" role="group" aria-label="Tipo de cadastro" className="grid grid-cols-3 gap-3">
                 {PRICE_CATALOG_TYPES.map((type) => {
                   const selected = input.type === type;
                   const icon = PRICE_CATALOG_TYPE_ICONS[type];
@@ -201,14 +168,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
                       onClick={() => changeField('type', type)}
                     >
                       <span className="flex h-12 w-12 items-center justify-center p-1">
-                        {icon && (
-                          <img
-                            src={icon}
-                            alt=""
-                            aria-hidden="true"
-                            className="h-full w-full object-contain"
-                          />
-                        )}
+                        {icon && <img src={icon} alt="" aria-hidden="true" className="h-full w-full object-contain" />}
                       </span>
                       <span className="text-xs font-medium">{PRICE_CATALOG_TYPE_LABELS[type]}</span>
                     </button>
@@ -220,12 +180,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
         </section>
 
         <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            className="btn btn-ghost justify-center"
-            onClick={onCancel}
-            disabled={saving}
-          >
+          <button type="button" className="btn btn-ghost justify-center" onClick={onCancel} disabled={saving}>
             Cancelar
           </button>
           <button type="submit" className="btn btn-primary justify-center" disabled={saving}>

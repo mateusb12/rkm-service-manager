@@ -2,8 +2,7 @@
 import React from 'react';
 
 export const StatusTag = ({ status, className = '' }) => {
-  if (!status)
-    return React.createElement('span', { className: 'tag tag-slate ' + className }, '\u2014');
+  if (!status) return React.createElement('span', { className: 'tag tag-slate ' + className }, '\u2014');
   const s = status.toLowerCase();
   let cls = 'tag-slate';
   if (/(aprovado|liberado|conclu)/.test(s) && !/ressalva/.test(s)) cls = 'tag-emerald';
@@ -17,9 +16,5 @@ export const StatusTag = ({ status, className = '' }) => {
 
 export const PriorityTag = ({ priority, className = '' }) => {
   const map = { Baixa: 'tag-emerald', Média: 'tag-amber', Alta: 'tag-red', Crítica: 'tag-red' };
-  return React.createElement(
-    'span',
-    { className: 'tag ' + (map[priority] || 'tag-slate') + ' ' + className },
-    priority || '—',
-  );
+  return React.createElement('span', { className: 'tag ' + (map[priority] || 'tag-slate') + ' ' + className }, priority || '—');
 };

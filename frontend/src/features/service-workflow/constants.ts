@@ -14,10 +14,4 @@ export const STATUS_OPTIONS = [
   'Liberado',
 ];
 
-export const EPI_LIST = [
-  'Óculos de segurança',
-  'Luvas',
-  'Calçado de segurança',
-  'Proteção facial',
-  'Outro',
-];
+export const EPI_LIST = ['Óculos de segurança', 'Luvas', 'Calçado de segurança', 'Proteção facial', 'Outro'];

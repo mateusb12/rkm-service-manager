@@ -2,12 +2,7 @@
 
 import { STEPS, initialRecord, computeAlerts, STEP_RENDERERS } from '../its/it001';
 
-import {
-  STEPS_IT002,
-  initialRecordIT002,
-  computeAlertsIT002,
-  STEP_RENDERERS_IT002,
-} from '../its/it002';
+import { STEPS_IT002, initialRecordIT002, computeAlertsIT002, STEP_RENDERERS_IT002 } from '../its/it002';
 
 export const IT_CONFIG = {
   IT001: {

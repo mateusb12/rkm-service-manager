@@ -35,13 +35,10 @@ export const getServiceEntry = async (id) => {
 
 export const saveServiceEntry = async (entry, update = Boolean(entry.id)) => {
   const { availableThroughStage, ...payload } = entry;
-  const response = await apiRequest(
-    update && entry.id ? `/service-orders/${encodeURIComponent(entry.id)}` : '/service-orders',
-    {
-      method: update && entry.id ? 'PUT' : 'POST',
-      body: JSON.stringify(payload),
-    },
-  );
+  const response = await apiRequest(update && entry.id ? `/service-orders/${encodeURIComponent(entry.id)}` : '/service-orders', {
+    method: update && entry.id ? 'PUT' : 'POST',
+    body: JSON.stringify(payload),
+  });
   if (!response.ok) {
     if (response.status === 409) throw new Error('service_order_already_exists');
     throw new Error('service_order_save_failed');

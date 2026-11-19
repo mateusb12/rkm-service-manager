@@ -37,16 +37,7 @@ export const CleanSidebar = ({ view, setView, authenticatedUser, activeRole, onL
     .join('')
     .toUpperCase();
 
-  const groupOrder = [
-    'Visão geral',
-    'Operação',
-    'Oficina',
-    'PCP',
-    'Comercial',
-    'Planejamento',
-    'Gestão',
-    'Ferramentas',
-  ];
+  const groupOrder = ['Visão geral', 'Operação', 'Oficina', 'PCP', 'Comercial', 'Planejamento', 'Gestão', 'Ferramentas'];
 
   const groups = groupOrder.map((group) => [group, items.filter((item) => item.group === group)]);
 
@@ -59,9 +50,7 @@ export const CleanSidebar = ({ view, setView, authenticatedUser, activeRole, onL
   return React.createElement(
     'aside',
     {
-      className:
-        `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ` +
-        `${collapsed ? 'sidebar-collapsed w-[72px]' : 'w-80'}`,
+      className: `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ` + `${collapsed ? 'sidebar-collapsed w-[72px]' : 'w-80'}`,
     },
 
     React.createElement(
@@ -82,16 +71,8 @@ export const CleanSidebar = ({ view, setView, authenticatedUser, activeRole, onL
       React.createElement(
         'div',
         { className: 'sidebar-label sidebar-brand-copy min-w-0' },
-        React.createElement(
-          'div',
-          { className: 'text-base font-semibold truncate' },
-          'RKM Service Manager',
-        ),
-        React.createElement(
-          'div',
-          { className: 'text-xs text-slate-400 truncate' },
-          'Ciclo Operacional',
-        ),
+        React.createElement('div', { className: 'text-base font-semibold truncate' }, 'RKM Service Manager'),
+        React.createElement('div', { className: 'text-xs text-slate-400 truncate' }, 'Ciclo Operacional'),
       ),
 
       React.createElement(

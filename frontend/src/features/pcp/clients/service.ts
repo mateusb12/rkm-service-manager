@@ -25,11 +25,7 @@ export class ClientServiceError extends Error {
 async function throwClientServiceError(response: Response, fallbackCode: string): Promise<never> {
   const errorPayload = (await response.json().catch(() => null)) as ClientErrorPayload | null;
 
-  throw new ClientServiceError(
-    errorPayload?.error || fallbackCode,
-    response.status,
-    errorPayload?.fields || {},
-  );
+  throw new ClientServiceError(errorPayload?.error || fallbackCode, response.status, errorPayload?.fields || {});
 }
 
 export async function listClients(searchTerm = ''): Promise<Client[]> {

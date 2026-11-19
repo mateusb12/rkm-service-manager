@@ -38,10 +38,7 @@ export const LizyReferenceCard = ({ source, detail }) =>
     React.createElement(
       'span',
       {
-        className:
-          'text-xs px-2 py-1 rounded-md ' +
-          'border border-blue-500/25 bg-blue-500/10 text-blue-300 ' +
-          'whitespace-nowrap',
+        className: 'text-xs px-2 py-1 rounded-md ' + 'border border-blue-500/25 bg-blue-500/10 text-blue-300 ' + 'whitespace-nowrap',
       },
       'FONTE DE VERDADE',
     ),

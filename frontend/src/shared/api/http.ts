@@ -17,9 +17,7 @@ export function apiRequest(path: string, options: RequestInit = {}): Promise<Res
   const headers = new Headers(options.headers);
 
   const apiRequestTimeoutSignal = AbortSignal.timeout(API_REQUEST_TIMEOUT_MS);
-  const requestAbortSignal = options.signal
-    ? AbortSignal.any([options.signal, apiRequestTimeoutSignal])
-    : apiRequestTimeoutSignal;
+  const requestAbortSignal = options.signal ? AbortSignal.any([options.signal, apiRequestTimeoutSignal]) : apiRequestTimeoutSignal;
 
   if (typeof options.body === 'string' && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');

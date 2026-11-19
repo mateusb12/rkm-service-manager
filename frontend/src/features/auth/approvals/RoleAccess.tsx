@@ -45,38 +45,25 @@ export const AuthStatusTag = ({ status }) => {
     Reprovado: 'tag-red',
     'Ajuste solicitado': 'tag-violet',
   };
-  return React.createElement(
-    'span',
-    { className: 'tag ' + (map[status] || 'tag-slate') },
-    status || '—',
-  );
+  return React.createElement('span', { className: 'tag ' + (map[status] || 'tag-slate') }, status || '—');
 };
 /* Tag visual de criticidade */
 export const CriticalityTag = ({ value }) => {
   const map = { Baixa: 'tag-emerald', Média: 'tag-amber', Alta: 'tag-red', Crítica: 'tag-red' };
-  return React.createElement(
-    'span',
-    { className: 'tag ' + (map[value] || 'tag-slate') },
-    value || '—',
-  );
+  return React.createElement('span', { className: 'tag ' + (map[value] || 'tag-slate') }, value || '—');
 };
 /* Utilitários de histórico — Tarefa 2B.3 */
-export const roleLabelFor = (roleKey) =>
-  (ROLES.find((r) => r.key === roleKey) || {}).label || roleKey || '—';
-export const roleTagFor = (roleKey) =>
-  (ROLES.find((r) => r.key === roleKey) || {}).tagClass || 'tag-slate';
+export const roleLabelFor = (roleKey) => (ROLES.find((r) => r.key === roleKey) || {}).label || roleKey || '—';
+export const roleTagFor = (roleKey) => (ROLES.find((r) => r.key === roleKey) || {}).tagClass || 'tag-slate';
 export const formatDateTimeBR = (value) => (value ? new Date(value).toLocaleString('pt-BR') : '—');
 export const normalizeActionLabel = (action) => {
   if (action === 'Decisão registrada') return 'Decisão registrada';
   return action || '—';
 };
 export const authReturnMessage = (status) => {
-  if (status === 'Aprovado')
-    return 'Autorização aprovada. A liberação real do próximo passo será controlada na Tarefa 3.';
-  if (status === 'Reprovado')
-    return 'Solicitação reprovada. Verificar justificativa e alinhar com o responsável.';
-  if (status === 'Ajuste solicitado')
-    return 'Ajuste solicitado — revisar a etapa e complementar as informações antes de nova validação.';
+  if (status === 'Aprovado') return 'Autorização aprovada. A liberação real do próximo passo será controlada na Tarefa 3.';
+  if (status === 'Reprovado') return 'Solicitação reprovada. Verificar justificativa e alinhar com o responsável.';
+  if (status === 'Ajuste solicitado') return 'Ajuste solicitado — revisar a etapa e complementar as informações antes de nova validação.';
   return 'Solicitação pendente. Aguarde a decisão do responsável.';
 };
 export const authReturnClass = (status) => {
@@ -85,15 +72,7 @@ export const authReturnClass = (status) => {
   if (status === 'Ajuste solicitado') return 'alert-warn';
   return 'alert-info';
 };
-export const buildApprovalHistoryEntry = ({
-  request,
-  action,
-  status,
-  user,
-  userRole,
-  comment,
-  dateTime,
-}) => ({
+export const buildApprovalHistoryEntry = ({ request, action, status, user, userRole, comment, dateTime }) => ({
   id: 'HIST-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
   authorizationId: request.id,
   it: request.it || request._itLabel || 'IT001',
@@ -113,12 +92,7 @@ export const buildApprovalHistoryEntry = ({
   comment: comment || '',
 });
 /* Botão "Solicitar autorização" — visível apenas para operador */
-export const AuthRequestButton = ({
-  activeRole,
-  onClick,
-  size = 'sm',
-  label = 'Solicitar autorização',
-}) => {
+export const AuthRequestButton = ({ activeRole, onClick, size = 'sm', label = 'Solicitar autorização' }) => {
   if (activeRole !== 'mechanic') return null;
   return React.createElement(
     'button',
@@ -157,9 +131,7 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
     if (open) {
       setRequestType((context === null || context === void 0 ? void 0 : context.requestType) || '');
       setReason((context === null || context === void 0 ? void 0 : context.suggestedReason) || '');
-      setCriticality(
-        (context === null || context === void 0 ? void 0 : context.suggestedCriticality) || 'Média',
-      );
+      setCriticality((context === null || context === void 0 ? void 0 : context.suggestedCriticality) || 'Média');
     }
   }, [open, context]);
   if (!open) return null;
@@ -234,16 +206,8 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
         React.createElement(
           'div',
           { className: 'flex-1' },
-          React.createElement(
-            'div',
-            { className: 'text-xs uppercase tracking-wider text-blue-300' },
-            'Bloco 2A',
-          ),
-          React.createElement(
-            'div',
-            { className: 'text-base font-semibold' },
-            'Nova solicita\u00E7\u00E3o de autoriza\u00E7\u00E3o',
-          ),
+          React.createElement('div', { className: 'text-xs uppercase tracking-wider text-blue-300' }, 'Bloco 2A'),
+          React.createElement('div', { className: 'text-base font-semibold' }, 'Nova solicita\u00E7\u00E3o de autoriza\u00E7\u00E3o'),
         ),
         React.createElement(
           'button',
@@ -277,11 +241,7 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
             React.createElement(
               'div',
               { className: 'rkm-input flex items-center' },
-              React.createElement(
-                'span',
-                { className: 'tag ' + (context.it === 'IT001' ? 'tag-blue' : 'tag-violet') },
-                context.it || 'IT001',
-              ),
+              React.createElement('span', { className: 'tag ' + (context.it === 'IT001' ? 'tag-blue' : 'tag-violet') }, context.it || 'IT001'),
             ),
           ),
           React.createElement(
@@ -290,8 +250,7 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
             React.createElement(
               'div',
               { className: 'rkm-input' },
-              context.osNumber ||
-                React.createElement('span', { className: 'text-slate-500' }, '\u2014 sem OS'),
+              context.osNumber || React.createElement('span', { className: 'text-slate-500' }, '\u2014 sem OS'),
             ),
           ),
           React.createElement(
@@ -300,8 +259,7 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
             React.createElement(
               'div',
               { className: 'rkm-input' },
-              context.client ||
-                React.createElement('span', { className: 'text-slate-500' }, '\u2014 sem cliente'),
+              context.client || React.createElement('span', { className: 'text-slate-500' }, '\u2014 sem cliente'),
             ),
           ),
           React.createElement(
@@ -312,11 +270,7 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
               { className: 'rkm-input' },
               context.stepId
                 ? `${context.stepId} • ${context.stepLabel}`
-                : React.createElement(
-                    'span',
-                    { className: 'text-slate-500' },
-                    '\u2014 etapa n\u00E3o identificada',
-                  ),
+                : React.createElement('span', { className: 'text-slate-500' }, '\u2014 etapa n\u00E3o identificada'),
             ),
           ),
           React.createElement(
@@ -329,21 +283,14 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
               React.createElement(
                 'span',
                 {
-                  className:
-                    'tag ' +
-                    ((ROLES.find((r) => r.key === user.role) || {}).tagClass || 'tag-slate'),
+                  className: 'tag ' + ((ROLES.find((r) => r.key === user.role) || {}).tagClass || 'tag-slate'),
                 },
                 roleLabel,
               ),
             ),
           ),
         ),
-        context.alertMessage &&
-          React.createElement(
-            AlertBox,
-            { severity: 'warn', title: 'Alerta de origem' },
-            context.alertMessage,
-          ),
+        context.alertMessage && React.createElement(AlertBox, { severity: 'warn', title: 'Alerta de origem' }, context.alertMessage),
         React.createElement(
           Field,
           { label: 'Tipo de solicita\u00E7\u00E3o', required: true },
@@ -391,8 +338,7 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
             rows: 4,
             value: reason,
             onChange: setReason,
-            placeholder:
-              'Ex.: bexiga apresentou ind\u00EDcio de fadiga e n\u00E3o h\u00E1 fabricante na placa...',
+            placeholder: 'Ex.: bexiga apresentou ind\u00EDcio de fadiga e n\u00E3o h\u00E1 fabricante na placa...',
           }),
         ),
         React.createElement(
@@ -401,11 +347,7 @@ export const AuthRequestModal = ({ open, onClose, onSubmit, context, activeUser 
           React.createElement('span', null, 'Status inicial:'),
           ' ',
           React.createElement(AuthStatusTag, { status: 'Pendente' }),
-          React.createElement(
-            'span',
-            { className: 'ml-auto text-slate-600' },
-            'ID ser\u00E1 gerado no envio',
-          ),
+          React.createElement('span', { className: 'ml-auto text-slate-600' }, 'ID ser\u00E1 gerado no envio'),
         ),
       ),
       React.createElement(
@@ -442,24 +384,10 @@ export const MyAuthRequestsList = ({ rec001, rec002, activeUser }) => {
       React.createElement(
         'div',
         { className: 'flex-1' },
-        React.createElement(
-          'div',
-          { className: 'text-sm font-semibold' },
-          'Minhas solicita\u00E7\u00F5es de autoriza\u00E7\u00E3o',
-        ),
-        React.createElement(
-          'div',
-          { className: 'text-xs text-slate-500' },
-          'Retorno das decis\u00F5es recebidas \u2014 Tarefa 2B.3',
-        ),
+        React.createElement('div', { className: 'text-sm font-semibold' }, 'Minhas solicita\u00E7\u00F5es de autoriza\u00E7\u00E3o'),
+        React.createElement('div', { className: 'text-xs text-slate-500' }, 'Retorno das decis\u00F5es recebidas \u2014 Tarefa 2B.3'),
       ),
-      React.createElement(
-        'span',
-        { className: 'text-xs text-slate-500' },
-        all.length,
-        ' registro',
-        all.length !== 1 ? 's' : '',
-      ),
+      React.createElement('span', { className: 'text-xs text-slate-500' }, all.length, ' registro', all.length !== 1 ? 's' : ''),
     ),
     all.length === 0
       ? React.createElement(
@@ -486,31 +414,17 @@ export const MyAuthRequestsList = ({ rec001, rec002, activeUser }) => {
               'div',
               {
                 key: r.id,
-                className:
-                  (r.status === 'Ajuste solicitado' ? 'alert-warn' : 'rkm-card-2') +
-                  ' p-4 space-y-3',
+                className: (r.status === 'Ajuste solicitado' ? 'alert-warn' : 'rkm-card-2') + ' p-4 space-y-3',
               },
               React.createElement(
                 'div',
                 { className: 'flex items-center gap-2 flex-wrap' },
-                React.createElement(
-                  'span',
-                  { className: 'tag ' + (r._itLabel === 'IT001' ? 'tag-blue' : 'tag-violet') },
-                  r._itLabel,
-                ),
-                React.createElement(
-                  'span',
-                  { className: 'font-mono text-xs text-slate-400' },
-                  r.id,
-                ),
+                React.createElement('span', { className: 'tag ' + (r._itLabel === 'IT001' ? 'tag-blue' : 'tag-violet') }, r._itLabel),
+                React.createElement('span', { className: 'font-mono text-xs text-slate-400' }, r.id),
                 React.createElement(AuthStatusTag, { status: r.status }),
                 React.createElement(CriticalityTag, { value: r.criticality }),
                 React.createElement('span', { className: 'flex-1' }),
-                React.createElement(
-                  'span',
-                  { className: 'text-xs text-slate-500' },
-                  formatDateTimeBR(r.requestedAt),
-                ),
+                React.createElement('span', { className: 'text-xs text-slate-500' }, formatDateTimeBR(r.requestedAt)),
               ),
               React.createElement(
                 'div',
@@ -534,38 +448,22 @@ export const MyAuthRequestsList = ({ rec001, rec002, activeUser }) => {
                   { className: 'md:col-span-2' },
                   React.createElement('span', { className: 'text-slate-500' }, 'Etapa:'),
                   ' ',
-                  React.createElement(
-                    'span',
-                    { className: 'text-slate-200' },
-                    r.stepId ? `${r.stepId} • ${r.stepLabel}` : '—',
-                  ),
+                  React.createElement('span', { className: 'text-slate-200' }, r.stepId ? `${r.stepId} • ${r.stepLabel}` : '—'),
                 ),
                 React.createElement(
                   'div',
                   null,
                   React.createElement('span', { className: 'text-slate-500' }, 'Tipo:'),
                   ' ',
-                  React.createElement(
-                    'span',
-                    { className: 'text-slate-200' },
-                    r.requestType || '—',
-                  ),
+                  React.createElement('span', { className: 'text-slate-200' }, r.requestType || '—'),
                 ),
               ),
               r.reason &&
                 React.createElement(
                   'div',
                   { className: 'text-xs' },
-                  React.createElement(
-                    'div',
-                    { className: 'text-slate-500 mb-0.5' },
-                    'Motivo original:',
-                  ),
-                  React.createElement(
-                    'div',
-                    { className: 'text-slate-200 whitespace-pre-wrap' },
-                    r.reason,
-                  ),
+                  React.createElement('div', { className: 'text-slate-500 mb-0.5' }, 'Motivo original:'),
+                  React.createElement('div', { className: 'text-slate-200 whitespace-pre-wrap' }, r.reason),
                 ),
               React.createElement(
                 'div',
@@ -578,44 +476,26 @@ export const MyAuthRequestsList = ({ rec001, rec002, activeUser }) => {
                 React.createElement(
                   'div',
                   {
-                    className:
-                      'border-t border-rkmborder pt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-300',
+                    className: 'border-t border-rkmborder pt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-300',
                   },
                   React.createElement(
                     'div',
                     null,
                     'Decidido por: ',
-                    React.createElement(
-                      'b',
-                      { className: 'text-slate-100' },
-                      r.decidedByName || '—',
-                    ),
-                    decisionRole &&
-                      React.createElement(
-                        'span',
-                        { className: 'tag ml-2 ' + roleTagFor(decisionRole) },
-                        roleLabelFor(decisionRole),
-                      ),
+                    React.createElement('b', { className: 'text-slate-100' }, r.decidedByName || '—'),
+                    decisionRole && React.createElement('span', { className: 'tag ml-2 ' + roleTagFor(decisionRole) }, roleLabelFor(decisionRole)),
                   ),
                   React.createElement(
                     'div',
                     null,
                     'Data/hora da decis\u00E3o: ',
-                    React.createElement(
-                      'b',
-                      { className: 'text-slate-100' },
-                      formatDateTimeBR(r.decidedAt),
-                    ),
+                    React.createElement('b', { className: 'text-slate-100' }, formatDateTimeBR(r.decidedAt)),
                   ),
                   React.createElement(
                     'div',
                     { className: 'md:col-span-2' },
                     'Justificativa: ',
-                    React.createElement(
-                      'span',
-                      { className: 'text-slate-100' },
-                      r.decisionReason || '—',
-                    ),
+                    React.createElement('span', { className: 'text-slate-100' }, r.decisionReason || '—'),
                   ),
                 ),
               (r.history || []).length > 0 &&
@@ -635,14 +515,9 @@ export const MyAuthRequestsList = ({ rec001, rec002, activeUser }) => {
                         'div',
                         {
                           key: h.id,
-                          className:
-                            'text-xs text-slate-400 flex flex-col md:flex-row md:items-start gap-1 md:gap-2',
+                          className: 'text-xs text-slate-400 flex flex-col md:flex-row md:items-start gap-1 md:gap-2',
                         },
-                        React.createElement(
-                          'span',
-                          { className: 'text-slate-500' },
-                          formatDateTimeBR(h.dateTime),
-                        ),
+                        React.createElement('span', { className: 'text-slate-500' }, formatDateTimeBR(h.dateTime)),
                         React.createElement(
                           'span',
                           { className: 'text-slate-300' },
@@ -654,13 +529,7 @@ export const MyAuthRequestsList = ({ rec001, rec002, activeUser }) => {
                           ' \u2014 ',
                           h.status || '—',
                         ),
-                        h.comment &&
-                          React.createElement(
-                            'span',
-                            { className: 'text-slate-500' },
-                            'Coment\u00E1rio: ',
-                            h.comment,
-                          ),
+                        h.comment && React.createElement('span', { className: 'text-slate-500' }, 'Coment\u00E1rio: ', h.comment),
                       ),
                     ),
                   ),
@@ -670,12 +539,7 @@ export const MyAuthRequestsList = ({ rec001, rec002, activeUser }) => {
         ),
   );
 };
-export const AuthorizationHistoryPanel = ({
-  rec001,
-  rec002,
-  scope = 'all',
-  title = 'Histórico de autorizações',
-}) => {
+export const AuthorizationHistoryPanel = ({ rec001, rec002, scope = 'all', title = 'Histórico de autorizações' }) => {
   const [filter, setFilter] = useState('Todas');
   const allRequests = getAllAuthorizationRequests(rec001, rec002);
   const scopedRequests = scope === 'all' ? allRequests : filterByApprover(allRequests, scope);
@@ -684,13 +548,7 @@ export const AuthorizationHistoryPanel = ({
     ...(rec001.approvalHistory || []).map((h) => ({ ...h, it: h.it || 'IT001' })),
     ...(rec002.approvalHistory || []).map((h) => ({ ...h, it: h.it || 'IT002' })),
   ]
-    .filter(
-      (h) =>
-        scope === 'all' ||
-        scopedIds.has(h.authorizationId) ||
-        h.assignedApproverRole === scope ||
-        h.userRole === scope,
-    )
+    .filter((h) => scope === 'all' || scopedIds.has(h.authorizationId) || h.assignedApproverRole === scope || h.userRole === scope)
     .sort((a, b) => (b.dateTime || '').localeCompare(a.dateTime || ''));
   const filtered = raw.filter((h) => {
     if (filter === 'Todas') return true;
@@ -702,15 +560,7 @@ export const AuthorizationHistoryPanel = ({
     if (filter === 'IT002') return h.it === 'IT002';
     return true;
   });
-  const filters = [
-    'Todas',
-    'Pendentes',
-    'Aprovadas',
-    'Reprovadas',
-    'Ajuste solicitado',
-    'IT001',
-    'IT002',
-  ];
+  const filters = ['Todas', 'Pendentes', 'Aprovadas', 'Reprovadas', 'Ajuste solicitado', 'IT001', 'IT002'];
   return React.createElement(
     'div',
     { className: 'rkm-card overflow-hidden' },
@@ -728,13 +578,7 @@ export const AuthorizationHistoryPanel = ({
           'Registro n\u00E3o edit\u00E1vel de cria\u00E7\u00E3o e decis\u00F5es \u2014 Tarefa 2B.3',
         ),
       ),
-      React.createElement(
-        'span',
-        { className: 'tag tag-slate' },
-        filtered.length,
-        ' evento',
-        filtered.length !== 1 ? 's' : '',
-      ),
+      React.createElement('span', { className: 'tag tag-slate' }, filtered.length, ' evento', filtered.length !== 1 ? 's' : ''),
     ),
     React.createElement(
       'div',
@@ -745,8 +589,7 @@ export const AuthorizationHistoryPanel = ({
           {
             key: f,
             onClick: () => setFilter(f),
-            className:
-              'btn text-xs !py-1.5 !px-2.5 ' + (filter === f ? 'btn-primary' : 'btn-ghost'),
+            className: 'btn text-xs !py-1.5 !px-2.5 ' + (filter === f ? 'btn-primary' : 'btn-ghost'),
           },
           f,
         ),
@@ -768,22 +611,10 @@ export const AuthorizationHistoryPanel = ({
               React.createElement(
                 'div',
                 { className: 'flex items-center gap-2 flex-wrap' },
-                React.createElement(
-                  'span',
-                  { className: 'text-xs text-slate-500' },
-                  formatDateTimeBR(h.dateTime),
-                ),
-                React.createElement(
-                  'span',
-                  { className: 'tag ' + (h.it === 'IT001' ? 'tag-blue' : 'tag-violet') },
-                  h.it || '—',
-                ),
+                React.createElement('span', { className: 'text-xs text-slate-500' }, formatDateTimeBR(h.dateTime)),
+                React.createElement('span', { className: 'tag ' + (h.it === 'IT001' ? 'tag-blue' : 'tag-violet') }, h.it || '—'),
                 React.createElement(AuthStatusTag, { status: h.status }),
-                React.createElement(
-                  'span',
-                  { className: 'text-xs font-mono text-slate-500' },
-                  h.authorizationId || '—',
-                ),
+                React.createElement('span', { className: 'text-xs font-mono text-slate-500' }, h.authorizationId || '—'),
               ),
               React.createElement(
                 'div',
@@ -800,25 +631,14 @@ export const AuthorizationHistoryPanel = ({
                 { className: 'text-xs text-slate-200' },
                 h.userName || '—',
                 ' ',
-                React.createElement(
-                  'span',
-                  { className: 'text-slate-500' },
-                  '(',
-                  roleLabelFor(h.userRole),
-                  ')',
-                ),
+                React.createElement('span', { className: 'text-slate-500' }, '(', roleLabelFor(h.userRole), ')'),
                 ' \u2014 ',
                 normalizeActionLabel(h.action),
                 ' \u2014 ',
                 h.status || '—',
               ),
               h.comment &&
-                React.createElement(
-                  'div',
-                  { className: 'text-xs text-slate-400 whitespace-pre-wrap' },
-                  'Coment\u00E1rio/justificativa: ',
-                  h.comment,
-                ),
+                React.createElement('div', { className: 'text-xs text-slate-400 whitespace-pre-wrap' }, 'Coment\u00E1rio/justificativa: ', h.comment),
             ),
           ),
         ),
@@ -851,14 +671,7 @@ export const SUPERVISOR_TYPES = [
 export const QUALITY_TYPES = ['Validação da Qualidade', 'Evidência pendente'];
 export const PCP_TYPES = ['Fechamento PCP'];
 export const filterByApprover = (requests, role) => {
-  const typeSet =
-    role === 'supervisor'
-      ? SUPERVISOR_TYPES
-      : role === 'quality'
-        ? QUALITY_TYPES
-        : role === 'pcp'
-          ? PCP_TYPES
-          : [];
+  const typeSet = role === 'supervisor' ? SUPERVISOR_TYPES : role === 'quality' ? QUALITY_TYPES : role === 'pcp' ? PCP_TYPES : [];
   return requests.filter((r) => r.assignedApproverRole === role || typeSet.includes(r.requestType));
 };
 export const canDecideRequest = (req, activeRole) => {
@@ -893,18 +706,10 @@ export const AuthRequestCard = ({ req, showApproverHint, activeRole, onDecisionC
       { className: 'flex items-center gap-2 flex-wrap' },
       React.createElement(CriticalityTag, { value: req.criticality }),
       React.createElement(AuthStatusTag, { status: req.status }),
-      React.createElement(
-        'span',
-        { className: 'tag ' + (req._itLabel === 'IT001' ? 'tag-blue' : 'tag-violet') },
-        req._itLabel,
-      ),
+      React.createElement('span', { className: 'tag ' + (req._itLabel === 'IT001' ? 'tag-blue' : 'tag-violet') }, req._itLabel),
       React.createElement('span', { className: 'text-xs font-mono text-slate-400' }, req.id),
       React.createElement('span', { className: 'flex-1' }),
-      React.createElement(
-        'span',
-        { className: 'text-xs text-slate-500' },
-        req.requestedAt ? new Date(req.requestedAt).toLocaleString('pt-BR') : '—',
-      ),
+      React.createElement('span', { className: 'text-xs text-slate-500' }, req.requestedAt ? new Date(req.requestedAt).toLocaleString('pt-BR') : '—'),
     ),
     React.createElement(
       'div',
@@ -928,11 +733,7 @@ export const AuthRequestCard = ({ req, showApproverHint, activeRole, onDecisionC
         { className: 'md:col-span-2' },
         React.createElement('span', { className: 'text-slate-500' }, 'Etapa:'),
         ' ',
-        React.createElement(
-          'span',
-          { className: 'text-slate-200' },
-          req.stepId ? req.stepId + ' — ' + (req.stepLabel || '') : '—',
-        ),
+        React.createElement('span', { className: 'text-slate-200' }, req.stepId ? req.stepId + ' — ' + (req.stepLabel || '') : '—'),
       ),
       React.createElement(
         'div',
@@ -954,9 +755,7 @@ export const AuthRequestCard = ({ req, showApproverHint, activeRole, onDecisionC
           React.createElement(
             'span',
             {
-              className:
-                'tag ' +
-                ((ROLES.find((r) => r.key === req.requestedByRole) || {}).tagClass || 'tag-slate'),
+              className: 'tag ' + ((ROLES.find((r) => r.key === req.requestedByRole) || {}).tagClass || 'tag-slate'),
             },
             reqRoleLabel,
           ),
@@ -1004,40 +803,17 @@ export const AuthRequestCard = ({ req, showApproverHint, activeRole, onDecisionC
       React.createElement(
         'div',
         { className: 'border-t border-rkmborder pt-3 space-y-1.5 text-xs text-slate-300' },
-        React.createElement(
-          'div',
-          { className: 'font-medium text-slate-200' },
-          'Decis\u00E3o j\u00E1 registrada',
-        ),
-        React.createElement(
-          'div',
-          null,
-          'Status atual: ',
-          React.createElement(AuthStatusTag, { status: req.status }),
-        ),
-        React.createElement(
-          'div',
-          null,
-          'Respons\u00E1vel pela decis\u00E3o: ',
-          React.createElement('b', null, req.decidedByName || '—'),
-        ),
+        React.createElement('div', { className: 'font-medium text-slate-200' }, 'Decis\u00E3o j\u00E1 registrada'),
+        React.createElement('div', null, 'Status atual: ', React.createElement(AuthStatusTag, { status: req.status })),
+        React.createElement('div', null, 'Respons\u00E1vel pela decis\u00E3o: ', React.createElement('b', null, req.decidedByName || '—')),
         React.createElement(
           'div',
           null,
           'Data/hora da decis\u00E3o: ',
-          React.createElement(
-            'b',
-            null,
-            req.decidedAt ? new Date(req.decidedAt).toLocaleString('pt-BR') : '—',
-          ),
+          React.createElement('b', null, req.decidedAt ? new Date(req.decidedAt).toLocaleString('pt-BR') : '—'),
         ),
         req.decisionReason &&
-          React.createElement(
-            'div',
-            null,
-            'Justificativa: ',
-            React.createElement('span', { className: 'text-slate-200' }, req.decisionReason),
-          ),
+          React.createElement('div', null, 'Justificativa: ', React.createElement('span', { className: 'text-slate-200' }, req.decisionReason)),
       ),
     !canDecide &&
       !alreadyDecided &&
@@ -1049,15 +825,7 @@ export const AuthRequestCard = ({ req, showApproverHint, activeRole, onDecisionC
   );
 };
 /* Container/fila genérico: cabeçalho + lista de cards + estado vazio */
-export const AuthRequestQueue = ({
-  title,
-  hint,
-  requests,
-  emptyMessage,
-  showApproverHint,
-  activeRole,
-  onDecisionClick,
-}) => {
+export const AuthRequestQueue = ({ title, hint, requests, emptyMessage, showApproverHint, activeRole, onDecisionClick }) => {
   const pending = requests.filter((r) => r.status === 'Pendente');
   const decided = requests.filter((r) => r.status !== 'Pendente');
   return React.createElement(
@@ -1073,31 +841,14 @@ export const AuthRequestQueue = ({
         React.createElement('div', { className: 'text-sm font-semibold' }, title),
         hint && React.createElement('div', { className: 'text-xs text-slate-500' }, hint),
       ),
-      React.createElement(
-        'span',
-        { className: 'tag tag-amber' },
-        pending.length,
-        ' pendente',
-        pending.length !== 1 ? 's' : '',
-      ),
-      decided.length > 0 &&
-        React.createElement(
-          'span',
-          { className: 'tag tag-slate' },
-          decided.length,
-          ' decidida',
-          decided.length !== 1 ? 's' : '',
-        ),
+      React.createElement('span', { className: 'tag tag-amber' }, pending.length, ' pendente', pending.length !== 1 ? 's' : ''),
+      decided.length > 0 && React.createElement('span', { className: 'tag tag-slate' }, decided.length, ' decidida', decided.length !== 1 ? 's' : ''),
     ),
     React.createElement(
       'div',
       { className: 'p-4 space-y-3' },
       requests.length === 0
-        ? React.createElement(
-            'div',
-            { className: 'text-center text-xs text-slate-400 py-6' },
-            emptyMessage,
-          )
+        ? React.createElement('div', { className: 'text-center text-xs text-slate-400 py-6' }, emptyMessage)
         : requests.map((req) =>
             React.createElement(AuthRequestCard, {
               key: req.id,
@@ -1161,15 +912,7 @@ export const AdminAuthQueueAll = ({ rec001, rec002, activeRole, onDecisionClick 
   });
 };
 /* Modal de decisão — Tarefa 2B.2 */
-export const AuthDecisionModal = ({
-  open,
-  onClose,
-  request,
-  decision,
-  activeUser,
-  activeRole,
-  onConfirm,
-}) => {
+export const AuthDecisionModal = ({ open, onClose, request, decision, activeUser, activeRole, onConfirm }) => {
   const user = mockUsers.find((u) => u.id === activeUser) || mockUsers[0];
   const [justification, setJustification] = useState('');
   const [error, setError] = useState('');
@@ -1180,8 +923,7 @@ export const AuthDecisionModal = ({
     }
   }, [open, request, decision]);
   if (!open || !request) return null;
-  const canDecide =
-    activeRole === 'admin' || (activeRole === 'pcp' && request.assignedApproverRole === 'pcp');
+  const canDecide = activeRole === 'admin' || (activeRole === 'pcp' && request.assignedApproverRole === 'pcp');
   const handleConfirm = () => {
     if (!canDecide) {
       setError('Seu perfil não possui permissão para decidir esta solicitação.');
@@ -1213,16 +955,8 @@ export const AuthDecisionModal = ({
         React.createElement(
           'div',
           { className: 'flex-1' },
-          React.createElement(
-            'div',
-            { className: 'text-xs uppercase tracking-wider text-blue-300' },
-            'Tarefa 2B.2',
-          ),
-          React.createElement(
-            'div',
-            { className: 'text-base font-semibold' },
-            'Registrar decis\u00E3o da solicita\u00E7\u00E3o',
-          ),
+          React.createElement('div', { className: 'text-xs uppercase tracking-wider text-blue-300' }, 'Tarefa 2B.2'),
+          React.createElement('div', { className: 'text-base font-semibold' }, 'Registrar decis\u00E3o da solicita\u00E7\u00E3o'),
         ),
         React.createElement(
           'button',
@@ -1253,11 +987,7 @@ export const AuthDecisionModal = ({
           React.createElement(
             Field,
             { label: 'ID da solicita\u00E7\u00E3o' },
-            React.createElement(
-              'div',
-              { className: 'rkm-input font-mono text-xs' },
-              request.id || '—',
-            ),
+            React.createElement('div', { className: 'rkm-input font-mono text-xs' }, request.id || '—'),
           ),
           React.createElement(
             Field,
@@ -1268,32 +998,18 @@ export const AuthDecisionModal = ({
               React.createElement(
                 'span',
                 {
-                  className:
-                    'tag ' +
-                    ((request.it || request._itLabel) === 'IT001' ? 'tag-blue' : 'tag-violet'),
+                  className: 'tag ' + ((request.it || request._itLabel) === 'IT001' ? 'tag-blue' : 'tag-violet'),
                 },
                 request.it || request._itLabel || '—',
               ),
             ),
           ),
-          React.createElement(
-            Field,
-            { label: 'OS / Laudo' },
-            React.createElement('div', { className: 'rkm-input' }, request.osNumber || '—'),
-          ),
-          React.createElement(
-            Field,
-            { label: 'Cliente' },
-            React.createElement('div', { className: 'rkm-input' }, request.client || '—'),
-          ),
+          React.createElement(Field, { label: 'OS / Laudo' }, React.createElement('div', { className: 'rkm-input' }, request.osNumber || '—')),
+          React.createElement(Field, { label: 'Cliente' }, React.createElement('div', { className: 'rkm-input' }, request.client || '—')),
           React.createElement(
             Field,
             { label: 'Etapa' },
-            React.createElement(
-              'div',
-              { className: 'rkm-input' },
-              request.stepId ? request.stepId + ' — ' + (request.stepLabel || '') : '—',
-            ),
+            React.createElement('div', { className: 'rkm-input' }, request.stepId ? request.stepId + ' — ' + (request.stepLabel || '') : '—'),
           ),
           React.createElement(
             Field,
@@ -1303,11 +1019,7 @@ export const AuthDecisionModal = ({
           React.createElement(
             Field,
             { label: 'Criticidade' },
-            React.createElement(
-              'div',
-              { className: 'rkm-input' },
-              React.createElement(CriticalityTag, { value: request.criticality }),
-            ),
+            React.createElement('div', { className: 'rkm-input' }, React.createElement(CriticalityTag, { value: request.criticality })),
           ),
           React.createElement(
             Field,
@@ -1317,11 +1029,7 @@ export const AuthDecisionModal = ({
           React.createElement(
             Field,
             { label: 'Data/hora da solicita\u00E7\u00E3o', className: 'md:col-span-2' },
-            React.createElement(
-              'div',
-              { className: 'rkm-input' },
-              request.requestedAt ? new Date(request.requestedAt).toLocaleString('pt-BR') : '—',
-            ),
+            React.createElement('div', { className: 'rkm-input' }, request.requestedAt ? new Date(request.requestedAt).toLocaleString('pt-BR') : '—'),
           ),
         ),
         request.reason &&
@@ -1329,20 +1037,12 @@ export const AuthDecisionModal = ({
             'div',
             { className: 'text-xs' },
             React.createElement('div', { className: 'text-slate-500 mb-1' }, 'Motivo original:'),
-            React.createElement(
-              'div',
-              { className: 'rkm-card-2 p-3 text-slate-200 whitespace-pre-wrap' },
-              request.reason,
-            ),
+            React.createElement('div', { className: 'rkm-card-2 p-3 text-slate-200 whitespace-pre-wrap' }, request.reason),
           ),
         React.createElement(
           Field,
           { label: 'Decis\u00E3o' },
-          React.createElement(
-            'div',
-            { className: 'rkm-input' },
-            React.createElement(AuthStatusTag, { status: decision }),
-          ),
+          React.createElement('div', { className: 'rkm-input' }, React.createElement(AuthStatusTag, { status: decision })),
         ),
         React.createElement(
           Field,
@@ -1358,12 +1058,7 @@ export const AuthDecisionModal = ({
             placeholder: 'Descreva a justificativa da decis\u00E3o...',
           }),
         ),
-        error &&
-          React.createElement(
-            'div',
-            { className: 'alert-critical rounded-md p-2.5 text-xs text-slate-200' },
-            error,
-          ),
+        error && React.createElement('div', { className: 'alert-critical rounded-md p-2.5 text-xs text-slate-200' }, error),
         React.createElement(
           'div',
           { className: 'text-xs text-slate-500' },
@@ -1375,11 +1070,7 @@ export const AuthDecisionModal = ({
         'div',
         { className: 'px-5 py-3 border-t border-rkmborder flex items-center gap-2 justify-end' },
         React.createElement('button', { className: 'btn btn-ghost', onClick: onClose }, 'Cancelar'),
-        React.createElement(
-          'button',
-          { className: 'btn btn-primary', onClick: handleConfirm },
-          'Confirmar decis\u00E3o',
-        ),
+        React.createElement('button', { className: 'btn btn-primary', onClick: handleConfirm }, 'Confirmar decis\u00E3o'),
       ),
     ),
   );
@@ -1389,12 +1080,8 @@ export const AuthDecisionModal = ({
    ============================================================ */
 export const BLOCKING_AUTH_STATUSES = ['Pendente', 'Reprovado', 'Ajuste solicitado'];
 export const normalizeRequestIT = (req, fallbackIT) =>
-  (req === null || req === void 0 ? void 0 : req.it) ||
-  (req === null || req === void 0 ? void 0 : req._itLabel) ||
-  fallbackIT ||
-  'IT001';
-export const requestBelongsToStep = (req, itCode, stepId) =>
-  normalizeRequestIT(req, itCode) === itCode && Number(req.stepId) === Number(stepId);
+  (req === null || req === void 0 ? void 0 : req.it) || (req === null || req === void 0 ? void 0 : req._itLabel) || fallbackIT || 'IT001';
+export const requestBelongsToStep = (req, itCode, stepId) => normalizeRequestIT(req, itCode) === itCode && Number(req.stepId) === Number(stepId);
 export const getStepAuthorizationRequests = (record, itCode, stepId) =>
   ((record && record.authorizationRequests) || [])
     .filter((req) => requestBelongsToStep(req, itCode, stepId))
@@ -1405,20 +1092,16 @@ export const getStepAuthorizationState = (record, itCode, stepId) => {
   const approved = requests.find((req) => req.status === 'Aprovado');
   if (blocking) {
     const messageByStatus = {
-      Pendente:
-        'Esta etapa possui autorização pendente. Aguarde a decisão do responsável antes de avançar.',
-      Reprovado:
-        'Esta etapa foi reprovada pelo responsável. Corrija a condição ou abra nova tratativa antes de avançar.',
-      'Ajuste solicitado':
-        'O responsável solicitou ajuste. Registre a tratativa antes de solicitar nova avaliação.',
+      Pendente: 'Esta etapa possui autorização pendente. Aguarde a decisão do responsável antes de avançar.',
+      Reprovado: 'Esta etapa foi reprovada pelo responsável. Corrija a condição ou abra nova tratativa antes de avançar.',
+      'Ajuste solicitado': 'O responsável solicitou ajuste. Registre a tratativa antes de solicitar nova avaliação.',
     };
     return {
       blocked: true,
       status: blocking.status,
       request: blocking,
       requests,
-      message:
-        messageByStatus[blocking.status] || 'Esta etapa possui bloqueio ativo de autorização.',
+      message: messageByStatus[blocking.status] || 'Esta etapa possui bloqueio ativo de autorização.',
     };
   }
   if (approved) {
@@ -1441,18 +1124,8 @@ export const StepAuthorizationHistory = ({ requests }) => {
       'div',
       { className: 'px-5 py-3.5 border-b border-rkmborder flex items-center gap-2' },
       React.createElement('span', { className: 'sec-bullet' }),
-      React.createElement(
-        'div',
-        { className: 'text-sm font-semibold flex-1' },
-        'Hist\u00F3rico de valida\u00E7\u00F5es da etapa',
-      ),
-      React.createElement(
-        'span',
-        { className: 'text-xs text-slate-500' },
-        requests.length,
-        ' solicita\u00E7',
-        requests.length === 1 ? 'ão' : 'ões',
-      ),
+      React.createElement('div', { className: 'text-sm font-semibold flex-1' }, 'Hist\u00F3rico de valida\u00E7\u00F5es da etapa'),
+      React.createElement('span', { className: 'text-xs text-slate-500' }, requests.length, ' solicita\u00E7', requests.length === 1 ? 'ão' : 'ões'),
     ),
     React.createElement(
       'div',
@@ -1494,35 +1167,17 @@ export const StepAuthorizationHistory = ({ requests }) => {
             React.createElement(
               'div',
               { className: 'text-xs text-slate-300 border-t border-rkmborder pt-2' },
-              React.createElement(
-                'div',
-                null,
-                'Decis\u00E3o: ',
-                React.createElement('b', null, req.decision),
-              ),
+              React.createElement('div', null, 'Decis\u00E3o: ', React.createElement('b', null, req.decision)),
               React.createElement(
                 'div',
                 null,
                 'Respons\u00E1vel: ',
                 React.createElement('b', null, req.decidedByName || '—'),
                 ' \u00B7 ',
-                (ROLES.find((r) => r.key === req.decidedByRole) || {}).label ||
-                  req.decidedByRole ||
-                  '—',
+                (ROLES.find((r) => r.key === req.decidedByRole) || {}).label || req.decidedByRole || '—',
               ),
-              React.createElement(
-                'div',
-                null,
-                'Data: ',
-                req.decidedAt ? new Date(req.decidedAt).toLocaleString('pt-BR') : '—',
-              ),
-              req.decisionReason &&
-                React.createElement(
-                  'div',
-                  { className: 'mt-1' },
-                  'Justificativa: ',
-                  req.decisionReason,
-                ),
+              React.createElement('div', null, 'Data: ', req.decidedAt ? new Date(req.decidedAt).toLocaleString('pt-BR') : '—'),
+              req.decisionReason && React.createElement('div', { className: 'mt-1' }, 'Justificativa: ', req.decisionReason),
             ),
         ),
       ),

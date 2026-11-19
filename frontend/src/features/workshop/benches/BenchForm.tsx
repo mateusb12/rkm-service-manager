@@ -1,12 +1,6 @@
 import { useState, type FormEvent } from 'react';
 
-import {
-  EMPTY_BENCH_INPUT,
-  validateBenchInput,
-  type Bench,
-  type BenchErrors,
-  type BenchInput,
-} from './model';
+import { EMPTY_BENCH_INPUT, validateBenchInput, type Bench, type BenchErrors, type BenchInput } from './model';
 import { BenchServiceError } from './service';
 
 type Employee = { id: string; name: string };
@@ -18,8 +12,7 @@ type Props = {
   onSave: (input: BenchInput, id: string | null) => Promise<void>;
 };
 
-const fieldClass = (invalid = false) =>
-  `rkm-input zenit-field ${invalid ? '!border-rose-500' : ''}`;
+const fieldClass = (invalid = false) => `rkm-input zenit-field ${invalid ? '!border-rose-500' : ''}`;
 
 export function BenchForm({ bench, employees, onCancel, onSave }: Props) {
   const [input, setInput] = useState<BenchInput>(() =>
@@ -47,12 +40,7 @@ export function BenchForm({ bench, employees, onCancel, onSave }: Props) {
   }
 
   function toggleEmployee(id: string, checked: boolean) {
-    change(
-      'employeeIds',
-      checked
-        ? [...input.employeeIds, id]
-        : input.employeeIds.filter((employeeId) => employeeId !== id),
-    );
+    change('employeeIds', checked ? [...input.employeeIds, id] : input.employeeIds.filter((employeeId) => employeeId !== id));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -89,21 +77,14 @@ export function BenchForm({ bench, employees, onCancel, onSave }: Props) {
   return (
     <main className="mx-auto max-w-5xl space-y-5 p-4 md:p-6">
       <header>
-        <h1 className="text-2xl font-semibold text-slate-100">
-          {editing ? bench?.name : 'Nova bancada'}
-        </h1>
+        <h1 className="text-2xl font-semibold text-slate-100">{editing ? bench?.name : 'Nova bancada'}</h1>
         <p className="mt-2 text-sm text-slate-400">
-          {editing
-            ? 'Atualize as informações do posto de trabalho.'
-            : 'Cadastre um posto físico da oficina.'}
+          {editing ? 'Atualize as informações do posto de trabalho.' : 'Cadastre um posto físico da oficina.'}
         </p>
       </header>
 
       {saveError && (
-        <div
-          role="alert"
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300"
-        >
+        <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
           {saveError}
         </div>
       )}
@@ -169,17 +150,11 @@ export function BenchForm({ bench, employees, onCancel, onSave }: Props) {
         <section className="rkm-card overflow-hidden">
           <div className="border-b border-rkmborder p-5">
             <h2 className="font-semibold text-slate-100">Funcionários vinculados</h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Selecione os mecânicos que normalmente trabalham nesta bancada.
-            </p>
+            <p className="mt-1 text-sm text-slate-400">Selecione os mecânicos que normalmente trabalham nesta bancada.</p>
           </div>
 
           <div className="grid gap-3 p-5 sm:grid-cols-2">
-            {employees.length === 0 && (
-              <p className="text-sm text-slate-400">
-                Nenhum mecânico disponível no cadastro demonstrativo.
-              </p>
-            )}
+            {employees.length === 0 && <p className="text-sm text-slate-400">Nenhum mecânico disponível no cadastro demonstrativo.</p>}
 
             {employees.map((employee) => (
               <label
@@ -219,24 +194,15 @@ export function BenchForm({ bench, employees, onCancel, onSave }: Props) {
             <div className="rounded-lg border border-rkmborder bg-rkmcard2/40 p-4">
               <p className="text-xs uppercase tracking-wide text-slate-400">Ocupação atual</p>
               <p className="mt-2 font-medium text-slate-100">
-                {bench?.occupations.length
-                  ? bench.occupations.map((item) => item.number).join(', ')
-                  : 'Livre'}
+                {bench?.occupations.length ? bench.occupations.map((item) => item.number).join(', ') : 'Livre'}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
-                A ocupação é demonstrativa. A alocação será integrada ao fluxo de OS.
-              </p>
+              <p className="mt-1 text-xs text-slate-500">A ocupação é demonstrativa. A alocação será integrada ao fluxo de OS.</p>
             </div>
           </div>
         </section>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            className="btn btn-ghost justify-center"
-            disabled={saving}
-            onClick={onCancel}
-          >
+          <button type="button" className="btn btn-ghost justify-center" disabled={saving} onClick={onCancel}>
             Cancelar
           </button>
           <button type="submit" className="btn btn-primary justify-center" disabled={saving}>

@@ -53,11 +53,7 @@ export function getRoadmapVersionTimebox(versionId: string, now = new Date()): R
   return getRoadmapTimebox(now, period.deadline, period.start);
 }
 
-export function getRoadmapTimebox(
-  now = new Date(),
-  deadline = new Date(2026, 11, 8),
-  start = new Date(2026, 9, 8),
-): RoadmapTimebox {
+export function getRoadmapTimebox(now = new Date(), deadline = new Date(2026, 11, 8), start = new Date(2026, 9, 8)): RoadmapTimebox {
   const today = startOfDay(now);
   const target = startOfDay(deadline);
   const startDate = startOfDay(start);

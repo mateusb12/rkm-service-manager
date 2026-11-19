@@ -2,14 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 import { AUTH_REFRESH_INTERVAL_MS, BACKEND_HEALTH_CHECK_INTERVAL_MS } from './constants';
 
-import {
-  checkBackendHealth,
-  getCurrentUser,
-  getDevCredentials,
-  login as loginService,
-  logout as logoutService,
-  refreshSession,
-} from './service';
+import { checkBackendHealth, getCurrentUser, getDevCredentials, login as loginService, logout as logoutService, refreshSession } from './service';
 
 import type { AuthContextValue, AuthUser, DevCredential } from './types';
 

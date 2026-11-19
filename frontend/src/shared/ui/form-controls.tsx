@@ -7,8 +7,7 @@ export const Field = ({ label, hint, children, required, error, className = '' }
     React.createElement(
       'label',
       {
-        className:
-          'text-xs font-medium text-slate-300 uppercase tracking-wide flex items-center gap-1.5',
+        className: 'text-xs font-medium text-slate-300 uppercase tracking-wide flex items-center gap-1.5',
       },
       label,
       ' ',

@@ -58,12 +58,7 @@ function WakatimeCountdown({ nextAt }: { nextAt: number | null }) {
   return `Próxima consulta em ${minutes}m${seconds}s`;
 }
 
-export default function RoadmapMetricsDev({
-  featureId,
-  defaultBranch,
-  completed,
-  onLiveMetricChange,
-}: RoadmapMetricsDevProps) {
+export default function RoadmapMetricsDev({ featureId, defaultBranch, completed, onLiveMetricChange }: RoadmapMetricsDevProps) {
   const [estimatedHours, setEstimatedHours] = useState<number | null>(null);
   const [storedBranch, setStoredBranch] = useState('');
   const [branchDraft, setBranchDraft] = useState('');
@@ -76,18 +71,13 @@ export default function RoadmapMetricsDev({
   const handledManualRefresh = useRef(0);
 
   const activeBranch = storedBranch || defaultBranch;
-  const editors = useMemo(
-    () => wakatimeHours[featureId]?.editors ?? [],
-    [featureId, wakatimeHours],
-  );
+  const editors = useMemo(() => wakatimeHours[featureId]?.editors ?? [], [featureId, wakatimeHours]);
   const chatGptEntry = chatGptActivity[featureId];
   const wakatimeSeconds = wakatimeHours[featureId]?.totalSeconds;
   const chatGptSeconds = chatGptEntry?.chatGptSeconds ?? 0;
   const localSeconds = chatGptEntry?.localSeconds ?? 0;
-  const totalTrackedSeconds =
-    wakatimeSeconds == null ? null : wakatimeSeconds + chatGptSeconds + localSeconds;
-  const totalTrackedMinutes =
-    totalTrackedSeconds == null ? null : Math.round(totalTrackedSeconds / 60);
+  const totalTrackedSeconds = wakatimeSeconds == null ? null : wakatimeSeconds + chatGptSeconds + localSeconds;
+  const totalTrackedMinutes = totalTrackedSeconds == null ? null : Math.round(totalTrackedSeconds / 60);
   const activityRows: Array<{ name: string; seconds?: number; chatGpt?: boolean }> = [
     ...editors.map((editor) => ({ name: editor.name, seconds: editor.totalSeconds })),
     ...(chatGptEntry
@@ -99,23 +89,12 @@ export default function RoadmapMetricsDev({
   ].sort((first, second) => (second.seconds ?? -1) - (first.seconds ?? -1));
 
   useEffect(() => {
-    if (
-      completed ||
-      !featureId ||
-      wakatimeSeconds == null ||
-      !Number.isFinite(wakatimeSeconds) ||
-      wakatimeSeconds < 0
-    ) {
+    if (completed || !featureId || wakatimeSeconds == null || !Number.isFinite(wakatimeSeconds) || wakatimeSeconds < 0) {
       onLiveMetricChange(featureId, null);
       return;
     }
 
-    if (
-      !Number.isFinite(chatGptSeconds) ||
-      chatGptSeconds < 0 ||
-      !Number.isFinite(localSeconds) ||
-      localSeconds < 0
-    ) {
+    if (!Number.isFinite(chatGptSeconds) || chatGptSeconds < 0 || !Number.isFinite(localSeconds) || localSeconds < 0) {
       onLiveMetricChange(featureId, null);
       return;
     }
@@ -227,13 +206,7 @@ export default function RoadmapMetricsDev({
       }));
 
       try {
-        const result = await getChatGptActivity(
-          activeBranch,
-          force,
-          undefined,
-          undefined,
-          requestAbortController.signal,
-        );
+        const result = await getChatGptActivity(activeBranch, force, undefined, undefined, requestAbortController.signal);
         if (cancelled) return;
 
         const nextChatGptEntry: ChatGptEntry = {
@@ -345,9 +318,7 @@ export default function RoadmapMetricsDev({
 
     setEstimatedHours(value);
 
-    void saveFeatureSettings(featureId, { estimatedHours: value }).catch((error) =>
-      console.error('Erro ao salvar estimativa:', error),
-    );
+    void saveFeatureSettings(featureId, { estimatedHours: value }).catch((error) => console.error('Erro ao salvar estimativa:', error));
   };
 
   const saveBranch = (id: string) => {
@@ -376,9 +347,7 @@ export default function RoadmapMetricsDev({
               {hoursExpanded ? '▾' : '▸'} TEMPO DE FEATURE
               {!hoursExpanded && `: ${formatDuration(totalTrackedMinutes).replace(' ', '')}`}
             </span>
-            <span className="mt-0.5 block text-[10px] font-medium text-amber-300/70">
-              (APENAS LOCALHOST)
-            </span>
+            <span className="mt-0.5 block text-[10px] font-medium text-amber-300/70">(APENAS LOCALHOST)</span>
           </button>
         </div>
 
@@ -386,9 +355,7 @@ export default function RoadmapMetricsDev({
           <button
             type="button"
             onClick={() => setManualRefreshKey((key) => key + 1)}
-            disabled={Boolean(
-              completed || wakatimeHours[featureId]?.loading || chatGptEntry?.loading,
-            )}
+            disabled={Boolean(completed || wakatimeHours[featureId]?.loading || chatGptEntry?.loading)}
             title="Atualizar tempos agora"
             aria-label="Atualizar tempos agora"
             className="rounded-md border border-amber-400/30 p-1.5 text-amber-200 hover:bg-amber-400/10 disabled:cursor-wait disabled:opacity-60"
@@ -474,10 +441,7 @@ export default function RoadmapMetricsDev({
                 {activityRows.length > 0 && (
                   <ul className="list-disc space-y-1 pl-5 text-xs text-slate-400">
                     {activityRows.map((row) => (
-                      <li
-                        key={row.name}
-                        title={row.chatGpt ? chatGptEntry?.error || undefined : undefined}
-                      >
+                      <li key={row.name} title={row.chatGpt ? chatGptEntry?.error || undefined : undefined}>
                         <span className="text-slate-300">{row.name}</span>
                         {' — '}
                         {!completed && row.chatGpt && chatGptEntry?.loading
@@ -495,36 +459,21 @@ export default function RoadmapMetricsDev({
 
               <p
                 role="status"
-                className={`text-xs ${
-                  completed
-                    ? 'text-emerald-300'
-                    : wakatimeHours[featureId]?.error
-                      ? 'text-rose-300'
-                      : 'text-slate-400'
-                }`}
+                className={`text-xs ${completed ? 'text-emerald-300' : wakatimeHours[featureId]?.error ? 'text-rose-300' : 'text-slate-400'}`}
               >
                 {completed
                   ? 'Congelado — feature concluída.'
                   : wakatimeHours[featureId]?.error ||
-                    (wakatimeHours[featureId]?.loading ? (
-                      'Sincronizando com WakaTime...'
-                    ) : (
-                      <WakatimeCountdown nextAt={nextWakatimeSyncAt} />
-                    ))}
+                    (wakatimeHours[featureId]?.loading ? 'Sincronizando com WakaTime...' : <WakatimeCountdown nextAt={nextWakatimeSyncAt} />)}
               </p>
             </div>
 
             <div className="w-full rounded-lg border border-rkmborder p-2 text-sm text-slate-300 sm:col-span-2">
-              Desvio:{' '}
-              {estimatedHours != null && totalTrackedSeconds != null
-                ? `${(totalTrackedSeconds / 3600 - estimatedHours).toFixed(2)} h`
-                : '—'}
+              Desvio: {estimatedHours != null && totalTrackedSeconds != null ? `${(totalTrackedSeconds / 3600 - estimatedHours).toFixed(2)} h` : '—'}
             </div>
           </div>
 
-          <p className="mt-2 text-xs text-slate-500">
-            Estimativa local. WakaTime, ChatGPT e RKM local por branch desde 01/09/2026.
-          </p>
+          <p className="mt-2 text-xs text-slate-500">Estimativa local. WakaTime, ChatGPT e RKM local por branch desde 01/09/2026.</p>
         </>
       )}
     </div>

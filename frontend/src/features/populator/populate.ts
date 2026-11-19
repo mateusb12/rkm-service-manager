@@ -1,20 +1,12 @@
 // @ts-nocheck
 
-import {
-  deleteServiceEntry,
-  loadServiceEntries,
-  saveServiceEntries,
-} from '../service-orders/service';
+import { deleteServiceEntry, loadServiceEntries, saveServiceEntries } from '../service-orders/service';
 
 import { normalizeOrderNumber } from '../service-orders/model';
 
 import { LIZY_ORDERS } from './data/lizy-orders';
 
-import {
-  mapLizyOrderToServiceEntry,
-  mapLizyStatusToServiceEntry,
-  validateMappedServiceEntry,
-} from './mapper';
+import { mapLizyOrderToServiceEntry, mapLizyStatusToServiceEntry, validateMappedServiceEntry } from './mapper';
 
 const orderIdentity = (value) => normalizeOrderNumber(value);
 
@@ -22,10 +14,7 @@ const isLizyEntry = (entry) => entry?.sourceMetadata?.system === 'lizy';
 
 const migrateLegacyLizyEntry = (entry) => {
   const isLegacyLizyEntry =
-    entry?.sourceMetadata?.system === 'lizy' &&
-    entry.status === 'Recebido' &&
-    Number(entry.currentStep) === 0 &&
-    entry.sourceMetadata.sourceStatus;
+    entry?.sourceMetadata?.system === 'lizy' && entry.status === 'Recebido' && Number(entry.currentStep) === 0 && entry.sourceMetadata.sourceStatus;
 
   if (!isLegacyLizyEntry) {
     return entry;
@@ -41,11 +30,7 @@ const migrateLegacyLizyEntry = (entry) => {
 export const planLizyPopulation = (existingEntries = []) => {
   const migratedExistingEntries = (existingEntries || []).map(migrateLegacyLizyEntry);
 
-  const existingIds = new Set(
-    migratedExistingEntries
-      .map((entry) => orderIdentity(entry.orderNumber || entry.id))
-      .filter(Boolean),
-  );
+  const existingIds = new Set(migratedExistingEntries.map((entry) => orderIdentity(entry.orderNumber || entry.id)).filter(Boolean));
 
   const datasetIds = new Set();
 
@@ -160,9 +145,7 @@ export const populateLizyServiceEntries = async () => {
 
 export const overwriteLizyServiceEntries = async () => {
   const existingEntries = await loadServiceEntries();
-  const existingById = new Map(
-    existingEntries.map((entry) => [orderIdentity(entry.orderNumber || entry.id), entry]),
-  );
+  const existingById = new Map(existingEntries.map((entry) => [orderIdentity(entry.orderNumber || entry.id), entry]));
   const timestamp = new Date().toISOString();
   const sourceIds = new Set();
   const overwrittenIds = new Set();

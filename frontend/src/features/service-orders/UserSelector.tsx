@@ -58,9 +58,7 @@ export function UserSelector({ value, onSelect, onClear, roleFilter }: Props) {
   const visibleUsers = users.filter(
     (user) =>
       (!roleFilter || user.role === roleFilter) &&
-      `${user.name} ${user.email} ${user.roleLabel}`
-        .toLocaleLowerCase('pt-BR')
-        .includes(normalizedSearch),
+      `${user.name} ${user.email} ${user.roleLabel}`.toLocaleLowerCase('pt-BR').includes(normalizedSearch),
   );
 
   return (

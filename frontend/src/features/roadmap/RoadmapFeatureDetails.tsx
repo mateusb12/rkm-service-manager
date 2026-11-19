@@ -80,12 +80,7 @@ export function RoadmapFeatureDetails({
         {FEATURE_IMAGES[item.id] && (
           <div className="flex justify-start pl-2">
             <div className="flex h-[104px] w-[104px] items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/[0.05] p-3 shadow-[0_0_24px_rgba(56,189,248,0.08)]">
-              <img
-                src={FEATURE_IMAGES[item.id]}
-                alt=""
-                aria-hidden="true"
-                className="h-full w-full object-contain"
-              />
+              <img src={FEATURE_IMAGES[item.id]} alt="" aria-hidden="true" className="h-full w-full object-contain" />
             </div>
           </div>
         )}
@@ -98,10 +93,7 @@ export function RoadmapFeatureDetails({
                 const criterionCompleted = item.completedAcceptanceCriteria.includes(index);
 
                 return (
-                  <li
-                    key={index}
-                    className={criterionCompleted ? 'list-none text-emerald-300' : undefined}
-                  >
+                  <li key={index} className={criterionCompleted ? 'list-none text-emerald-300' : undefined}>
                     {criterionCompleted && (
                       <span className="mr-2 font-semibold" aria-hidden="true">
                         ✓
@@ -119,9 +111,7 @@ export function RoadmapFeatureDetails({
 
         {V1_FEATURE_EXAMPLES[item.id] && (
           <div className="rounded-md border-l-2 border-sky-400/40 bg-sky-400/[0.04] px-3 py-2 text-sm text-slate-300">
-            <strong className="mb-1 block text-xs font-semibold uppercase tracking-wide text-sky-300">
-              Exemplo
-            </strong>
+            <strong className="mb-1 block text-xs font-semibold uppercase tracking-wide text-sky-300">Exemplo</strong>
             <p>{V1_FEATURE_EXAMPLES[item.id]}</p>
           </div>
         )}
@@ -147,29 +137,16 @@ export function RoadmapFeatureDetails({
                 : 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20'
             }`}
           >
-            {!taskStatusLoaded
-              ? 'Carregando...'
-              : taskStatusPending
-                ? 'Salvando...'
-                : completed
-                  ? '↶ Reabrir feature'
-                  : '✓ Marcar como concluída'}
+            {!taskStatusLoaded ? 'Carregando...' : taskStatusPending ? 'Salvando...' : completed ? '↶ Reabrir feature' : '✓ Marcar como concluída'}
           </button>
         </div>
       )}
 
-      {localDevelopmentEnabled && taskStatusError && (
-        <p className="text-xs text-rose-300">{taskStatusError}</p>
-      )}
+      {localDevelopmentEnabled && taskStatusError && <p className="text-xs text-rose-300">{taskStatusError}</p>}
 
       {localDevelopmentEnabled && taskStatusLoaded && (
         <React.Suspense fallback={null}>
-          <RoadmapMetricsDev
-            featureId={item.id}
-            defaultBranch={item.branch}
-            completed={completed}
-            onLiveMetricChange={onLiveMetricChange}
-          />
+          <RoadmapMetricsDev featureId={item.id} defaultBranch={item.branch} completed={completed} onLiveMetricChange={onLiveMetricChange} />
         </React.Suspense>
       )}
     </div>

@@ -1,14 +1,7 @@
 // @ts-nocheck
 import React from 'react';
 
-import {
-  Field,
-  TextInput,
-  TextArea,
-  Select,
-  Toggle,
-  ChipMulti,
-} from '../../../shared/ui/form-controls';
+import { Field, TextInput, TextArea, Select, Toggle, ChipMulti } from '../../../shared/ui/form-controls';
 
 import { AlertBox } from '../../../shared/ui/feedback';
 
@@ -395,8 +388,7 @@ export const computeAlertsIT002 = (r) => {
   const env = r.environmental || {};
   const nc = r.nonConformity || {};
   const rel = r.release || {};
-  const semIdentif =
-    !eq.tag && !eq.brand && !eq.model && (!eq.plate || /Ausente|ilegível/i.test(eq.plate));
+  const semIdentif = !eq.tag && !eq.brand && !eq.model && (!eq.plate || /Ausente|ilegível/i.test(eq.plate));
   if (semIdentif) {
     alerts.push({
       severity: 'critical',
@@ -459,11 +451,7 @@ export const computeAlertsIT002 = (r) => {
       msg: 'Pistão com sinais críticos sem condenação ou validação do supervisor (IT002 §11.1).',
     });
   }
-  if (
-    ai.avaliacaoFeita &&
-    (!ai.semCorteVedacao || !ai.vedacaoCorreta || !ai.lubrificacaoAplicada || !ai.pistaoAlinhado) &&
-    !ai.tratativa
-  ) {
+  if (ai.avaliacaoFeita && (!ai.semCorteVedacao || !ai.vedacaoCorreta || !ai.lubrificacaoAplicada || !ai.pistaoAlinhado) && !ai.tratativa) {
     alerts.push({
       severity: 'critical',
       step: 11,
@@ -500,10 +488,7 @@ export const computeAlertsIT002 = (r) => {
   }
   const evidPendente =
     !r.equipment.photoIdentificacao &&
-    !((_f = (_e = r.receivedCondition) === null || _e === void 0 ? void 0 : _e.photos) === null ||
-    _f === void 0
-      ? void 0
-      : _f.overview);
+    !((_f = (_e = r.receivedCondition) === null || _e === void 0 ? void 0 : _e.photos) === null || _f === void 0 ? void 0 : _f.overview);
   if (evidPendente) {
     alerts.push({
       severity: 'warn',
@@ -533,8 +518,7 @@ export const StepOpeningIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '1. Abertura do servi\u00E7o',
-      subtitle:
-        'IT002 \u00A75, \u00A78 \u2014 identifica\u00E7\u00E3o b\u00E1sica + Respons\u00E1vel da Qualidade.',
+      subtitle: 'IT002 \u00A75, \u00A78 \u2014 identifica\u00E7\u00E3o b\u00E1sica + Respons\u00E1vel da Qualidade.',
     },
     React.createElement(
       'div',
@@ -639,11 +623,7 @@ export const StepOpeningIT002 = ({ r, set }) =>
     ),
   );
 export const StepEquipmentIT002 = ({ r, set }) => {
-  const noId =
-    !r.equipment.tag &&
-    !r.equipment.brand &&
-    !r.equipment.model &&
-    (!r.equipment.plate || /Ausente|ilegível/i.test(r.equipment.plate));
+  const noId = !r.equipment.tag && !r.equipment.brand && !r.equipment.model && (!r.equipment.plate || /Ausente|ilegível/i.test(r.equipment.plate));
   return React.createElement(
     SectionCard,
     {
@@ -675,13 +655,7 @@ export const StepEquipmentIT002 = ({ r, set }) => {
         React.createElement(Select, {
           value: r.equipment.tagType,
           onChange: (v) => set('equipment.tagType', v),
-          options: [
-            'Etiqueta interna',
-            'Placa do fabricante',
-            'Marcação a punção',
-            'Marcação manual',
-            'Sem identificação',
-          ],
+          options: ['Etiqueta interna', 'Placa do fabricante', 'Marcação a punção', 'Marcação manual', 'Sem identificação'],
         }),
       ),
       React.createElement(
@@ -754,8 +728,7 @@ export const StepReceivedIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '3. Estado inicial (recebimento)',
-      subtitle:
-        'IT002 \u00A79 \u2014 condi\u00E7\u00E3o geral antes de qualquer decis\u00E3o de continuidade.',
+      subtitle: 'IT002 \u00A79 \u2014 condi\u00E7\u00E3o geral antes de qualquer decis\u00E3o de continuidade.',
     },
     React.createElement(
       'div',
@@ -877,16 +850,12 @@ export const StepReceivedIT002 = ({ r, set }) =>
   );
 export const StepStartConditionsIT002 = ({ r, set }) => {
   const blocked =
-    r.startConditions.ausenciaReferencia ||
-    r.startConditions.duvidaCondicao ||
-    r.startConditions.recursoFaltando ||
-    r.startConditions.riscoFisico;
+    r.startConditions.ausenciaReferencia || r.startConditions.duvidaCondicao || r.startConditions.recursoFaltando || r.startConditions.riscoFisico;
   return React.createElement(
     SectionCard,
     {
       title: '4. Condi\u00E7\u00F5es para in\u00EDcio',
-      subtitle:
-        'IT002 \u00A77 \u2014 s\u00F3 iniciar com v\u00EDnculo, recursos, refer\u00EAncia e premissa de risco assumida.',
+      subtitle: 'IT002 \u00A77 \u2014 s\u00F3 iniciar com v\u00EDnculo, recursos, refer\u00EAncia e premissa de risco assumida.',
     },
     React.createElement(
       'div',
@@ -979,8 +948,7 @@ export const StepSafetyIsolationIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '5. Seguran\u00E7a e isolamento',
-      subtitle:
-        'IT002 \u00A710 \u2014 isolar do sistema e descarregar lado fluido ANTES de leitura/carga.',
+      subtitle: 'IT002 \u00A710 \u2014 isolar do sistema e descarregar lado fluido ANTES de leitura/carga.',
       critical: true,
     },
     React.createElement(
@@ -1051,8 +1019,7 @@ export const StepAssessmentPistonIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '6. Avalia\u00E7\u00E3o t\u00E9cnica \u2014 Pist\u00E3o',
-      subtitle:
-        'IT002 \u00A711.1 \u2014 reaproveitar somente se \u00EDntegro, sem trinca, sem corros\u00E3o relevante, sem riscos profundos.',
+      subtitle: 'IT002 \u00A711.1 \u2014 reaproveitar somente se \u00EDntegro, sem trinca, sem corros\u00E3o relevante, sem riscos profundos.',
     },
     React.createElement(Toggle, {
       checked: r.assessment.piston.inspected,
@@ -1082,13 +1049,7 @@ export const StepAssessmentPistonIT002 = ({ r, set }) =>
       React.createElement(Select, {
         value: r.assessment.piston.decision,
         onChange: (v) => set('assessment.piston.decision', v),
-        options: [
-          'Reaproveitar',
-          'Reaproveitar com validação do supervisor',
-          'Retrabalho',
-          'Condenar',
-          'Pendente de validação técnica',
-        ],
+        options: ['Reaproveitar', 'Reaproveitar com validação do supervisor', 'Retrabalho', 'Condenar', 'Pendente de validação técnica'],
       }),
     ),
     React.createElement(Toggle, {
@@ -1109,8 +1070,7 @@ export const StepAssessmentShellIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '7. Avalia\u00E7\u00E3o \u2014 Carca\u00E7a/cilindro',
-      subtitle:
-        'IT002 \u00A711.2 \u2014 base \u00E9 visual, com verifica\u00E7\u00E3o dimensional em casos espec\u00EDficos (APH-02).',
+      subtitle: 'IT002 \u00A711.2 \u2014 base \u00E9 visual, com verifica\u00E7\u00E3o dimensional em casos espec\u00EDficos (APH-02).',
     },
     React.createElement(Toggle, {
       checked: r.assessment.shellCylinder.inspected,
@@ -1177,8 +1137,7 @@ export const StepAssessmentCapsIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '8. Tampas, roscas, canais, conex\u00F5es e veda\u00E7\u00F5es',
-      subtitle:
-        'IT002 \u00A711.3 \u2014 sinais que comprometam veda\u00E7\u00E3o, montagem ou seguran\u00E7a.',
+      subtitle: 'IT002 \u00A711.3 \u2014 sinais que comprometam veda\u00E7\u00E3o, montagem ou seguran\u00E7a.',
     },
     React.createElement(Toggle, {
       checked: r.assessment.capsThreadsChannelsSeals.inspected,
@@ -1211,14 +1170,7 @@ export const StepAssessmentCapsIT002 = ({ r, set }) =>
       React.createElement(Select, {
         value: r.assessment.capsThreadsChannelsSeals.decision,
         onChange: (v) => set('assessment.capsThreadsChannelsSeals.decision', v),
-        options: [
-          'Reaproveitar',
-          'Reaproveitar com validação',
-          'Retrabalho',
-          'Substituir',
-          'Condenar',
-          'Pendente de validação técnica',
-        ],
+        options: ['Reaproveitar', 'Reaproveitar com validação', 'Retrabalho', 'Substituir', 'Condenar', 'Pendente de validação técnica'],
       }),
     ),
     React.createElement(Toggle, {
@@ -1232,8 +1184,7 @@ export const StepAcceptanceDecisionIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '9. Decis\u00E3o t\u00E9cnica',
-      subtitle:
-        'IT002 \u00A712 \u2014 consolida\u00E7\u00E3o da avalia\u00E7\u00E3o para aceita\u00E7\u00E3o, retrabalho ou condena\u00E7\u00E3o.',
+      subtitle: 'IT002 \u00A712 \u2014 consolida\u00E7\u00E3o da avalia\u00E7\u00E3o para aceita\u00E7\u00E3o, retrabalho ou condena\u00E7\u00E3o.',
     },
     React.createElement(
       Field,
@@ -1335,8 +1286,7 @@ export const StepCleaningPreservationIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '10. Limpeza e preserva\u00E7\u00E3o',
-      subtitle:
-        'IT002 \u00A713 \u2014 remover contaminantes sem agravar danos; preservar componentes.',
+      subtitle: 'IT002 \u00A713 \u2014 remover contaminantes sem agravar danos; preservar componentes.',
     },
     React.createElement(
       'div',
@@ -1479,8 +1429,7 @@ export const StepAssemblyIntegrityIT002 = ({ r, set }) => {
           React.createElement(TextArea, {
             value: r.assemblyIntegrity.tratativa,
             onChange: (v) => set('assemblyIntegrity.tratativa', v),
-            placeholder:
-              'Ex: veda\u00E7\u00E3o substitu\u00EDda, recolocada, valida\u00E7\u00E3o do supervisor...',
+            placeholder: 'Ex: veda\u00E7\u00E3o substitu\u00EDda, recolocada, valida\u00E7\u00E3o do supervisor...',
           }),
         ),
       ),
@@ -1504,8 +1453,7 @@ export const StepTorqueIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '12. Torque e aperto',
-      subtitle:
-        'IT002 \u00A716 \u2014 torque conforme fabricante; sem dado, valida\u00E7\u00E3o t\u00E9cnica controlada (APH-08).',
+      subtitle: 'IT002 \u00A716 \u2014 torque conforme fabricante; sem dado, valida\u00E7\u00E3o t\u00E9cnica controlada (APH-08).',
     },
     React.createElement(
       Field,
@@ -1582,8 +1530,7 @@ export const StepNitrogenChargeIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '13. Carga / pr\u00E9-carga de nitrog\u00EAnio',
-      subtitle:
-        'IT002 \u00A715 \u2014 apenas nitrog\u00EAnio; isolamento + descarga pr\u00E9vios; fonte hierarquizada.',
+      subtitle: 'IT002 \u00A715 \u2014 apenas nitrog\u00EAnio; isolamento + descarga pr\u00E9vios; fonte hierarquizada.',
       critical: true,
     },
     React.createElement(Toggle, {
@@ -1714,14 +1661,12 @@ export const StepNitrogenChargeIT002 = ({ r, set }) =>
     ),
   );
 export const StepFinalVerificationIT002 = ({ r, set }) => {
-  const reprovado =
-    r.finalVerification.mantemPressao === 'Não' || r.finalVerification.semVazamento === 'Não';
+  const reprovado = r.finalVerification.mantemPressao === 'Não' || r.finalVerification.semVazamento === 'Não';
   return React.createElement(
     SectionCard,
     {
       title: '14. Verifica\u00E7\u00E3o final',
-      subtitle:
-        'IT002 \u00A717 \u2014 aprova\u00E7\u00E3o trip\u00E9: mant\u00E9m press\u00E3o + sem vazamento + qualidade.',
+      subtitle: 'IT002 \u00A717 \u2014 aprova\u00E7\u00E3o trip\u00E9: mant\u00E9m press\u00E3o + sem vazamento + qualidade.',
       critical: true,
     },
     React.createElement(
@@ -1788,8 +1733,7 @@ export const StepQualityReleaseIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '15. Valida\u00E7\u00E3o da Qualidade',
-      subtitle:
-        'IT002 \u00A717, \u00A719 \u2014 etapa espec\u00EDfica IT002. Sem aprova\u00E7\u00E3o aqui, libera\u00E7\u00E3o fica bloqueada.',
+      subtitle: 'IT002 \u00A717, \u00A719 \u2014 etapa espec\u00EDfica IT002. Sem aprova\u00E7\u00E3o aqui, libera\u00E7\u00E3o fica bloqueada.',
       critical: true,
     },
     React.createElement(
@@ -1823,13 +1767,7 @@ export const StepQualityReleaseIT002 = ({ r, set }) =>
         React.createElement(Select, {
           value: r.qualityRelease.decisao,
           onChange: (v) => set('qualityRelease.decisao', v),
-          options: [
-            'Aprovado',
-            'Aprovado com ressalva',
-            'Reprovado',
-            'Pendente de informação adicional',
-            'Solicitar retrabalho',
-          ],
+          options: ['Aprovado', 'Aprovado com ressalva', 'Reprovado', 'Pendente de informação adicional', 'Solicitar retrabalho'],
         }),
       ),
       React.createElement(
@@ -1861,8 +1799,7 @@ export const StepEnvironmentalIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '16. Meio ambiente e res\u00EDduos',
-      subtitle:
-        'IT002 \u00A720 \u2014 segrega\u00E7\u00E3o de \u00F3leo e res\u00EDduos contaminados (controle m\u00EDnimo, sem mascarar lacuna).',
+      subtitle: 'IT002 \u00A720 \u2014 segrega\u00E7\u00E3o de \u00F3leo e res\u00EDduos contaminados (controle m\u00EDnimo, sem mascarar lacuna).',
     },
     React.createElement(
       AlertBox,
@@ -1953,8 +1890,7 @@ export const StepNonConformityIT002 = ({ r, set }) => {
     SectionCard,
     {
       title: '17. NC, retrabalho ou interrup\u00E7\u00E3o',
-      subtitle:
-        'IT002 \u00A721 \u2014 situa\u00E7\u00F5es que exigem interrup\u00E7\u00E3o imediata.',
+      subtitle: 'IT002 \u00A721 \u2014 situa\u00E7\u00F5es que exigem interrup\u00E7\u00E3o imediata.',
     },
     React.createElement(Toggle, {
       checked: r.nonConformity.houve,
@@ -2030,8 +1966,7 @@ export const StepTechnicalValidationIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '18. Valida\u00E7\u00E3o t\u00E9cnica (supervisor)',
-      subtitle:
-        'IT002 \u00A75.3 \u2014 quando h\u00E1 d\u00FAvida, aus\u00EAncia de refer\u00EAncia ou valida\u00E7\u00E3o adicional.',
+      subtitle: 'IT002 \u00A75.3 \u2014 quando h\u00E1 d\u00FAvida, aus\u00EAncia de refer\u00EAncia ou valida\u00E7\u00E3o adicional.',
     },
     React.createElement(Toggle, {
       checked: r.technicalValidation.exigiu,
@@ -2108,8 +2043,7 @@ export const StepReleaseIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '19. Libera\u00E7\u00E3o',
-      subtitle:
-        'IT002 \u00A718 + \u00A722 \u2014 laudo, registros, integra\u00E7\u00E3o futura com Lise.',
+      subtitle: 'IT002 \u00A718 + \u00A722 \u2014 laudo, registros, integra\u00E7\u00E3o futura com Lise.',
     },
     React.createElement(
       'div',
@@ -2245,8 +2179,7 @@ export const StepClassificationIT002 = ({ r, set }) =>
     SectionCard,
     {
       title: '20. Classifica\u00E7\u00E3o Qualidade',
-      subtitle:
-        'IT002 \u00A719 \u2014 fechamento e classifica\u00E7\u00E3o do servi\u00E7o para melhorias.',
+      subtitle: 'IT002 \u00A719 \u2014 fechamento e classifica\u00E7\u00E3o do servi\u00E7o para melhorias.',
     },
     React.createElement(
       Field,

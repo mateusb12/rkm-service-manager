@@ -42,27 +42,13 @@ export function RoadmapFeatureCard({
             : 'border-rkmborder bg-rkmbg/50'
       }`}
     >
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-2 p-3 text-left"
-      >
+      <button type="button" onClick={onToggle} className="flex w-full items-center justify-between gap-2 p-3 text-left">
         <span className="text-sm text-slate-200">
           {expanded ? '▾' : '▸'} {item.title}
         </span>
-        <span
-          className={`tag ${
-            displayedState === 'Concluída'
-              ? 'tag-emerald'
-              : displayedState === 'Em andamento'
-                ? 'tag-orange'
-                : 'tag-slate'
-          }`}
-        >
+        <span className={`tag ${displayedState === 'Concluída' ? 'tag-emerald' : displayedState === 'Em andamento' ? 'tag-orange' : 'tag-slate'}`}>
           {displayedState}
-          {localDevelopmentEnabled &&
-          (displayedState === 'Concluída' || displayedState === 'Em andamento') &&
-          completedDurationMinutes != null
+          {localDevelopmentEnabled && (displayedState === 'Concluída' || displayedState === 'Em andamento') && completedDurationMinutes != null
             ? ` · ${formatDuration(completedDurationMinutes)}`
             : ''}
         </span>

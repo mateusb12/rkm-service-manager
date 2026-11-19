@@ -18,10 +18,7 @@ export function formatLongDateBR(value: DateValue | null | undefined): string {
     month: 'long',
     year: 'numeric',
   });
-  return label.replace(
-    /(de )([a-zá-ú])/,
-    (_, prefix, firstLetter) => `${prefix}${firstLetter.toUpperCase()}`,
-  );
+  return label.replace(/(de )([a-zá-ú])/, (_, prefix, firstLetter) => `${prefix}${firstLetter.toUpperCase()}`);
 }
 
 export function formatLongDateTimeBR(value: DateValue | null | undefined): string {

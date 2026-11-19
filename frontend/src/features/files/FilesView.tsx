@@ -17,15 +17,7 @@ import {
 import { CrudTable } from '../../shared/ui/CrudTable';
 import { RainbowBadge } from '../../shared/ui/RainbowBadge';
 import { formatLongDateTimeBR } from '../../utils/formatLongDateTimeBR';
-import {
-  deleteFile,
-  fetchFile,
-  getStorageHealth,
-  listFiles,
-  uploadFile,
-  type FileRecord,
-  type FileKind,
-} from './service';
+import { deleteFile, fetchFile, getStorageHealth, listFiles, uploadFile, type FileRecord, type FileKind } from './service';
 
 const KIND_OPTIONS = ['Todos', 'PDF', 'Imagem', 'Planilha', 'Documento'];
 
@@ -87,11 +79,7 @@ function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void
         onClick={onClick}
         className="relative h-14 w-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-900 transition hover:border-blue-300/70 hover:ring-2 hover:ring-blue-400/20"
       >
-        <img
-          src={previewUrl}
-          alt={`Preview de ${file.name}`}
-          className="h-full w-full object-cover"
-        />
+        <img src={previewUrl} alt={`Preview de ${file.name}`} className="h-full w-full object-cover" />
       </button>
     );
   }
@@ -105,9 +93,7 @@ function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void
     >
       <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(135deg,transparent_25%,currentColor_25%,currentColor_26%,transparent_26%,transparent_55%,currentColor_55%,currentColor_56%,transparent_56%)]" />
       <FileIcon kind={file.kind} />
-      <span className="relative mt-0.5 text-[9px] font-bold leading-tight tracking-wide text-center whitespace-pre-line">
-        {file.preview}
-      </span>
+      <span className="relative mt-0.5 text-[9px] font-bold leading-tight tracking-wide text-center whitespace-pre-line">{file.preview}</span>
     </button>
   );
 }
@@ -118,9 +104,7 @@ export function FilesView() {
   const [kind, setKind] = useState('Todos');
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
-  const [storageHealth, setStorageHealth] = useState<'loading' | 'healthy' | 'unhealthy'>(
-    'loading',
-  );
+  const [storageHealth, setStorageHealth] = useState<'loading' | 'healthy' | 'unhealthy'>('loading');
   const [uploading, setUploading] = useState(false);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
@@ -189,9 +173,7 @@ export function FilesView() {
     if (!window.confirm(`Excluir o arquivo "${file.name}"?`)) return;
     try {
       await deleteFile(file.key);
-      setFiles((currentFiles) =>
-        currentFiles.filter((currentFile) => currentFile.key !== file.key),
-      );
+      setFiles((currentFiles) => currentFiles.filter((currentFile) => currentFile.key !== file.key));
     } catch {
       setLoadErrorMessage('Não foi possível excluir o arquivo.');
     }
@@ -203,9 +185,7 @@ export function FilesView() {
       const matchesKind = kind === 'Todos' || file.kind === kind;
       const matchesQuery =
         !normalizedQuery ||
-        [file.name, file.kind, file.category ?? '', file.uploadedBy].some((value) =>
-          value.toLowerCase().includes(normalizedQuery),
-        );
+        [file.name, file.kind, file.category ?? '', file.uploadedBy].some((value) => value.toLowerCase().includes(normalizedQuery));
       return matchesKind && matchesQuery;
     });
   }, [files, kind, query]);
@@ -219,9 +199,7 @@ export function FilesView() {
             Gestão
           </div>
           <h1 className="text-2xl font-semibold text-slate-100">Arquivos</h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Documentos, imagens e evidências da operação em um só lugar.
-          </p>
+          <p className="mt-1 text-sm text-slate-400">Documentos, imagens e evidências da operação em um só lugar.</p>
           <StorageHealthBadge status={storageHealth} />
         </div>
 
@@ -238,30 +216,10 @@ export function FilesView() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
-          icon={<Archive size={18} />}
-          label="Total de arquivos"
-          value={String(files.length)}
-          accent="blue"
-        />
-        <SummaryCard
-          icon={<FileText size={18} />}
-          label="Documentos"
-          value={String(summary.documents)}
-          accent="violet"
-        />
-        <SummaryCard
-          icon={<FileImage size={18} />}
-          label="Imagens"
-          value={String(summary.images)}
-          accent="cyan"
-        />
-        <SummaryCard
-          icon={<UsersRound size={18} />}
-          label="Colaboradores"
-          value={String(summary.collaborators)}
-          accent="emerald"
-        />
+        <SummaryCard icon={<Archive size={18} />} label="Total de arquivos" value={String(files.length)} accent="blue" />
+        <SummaryCard icon={<FileText size={18} />} label="Documentos" value={String(summary.documents)} accent="violet" />
+        <SummaryCard icon={<FileImage size={18} />} label="Imagens" value={String(summary.images)} accent="cyan" />
+        <SummaryCard icon={<UsersRound size={18} />} label="Colaboradores" value={String(summary.collaborators)} accent="emerald" />
       </div>
 
       <CrudTable
@@ -367,9 +325,7 @@ function StorageHealthBadge({ status }: { status: 'loading' | 'healthy' | 'unhea
   }[status];
 
   return (
-    <div
-      className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${content.classes}`}
-    >
+    <div className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${content.classes}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${content.dot}`} />
       {content.label}
     </div>
@@ -389,11 +345,7 @@ function SummaryCard({
 }) {
   return (
     <div className="rkm-card flex items-center gap-3 p-4">
-      <div
-        className={`flex h-9 w-9 items-center justify-center rounded-lg ${SUMMARY_ACCENT_CLASSES[accent]}`}
-      >
-        {icon}
-      </div>
+      <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${SUMMARY_ACCENT_CLASSES[accent]}`}>{icon}</div>
       <div>
         <div className="text-xl font-semibold text-slate-100">{value}</div>
         <div className="text-xs text-slate-500">{label}</div>
@@ -427,9 +379,7 @@ function FileRow({
         </div>
       </td>
       <td className="px-4 py-3 text-sm text-slate-300">
-        <RainbowBadge colorKey={file.category ?? 'sem-categoria'}>
-          {file.category ? formatCategory(file.category) : 'Sem categoria'}
-        </RainbowBadge>
+        <RainbowBadge colorKey={file.category ?? 'sem-categoria'}>{file.category ? formatCategory(file.category) : 'Sem categoria'}</RainbowBadge>
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
@@ -454,39 +404,16 @@ function FileRow({
   );
 }
 
-function FileActions({
-  onPreview,
-  onDownload,
-  onDelete,
-}: {
-  onPreview: () => void;
-  onDownload: () => void;
-  onDelete: () => void;
-}) {
+function FileActions({ onPreview, onDownload, onDelete }: { onPreview: () => void; onDownload: () => void; onDelete: () => void }) {
   return (
     <div className="flex items-center justify-end gap-1">
-      <button
-        type="button"
-        title="Visualizar"
-        onClick={onPreview}
-        className="rounded-md p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300"
-      >
+      <button type="button" title="Visualizar" onClick={onPreview} className="rounded-md p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300">
         <Eye size={16} />
       </button>
-      <button
-        type="button"
-        title="Baixar"
-        onClick={onDownload}
-        className="rounded-md p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300"
-      >
+      <button type="button" title="Baixar" onClick={onDownload} className="rounded-md p-2 text-slate-500 hover:bg-blue-500/10 hover:text-blue-300">
         <Download size={16} />
       </button>
-      <button
-        type="button"
-        title="Excluir"
-        onClick={onDelete}
-        className="rounded-md p-2 text-slate-500 hover:bg-white/5 hover:text-slate-300"
-      >
+      <button type="button" title="Excluir" onClick={onDelete} className="rounded-md p-2 text-slate-500 hover:bg-white/5 hover:text-slate-300">
         <Trash2 size={16} />
       </button>
     </div>

@@ -24,20 +24,7 @@ const V0_DEADLINE_INSTALLMENT = 2;
 // Referência visual: primeira parcela em outubro de 2026.
 const FIRST_MONTH = new Date(2026, 9, 1);
 
-const MONTH_NAMES = [
-  'Jan',
-  'Fev',
-  'Mar',
-  'Abr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Set',
-  'Out',
-  'Nov',
-  'Dez',
-];
+const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const SCHEDULE_MONTHS = INSTALLMENTS.map((installment) => {
   const date = new Date(FIRST_MONTH.getFullYear(), FIRST_MONTH.getMonth() + installment - 1, 1);
@@ -49,20 +36,17 @@ const SCHEDULE_MONTHS = INSTALLMENTS.map((installment) => {
   };
 });
 
-const YEAR_GROUPS = SCHEDULE_MONTHS.reduce<Array<{ year: number; count: number }>>(
-  (groups, item) => {
-    const last = groups[groups.length - 1];
+const YEAR_GROUPS = SCHEDULE_MONTHS.reduce<Array<{ year: number; count: number }>>((groups, item) => {
+  const last = groups[groups.length - 1];
 
-    if (last && last.year === item.year) {
-      last.count += 1;
-    } else {
-      groups.push({ year: item.year, count: 1 });
-    }
+  if (last && last.year === item.year) {
+    last.count += 1;
+  } else {
+    groups.push({ year: item.year, count: 1 });
+  }
 
-    return groups;
-  },
-  [],
-);
+  return groups;
+}, []);
 
 const GANTT_ROWS: GanttRow[] = [
   {
@@ -110,12 +94,10 @@ const GANTT_ROWS: GanttRow[] = [
 
 const GANTT_FEATURE_ACTIONS: Record<string, string> = {
   'pcp/clientes': 'Cadastrar clientes e pesquisá-los por CNPJ, razão social ou nome fantasia.',
-  'pcp/abertura-os':
-    'Abrir uma OS com numeração automática, identificar o equipamento e avançar sem triagem de segurança.',
+  'pcp/abertura-os': 'Abrir uma OS com numeração automática, identificar o equipamento e avançar sem triagem de segurança.',
   'pcp/fila': 'Consultar a situação das OS, seus responsáveis e os prazos previstos.',
   'oficina/bancadas': 'Cadastrar bancadas, vincular funcionários e consultar sua ocupação.',
-  'oficina/diagnostico-minimo':
-    'Selecionar o mecânico responsável e registrar a desmontagem essencial e o diagnóstico inicial.',
+  'oficina/diagnostico-minimo': 'Selecionar o mecânico responsável e registrar a desmontagem essencial e o diagnóstico inicial.',
   'oficina/execucao-minima': 'Atualizar o andamento do serviço, o responsável e o próximo passo.',
   'comercial/tabela-precos': 'Cadastrar e consultar peças, produtos e serviços com seus preços.',
   'comercial/orcamento-minimo': 'Montar um orçamento e registrar sua aprovação, revisão ou recusa.',
@@ -123,37 +105,24 @@ const GANTT_FEATURE_ACTIONS: Record<string, string> = {
   'finalizacao/relatorio-pdf': 'Gerar um PDF básico com os dados da OS e do serviço realizado.',
   'oficina/checklists':
     'Selecionar o tipo de equipamento (ex.: cilindro hidráulico) e preencher a peritagem correspondente (ex.: campos de camisa, haste e êmbolo).',
-  'oficina/componentes':
-    'Registrar a condição dos componentes (ex.: haste desgastada) e adicionar observações (ex.: riscos na superfície cromada).',
-  'oficina/medicoes':
-    'Adicionar medições técnicas aos componentes (ex.: diâmetro da haste de 45,20 mm e comprimento de 820 mm).',
+  'oficina/componentes': 'Registrar a condição dos componentes (ex.: haste desgastada) e adicionar observações (ex.: riscos na superfície cromada).',
+  'oficina/medicoes': 'Adicionar medições técnicas aos componentes (ex.: diâmetro da haste de 45,20 mm e comprimento de 820 mm).',
   'oficina/diagnostico-estruturado':
     'Consolidar o diagnóstico da OS (ex.: OS 123) e indicar intervenções (ex.: recuperar haste e substituir vedação).',
   'controle/pendencias':
     'Registrar o motivo e o responsável por uma parada (ex.: OS 123 aguardando vedação desde 12/02, com providência pendente para o PCP).',
-  'pcp/prazos':
-    'Definir prazos e prioridades das OS (ex.: OS 123 com prioridade Alta e prazo previsto de 20/02).',
-  'oficina/nao-aplicavel':
-    'Marcar etapas desnecessárias como não aplicáveis (ex.: dispensar a etapa Pintura na OS 123).',
-  'controle/liberacao':
-    'Registrar aprovações e liberações (ex.: Admin aprova a liberação da OS 123, com data e responsável registrados).',
-  'controle/auditoria':
-    'Consultar o histórico de alterações de uma OS (ex.: mudança de Peritagem para Em execução, com data, hora e responsável).',
-  'oficina/evidencias':
-    'Anexar fotos e evidências às etapas de uma OS (ex.: duas fotos da haste danificada durante a peritagem).',
-  'oficina/testes':
-    'Registrar resultados de testes (ex.: Teste de pressão aprovado, com observação Sem vazamentos).',
-  'finalizacao/anexos':
-    'Anexar e consultar documentos de uma OS (ex.: laudo técnico em PDF da OS 123).',
-  'finalizacao/relatorio-tecnico':
-    'Gerar um relatório técnico consolidado (ex.: PDF da OS 123 com peritagem, fotos, medidas e testes).',
+  'pcp/prazos': 'Definir prazos e prioridades das OS (ex.: OS 123 com prioridade Alta e prazo previsto de 20/02).',
+  'oficina/nao-aplicavel': 'Marcar etapas desnecessárias como não aplicáveis (ex.: dispensar a etapa Pintura na OS 123).',
+  'controle/liberacao': 'Registrar aprovações e liberações (ex.: Admin aprova a liberação da OS 123, com data e responsável registrados).',
+  'controle/auditoria': 'Consultar o histórico de alterações de uma OS (ex.: mudança de Peritagem para Em execução, com data, hora e responsável).',
+  'oficina/evidencias': 'Anexar fotos e evidências às etapas de uma OS (ex.: duas fotos da haste danificada durante a peritagem).',
+  'oficina/testes': 'Registrar resultados de testes (ex.: Teste de pressão aprovado, com observação Sem vazamentos).',
+  'finalizacao/anexos': 'Anexar e consultar documentos de uma OS (ex.: laudo técnico em PDF da OS 123).',
+  'finalizacao/relatorio-tecnico': 'Gerar um relatório técnico consolidado (ex.: PDF da OS 123 com peritagem, fotos, medidas e testes).',
   'pcp/avisos': 'Consultar avisos operacionais (ex.: OS 123 parada há 3 dias aguardando material).',
-  'pcp/indicadores':
-    'Visualizar indicadores da operação (ex.: OS 123 com prazo previsto de 5 dias e 8 dias decorridos).',
-  'admin/usuarios':
-    'Cadastrar usuários com login e perfil de acesso (Admin, Mecânico, PCP ou Comercial).',
-  'admin/treinamentos':
-    'Consultar alertas de vencimento de treinamentos (ex.: treinamento de funcionário vencendo em 20 dias).',
+  'pcp/indicadores': 'Visualizar indicadores da operação (ex.: OS 123 com prazo previsto de 5 dias e 8 dias decorridos).',
+  'admin/usuarios': 'Cadastrar usuários com login e perfil de acesso (Admin, Mecânico, PCP ou Comercial).',
+  'admin/treinamentos': 'Consultar alertas de vencimento de treinamentos (ex.: treinamento de funcionário vencendo em 20 dias).',
 };
 
 function getPhaseTooltipContent(row: GanttRow, phase: Phase) {
@@ -174,10 +143,7 @@ function getPhaseTooltipContent(row: GanttRow, phase: Phase) {
 
       <span className="block space-y-1.5">
         {area.features.map((feature) => (
-          <span
-            key={feature.id}
-            className="flex items-start gap-2 text-xs leading-relaxed text-slate-100"
-          >
+          <span key={feature.id} className="flex items-start gap-2 text-xs leading-relaxed text-slate-100">
             <span aria-hidden="true" className="shrink-0 text-sky-300">
               •
             </span>
@@ -222,16 +188,11 @@ export function RoadmapGanttLocalDev() {
     <section className="rounded-xl border border-amber-400/20 bg-rkmcard2/35 p-4">
       <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-amber-300">
-            Planejamento interno · localhost
-          </div>
-          <h3 className="mt-1 text-base font-semibold text-slate-100">
-            Diagrama de Gantt por área
-          </h3>
+          <div className="text-xs font-semibold uppercase tracking-wide text-amber-300">Planejamento interno · localhost</div>
+          <h3 className="mt-1 text-base font-semibold text-slate-100">Diagrama de Gantt por área</h3>
           <p className="mt-1 max-w-3xl text-sm text-slate-400">
-            Distribuição macro das 5 grandes áreas ao longo das 14 parcelas. As últimas parcelas
-            priorizam manutenção, ajustes e pequenas evoluções — sem exigir novas entregas grandes
-            em todo mês.
+            Distribuição macro das 5 grandes áreas ao longo das 14 parcelas. As últimas parcelas priorizam manutenção, ajustes e pequenas evoluções —
+            sem exigir novas entregas grandes em todo mês.
           </p>
         </div>
 
@@ -266,9 +227,7 @@ export function RoadmapGanttLocalDev() {
       <div className="overflow-x-auto">
         <div className="min-w-[1320px] space-y-1 text-xs">
           <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
-            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 font-semibold text-slate-300">
-              Área
-            </div>
+            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 font-semibold text-slate-300">Área</div>
 
             {YEAR_GROUPS.map((group) => (
               <div
@@ -282,9 +241,7 @@ export function RoadmapGanttLocalDev() {
           </div>
 
           <div className="grid grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1">
-            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-slate-400">
-              Parcela
-            </div>
+            <div className="flex items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-slate-400">Parcela</div>
 
             {SCHEDULE_MONTHS.map((item) => {
               const isV0Deadline = item.installment === V0_DEADLINE_INSTALLMENT;
@@ -293,31 +250,18 @@ export function RoadmapGanttLocalDev() {
                 <div
                   key={item.installment}
                   className={`flex flex-col items-center justify-center rounded-md border py-2 ${
-                    isV0Deadline
-                      ? 'border-amber-300/45 bg-amber-300/10 shadow-[0_0_0_1px_rgba(252,211,77,0.08)]'
-                      : 'border-rkmborder bg-rkmcard2/50'
+                    isV0Deadline ? 'border-amber-300/45 bg-amber-300/10 shadow-[0_0_0_1px_rgba(252,211,77,0.08)]' : 'border-rkmborder bg-rkmcard2/50'
                   }`}
                 >
-                  <span
-                    className={`font-semibold ${isV0Deadline ? 'text-amber-100' : 'text-slate-100'}`}
-                  >
-                    {item.month}
-                  </span>
-                  <span
-                    className={`text-[10px] ${isV0Deadline ? 'text-amber-300' : 'text-slate-400'}`}
-                  >
-                    P{item.installment}
-                  </span>
+                  <span className={`font-semibold ${isV0Deadline ? 'text-amber-100' : 'text-slate-100'}`}>{item.month}</span>
+                  <span className={`text-[10px] ${isV0Deadline ? 'text-amber-300' : 'text-slate-400'}`}>P{item.installment}</span>
                 </div>
               );
             })}
           </div>
 
           {GANTT_ROWS.map((row) => (
-            <div
-              key={row.id}
-              className="grid min-h-11 grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1 rounded-md bg-rkmcard2/25"
-            >
+            <div key={row.id} className="grid min-h-11 grid-cols-[190px_repeat(14,minmax(0,1fr))] gap-1 rounded-md bg-rkmcard2/25">
               <div
                 style={{ gridColumn: 1, gridRow: 1 }}
                 className="flex min-h-11 items-center rounded-md border border-rkmborder bg-rkmcard2/50 px-3 text-sm font-semibold text-slate-100"

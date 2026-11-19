@@ -39,12 +39,10 @@ export const classifyRkmOrderType = (equipment) => {
 };
 
 export const validateMappedServiceEntry = (entry) => {
-  const missing = REQUIRED_POPULATOR_FIELDS.filter(([key]) => !String(entry[key] || '').trim()).map(
-    ([key, label]) => ({
-      key,
-      label,
-    }),
-  );
+  const missing = REQUIRED_POPULATOR_FIELDS.filter(([key]) => !String(entry[key] || '').trim()).map(([key, label]) => ({
+    key,
+    label,
+  }));
 
   return {
     valid: missing.length === 0,

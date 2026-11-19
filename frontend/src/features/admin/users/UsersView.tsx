@@ -18,14 +18,7 @@ import {
 } from 'lucide-react';
 
 import { formatLongDateTimeBR } from '../../../utils/formatLongDateTimeBR';
-import {
-  createUser,
-  deactivateUser,
-  hardDeleteUser,
-  listUsers,
-  updateUser,
-  type ApiUser,
-} from './service';
+import { createUser, deactivateUser, hardDeleteUser, listUsers, updateUser, type ApiUser } from './service';
 
 type UserStatus = 'active' | 'invited' | 'suspended';
 type UserRole = 'admin' | 'pcp' | 'mechanic' | 'commercial';
@@ -83,9 +76,7 @@ function mapApiUser(user: ApiUser): ManagedUser {
     commercial: 'from-blue-500 to-indigo-600',
   };
 
-  const lastLoginLabel = user.lastLoginAt
-    ? formatLongDateTimeBR(user.lastLoginAt)
-    : 'Ainda não acessou';
+  const lastLoginLabel = user.lastLoginAt ? formatLongDateTimeBR(user.lastLoginAt) : 'Ainda não acessou';
 
   return {
     id: user.id,
@@ -155,13 +146,8 @@ export function UsersView() {
   const visibleUsers = useMemo(() => {
     const term = search.trim().toLocaleLowerCase('pt-BR');
     return users.filter((user) => {
-      const matchesSearch =
-        !term || `${user.name} ${user.email}`.toLocaleLowerCase('pt-BR').includes(term);
-      return (
-        matchesSearch &&
-        (statusFilter === 'all' || user.status === statusFilter) &&
-        (roleFilter === 'all' || user.role === roleFilter)
-      );
+      const matchesSearch = !term || `${user.name} ${user.email}`.toLocaleLowerCase('pt-BR').includes(term);
+      return matchesSearch && (statusFilter === 'all' || user.status === statusFilter) && (roleFilter === 'all' || user.role === roleFilter);
     });
   }, [roleFilter, search, statusFilter, users]);
 
@@ -187,15 +173,9 @@ export function UsersView() {
     };
 
     try {
-      const savedApiUser = editingId
-        ? await updateUser(editingId, payload)
-        : await createUser(payload);
+      const savedApiUser = editingId ? await updateUser(editingId, payload) : await createUser(payload);
       const saved = mapApiUser(savedApiUser);
-      setUsers((current) =>
-        editingId
-          ? current.map((user) => (user.id === editingId ? saved : user))
-          : [saved, ...current],
-      );
+      setUsers((current) => (editingId ? current.map((user) => (user.id === editingId ? saved : user)) : [saved, ...current]));
       setPage({ mode: 'list' });
       setNotice(editingId ? 'Usuário atualizado com sucesso.' : 'Usuário criado com sucesso.');
     } catch (error) {
@@ -244,11 +224,8 @@ export function UsersView() {
   }
 
   if (page.mode === 'create' || page.mode === 'edit') {
-    const editingUser =
-      page.mode === 'edit' ? users.find((user) => user.id === page.userId) : undefined;
-    return (
-      <UserForm user={editingUser} onCancel={() => setPage({ mode: 'list' })} onSave={saveUser} />
-    );
+    const editingUser = page.mode === 'edit' ? users.find((user) => user.id === page.userId) : undefined;
+    return <UserForm user={editingUser} onCancel={() => setPage({ mode: 'list' })} onSave={saveUser} />;
   }
 
   const activeCount = users.filter((user) => user.status === 'active').length;
@@ -259,28 +236,16 @@ export function UsersView() {
     <main className="space-y-5 p-4 md:p-6">
       <section className="rkm-card flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between md:p-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-            GESTÃO · ACESSOS
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">GESTÃO · ACESSOS</p>
           <h1 className="mt-2 text-2xl font-semibold text-slate-100">Usuários</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-400">
-            Gerencie quem pode acessar o RKM Service Manager e o que cada perfil pode fazer.
-          </p>
+          <p className="mt-2 max-w-2xl text-sm text-slate-400">Gerencie quem pode acessar o RKM Service Manager e o que cada perfil pode fazer.</p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary shrink-0 justify-center"
-          onClick={openCreate}
-        >
+        <button type="button" className="btn btn-primary shrink-0 justify-center" onClick={openCreate}>
           <Plus size={17} /> Novo usuário
         </button>
       </section>
 
-      {loadError && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
-          {loadError}
-        </div>
-      )}
+      {loadError && <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">{loadError}</div>}
 
       <section className="grid gap-3 sm:grid-cols-3">
         {loading ? (
@@ -298,13 +263,7 @@ export function UsersView() {
               detail="cadastros no sistema"
               accent="text-blue-300"
             />
-            <MetricCard
-              icon={<Check size={18} />}
-              label="Acessos ativos"
-              value={activeCount}
-              detail="podem entrar agora"
-              accent="text-emerald-300"
-            />
+            <MetricCard icon={<Check size={18} />} label="Acessos ativos" value={activeCount} detail="podem entrar agora" accent="text-emerald-300" />
             <MetricCard
               icon={<Mail size={18} />}
               label="Convites pendentes"
@@ -343,10 +302,7 @@ export function UsersView() {
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <label className="relative min-w-0 sm:w-72">
-                <Search
-                  size={16}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                />
+                <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <span className="sr-only">Pesquisar usuários</span>
                 <input
                   className="rkm-input pl-9"
@@ -356,21 +312,13 @@ export function UsersView() {
                   placeholder="Nome ou e-mail"
                 />
               </label>
-              <FilterSelect
-                value={statusFilter}
-                onChange={(value) => setStatusFilter(value as typeof statusFilter)}
-                ariaLabel="Filtrar por status"
-              >
+              <FilterSelect value={statusFilter} onChange={(value) => setStatusFilter(value as typeof statusFilter)} ariaLabel="Filtrar por status">
                 <option value="all">Todos os status</option>
                 <option value="active">Ativos</option>
                 <option value="invited">Convites pendentes</option>
                 <option value="suspended">Suspensos</option>
               </FilterSelect>
-              <FilterSelect
-                value={roleFilter}
-                onChange={(value) => setRoleFilter(value as typeof roleFilter)}
-                ariaLabel="Filtrar por perfil"
-              >
+              <FilterSelect value={roleFilter} onChange={(value) => setRoleFilter(value as typeof roleFilter)} ariaLabel="Filtrar por perfil">
                 <option value="all">Todos os perfis</option>
                 {Object.entries(roleLabels).map(([key, label]) => (
                   <option key={key} value={key}>
@@ -388,9 +336,7 @@ export function UsersView() {
           <div className="px-5 py-14 text-center">
             <UserRound className="mx-auto text-slate-600" size={32} />
             <h3 className="mt-3 font-medium text-slate-200">Nenhum usuário encontrado</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Tente limpar a busca ou ajustar os filtros.
-            </p>
+            <p className="mt-1 text-sm text-slate-500">Tente limpar a busca ou ajustar os filtros.</p>
             <button
               type="button"
               className="btn btn-ghost mt-4"
@@ -412,9 +358,7 @@ export function UsersView() {
                   <th className="px-5 py-3.5 font-medium">Perfil</th>
                   <th className="px-5 py-3.5 font-medium">Status</th>
                   <th className="w-px whitespace-nowrap px-5 py-3.5 font-medium">Último acesso</th>
-                  <th className="w-px whitespace-nowrap px-5 py-3.5 text-right font-medium">
-                    Ações
-                  </th>
+                  <th className="w-px whitespace-nowrap px-5 py-3.5 text-right font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -423,9 +367,7 @@ export function UsersView() {
                     <tr
                       key={user.id}
                       className="cursor-pointer border-t border-rkmborder transition-colors hover:bg-rkmcard2/40"
-                      onClick={() =>
-                        setExpandedUserId((current) => (current === user.id ? null : user.id))
-                      }
+                      onClick={() => setExpandedUserId((current) => (current === user.id ? null : user.id))}
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
@@ -441,32 +383,19 @@ export function UsersView() {
                         </div>
                       </td>
                       <td className="px-5 py-4">
-                        <span
-                          className={`rounded-full border px-2.5 py-1 text-xs ${roleClasses[user.role]}`}
-                        >
-                          {roleLabels[user.role]}
-                        </span>
+                        <span className={`rounded-full border px-2.5 py-1 text-xs ${roleClasses[user.role]}`}>{roleLabels[user.role]}</span>
                       </td>
                       <td className="px-5 py-4">
                         <span className="inline-flex items-center gap-2 text-xs text-slate-300">
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${statusClasses[user.status]}`}
-                          />
+                          <span className={`h-1.5 w-1.5 rounded-full ${statusClasses[user.status]}`} />
                           {statusLabels[user.status]}
                         </span>
                       </td>
-                      <td className="w-px whitespace-nowrap px-5 py-4 text-slate-400">
-                        {user.lastLogin}
-                      </td>
-                      <td
-                        className="w-px whitespace-nowrap px-5 py-4 text-right"
-                        onClick={(event) => event.stopPropagation()}
-                      >
+                      <td className="w-px whitespace-nowrap px-5 py-4 text-slate-400">{user.lastLogin}</td>
+                      <td className="w-px whitespace-nowrap px-5 py-4 text-right" onClick={(event) => event.stopPropagation()}>
                         {pendingDelete === user.id ? (
                           <div className="flex items-center justify-end gap-2">
-                            <span className="text-xs text-rose-300">
-                              {user.status === 'suspended' ? 'Excluir?' : 'Desativar?'}
-                            </span>
+                            <span className="text-xs text-rose-300">{user.status === 'suspended' ? 'Excluir?' : 'Desativar?'}</span>
                             <button
                               type="button"
                               className="rounded-lg border border-rkmborder px-2.5 py-1.5 text-xs text-slate-300 hover:bg-rkmcard2"
@@ -497,11 +426,7 @@ export function UsersView() {
                               type="button"
                               className="rounded-lg p-2 text-slate-500 hover:bg-rose-500/10 hover:text-rose-300 disabled:cursor-wait disabled:opacity-50"
                               aria-label={`${user.status === 'suspended' ? 'Excluir permanentemente' : 'Desativar'} ${user.name}`}
-                              title={
-                                user.status === 'suspended'
-                                  ? 'Excluir permanentemente'
-                                  : 'Desativar usuário'
-                              }
+                              title={user.status === 'suspended' ? 'Excluir permanentemente' : 'Desativar usuário'}
                               disabled={actionLoadingId === user.id}
                               onClick={() => setPendingDelete(user.id)}
                             >
@@ -514,9 +439,7 @@ export function UsersView() {
                                 aria-label={`Mais opções para ${user.name}`}
                                 aria-expanded={openMenuId === user.id}
                                 title="Mais opções"
-                                onClick={() =>
-                                  setOpenMenuId((current) => (current === user.id ? null : user.id))
-                                }
+                                onClick={() => setOpenMenuId((current) => (current === user.id ? null : user.id))}
                               >
                                 <Ellipsis size={16} />
                               </button>
@@ -525,9 +448,7 @@ export function UsersView() {
                                   <button
                                     type="button"
                                     className="block w-full rounded-md px-3 py-2 text-left text-xs text-rose-300 hover:bg-rose-500/10 disabled:opacity-50"
-                                    disabled={
-                                      user.status !== 'active' || actionLoadingId === user.id
-                                    }
+                                    disabled={user.status !== 'active' || actionLoadingId === user.id}
                                     onClick={() => {
                                       setOpenMenuId(null);
                                       setPendingDelete(user.id);
@@ -538,9 +459,7 @@ export function UsersView() {
                                   <button
                                     type="button"
                                     className="block w-full rounded-md px-3 py-2 text-left text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
-                                    disabled={
-                                      user.status !== 'suspended' || actionLoadingId === user.id
-                                    }
+                                    disabled={user.status !== 'suspended' || actionLoadingId === user.id}
                                     onClick={() => {
                                       setOpenMenuId(null);
                                       if (window.confirm(`Excluir ${user.name} permanentemente?`)) {
@@ -586,12 +505,7 @@ export function UsersView() {
 }
 
 function SkeletonBlock({ className }: { className: string }) {
-  return (
-    <span
-      className={`block animate-pulse rounded bg-slate-700/60 ${className}`}
-      aria-hidden="true"
-    />
-  );
+  return <span className={`block animate-pulse rounded bg-slate-700/60 ${className}`} aria-hidden="true" />;
 }
 
 function MetricSkeleton() {
@@ -645,19 +559,7 @@ function UsersTableSkeleton() {
   );
 }
 
-function MetricCard({
-  icon,
-  label,
-  value,
-  detail,
-  accent,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: number;
-  detail: string;
-  accent: string;
-}) {
+function MetricCard({ icon, label, value, detail, accent }: { icon: ReactNode; label: string; value: number; detail: string; accent: string }) {
   return (
     <div className="rkm-card flex items-center gap-3 p-4">
       <div className={`rounded-lg bg-slate-500/10 p-2 ${accent}`}>{icon}</div>
@@ -686,30 +588,15 @@ function FilterSelect({
   return (
     <label className="relative">
       <span className="sr-only">{ariaLabel}</span>
-      <select
-        className="rkm-input min-w-[148px] pr-8"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
+      <select className="rkm-input min-w-[148px] pr-8" value={value} onChange={(event) => onChange(event.target.value)}>
         {children}
       </select>
-      <ChevronDown
-        size={14}
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
-      />
+      <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" />
     </label>
   );
 }
 
-function UserForm({
-  user,
-  onCancel,
-  onSave,
-}: {
-  user?: ManagedUser;
-  onCancel: () => void;
-  onSave: (input: UserInput) => Promise<void> | void;
-}) {
+function UserForm({ user, onCancel, onSave }: { user?: ManagedUser; onCancel: () => void; onSave: (input: UserInput) => Promise<void> | void }) {
   const [input, setInput] = useState<UserInput>(
     user
       ? {
@@ -750,44 +637,27 @@ function UserForm({
         email: input.email.trim(),
       });
     } catch (saveError) {
-      setError(
-        saveError instanceof Error ? saveError.message : 'Não foi possível salvar o usuário.',
-      );
+      setError(saveError instanceof Error ? saveError.message : 'Não foi possível salvar o usuário.');
     }
   }
   return (
     <main className="mx-auto max-w-4xl space-y-5 p-4 md:p-6">
       <nav aria-label="Navegação de usuários">
-        <button
-          type="button"
-          className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300"
-          onClick={onCancel}
-        >
+        <button type="button" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300" onClick={onCancel}>
           <ArrowLeft size={15} /> Usuários
         </button>
         <span className="mx-2 text-slate-500">/</span>
-        <span className="text-sm text-slate-300">
-          {editing ? 'Editar usuário' : 'Novo usuário'}
-        </span>
+        <span className="text-sm text-slate-300">{editing ? 'Editar usuário' : 'Novo usuário'}</span>
       </nav>
       <header>
-        <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-          GESTÃO · ACESSOS
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold text-slate-100">
-          {editing ? user?.name : 'Novo usuário'}
-        </h1>
+        <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">GESTÃO · ACESSOS</p>
+        <h1 className="mt-2 text-2xl font-semibold text-slate-100">{editing ? user?.name : 'Novo usuário'}</h1>
         <p className="mt-2 text-sm text-slate-400">
-          {editing
-            ? 'Atualize o perfil e os dados de acesso deste usuário.'
-            : 'Cadastre uma pessoa e defina o nível de acesso inicial.'}
+          {editing ? 'Atualize o perfil e os dados de acesso deste usuário.' : 'Cadastre uma pessoa e defina o nível de acesso inicial.'}
         </p>
       </header>
       {error && (
-        <div
-          role="alert"
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
-        >
+        <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
           {error}
         </div>
       )}
@@ -800,9 +670,7 @@ function UserForm({
               </div>
               <div>
                 <h2 className="font-semibold text-slate-100">Dados de acesso</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Essas informações aparecem para o administrador da conta.
-                </p>
+                <p className="mt-1 text-sm text-slate-500">Essas informações aparecem para o administrador da conta.</p>
               </div>
             </div>
           </div>
@@ -858,11 +726,7 @@ function UserForm({
                     <button
                       type="button"
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-200"
-                      aria-label={
-                        showConfirmPassword
-                          ? 'Ocultar confirmação de senha'
-                          : 'Mostrar confirmação de senha'
-                      }
+                      aria-label={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
                       onClick={() => setShowConfirmPassword((visible) => !visible)}
                     >
                       {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -872,11 +736,7 @@ function UserForm({
               </>
             )}
             <FormField label="Perfil de acesso" required>
-              <select
-                className="rkm-input"
-                value={input.role}
-                onChange={(event) => change('role', event.target.value)}
-              >
+              <select className="rkm-input" value={input.role} onChange={(event) => change('role', event.target.value)}>
                 {Object.entries(roleLabels).map(([key, label]) => (
                   <option key={key} value={key}>
                     {label}
@@ -921,9 +781,7 @@ function UserDetails({
     <div className="rounded-xl border border-blue-400/20 bg-rkmcard2/30 p-4 md:p-5">
       <div className="flex items-center justify-between gap-3 border-b border-rkmborder pb-4">
         <div className="flex items-center gap-4 border-b border-rkmborder pb-5">
-          <div
-            className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-sm font-semibold text-white ${user.color}`}
-          >
+          <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-sm font-semibold text-white ${user.color}`}>
             {user.initials}
           </div>
           <div>
@@ -931,11 +789,7 @@ function UserDetails({
             <p className="text-sm text-slate-500">{user.email}</p>
           </div>
         </div>
-        <button
-          type="button"
-          className="text-xs text-blue-300 hover:text-blue-200"
-          onClick={onCollapse}
-        >
+        <button type="button" className="text-xs text-blue-300 hover:text-blue-200" onClick={onCollapse}>
           Recolher
         </button>
       </div>
@@ -984,15 +838,7 @@ function DetailItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FormField({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: ReactNode;
-}) {
+function FormField({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
     <label className="flex flex-col gap-2 text-sm font-medium text-slate-200">
       <span>

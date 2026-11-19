@@ -18,10 +18,7 @@ export type PriceCatalogItem = {
   deletedAt: string | null;
 };
 
-export type PriceCatalogInput = Pick<
-  PriceCatalogItem,
-  'name' | 'description' | 'type' | 'unit' | 'unitPriceCents'
->;
+export type PriceCatalogInput = Pick<PriceCatalogItem, 'name' | 'description' | 'type' | 'unit' | 'unitPriceCents'>;
 
 export type PriceCatalogErrors = Partial<Record<keyof PriceCatalogInput, string>>;
 
@@ -46,8 +43,7 @@ export function validatePriceCatalogInput(input: PriceCatalogInput): PriceCatalo
 
   if (!input.name.trim()) errors.name = 'Informe o nome do cadastro.';
   if (!input.type || !PRICE_CATALOG_TYPES.includes(input.type)) errors.type = 'Selecione o tipo.';
-  if (!input.unit || !PRICE_CATALOG_UNITS.includes(input.unit))
-    errors.unit = 'Selecione a unidade.';
+  if (!input.unit || !PRICE_CATALOG_UNITS.includes(input.unit)) errors.unit = 'Selecione a unidade.';
   if (!Number.isInteger(input.unitPriceCents) || input.unitPriceCents < 0) {
     errors.unitPriceCents = 'Informe um preço válido em reais.';
   }

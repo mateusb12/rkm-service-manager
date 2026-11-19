@@ -25,9 +25,7 @@ const REQUIRED_FIELDS_BY_STAGE = {
 };
 
 export const getMissingServiceEntryFields = (form, stageIndex) => {
-  const missing = (REQUIRED_FIELDS_BY_STAGE[stageIndex] || [])
-    .filter(([key]) => !String(form[key] || '').trim())
-    .map(([, label]) => label);
+  const missing = (REQUIRED_FIELDS_BY_STAGE[stageIndex] || []).filter(([key]) => !String(form[key] || '').trim()).map(([, label]) => label);
 
   if (stageIndex === 4) {
     if (form.testResult !== 'Aprovado') missing.push('teste aprovado');

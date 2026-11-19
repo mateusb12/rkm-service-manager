@@ -65,10 +65,7 @@ async function awGet<T>(path: string, signal?: AbortSignal): Promise<T> {
 }
 
 function isBrowserBucket(bucketId: string, bucket: AwBucket) {
-  const description = [bucketId, bucket.type, bucket.client, bucket.hostname]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
+  const description = [bucketId, bucket.type, bucket.client, bucket.hostname].filter(Boolean).join(' ').toLowerCase();
 
   return description.includes('aw-watcher-web') || description.includes('web.tab.current');
 }
@@ -92,12 +89,7 @@ function isTrackedActivityUrl(value: string | undefined) {
 
   try {
     const hostname = new URL(value).hostname.toLowerCase();
-    return (
-      hostname === 'chatgpt.com' ||
-      hostname.endsWith('.chatgpt.com') ||
-      hostname === 'chat.openai.com' ||
-      hostname.endsWith('.chat.openai.com')
-    );
+    return hostname === 'chatgpt.com' || hostname.endsWith('.chatgpt.com') || hostname === 'chat.openai.com' || hostname.endsWith('.chat.openai.com');
   } catch {
     return false;
   }
@@ -153,15 +145,11 @@ export async function getChatGptActivity(
     end: end.toISOString(),
   });
   const eventResults = await Promise.allSettled(
-    bucketIds.map((bucketId) =>
-      awGet<AwEvent[]>(`/buckets/${encodeURIComponent(bucketId)}/events?${period}`, signal),
-    ),
+    bucketIds.map((bucketId) => awGet<AwEvent[]>(`/buckets/${encodeURIComponent(bucketId)}/events?${period}`, signal)),
   );
   signal?.throwIfAborted();
 
-  const eventLists = eventResults.flatMap((result) =>
-    result.status === 'fulfilled' ? [result.value] : [],
-  );
+  const eventLists = eventResults.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
 
   if (bucketIds.length > 0 && eventLists.length === 0) {
     throw new Error('Não foi possível consultar os eventos do ActivityWatch.');
@@ -180,10 +168,7 @@ export async function getChatGptActivity(
       const duration = Number(event.duration);
       if (!Number.isFinite(timestamp) || !Number.isFinite(duration) || duration <= 0) continue;
 
-      const overlapMs = Math.max(
-        0,
-        Math.min(timestamp + duration * 1000, endMs) - Math.max(timestamp, startMs),
-      );
+      const overlapMs = Math.max(0, Math.min(timestamp + duration * 1000, endMs) - Math.max(timestamp, startMs));
       if (overlapMs <= 0) continue;
 
       const seconds = overlapMs / 1000;

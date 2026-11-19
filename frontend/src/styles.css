@@ -644,8 +644,7 @@ label.rkm-check input {
   flex-direction: column;
   padding: clamp(20px, 3.4vh, 42px) clamp(18px, 4vw, 72px) clamp(20px, 3.4vh, 38px);
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 40%, rgba(22, 130, 255, 0.09), transparent 34%), #f7f9fc;
+  background: radial-gradient(circle at 50% 40%, rgba(22, 130, 255, 0.09), transparent 34%), #f7f9fc;
 }
 .zenit-login-main::before {
   content: '';
@@ -653,12 +652,7 @@ label.rkm-check input {
   z-index: -1;
   inset: 36% -10% -34% 8%;
   opacity: 0.12;
-  background: repeating-linear-gradient(
-    112deg,
-    transparent 0 42px,
-    #1682ff 43px 45px,
-    transparent 46px 86px
-  );
+  background: repeating-linear-gradient(112deg, transparent 0 42px, #1682ff 43px 45px, transparent 46px 86px);
   transform: rotate(-8deg);
   mask-image: linear-gradient(to top, #000, transparent 78%);
 }
@@ -1009,8 +1003,7 @@ label.rkm-check input {
   color: #dbe7f5;
 }
 .zenit-dark .zenit-login-main {
-  background:
-    radial-gradient(circle at 50% 40%, rgba(22, 130, 255, 0.12), transparent 34%), #081426;
+  background: radial-gradient(circle at 50% 40%, rgba(22, 130, 255, 0.12), transparent 34%), #081426;
 }
 .zenit-dark .zenit-login-main::before {
   opacity: 0.16;
@@ -2735,12 +2728,7 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 .service-entry-skeleton {
   display: block;
   border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    rgba(51, 65, 85, 0.32),
-    rgba(100, 116, 139, 0.22),
-    rgba(51, 65, 85, 0.32)
-  );
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.32), rgba(100, 116, 139, 0.22), rgba(51, 65, 85, 0.32));
   background-size: 220% 100%;
   animation: service-entry-skeleton-shimmer 1.6s ease-in-out infinite;
 }

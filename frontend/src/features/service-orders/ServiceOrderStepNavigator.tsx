@@ -1,14 +1,5 @@
-export const ServiceOrderStepNavigator = ({
-  stages,
-  step,
-  progressStep,
-  hasEntry,
-  onChangeStep,
-}) => (
-  <div
-    className="service-entry-stepper service-entry-amazon-stepper"
-    aria-label="Etapas do ciclo operacional"
-  >
+export const ServiceOrderStepNavigator = ({ stages, step, progressStep, hasEntry, onChangeStep }) => (
+  <div className="service-entry-stepper service-entry-amazon-stepper" aria-label="Etapas do ciclo operacional">
     {stages.map((stage, index) => {
       const isLocked = index > progressStep || (Boolean(hasEntry) && stage.canView === false);
       const isCurrentLocked = Boolean(hasEntry) && progressStep === index && !stage.canView;
@@ -21,13 +12,7 @@ export const ServiceOrderStepNavigator = ({
           disabled={isLocked}
           aria-current={step === index ? 'step' : undefined}
           aria-label={stage.label}
-          title={
-            isCurrentLocked
-              ? 'Etapa bloqueada para este cargo'
-              : isLocked
-                ? 'Etapa ainda não alcançada'
-                : undefined
-          }
+          title={isCurrentLocked ? 'Etapa bloqueada para este cargo' : isLocked ? 'Etapa ainda não alcançada' : undefined}
         >
           <span>{progressStep > index ? '✓' : index + 1}</span>
           <strong>{stage.label}</strong>

@@ -2,16 +2,10 @@ import { createEmptyServiceEntry } from './model';
 
 export const createDemoServiceEntry = () => {
   const now = new Date();
-  const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
+  const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   const expectedDate = new Date(now);
   expectedDate.setDate(expectedDate.getDate() + 10);
-  const localExpectedDate = new Date(
-    expectedDate.getTime() - expectedDate.getTimezoneOffset() * 60000,
-  )
-    .toISOString()
-    .slice(0, 10);
+  const localExpectedDate = new Date(expectedDate.getTime() - expectedDate.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   const orderNumber = `DEV-${String(now.getTime()).slice(-6)}`;
   const photoCategories = {
     arrival: 'Chegada',

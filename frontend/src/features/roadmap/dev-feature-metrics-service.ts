@@ -68,38 +68,23 @@ async function readJSON<T>(response: Response, fallbackMessage: string): Promise
   return payload as T;
 }
 
-export async function saveFeatureSettings(
-  featureId: string,
-  settings: DevFeatureSettings,
-): Promise<DevFeatureMetric> {
+export async function saveFeatureSettings(featureId: string, settings: DevFeatureSettings): Promise<DevFeatureMetric> {
   const response = await apiRequest('/dev/feature-metrics/settings', {
     method: 'PUT',
     body: JSON.stringify({ featureId, ...settings }),
   });
 
-  return readJSON<DevFeatureMetric>(
-    response,
-    'Não foi possível salvar as configurações da feature.',
-  );
+  return readJSON<DevFeatureMetric>(response, 'Não foi possível salvar as configurações da feature.');
 }
 
 export async function listPersistedFeatureMetrics(): Promise<DevFeatureMetric[]> {
   const response = await apiRequest('/dev/feature-metrics');
 
-  return readJSON<DevFeatureMetric[]>(
-    response,
-    'Não foi possível carregar as métricas persistidas.',
-  );
+  return readJSON<DevFeatureMetric[]>(response, 'Não foi possível carregar as métricas persistidas.');
 }
 
-export async function getPersistedFeatureMetric(
-  featureId: string,
-  signal?: AbortSignal,
-): Promise<DevFeatureMetric | null> {
-  const response = await apiRequest(
-    `/dev/feature-metrics?feature=${encodeURIComponent(featureId)}`,
-    { signal },
-  );
+export async function getPersistedFeatureMetric(featureId: string, signal?: AbortSignal): Promise<DevFeatureMetric | null> {
+  const response = await apiRequest(`/dev/feature-metrics?feature=${encodeURIComponent(featureId)}`, { signal });
 
   if (response.status === 404) {
     return null;
@@ -126,11 +111,7 @@ export async function unlockFeatureMetric(featureId: string): Promise<DevFeature
   return readJSON<DevFeatureMetric>(response, 'Não foi possível reabrir a métrica.');
 }
 
-export async function getWakatimeMetric(
-  branch: string,
-  forceRefresh = false,
-  signal?: AbortSignal,
-): Promise<WakatimeMetric> {
+export async function getWakatimeMetric(branch: string, forceRefresh = false, signal?: AbortSignal): Promise<WakatimeMetric> {
   const query = new URLSearchParams({
     branch,
     project: WAKATIME_PROJECT,
@@ -143,11 +124,7 @@ export async function getWakatimeMetric(
   return readJSON<WakatimeMetric>(response, 'Falha ao consultar WakaTime.');
 }
 
-export async function getLiveFeatureMetric(
-  featureId: string,
-  branch: string,
-  signal?: AbortSignal,
-): Promise<FeatureMetricDraft> {
+export async function getLiveFeatureMetric(featureId: string, branch: string, signal?: AbortSignal): Promise<FeatureMetricDraft> {
   const wakatimeResult = await getWakatimeMetric(branch, false, signal);
 
   const wakatimeSeconds = Number(wakatimeResult.totalSeconds);

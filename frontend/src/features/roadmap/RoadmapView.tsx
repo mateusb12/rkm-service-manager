@@ -94,11 +94,7 @@ const V0_MILESTONE_FEATURES: Record<string, string[]> = {
 };
 
 function roadmapDateKey(date: Date) {
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0'),
-  ].join('-');
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 }
 
 export function RoadmapView() {
@@ -112,9 +108,7 @@ export function RoadmapView() {
   const [taskStatusLoaded, setTaskStatusLoaded] = useState(false);
   const [taskStatusPending, setTaskStatusPending] = useState<Record<string, boolean>>({});
   const [taskStatusError, setTaskStatusError] = useState('');
-  const [featureMetricDrafts, setFeatureMetricDrafts] = useState<
-    Record<string, FeatureMetricDraft>
-  >({});
+  const [featureMetricDrafts, setFeatureMetricDrafts] = useState<Record<string, FeatureMetricDraft>>({});
   const visibleRoadmap = React.useMemo(
     () => (localDevelopmentEnabled ? ROADMAP : ROADMAP.filter((entry) => entry.id !== 'V4')),
     [localDevelopmentEnabled],
@@ -134,14 +128,9 @@ export function RoadmapView() {
       .then((metrics) => {
         if (cancelled) return;
 
-        const persistedCompleted = Object.fromEntries(
-          metrics.filter((metric) => metric.locked).map((metric) => [metric.featureId, true]),
-        );
+        const persistedCompleted = Object.fromEntries(metrics.filter((metric) => metric.locked).map((metric) => [metric.featureId, true]));
         const persistedDurations = Object.fromEntries(
-          metrics.map((metric) => [
-            metric.featureId,
-            Math.round((metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60),
-          ]),
+          metrics.map((metric) => [metric.featureId, Math.round((metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60)]),
         );
 
         setCompletedFeatures(persistedCompleted);
@@ -153,11 +142,7 @@ export function RoadmapView() {
 
         console.error('Erro ao carregar status DEV:', error);
 
-        setTaskStatusError(
-          error instanceof Error
-            ? error.message
-            : 'Não foi possível carregar o status das features.',
-        );
+        setTaskStatusError(error instanceof Error ? error.message : 'Não foi possível carregar o status das features.');
       });
 
     return () => {
@@ -171,10 +156,7 @@ export function RoadmapView() {
     const completedItems = visibleRoadmap.flatMap((entry) =>
       entry.areas.flatMap((area) =>
         area.features.filter(
-          (feature) =>
-            feature.state === 'Concluída' ||
-            feature.state === 'Em andamento' ||
-            Boolean(completedFeatures[feature.id]),
+          (feature) => feature.state === 'Concluída' || feature.state === 'Em andamento' || Boolean(completedFeatures[feature.id]),
         ),
       ),
     );
@@ -186,9 +168,7 @@ export function RoadmapView() {
 
         setFeatureDurations((previous) => ({
           ...previous,
-          [feature.id]: Math.round(
-            (metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60,
-          ),
+          [feature.id]: Math.round((metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60),
         }));
       }),
     );
@@ -204,20 +184,12 @@ export function RoadmapView() {
       area.features.map((feature) => {
         const metric = featureMetricDrafts[feature.id];
         return (
-          featureDurations[feature.id] ??
-          (metric
-            ? Math.round(
-                (metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60,
-              )
-            : null)
+          featureDurations[feature.id] ?? (metric ? Math.round((metric.wakatimeSeconds + metric.chatGptSeconds + metric.localSeconds) / 60) : null)
         );
       }),
     );
 
-    const total = durations.reduce(
-      (sum, duration) => sum + (duration != null && duration > 0 ? duration : 0),
-      0,
-    );
+    const total = durations.reduce((sum, duration) => sum + (duration != null && duration > 0 ? duration : 0), 0);
 
     return total > 0 ? total : null;
   }, [featureDurations, featureMetricDrafts, version]);
@@ -258,9 +230,7 @@ export function RoadmapView() {
   }, [completedFeatures, roadmapTimebox, version]);
   const progressTooltipContent = (
     <div className="space-y-2">
-      <strong className="block text-orange-200">
-        Progresso realizado: {versionProgress.actualPercentage}%
-      </strong>
+      <strong className="block text-orange-200">Progresso realizado: {versionProgress.actualPercentage}%</strong>
       {versionProgress.delivered.length > 0 && (
         <div>
           <span className="font-semibold text-emerald-300">Entregues</span>
@@ -283,10 +253,7 @@ export function RoadmapView() {
       )}
     </div>
   );
-  const stepperCount = Math.max(
-    1,
-    viewMode === 'version' ? visibleRoadmap.length : areaProjections.length,
-  );
+  const stepperCount = Math.max(1, viewMode === 'version' ? visibleRoadmap.length : areaProjections.length);
 
   React.useEffect(() => {
     const versionVisible = visibleRoadmap.some((entry) => entry.id === versionId);
@@ -305,28 +272,25 @@ export function RoadmapView() {
     }
   }, [visibleRoadmap, areaProjections, versionId, areaId]);
 
-  const handleLiveMetricChange = React.useCallback(
-    (id: string, metric: FeatureMetricDraft | null) => {
-      setFeatureMetricDrafts((previous) => {
-        if (!metric) {
-          if (!previous[id]) {
-            return previous;
-          }
-
-          const next = { ...previous };
-          delete next[id];
-
-          return next;
+  const handleLiveMetricChange = React.useCallback((id: string, metric: FeatureMetricDraft | null) => {
+    setFeatureMetricDrafts((previous) => {
+      if (!metric) {
+        if (!previous[id]) {
+          return previous;
         }
 
-        return {
-          ...previous,
-          [id]: metric,
-        };
-      });
-    },
-    [],
-  );
+        const next = { ...previous };
+        delete next[id];
+
+        return next;
+      }
+
+      return {
+        ...previous,
+        [id]: metric,
+      };
+    });
+  }, []);
 
   const toggleTaskDone = async (item: RoadmapFeature) => {
     if (!localDevelopmentEnabled || !taskStatusLoaded || taskStatusPending[item.id]) {
@@ -358,12 +322,7 @@ export function RoadmapView() {
         const frozenMetric = await freezeFeatureMetric(metric);
         setFeatureDurations((previous) => ({
           ...previous,
-          [item.id]: Math.round(
-            (frozenMetric.wakatimeSeconds +
-              frozenMetric.chatGptSeconds +
-              frozenMetric.localSeconds) /
-              60,
-          ),
+          [item.id]: Math.round((frozenMetric.wakatimeSeconds + frozenMetric.chatGptSeconds + frozenMetric.localSeconds) / 60),
         }));
       }
 
@@ -379,9 +338,7 @@ export function RoadmapView() {
         return next;
       });
     } catch (error) {
-      setTaskStatusError(
-        error instanceof Error ? error.message : 'Não foi possível alterar o status da feature.',
-      );
+      setTaskStatusError(error instanceof Error ? error.message : 'Não foi possível alterar o status da feature.');
     } finally {
       setTaskStatusPending((previous) => ({
         ...previous,
@@ -420,13 +377,9 @@ export function RoadmapView() {
   return (
     <main className="space-y-5 p-4 md:p-6">
       <section className="rkm-card p-5">
-        <div className="text-xs font-semibold uppercase tracking-widest text-blue-300">
-          Planejamento
-        </div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-blue-300">Planejamento</div>
         <h1 className="mt-1 text-2xl font-semibold text-slate-100">Roadmap</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          Escolha uma perspectiva e expanda a funcionalidade desejada.
-        </p>
+        <p className="mt-1 text-sm text-slate-400">Escolha uma perspectiva e expanda a funcionalidade desejada.</p>
 
         <div className="mt-5 flex w-fit rounded-lg border border-rkmborder bg-rkmcard2/40 p-1">
           {[
@@ -438,9 +391,7 @@ export function RoadmapView() {
               type="button"
               onClick={() => setViewMode(mode as 'version' | 'area')}
               className={`rounded-md px-3 py-2 text-xs font-semibold transition ${
-                viewMode === mode
-                  ? 'bg-blue-400/15 text-blue-200'
-                  : 'text-slate-400 hover:text-slate-200'
+                viewMode === mode ? 'bg-blue-400/15 text-blue-200' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               {label}
@@ -477,9 +428,7 @@ export function RoadmapView() {
                       setFeatureId(v.areas[0].features[0].id);
                     }}
                     className={`relative rounded-lg border p-2 text-center transition ${
-                      selected
-                        ? `${c.border} bg-slate-800/70`
-                        : 'border-transparent hover:bg-slate-800/30'
+                      selected ? `${c.border} bg-slate-800/70` : 'border-transparent hover:bg-slate-800/30'
                     }`}
                   >
                     <span
@@ -487,9 +436,7 @@ export function RoadmapView() {
                     >
                       {v.id}
                     </span>
-                    <span className="mt-2 block text-[11px] font-medium text-slate-200">
-                      {c.name}
-                    </span>
+                    <span className="mt-2 block text-[11px] font-medium text-slate-200">{c.name}</span>
                   </button>
                 );
               })
@@ -506,9 +453,7 @@ export function RoadmapView() {
                       setFeatureId(area.versions[0]?.features[0]?.id || '');
                     }}
                     className={`relative rounded-lg border p-2 text-center transition ${
-                      selected
-                        ? `${c.border} bg-slate-800/70`
-                        : 'border-transparent hover:bg-slate-800/30'
+                      selected ? `${c.border} bg-slate-800/70` : 'border-transparent hover:bg-slate-800/30'
                     }`}
                   >
                     <span
@@ -516,9 +461,7 @@ export function RoadmapView() {
                     >
                       {area.title}
                     </span>
-                    <span className="mt-2 block text-[11px] font-medium text-slate-200">
-                      {area.title}
-                    </span>
+                    <span className="mt-2 block text-[11px] font-medium text-slate-200">{area.title}</span>
                   </button>
                 );
               })}
@@ -527,41 +470,23 @@ export function RoadmapView() {
 
       <section className="rkm-card overflow-hidden">
         <header className="border-b border-rkmborder p-5">
-          <span className="text-xs font-bold text-blue-300">
-            {viewMode === 'version' ? version.id : 'ÁREA'}
-          </span>
-          <h2 className="mt-2 text-xl font-semibold text-slate-100">
-            {viewMode === 'version' ? version.title : selectedArea.title}
-          </h2>
-          {viewMode === 'version' && (
-            <p className="mt-2 text-sm font-semibold text-sky-300">{version.question}</p>
-          )}
+          <span className="text-xs font-bold text-blue-300">{viewMode === 'version' ? version.id : 'ÁREA'}</span>
+          <h2 className="mt-2 text-xl font-semibold text-slate-100">{viewMode === 'version' ? version.title : selectedArea.title}</h2>
+          {viewMode === 'version' && <p className="mt-2 text-sm font-semibold text-sky-300">{version.question}</p>}
           <p className="mt-1 text-sm text-slate-400">
-            {viewMode === 'version'
-              ? version.description
-              : `Features de ${selectedArea.title} distribuídas ao longo das versões.`}
+            {viewMode === 'version' ? version.description : `Features de ${selectedArea.title} distribuídas ao longo das versões.`}
           </p>
-          {localDevelopmentEnabled &&
-            viewMode === 'version' &&
-            version.id === 'V0' &&
-            v0TotalDurationMinutes != null && (
-              <div className="mt-2">
-                <span className="tag tag-amber">
-                  V0 · {formatDuration(v0TotalDurationMinutes).replace(' ', '')}
-                </span>
-              </div>
-            )}
+          {localDevelopmentEnabled && viewMode === 'version' && version.id === 'V0' && v0TotalDurationMinutes != null && (
+            <div className="mt-2">
+              <span className="tag tag-amber">V0 · {formatDuration(v0TotalDurationMinutes).replace(' ', '')}</span>
+            </div>
+          )}
           {viewMode === 'version' && (
             <div className="mt-4 space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                Perguntas que esta versão responde
-              </p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Perguntas que esta versão responde</p>
               <div className="flex flex-wrap gap-2">
                 {(version.questions ?? []).map((question) => (
-                  <span
-                    key={question}
-                    className="rounded-lg border border-sky-400/15 bg-sky-400/[0.05] px-3 py-1.5 text-xs text-slate-300"
-                  >
+                  <span key={question} className="rounded-lg border border-sky-400/15 bg-sky-400/[0.05] px-3 py-1.5 text-xs text-slate-300">
                     {question}
                   </span>
                 ))}
@@ -571,9 +496,7 @@ export function RoadmapView() {
           {localDevelopmentEnabled && (
             <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
               <code className="text-xs text-blue-300">
-                {viewMode === 'version'
-                  ? `versions/${version.id.toLowerCase()}`
-                  : `area/${selectedArea.id}`}
+                {viewMode === 'version' ? `versions/${version.id.toLowerCase()}` : `area/${selectedArea.id}`}
               </code>
               {viewMode === 'version' && (
                 <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -583,9 +506,7 @@ export function RoadmapView() {
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-amber-200 shadow-[0_0_0_1px_rgba(252,211,77,0.04)]">
                     <span className="uppercase tracking-wide text-amber-100/80">Prazo</span>
-                    <span className="text-amber-100">
-                      → {formatRoadmapDate(roadmapTimebox.deadline)}
-                    </span>
+                    <span className="text-amber-100">→ {formatRoadmapDate(roadmapTimebox.deadline)}</span>
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full border border-sky-300/30 bg-sky-300/10 px-3 py-1 text-sky-200 shadow-[0_0_0_1px_rgba(125,211,252,0.04)]">
                     <span className="uppercase tracking-wide text-sky-100/80">Falta</span>
@@ -607,8 +528,7 @@ export function RoadmapView() {
                   const isToday = day.getTime() === roadmapTimebox.today.getTime();
 
                   // Evita duas bolinhas coladas perto do início e do prazo.
-                  const isFriday =
-                    day.getDay() === 5 && index >= 4 && index <= roadmapTimebox.days.length - 5;
+                  const isFriday = day.getDay() === 5 && index >= 4 && index <= roadmapTimebox.days.length - 5;
 
                   const isMilestone = isStart || isDeadline || isFriday || isToday;
 
@@ -618,25 +538,16 @@ export function RoadmapView() {
                   const milestoneFeatures =
                     version.id === 'V0'
                       ? V0_MILESTONE_FEATURES[roadmapDateKey(day)]?.flatMap((id) =>
-                          version.areas.flatMap((area) =>
-                            area.features.filter((feature) => feature.id === id),
-                          ),
+                          version.areas.flatMap((area) => area.features.filter((feature) => feature.id === id)),
                         ) || []
                       : [];
                   const milestoneAreas = version.areas.filter((area) =>
-                    milestoneFeatures.some((feature) =>
-                      area.features.some((item) => item.id === feature.id),
-                    ),
+                    milestoneFeatures.some((feature) => area.features.some((item) => item.id === feature.id)),
                   );
                   const milestoneIsDelivered =
                     milestoneFeatures.length > 0 &&
-                    milestoneFeatures.every(
-                      (feature) =>
-                        feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]),
-                    );
-                  const milestoneIsInProgress = milestoneFeatures.some(
-                    (feature) => feature.state === 'Em andamento',
-                  );
+                    milestoneFeatures.every((feature) => feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]));
+                  const milestoneIsInProgress = milestoneFeatures.some((feature) => feature.state === 'Em andamento');
                   const milestoneHeadingClass = milestoneIsDelivered
                     ? 'text-emerald-300'
                     : milestoneIsInProgress
@@ -673,10 +584,7 @@ export function RoadmapView() {
                     >
                       {isToday && (
                         <Tooltip content={progressTooltipContent}>
-                          <span
-                            className="block h-4 w-4"
-                            aria-label="Detalhes do progresso realizado"
-                          />
+                          <span className="block h-4 w-4" aria-label="Detalhes do progresso realizado" />
                         </Tooltip>
                       )}
                       {!isToday && milestoneTooltipContent && (
@@ -699,22 +607,10 @@ export function RoadmapView() {
                           </span>
                         )}
 
-                        {isMilestone ? (
-                          milestoneDot
-                        ) : (
-                          <span className="mt-2 h-2 border-l border-slate-500/70" />
-                        )}
+                        {isMilestone ? milestoneDot : <span className="mt-2 h-2 border-l border-slate-500/70" />}
 
                         {showLabel && (
-                          <span
-                            className={
-                              isToday
-                                ? 'whitespace-nowrap font-bold text-sky-300'
-                                : 'whitespace-nowrap'
-                            }
-                          >
-                            {formatRoadmapDate(day)}
-                          </span>
+                          <span className={isToday ? 'whitespace-nowrap font-bold text-sky-300' : 'whitespace-nowrap'}>{formatRoadmapDate(day)}</span>
                         )}
                       </span>
                     </React.Fragment>
@@ -725,9 +621,7 @@ export function RoadmapView() {
           )}
           {localDevelopmentEnabled && viewMode === 'version' && (
             <div className="mt-5 grid gap-3 text-xs text-slate-400 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-8">
-              <span className="shrink-0 uppercase tracking-wide text-slate-500">
-                Progresso da versão mínima
-              </span>
+              <span className="shrink-0 uppercase tracking-wide text-slate-500">Progresso da versão mínima</span>
               <div className="relative mx-5 h-9 min-w-0">
                 <span className="pointer-events-none absolute inset-x-0 top-2 border-t border-slate-500/70" />
                 <span
@@ -744,9 +638,7 @@ export function RoadmapView() {
                     className="absolute top-0 flex -translate-x-1/2 flex-col items-center gap-1"
                     style={{ left: `${percentage}%` }}
                   >
-                    <span
-                      className={`h-4 w-px ${percentage <= versionProgress.actualPercentage ? 'bg-orange-300' : 'bg-slate-500/70'}`}
-                    />
+                    <span className={`h-4 w-px ${percentage <= versionProgress.actualPercentage ? 'bg-orange-300' : 'bg-slate-500/70'}`} />
                     <span className="whitespace-nowrap text-[10px]">{percentage}%</span>
                   </span>
                 ))}
@@ -761,12 +653,8 @@ export function RoadmapView() {
                 />
               </div>
               <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                <span className="whitespace-nowrap text-sky-200">
-                  Esperado {versionProgress.expectedPercentage}%
-                </span>
-                <span className="whitespace-nowrap font-semibold text-orange-200">
-                  Realizado {versionProgress.actualPercentage}%
-                </span>
+                <span className="whitespace-nowrap text-sky-200">Esperado {versionProgress.expectedPercentage}%</span>
+                <span className="whitespace-nowrap font-semibold text-orange-200">Realizado {versionProgress.actualPercentage}%</span>
               </div>
             </div>
           )}
@@ -797,18 +685,11 @@ export function RoadmapView() {
                   return duration != null && duration > 0 ? duration : null;
                 })
                 .filter((duration): duration is number => duration != null);
-              const areaDurationMinutes = featureDurationsWithTime.reduce(
-                (total, duration) => total + duration,
-                0,
-              );
-              const shouldShowAreaDuration =
-                localDevelopmentEnabled && featureDurationsWithTime.length >= 2;
+              const areaDurationMinutes = featureDurationsWithTime.reduce((total, duration) => total + duration, 0);
+              const shouldShowAreaDuration = localDevelopmentEnabled && featureDurationsWithTime.length >= 2;
 
               return (
-                <section
-                  key={area.id}
-                  className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
-                >
+                <section key={area.id} className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-0">
                     <div
                       role="button"
@@ -827,10 +708,7 @@ export function RoadmapView() {
                       </span>
                     </div>
 
-                    <div
-                      className="min-w-0 flex-1 self-center overflow-x-auto p-4 sm:mr-[8%]"
-                      onClick={(event) => event.stopPropagation()}
-                    >
+                    <div className="min-w-0 flex-1 self-center overflow-x-auto p-4 sm:mr-[8%]" onClick={(event) => event.stopPropagation()}>
                       <div
                         className={`relative grid gap-2 ${
                           area.features.length === 1
@@ -854,10 +732,8 @@ export function RoadmapView() {
                           />
                         )}
                         {area.features.map((feature, index) => {
-                          const done =
-                            feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]);
-                          const inProgress =
-                            localDevelopmentEnabled && !done && feature.state === 'Em andamento';
+                          const done = feature.state === 'Concluída' || Boolean(completedFeatures[feature.id]);
+                          const inProgress = localDevelopmentEnabled && !done && feature.state === 'Em andamento';
 
                           return (
                             <div key={feature.id} className="relative text-center">
@@ -874,11 +750,7 @@ export function RoadmapView() {
                               </span>
                               <span
                                 className={`mt-2 block text-[10px] leading-tight ${
-                                  done
-                                    ? 'text-emerald-300'
-                                    : inProgress
-                                      ? 'text-orange-300'
-                                      : 'text-slate-400'
+                                  done ? 'text-emerald-300' : inProgress ? 'text-orange-300' : 'text-slate-400'
                                 }`}
                               >
                                 {feature.title}
@@ -895,9 +767,7 @@ export function RoadmapView() {
                       <p className="px-2 pb-1 text-sm text-slate-400">{area.objective}</p>
                       {shouldShowAreaDuration && (
                         <div className="px-2">
-                          <span className="tag tag-amber">
-                            {formatDuration(areaDurationMinutes)}
-                          </span>
+                          <span className="tag tag-amber">{formatDuration(areaDurationMinutes)}</span>
                         </div>
                       )}
 
@@ -914,16 +784,11 @@ export function RoadmapView() {
               const areaTimebox = getRoadmapVersionTimebox(areaVersion.id);
 
               return (
-                <section
-                  key={areaVersion.id}
-                  className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45"
-                >
+                <section key={areaVersion.id} className="overflow-hidden rounded-xl border border-sky-400/10 bg-rkmcard2/45">
                   <div className="flex items-start justify-between gap-3 p-4">
                     <div>
                       <span className="text-xs font-bold text-blue-300">{areaVersion.id}</span>
-                      <h3 className="mt-1 text-sm font-semibold text-slate-100">
-                        {areaVersion.title}
-                      </h3>
+                      <h3 className="mt-1 text-sm font-semibold text-slate-100">{areaVersion.title}</h3>
                       <p className="mt-1 text-sm text-slate-400">{areaVersion.objective}</p>
 
                       {localDevelopmentEnabled && (
@@ -939,9 +804,7 @@ export function RoadmapView() {
                     </div>
                     <span className="tag tag-slate">{areaVersion.features.length} features</span>
                   </div>
-                  <div className="space-y-2 border-t border-rkmborder p-3">
-                    {areaVersion.features.map(renderFeatureCard)}
-                  </div>
+                  <div className="space-y-2 border-t border-rkmborder p-3">{areaVersion.features.map(renderFeatureCard)}</div>
                 </section>
               );
             })}

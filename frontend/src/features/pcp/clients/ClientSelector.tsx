@@ -1,12 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FocusEvent,
-  type KeyboardEvent,
-} from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent, type FocusEvent, type KeyboardEvent } from 'react';
 
 import { formatCnpj, type Client } from './clientModel';
 import { listClients } from './service';
@@ -39,8 +31,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
 
   const normalizedSearchTerm = searchTerm.trim();
 
-  const selectedClientMatchesValue =
-    selectedClient !== null && getClientDisplayName(selectedClient) === value;
+  const selectedClientMatchesValue = selectedClient !== null && getClientDisplayName(selectedClient) === value;
 
   useEffect(() => {
     if (!selectedClientMatchesValue) {
@@ -52,11 +43,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
     function handleOutsideMouseDown(event: MouseEvent) {
       const clickedNode = event.target;
 
-      if (
-        clickedNode instanceof Node &&
-        containerRef.current &&
-        !containerRef.current.contains(clickedNode)
-      ) {
+      if (clickedNode instanceof Node && containerRef.current && !containerRef.current.contains(clickedNode)) {
         setComboboxOpen(false);
         setSearchTerm('');
         setClientResults([]);
@@ -87,8 +74,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
 
     let cancelled = false;
 
-    const searchDelay =
-      normalizedSearchTerm.length >= MINIMUM_SEARCH_LENGTH ? SEARCH_DEBOUNCE_MS : 0;
+    const searchDelay = normalizedSearchTerm.length >= MINIMUM_SEARCH_LENGTH ? SEARCH_DEBOUNCE_MS : 0;
 
     const searchTimer = window.setTimeout(() => {
       setLoadingClients(true);
@@ -182,9 +168,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
       openCombobox();
 
       if (clientResults.length > 0) {
-        setActiveResultIndex((currentIndex) =>
-          currentIndex >= clientResults.length - 1 ? 0 : currentIndex + 1,
-        );
+        setActiveResultIndex((currentIndex) => (currentIndex >= clientResults.length - 1 ? 0 : currentIndex + 1));
       }
 
       return;
@@ -195,9 +179,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
       openCombobox();
 
       if (clientResults.length > 0) {
-        setActiveResultIndex((currentIndex) =>
-          currentIndex <= 0 ? clientResults.length - 1 : currentIndex - 1,
-        );
+        setActiveResultIndex((currentIndex) => (currentIndex <= 0 ? clientResults.length - 1 : currentIndex - 1));
       }
 
       return;
@@ -235,17 +217,12 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
         ? 'Cliente registrado nesta OS.'
         : '';
 
-  const displayedValue =
-    searchTerm ||
-    (selectedClientMatchesValue && selectedClient ? getClientDisplayName(selectedClient) : value);
+  const displayedValue = searchTerm || (selectedClientMatchesValue && selectedClient ? getClientDisplayName(selectedClient) : value);
 
   return (
     <div ref={containerRef} className="relative" onBlur={handleContainerBlur}>
       <div className="relative">
-        <span
-          className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
-          aria-hidden="true"
-        >
+        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500" aria-hidden="true">
           <svg
             width="16"
             height="16"
@@ -267,9 +244,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
           aria-autocomplete="list"
           aria-expanded={comboboxOpen}
           aria-controls={listboxId}
-          aria-activedescendant={
-            activeResult ? `${listboxId}-option-${activeResult.id}` : undefined
-          }
+          aria-activedescendant={activeResult ? `${listboxId}-option-${activeResult.id}` : undefined}
           className="rkm-input zenit-field !pl-10 !pr-20"
           value={displayedValue}
           onFocus={openCombobox}
@@ -325,9 +300,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
         </div>
       </div>
 
-      {selectedClientDescription && (
-        <p className="mt-1.5 truncate text-xs text-slate-500">{selectedClientDescription}</p>
-      )}
+      {selectedClientDescription && <p className="mt-1.5 truncate text-xs text-slate-500">{selectedClientDescription}</p>}
 
       {comboboxOpen && (
         <div
@@ -343,15 +316,10 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
           </div>
 
           {normalizedSearchTerm.length === 1 ? (
-            <div className="px-4 py-4 text-sm text-slate-500">
-              Digite pelo menos {MINIMUM_SEARCH_LENGTH} caracteres para pesquisar.
-            </div>
+            <div className="px-4 py-4 text-sm text-slate-500">Digite pelo menos {MINIMUM_SEARCH_LENGTH} caracteres para pesquisar.</div>
           ) : loadingClients ? (
             <div className="flex items-center gap-2 px-4 py-4 text-sm text-slate-400">
-              <span
-                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-600 border-t-blue-400"
-                aria-hidden="true"
-              />
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-600 border-t-blue-400" aria-hidden="true" />
               Pesquisando clientes...
             </div>
           ) : searchErrorMessage ? (
@@ -377,11 +345,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
                   aria-selected={selected}
                   className={
                     'flex w-full cursor-pointer items-start gap-3 border-b border-rkmborder px-4 py-3 text-left outline-none last:border-b-0 ' +
-                    (active
-                      ? 'bg-blue-500/10'
-                      : selected
-                        ? 'bg-blue-500/5'
-                        : 'hover:bg-blue-500/10')
+                    (active ? 'bg-blue-500/10' : selected ? 'bg-blue-500/5' : 'hover:bg-blue-500/10')
                   }
                   onMouseEnter={() => setActiveResultIndex(clientIndex)}
                   onMouseDown={(event) => event.preventDefault()}
@@ -389,22 +353,15 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-4">
-                      <strong className="truncate text-sm font-medium text-slate-100">
-                        {getClientDisplayName(client)}
-                      </strong>
+                      <strong className="truncate text-sm font-medium text-slate-100">{getClientDisplayName(client)}</strong>
 
-                      <span className="shrink-0 font-mono text-xs text-slate-500">
-                        {formatCnpj(client.cnpj)}
-                      </span>
+                      <span className="shrink-0 font-mono text-xs text-slate-500">{formatCnpj(client.cnpj)}</span>
                     </div>
 
                     <div className="mt-1 truncate text-xs text-slate-400">{client.razaoSocial}</div>
                   </div>
 
-                  <span
-                    className={selected ? 'mt-0.5 text-emerald-300' : 'mt-0.5 text-transparent'}
-                    aria-hidden="true"
-                  >
+                  <span className={selected ? 'mt-0.5 text-emerald-300' : 'mt-0.5 text-transparent'} aria-hidden="true">
                     ✓
                   </span>
                 </button>

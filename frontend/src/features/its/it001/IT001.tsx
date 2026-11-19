@@ -1,14 +1,7 @@
 // @ts-nocheck
 import React from 'react';
 
-import {
-  Field,
-  TextInput,
-  TextArea,
-  Select,
-  Toggle,
-  ChipMulti,
-} from '../../../shared/ui/form-controls';
+import { Field, TextInput, TextArea, Select, Toggle, ChipMulti } from '../../../shared/ui/form-controls';
 
 import { AlertBox } from '../../../shared/ui/feedback';
 
@@ -453,27 +446,15 @@ export const computeAlerts = (r) => {
       msg: 'Vazamento detectado — não liberar até saneamento.',
     });
   }
-  const condenados = [
-    'bladder',
-    'shell',
-    'threads',
-    'gasValve',
-    'oilValveConnectionsFlanges',
-    'sealsElastomers',
-  ].filter((k) => {
+  const condenados = ['bladder', 'shell', 'threads', 'gasValve', 'oilValveConnectionsFlanges', 'sealsElastomers'].filter((k) => {
     var _a;
-    return (
-      ((_a = insp[k]) === null || _a === void 0 ? void 0 : _a.decision) &&
-      /condenar|condenad/i.test(insp[k].decision)
-    );
+    return ((_a = insp[k]) === null || _a === void 0 ? void 0 : _a.decision) && /condenar|condenad/i.test(insp[k].decision);
   });
   if (condenados.length) {
     alerts.push({
       severity: 'warn',
       step: 8,
-      msg:
-        'Componente(s) com decisão de condenação — exige validação do supervisor: ' +
-        condenados.join(', '),
+      msg: 'Componente(s) com decisão de condenação — exige validação do supervisor: ' + condenados.join(', '),
     });
   }
   if (td.duvida && !td.validacaoSupervisor) {
@@ -484,14 +465,8 @@ export const computeAlerts = (r) => {
     });
   }
   const evidPendentes =
-    !((_c = (_b = r.receivedCondition) === null || _b === void 0 ? void 0 : _b.photos) === null ||
-    _c === void 0
-      ? void 0
-      : _c.overview) &&
-    !((_e = (_d = r.receivedCondition) === null || _d === void 0 ? void 0 : _d.photos) === null ||
-    _e === void 0
-      ? void 0
-      : _e.plate);
+    !((_c = (_b = r.receivedCondition) === null || _b === void 0 ? void 0 : _b.photos) === null || _c === void 0 ? void 0 : _c.overview) &&
+    !((_e = (_d = r.receivedCondition) === null || _d === void 0 ? void 0 : _d.photos) === null || _e === void 0 ? void 0 : _e.plate);
   if (evidPendentes) {
     alerts.push({
       severity: 'warn',
@@ -528,8 +503,7 @@ const StepOpening = ({ r, set }) =>
     SectionCard,
     {
       title: '1. Abertura do servi\u00E7o',
-      subtitle:
-        'Identifica\u00E7\u00E3o b\u00E1sica, respons\u00E1veis e tipo de servi\u00E7o \u2014 IT001 \u00A75, \u00A722.',
+      subtitle: 'Identifica\u00E7\u00E3o b\u00E1sica, respons\u00E1veis e tipo de servi\u00E7o \u2014 IT001 \u00A75, \u00A722.',
     },
     React.createElement(
       'div',
@@ -629,8 +603,7 @@ const StepEquipment = ({ r, set }) => {
     SectionCard,
     {
       title: '2. Identifica\u00E7\u00E3o do acumulador',
-      subtitle:
-        'IT001 \u00A78 \u2014 vincula\u00E7\u00E3o e preserva\u00E7\u00E3o da identifica\u00E7\u00E3o f\u00EDsica.',
+      subtitle: 'IT001 \u00A78 \u2014 vincula\u00E7\u00E3o e preserva\u00E7\u00E3o da identifica\u00E7\u00E3o f\u00EDsica.',
       critical: true,
     },
     noId &&
@@ -657,13 +630,7 @@ const StepEquipment = ({ r, set }) => {
         React.createElement(Select, {
           value: r.equipment.tagType,
           onChange: (v) => set('equipment.tagType', v),
-          options: [
-            'Etiqueta interna',
-            'Placa do fabricante',
-            'Marcação a punção',
-            'Marcação manual',
-            'Sem identificação',
-          ],
+          options: ['Etiqueta interna', 'Placa do fabricante', 'Marcação a punção', 'Marcação manual', 'Sem identificação'],
         }),
       ),
       React.createElement(
@@ -855,16 +822,12 @@ const StepReceived = ({ r, set }) =>
   );
 
 const StepStartConditions = ({ r, set }) => {
-  const blocked =
-    r.startConditions.duvidaPressao ||
-    r.startConditions.duvidaCompatibilidade ||
-    r.startConditions.riscoFisico;
+  const blocked = r.startConditions.duvidaPressao || r.startConditions.duvidaCompatibilidade || r.startConditions.riscoFisico;
   return React.createElement(
     SectionCard,
     {
       title: '4. Condi\u00E7\u00F5es para in\u00EDcio',
-      subtitle:
-        'IT001 \u00A77 \u2014 s\u00F3 iniciar com recursos, rastreabilidade e seguran\u00E7a garantidos.',
+      subtitle: 'IT001 \u00A77 \u2014 s\u00F3 iniciar com recursos, rastreabilidade e seguran\u00E7a garantidos.',
     },
     React.createElement(
       'div',
@@ -1024,15 +987,12 @@ const StepSafety = ({ r, set }) =>
   );
 
 const StepDepressurization = ({ r, set }) => {
-  const blocked =
-    (r.depressurization.despressurizacaoFeita || r.depressurization.pressaoVerificada) &&
-    !r.depressurization.pressaoAliviada;
+  const blocked = (r.depressurization.despressurizacaoFeita || r.depressurization.pressaoVerificada) && !r.depressurization.pressaoAliviada;
   return React.createElement(
     SectionCard,
     {
       title: '6. Despressuriza\u00E7\u00E3o',
-      subtitle:
-        'IT001 \u00A711 \u2014 atividade cr\u00EDtica. Sem confirma\u00E7\u00E3o de press\u00E3o aliviada, N\u00C3O prosseguir.',
+      subtitle: 'IT001 \u00A711 \u2014 atividade cr\u00EDtica. Sem confirma\u00E7\u00E3o de press\u00E3o aliviada, N\u00C3O prosseguir.',
       critical: true,
     },
     blocked &&
@@ -1077,14 +1037,7 @@ const StepDepressurization = ({ r, set }) => {
         React.createElement(Select, {
           value: r.depressurization.ocorrencia,
           onChange: (v) => set('depressurization.ocorrencia', v),
-          options: [
-            'Nenhuma',
-            'Ruído anormal',
-            'Vazamento',
-            'Projeção de gás/óleo',
-            'Instabilidade',
-            'Outro',
-          ],
+          options: ['Nenhuma', 'Ruído anormal', 'Vazamento', 'Projeção de gás/óleo', 'Instabilidade', 'Outro'],
         }),
       ),
       React.createElement(
@@ -1123,8 +1076,7 @@ const StepDisassembly = ({ r, set }) =>
     SectionCard,
     {
       title: '7. Desmontagem',
-      subtitle:
-        'IT001 \u00A712 \u2014 controle, separa\u00E7\u00E3o por conjunto, \u00F3leo residual destinado.',
+      subtitle: 'IT001 \u00A712 \u2014 controle, separa\u00E7\u00E3o por conjunto, \u00F3leo residual destinado.',
     },
     React.createElement(
       'div',
@@ -1275,12 +1227,7 @@ const StepInspection = ({ r, set }) =>
           'Condição duvidosa',
           'Substituição preventiva/técnica',
         ],
-        decOpts: [
-          'Substituir',
-          'Reaproveitar com validação',
-          'Condenar',
-          'Pendente de validação técnica',
-        ],
+        decOpts: ['Substituir', 'Reaproveitar com validação', 'Condenar', 'Pendente de validação técnica'],
       }),
       React.createElement(InspBlock, {
         r: r,
@@ -1299,13 +1246,7 @@ const StepInspection = ({ r, set }) =>
           'Trinca/fissura',
           'Condição estrutural duvidosa',
         ],
-        decOpts: [
-          'Apta para continuidade',
-          'Apta com ressalva',
-          'Condenada',
-          'Pendente de medição/ensaio',
-          'Pendente de validação técnica',
-        ],
+        decOpts: ['Apta para continuidade', 'Apta com ressalva', 'Condenada', 'Pendente de medição/ensaio', 'Pendente de validação técnica'],
         extra: React.createElement(
           'div',
           { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
@@ -1326,15 +1267,7 @@ const StepInspection = ({ r, set }) =>
         set: set,
         titulo: 'Roscas',
         path: 'inspection.threads',
-        condOpts: [
-          'Íntegras',
-          'Filetes quebrados',
-          'Amassamento',
-          'Corrosão',
-          'Desgaste excessivo',
-          'Folga incompatível',
-          'Condição duvidosa',
-        ],
+        condOpts: ['Íntegras', 'Filetes quebrados', 'Amassamento', 'Corrosão', 'Desgaste excessivo', 'Folga incompatível', 'Condição duvidosa'],
         decOpts: ['Aptas', 'Aptas com ressalva', 'Não conformes', 'Pendente de validação técnica'],
       }),
       React.createElement(InspBlock, {
@@ -1353,13 +1286,7 @@ const StepInspection = ({ r, set }) =>
           'Vazamento',
           'Condição duvidosa',
         ],
-        decOpts: [
-          'Reaproveitar',
-          'Reaproveitar com validação',
-          'Substituir',
-          'Condenar',
-          'Pendente de validação técnica',
-        ],
+        decOpts: ['Reaproveitar', 'Reaproveitar com validação', 'Substituir', 'Condenar', 'Pendente de validação técnica'],
       }),
       React.createElement(InspBlock, {
         r: r,
@@ -1379,13 +1306,7 @@ const StepInspection = ({ r, set }) =>
           'Dano de rosca',
           'Condição duvidosa',
         ],
-        decOpts: [
-          'Reaproveitar',
-          'Reaproveitar com validação',
-          'Substituir',
-          'Condenar',
-          'Pendente de validação técnica',
-        ],
+        decOpts: ['Reaproveitar', 'Reaproveitar com validação', 'Substituir', 'Condenar', 'Pendente de validação técnica'],
       }),
       React.createElement(InspBlock, {
         r: r,
@@ -1403,12 +1324,7 @@ const StepInspection = ({ r, set }) =>
           'Substituição recomendada',
           'Substituição obrigatória — critério interno',
         ],
-        decOpts: [
-          'Substituir (prática conservadora)',
-          'Reaproveitar com validação',
-          'Condenar',
-          'Pendente de validação técnica',
-        ],
+        decOpts: ['Substituir (prática conservadora)', 'Reaproveitar com validação', 'Condenar', 'Pendente de validação técnica'],
       }),
     ),
     React.createElement(
@@ -1603,8 +1519,7 @@ const StepAssembly = ({ r, set }) =>
     SectionCard,
     {
       title: '11. Montagem',
-      subtitle:
-        'IT001 \u00A717 \u2014 montagem limpa, sem tor\u00E7\u00E3o e com componentes assentados antes da pr\u00E9-carga.',
+      subtitle: 'IT001 \u00A717 \u2014 montagem limpa, sem tor\u00E7\u00E3o e com componentes assentados antes da pr\u00E9-carga.',
     },
     React.createElement(
       'div',
@@ -1740,8 +1655,7 @@ const StepNitrogen = ({ r, set }) =>
     SectionCard,
     {
       title: '13. Pr\u00E9-carga com nitrog\u00EAnio',
-      subtitle:
-        'IT001 \u00A719 \u2014 somente nitrog\u00EAnio seco; carga lenta; fonte de press\u00E3o hierarquizada.',
+      subtitle: 'IT001 \u00A719 \u2014 somente nitrog\u00EAnio seco; carga lenta; fonte de press\u00E3o hierarquizada.',
       critical: true,
     },
     React.createElement(Toggle, {
@@ -1884,8 +1798,7 @@ const StepStabilization = ({ r, set }) =>
     SectionCard,
     {
       title: '14. Estabiliza\u00E7\u00E3o e confer\u00EAncia',
-      subtitle:
-        'IT001 \u00A720 \u2014 Parker indica 10\u201315 min; pr\u00E1tica RKM ~20\u201330 min (conservadora).',
+      subtitle: 'IT001 \u00A720 \u2014 Parker indica 10\u201315 min; pr\u00E1tica RKM ~20\u201330 min (conservadora).',
       critical: true,
     },
     React.createElement(
@@ -1897,14 +1810,7 @@ const StepStabilization = ({ r, set }) =>
         React.createElement(Select, {
           value: r.stabilization.tempo,
           onChange: (v) => set('stabilization.tempo', v),
-          options: [
-            'Menos de 10 minutos',
-            '10 a 15 minutos',
-            '16 a 20 minutos',
-            '21 a 30 minutos',
-            'Mais de 30 minutos',
-            'Não aplicável',
-          ],
+          options: ['Menos de 10 minutos', '10 a 15 minutos', '16 a 20 minutos', '21 a 30 minutos', 'Mais de 30 minutos', 'Não aplicável'],
         }),
       ),
       React.createElement(
@@ -1931,14 +1837,7 @@ const StepStabilization = ({ r, set }) =>
         React.createElement(Select, {
           value: r.stabilization.resultado,
           onChange: (v) => set('stabilization.resultado', v),
-          options: [
-            'Conforme',
-            'Conforme com ressalva',
-            'Não conforme',
-            'Requer retrabalho',
-            'Requer validação do supervisor',
-            'Serviço bloqueado',
-          ],
+          options: ['Conforme', 'Conforme com ressalva', 'Não conforme', 'Requer retrabalho', 'Requer validação do supervisor', 'Serviço bloqueado'],
         }),
       ),
     ),
@@ -1996,8 +1895,7 @@ const StepFinalVerification = ({ r, set }) => {
     SectionCard,
     {
       title: '15. Verifica\u00E7\u00E3o final',
-      subtitle:
-        'IT001 \u00A721 \u2014 sem teste hidr\u00E1ulico formal; verifica\u00E7\u00E3o por pr\u00E9-carga + estanqueidade.',
+      subtitle: 'IT001 \u00A721 \u2014 sem teste hidr\u00E1ulico formal; verifica\u00E7\u00E3o por pr\u00E9-carga + estanqueidade.',
     },
     React.createElement(Toggle, {
       checked: r.finalVerification.realizada,
@@ -2156,8 +2054,7 @@ const StepNonConformity = ({ r, set }) => {
     SectionCard,
     {
       title: '17. NC, retrabalho ou interrup\u00E7\u00E3o',
-      subtitle:
-        'IT001 \u00A725 \u2014 situa\u00E7\u00F5es que exigem interrup\u00E7\u00E3o imediata.',
+      subtitle: 'IT001 \u00A725 \u2014 situa\u00E7\u00F5es que exigem interrup\u00E7\u00E3o imediata.',
     },
     React.createElement(Toggle, {
       checked: r.nonConformity.houve,
@@ -2238,14 +2135,12 @@ const StepValidation = ({ r, set }) =>
     SectionCard,
     {
       title: '18. Valida\u00E7\u00E3o t\u00E9cnica',
-      subtitle:
-        'Quando exigida pela IT001 (\u00A75.3, \u00A713, \u00A714, \u00A718, \u00A719) ou por d\u00FAvida t\u00E9cnica.',
+      subtitle: 'Quando exigida pela IT001 (\u00A75.3, \u00A713, \u00A714, \u00A718, \u00A719) ou por d\u00FAvida t\u00E9cnica.',
     },
     React.createElement(Toggle, {
       checked: r.technicalValidation.exigiu,
       onChange: (v) => set('technicalValidation.exigiu', v),
-      label:
-        'Servi\u00E7o exigiu valida\u00E7\u00E3o do supervisor / respons\u00E1vel t\u00E9cnico',
+      label: 'Servi\u00E7o exigiu valida\u00E7\u00E3o do supervisor / respons\u00E1vel t\u00E9cnico',
     }),
     r.technicalValidation.exigiu &&
       React.createElement(
@@ -2318,8 +2213,7 @@ const StepRelease = ({ r, set }) =>
     SectionCard,
     {
       title: '19. Libera\u00E7\u00E3o',
-      subtitle:
-        'IT001 \u00A722 e \u00A723 \u2014 s\u00F3 liberar com laudo, evid\u00EAncias e valida\u00E7\u00F5es.',
+      subtitle: 'IT001 \u00A722 e \u00A723 \u2014 s\u00F3 liberar com laudo, evid\u00EAncias e valida\u00E7\u00F5es.',
     },
     React.createElement(
       'div',

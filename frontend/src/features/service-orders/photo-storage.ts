@@ -14,15 +14,10 @@ const openPhotoDb = (): Promise<IDBDatabase> =>
       }
     };
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () =>
-      reject(request.error || new Error('Não foi possível abrir o armazenamento de fotos.'));
+    request.onerror = () => reject(request.error || new Error('Não foi possível abrir o armazenamento de fotos.'));
   });
 
-const runPhotoTransaction = (
-  mode: IDBTransactionMode,
-  operation: (store: IDBObjectStore) => void,
-  errorMessage: string,
-): Promise<void> =>
+const runPhotoTransaction = (mode: IDBTransactionMode, operation: (store: IDBObjectStore) => void, errorMessage: string): Promise<void> =>
   openPhotoDb().then(
     (db) =>
       new Promise<void>((resolve, reject) => {
@@ -40,11 +35,6 @@ const runPhotoTransaction = (
   );
 
 export const storeServiceEntryPhoto = (id, file) =>
-  runPhotoTransaction(
-    'readwrite',
-    (store) => store.put(file, id),
-    'Não foi possível salvar a foto.',
-  );
+  runPhotoTransaction('readwrite', (store) => store.put(file, id), 'Não foi possível salvar a foto.');
 
-export const deleteServiceEntryPhoto = (id) =>
-  runPhotoTransaction('readwrite', (store) => store.delete(id), 'Não foi possível remover a foto.');
+export const deleteServiceEntryPhoto = (id) => runPhotoTransaction('readwrite', (store) => store.delete(id), 'Não foi possível remover a foto.');

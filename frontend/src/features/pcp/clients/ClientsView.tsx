@@ -4,13 +4,7 @@ import { CrudTable, CrudTableActions } from '../../../shared/ui/CrudTable';
 import { normalizeText } from '../../../utils/text';
 import { ClientForm } from './ClientForm';
 import { formatCnpj, onlyDigits, type Client, type ClientInput } from './clientModel';
-import {
-  ClientServiceError,
-  createClient,
-  deleteClient,
-  listClients,
-  updateClient,
-} from './service';
+import { ClientServiceError, createClient, deleteClient, listClients, updateClient } from './service';
 
 type ClientPage = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; clientId: number };
 
@@ -59,11 +53,8 @@ export function ClientsView() {
     const searchingByCnpj = /^[\d\s./-]+$/.test(clientSearch.trim());
     if (!normalizedSearch) return clients;
     return clients.filter((client) => {
-      const nameMatch =
-        normalizeText(client.razaoSocial).includes(normalizedSearch) ||
-        normalizeText(client.nomeFantasia).includes(normalizedSearch);
-      const cnpjMatch =
-        searchingByCnpj && searchDigits.length > 0 && client.cnpj.includes(searchDigits);
+      const nameMatch = normalizeText(client.razaoSocial).includes(normalizedSearch) || normalizeText(client.nomeFantasia).includes(normalizedSearch);
+      const cnpjMatch = searchingByCnpj && searchDigits.length > 0 && client.cnpj.includes(searchDigits);
       return nameMatch || cnpjMatch;
     });
   }, [clients, clientSearch]);
@@ -92,11 +83,7 @@ export function ClientsView() {
       setSuccessMessage('Cliente cadastrado com sucesso.');
     } else {
       const updatedClient = await updateClient(editingClientId, clientInput);
-      setClients((previous) =>
-        sortClients(
-          previous.map((client) => (client.id === editingClientId ? updatedClient : client)),
-        ),
-      );
+      setClients((previous) => sortClients(previous.map((client) => (client.id === editingClientId ? updatedClient : client))));
       setSuccessMessage('Cliente atualizado com sucesso.');
     }
     setActionErrorMessage('');
@@ -120,10 +107,7 @@ export function ClientsView() {
   }
 
   if (clientPage.mode !== 'list') {
-    const editingClient =
-      clientPage.mode === 'edit'
-        ? clients.find((client) => client.id === clientPage.clientId)
-        : undefined;
+    const editingClient = clientPage.mode === 'edit' ? clients.find((client) => client.id === clientPage.clientId) : undefined;
     if (clientPage.mode === 'edit' && !editingClient) {
       return (
         <main className="p-4 md:p-6">
@@ -150,31 +134,16 @@ export function ClientsView() {
     <main className="space-y-5 p-4 md:p-6">
       <section className="rkm-card flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between md:p-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-            PCP · CLIENTES
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">PCP · CLIENTES</p>
           <h1 className="mt-2 text-2xl font-semibold text-slate-100">Clientes</h1>
           <p className="mt-2 text-sm text-slate-400">Gerencie os clientes cadastrados na RKM.</p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary shrink-0 justify-center"
-          onClick={openCreate}
-          disabled={loadingClients}
-        >
+        <button type="button" className="btn btn-primary shrink-0 justify-center" onClick={openCreate} disabled={loadingClients}>
           <span aria-hidden="true">＋</span> Novo cliente
         </button>
       </section>
-      {successMessage && (
-        <Feedback kind="success" message={successMessage} onDismiss={() => setSuccessMessage('')} />
-      )}
-      {actionErrorMessage && (
-        <Feedback
-          kind="error"
-          message={actionErrorMessage}
-          onDismiss={() => setActionErrorMessage('')}
-        />
-      )}
+      {successMessage && <Feedback kind="success" message={successMessage} onDismiss={() => setSuccessMessage('')} />}
+      {actionErrorMessage && <Feedback kind="error" message={actionErrorMessage} onDismiss={() => setActionErrorMessage('')} />}
 
       <CrudTable
         search={{
@@ -206,12 +175,8 @@ export function ClientsView() {
         empty={
           filteredClients.length === 0
             ? {
-                title: clientSearch.trim()
-                  ? 'Nenhum cliente encontrado'
-                  : 'Nenhum cliente cadastrado',
-                description: clientSearch.trim()
-                  ? 'Tente outro termo de pesquisa.'
-                  : 'Cadastre o primeiro cliente para começar.',
+                title: clientSearch.trim() ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado',
+                description: clientSearch.trim() ? 'Tente outro termo de pesquisa.' : 'Cadastre o primeiro cliente para começar.',
                 actionLabel: clientSearch.trim() ? 'Limpar pesquisa' : 'Novo cliente',
                 onAction: clientSearch.trim() ? () => setClientSearch('') : openCreate,
               }
@@ -239,15 +204,10 @@ export function ClientsView() {
             </thead>
             <tbody>
               {filteredClients.map((client) => (
-                <tr
-                  key={client.id}
-                  className="border-t border-rkmborder transition-colors hover:bg-rkmcard2/40"
-                >
+                <tr key={client.id} className="border-t border-rkmborder transition-colors hover:bg-rkmcard2/40">
                   <td className="px-5 py-4 font-medium text-slate-100">{client.razaoSocial}</td>
                   <td className="px-5 py-4 text-slate-300">{client.nomeFantasia}</td>
-                  <td className="whitespace-nowrap px-5 py-4 font-mono text-slate-400">
-                    {formatCnpj(client.cnpj)}
-                  </td>
+                  <td className="whitespace-nowrap px-5 py-4 font-mono text-slate-400">{formatCnpj(client.cnpj)}</td>
                   <td className="px-5 py-4 text-right">
                     {clientPendingDeletionId === client.id ? (
                       <div className="flex flex-wrap items-center justify-end gap-2">
@@ -270,10 +230,7 @@ export function ClientsView() {
                         </button>
                       </div>
                     ) : (
-                      <CrudTableActions
-                        onEdit={() => openEdit(client.id)}
-                        onDelete={() => setClientPendingDeletionId(client.id)}
-                      />
+                      <CrudTableActions onEdit={() => openEdit(client.id)} onDelete={() => setClientPendingDeletionId(client.id)} />
                     )}
                   </td>
                 </tr>
@@ -286,31 +243,15 @@ export function ClientsView() {
   );
 }
 
-function Feedback({
-  kind,
-  message,
-  onDismiss,
-}: {
-  kind: 'success' | 'error';
-  message: string;
-  onDismiss: () => void;
-}) {
-  const classes =
-    kind === 'success'
-      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-      : 'border-rose-500/30 bg-rose-500/10 text-rose-300';
+function Feedback({ kind, message, onDismiss }: { kind: 'success' | 'error'; message: string; onDismiss: () => void }) {
+  const classes = kind === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-rose-500/30 bg-rose-500/10 text-rose-300';
   return (
     <div
       role={kind === 'error' ? 'alert' : 'status'}
       className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm ${classes}`}
     >
       <span>{message}</span>
-      <button
-        type="button"
-        aria-label="Dispensar mensagem"
-        className="rounded px-2 hover:bg-white/5"
-        onClick={onDismiss}
-      >
+      <button type="button" aria-label="Dispensar mensagem" className="rounded px-2 hover:bg-white/5" onClick={onDismiss}>
         ✕
       </button>
     </div>

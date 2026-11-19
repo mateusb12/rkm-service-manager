@@ -1,9 +1,4 @@
-import {
-  PRICE_CATALOG_REFERENCE_IDS,
-  PRICE_CATALOG_STORAGE_KEY,
-  type PriceCatalogInput,
-  type PriceCatalogItem,
-} from './model';
+import { PRICE_CATALOG_REFERENCE_IDS, PRICE_CATALOG_STORAGE_KEY, type PriceCatalogInput, type PriceCatalogItem } from './model';
 
 export type PriceCatalogRemoval = {
   mode: 'permanent' | 'archived';
@@ -31,13 +26,7 @@ const demoItems: PriceCatalogItem[] = [
     68000,
     'Kit composto por elementos de vedação para manutenção de acumuladores hidráulicos.',
   ),
-  createDemoItem(
-    'price-recuperar-rosca-embolao',
-    'Recuperar rosca do êmbolo',
-    'service',
-    'un',
-    7500,
-  ),
+  createDemoItem('price-recuperar-rosca-embolao', 'Recuperar rosca do êmbolo', 'service', 'un', 7500),
   createDemoItem('price-pintura', 'Pintura', 'service', 'un', 8500),
 ];
 const DEMO_SEED_VERSION_KEY = `${PRICE_CATALOG_STORAGE_KEY}-seed`;
@@ -130,10 +119,7 @@ export async function createPriceCatalogItem(input: PriceCatalogInput): Promise<
   return item;
 }
 
-export async function updatePriceCatalogItem(
-  id: string,
-  input: PriceCatalogInput,
-): Promise<PriceCatalogItem> {
+export async function updatePriceCatalogItem(id: string, input: PriceCatalogInput): Promise<PriceCatalogItem> {
   const items = readItems();
   const currentItem = items.find((item) => item.id === id);
   if (!currentItem) throw new PriceCatalogServiceError('price_catalog_item_not_found');

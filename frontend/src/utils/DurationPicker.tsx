@@ -38,14 +38,7 @@ function polarToCartesian(cx: number, cy: number, radius: number, angle: number)
   };
 }
 
-function describeRingArc(
-  cx: number,
-  cy: number,
-  outerR: number,
-  innerR: number,
-  startAngle: number,
-  endAngle: number,
-) {
+function describeRingArc(cx: number, cy: number, outerR: number, innerR: number, startAngle: number, endAngle: number) {
   const startOuter = polarToCartesian(cx, cy, outerR, startAngle);
   const endOuter = polarToCartesian(cx, cy, outerR, endAngle);
   const startInner = polarToCartesian(cx, cy, innerR, startAngle);
@@ -63,35 +56,14 @@ function describeRingArc(
   ].join(' ');
 }
 
-function ClockHand({
-  angle,
-  length,
-  width,
-  color,
-}: {
-  angle: number;
-  length: number;
-  width: number;
-  color: string;
-}) {
+function ClockHand({ angle, length, width, color }: { angle: number; length: number; width: number; color: string }) {
   const end = polarToCartesian(50, 50, length, angle);
 
-  return (
-    <line
-      x1="50"
-      y1="50"
-      x2={end.x}
-      y2={end.y}
-      stroke={color}
-      strokeWidth={width}
-      strokeLinecap="round"
-    />
-  );
+  return <line x1="50" y1="50" x2={end.x} y2={end.y} stroke={color} strokeWidth={width} strokeLinecap="round" />;
 }
 
 function DurationClock({ minutes }: { minutes: number | null }) {
-  const total =
-    minutes === null || !Number.isFinite(minutes) ? 0 : Math.max(0, Math.round(minutes));
+  const total = minutes === null || !Number.isFinite(minutes) ? 0 : Math.max(0, Math.round(minutes));
 
   const fullHours = Math.floor(total / 60);
   const mins = total % 60;
@@ -121,13 +93,7 @@ function DurationClock({ minutes }: { minutes: number | null }) {
           y1={inner.y}
           x2={outer.x}
           y2={outer.y}
-          stroke={
-            active
-              ? 'rgba(250,204,21,0.95)'
-              : i % 3 === 0
-                ? 'rgba(255,255,255,0.55)'
-                : 'rgba(255,255,255,0.22)'
-          }
+          stroke={active ? 'rgba(250,204,21,0.95)' : i % 3 === 0 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.22)'}
           strokeWidth={active ? 3 : i % 3 === 0 ? 2 : 1.2}
           strokeLinecap="round"
         />
@@ -146,23 +112,9 @@ function DurationClock({ minutes }: { minutes: number | null }) {
             </radialGradient>
           </defs>
 
-          <circle
-            cx="50"
-            cy="50"
-            r="46"
-            fill="url(#rkmClockFace)"
-            stroke="rgba(96,165,250,0.35)"
-            strokeWidth="2"
-          />
+          <circle cx="50" cy="50" r="46" fill="url(#rkmClockFace)" stroke="rgba(96,165,250,0.35)" strokeWidth="2" />
 
-          {innerBand && (
-            <path
-              d={innerBand}
-              fill="rgba(96,165,250,0.28)"
-              stroke="rgba(96,165,250,0.8)"
-              strokeWidth="0.6"
-            />
-          )}
+          {innerBand && <path d={innerBand} fill="rgba(96,165,250,0.28)" stroke="rgba(96,165,250,0.8)" strokeWidth="0.6" />}
 
           {ticks}
 
@@ -199,8 +151,7 @@ export function DurationPicker({ label, minutes, onChange, mode = 'locked', chil
   const hours = Math.floor((value ?? 0) / 60);
   const mins = (value ?? 0) % 60;
 
-  const update = (n: number | null) =>
-    onChange(n === null ? null : Math.max(0, Math.min(599999, Math.round(n))));
+  const update = (n: number | null) => onChange(n === null ? null : Math.max(0, Math.min(599999, Math.round(n))));
 
   return (
     <div className="rounded-lg border border-rkmborder bg-rkmcard2/40 p-3">
@@ -215,9 +166,7 @@ export function DurationPicker({ label, minutes, onChange, mode = 'locked', chil
         <>
           <div className="grid gap-3 lg:grid-cols-[1fr_148px]">
             <div>
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                Duração rápida
-              </div>
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Duração rápida</div>
 
               <div className="grid grid-cols-3 gap-2">
                 {PRESETS.map(([n, text]) => (
@@ -239,9 +188,7 @@ export function DurationPicker({ label, minutes, onChange, mode = 'locked', chil
 
               {/* RKM_DURATION_FINE_TUNE_V1 */}
               <div className="mt-3 border-t border-rkmborder pt-3">
-                <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  Ajuste fino
-                </div>
+                <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Ajuste fino</div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -293,12 +240,7 @@ export function DurationPicker({ label, minutes, onChange, mode = 'locked', chil
                   min="0"
                   max="9999"
                   value={hours}
-                  onChange={(e) =>
-                    update(
-                      Math.min(9999, Math.max(0, Math.trunc(Number(e.target.value) || 0))) * 60 +
-                        mins,
-                    )
-                  }
+                  onChange={(e) => update(Math.min(9999, Math.max(0, Math.trunc(Number(e.target.value) || 0))) * 60 + mins)}
                 />
               </label>
 
@@ -310,12 +252,7 @@ export function DurationPicker({ label, minutes, onChange, mode = 'locked', chil
                   min="0"
                   max="59"
                   value={mins}
-                  onChange={(e) =>
-                    update(
-                      hours * 60 +
-                        Math.min(59, Math.max(0, Math.trunc(Number(e.target.value) || 0))),
-                    )
-                  }
+                  onChange={(e) => update(hours * 60 + Math.min(59, Math.max(0, Math.trunc(Number(e.target.value) || 0))))}
                 />
               </label>
             </div>

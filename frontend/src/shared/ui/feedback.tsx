@@ -5,12 +5,7 @@ export const AlertBox = ({ severity = 'critical', title, children }) =>
   React.createElement(
     'div',
     {
-      className:
-        (severity === 'critical'
-          ? 'alert-critical'
-          : severity === 'warn'
-            ? 'alert-warn'
-            : 'alert-info') + ' rounded-lg p-3.5 flex gap-3',
+      className: (severity === 'critical' ? 'alert-critical' : severity === 'warn' ? 'alert-warn' : 'alert-info') + ' rounded-lg p-3.5 flex gap-3',
     },
     React.createElement(
       'div',
@@ -43,8 +38,7 @@ export const AlertBox = ({ severity = 'critical', title, children }) =>
     React.createElement(
       'div',
       { className: 'flex-1 text-xs' },
-      title &&
-        React.createElement('div', { className: 'font-semibold text-slate-100 mb-0.5' }, title),
+      title && React.createElement('div', { className: 'font-semibold text-slate-100 mb-0.5' }, title),
       React.createElement('div', { className: 'text-slate-300 leading-relaxed' }, children),
     ),
   );

@@ -5,12 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Tooltip } from '../../../Tooltip';
 import { formatCommitDate } from '../../../utils/formatCommitDate';
 
-import {
-  BUILD_COMMIT,
-  BUILD_COMMIT_DATE,
-  BUILD_COMMIT_TITLE,
-  LOGIN_THEME_STORAGE_KEY,
-} from './constants';
+import { BUILD_COMMIT, BUILD_COMMIT_DATE, BUILD_COMMIT_TITLE, LOGIN_THEME_STORAGE_KEY } from './constants';
 
 import { useAuth } from './AuthProvider';
 
@@ -76,9 +71,7 @@ export function LoginPage() {
     }
   };
   return (
-    <main
-      className={`zenit-login min-h-screen text-slate-700 flex ${darkMode ? 'zenit-dark' : ''}`}
-    >
+    <main className={`zenit-login min-h-screen text-slate-700 flex ${darkMode ? 'zenit-dark' : ''}`}>
       <section className="zenit-login-main">
         <div className="zenit-login-topbar">
           <span className="zenit-topbar-brand">
@@ -116,9 +109,7 @@ export function LoginPage() {
             <div className="mb-8">
               <div className="zenit-kicker">RKM SERVICE MANAGER</div>
               <h1 className="text-2xl font-bold mt-2 text-slate-900">Acesse sua conta</h1>
-              <p className="text-sm text-slate-500 mt-2">
-                Que bom ver você de volta. Vamos continuar no seu ritmo.
-              </p>
+              <p className="text-sm text-slate-500 mt-2">Que bom ver você de volta. Vamos continuar no seu ritmo.</p>
             </div>
             <label className="block text-sm font-medium mb-2">
               E-mail
@@ -144,16 +135,8 @@ export function LoginPage() {
                 disabled={!backendOnline}
               />
             </label>
-            {error && (
-              <div className="alert-critical rounded-lg p-3 text-sm text-rose-200 mt-4">
-                {error}
-              </div>
-            )}
-            {!backendOnline && (
-              <div className="text-xs text-rose-300 mt-4">
-                Ligue o backend para liberar o login.
-              </div>
-            )}
+            {error && <div className="alert-critical rounded-lg p-3 text-sm text-rose-200 mt-4">{error}</div>}
+            {!backendOnline && <div className="text-xs text-rose-300 mt-4">Ligue o backend para liberar o login.</div>}
             <button
               className="btn zenit-button-primary zenit-submit w-full justify-center mt-6 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!backendOnline || submitting}
@@ -161,9 +144,7 @@ export function LoginPage() {
               {submitting ? 'Entrando...' : 'Entrar'}
             </button>
             <div className="zenit-build-info">
-              <Tooltip
-                content={`${BUILD_COMMIT}\n${formatCommitDate(BUILD_COMMIT_DATE)}\n${BUILD_COMMIT_TITLE}`}
-              >
+              <Tooltip content={`${BUILD_COMMIT}\n${formatCommitDate(BUILD_COMMIT_DATE)}\n${BUILD_COMMIT_TITLE}`}>
                 <span>
                   Commit do deploy: <code>{BUILD_COMMIT}</code>
                 </span>
@@ -176,9 +157,7 @@ export function LoginPage() {
             <div className="flex items-center justify-between gap-3 mb-3">
               <div>
                 <h2 className="font-semibold text-slate-800">Perfis de acesso</h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Selecione um perfil para preencher as credenciais de acesso.
-                </p>
+                <p className="text-xs text-slate-500 mt-1">Selecione um perfil para preencher as credenciais de acesso.</p>
               </div>
               <span className="tag tag-amber">RKM</span>
             </div>
@@ -195,9 +174,7 @@ export function LoginPage() {
                 >
                   <div className="font-medium text-slate-800">{credential.label}</div>
                   <div className="text-xs text-slate-500 mt-3 break-all">{credential.email}</div>
-                  {!isProduction && (
-                    <div className="text-xs text-blue-600 mt-1">Senha: {credential.password}</div>
-                  )}
+                  {!isProduction && <div className="text-xs text-blue-600 mt-1">Senha: {credential.password}</div>}
                 </button>
               ))}
             </div>

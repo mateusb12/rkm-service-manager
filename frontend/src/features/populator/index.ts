@@ -1,11 +1,6 @@
 export { LIZY_ORDERS } from './data/lizy-orders';
 
-export {
-  REQUIRED_POPULATOR_FIELDS,
-  classifyRkmOrderType,
-  mapLizyOrderToServiceEntry,
-  validateMappedServiceEntry,
-} from './mapper';
+export { REQUIRED_POPULATOR_FIELDS, classifyRkmOrderType, mapLizyOrderToServiceEntry, validateMappedServiceEntry } from './mapper';
 
 export {
   deleteLizyServiceEntries,

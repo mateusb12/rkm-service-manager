@@ -6,8 +6,7 @@ export function isLocalhost(hostname = window.location.hostname): boolean {
   return LOCAL_HOSTNAMES.has(hostname);
 }
 
-export const LOCAL_DEVELOPMENT_AVAILABLE =
-  import.meta.env.DEV && typeof window !== 'undefined' && isLocalhost();
+export const LOCAL_DEVELOPMENT_AVAILABLE = import.meta.env.DEV && typeof window !== 'undefined' && isLocalhost();
 
 let localDevelopmentEnabled = LOCAL_DEVELOPMENT_AVAILABLE;
 const listeners = new Set<() => void>();

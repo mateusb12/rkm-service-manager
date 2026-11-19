@@ -4,12 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import { loadServiceEntries } from '../service-orders/service';
 
-import {
-  deleteLizyServiceEntries,
-  overwriteLizyServiceEntries,
-  planLizyPopulation,
-  populateLizyServiceEntries,
-} from './populate';
+import { deleteLizyServiceEntries, overwriteLizyServiceEntries, planLizyPopulation, populateLizyServiceEntries } from './populate';
 
 const formatStoredDate = (value) => {
   if (!value) {
@@ -58,9 +53,7 @@ export const PopulatorView = () => {
     }
 
     const confirmed = window.confirm(
-      `Popular ${plan.entriesToInsert.length} OS ` +
-        `no Recebimento / Entrada?\n\n` +
-        `OS existentes serão preservadas e ignoradas.`,
+      `Popular ${plan.entriesToInsert.length} OS ` + `no Recebimento / Entrada?\n\n` + `OS existentes serão preservadas e ignoradas.`,
     );
 
     if (!confirmed) {
@@ -74,9 +67,7 @@ export const PopulatorView = () => {
   };
 
   const overwrite = () => {
-    const lizyCount = plan.existingEntries.filter(
-      (entry) => entry.sourceMetadata?.system === 'lizy',
-    ).length;
+    const lizyCount = plan.existingEntries.filter((entry) => entry.sourceMetadata?.system === 'lizy').length;
     const confirmed = window.confirm(
       `Sobrescrever ${lizyCount} OS importadas da Lizy?\n\n` +
         'Os dados importados, status e etapa serão atualizados. ' +
@@ -92,15 +83,12 @@ export const PopulatorView = () => {
   };
 
   const remove = () => {
-    const lizyCount = plan.existingEntries.filter(
-      (entry) => entry.sourceMetadata?.system === 'lizy',
-    ).length;
+    const lizyCount = plan.existingEntries.filter((entry) => entry.sourceMetadata?.system === 'lizy').length;
 
     if (!lizyCount) return;
 
     const confirmed = window.confirm(
-      `APAGAR ${lizyCount} OS importadas da Lizy?\n\n` +
-        'Cadastros locais serão preservados. Esta ação não pode ser desfeita.',
+      `APAGAR ${lizyCount} OS importadas da Lizy?\n\n` + 'Cadastros locais serão preservados. Esta ação não pode ser desfeita.',
     );
 
     if (!confirmed) return;
@@ -121,8 +109,7 @@ export const PopulatorView = () => {
         <div className="text-lg font-semibold mt-1">Populador de OS</div>
 
         <div className="text-sm text-slate-400 mt-2 max-w-3xl">
-          Importa as ordens coletadas da Lizy para Recebimento / Entrada sem substituir OS
-          existentes e sem inventar dados ausentes.
+          Importa as ordens coletadas da Lizy para Recebimento / Entrada sem substituir OS existentes e sem inventar dados ausentes.
         </div>
       </div>
 
@@ -131,25 +118,15 @@ export const PopulatorView = () => {
 
         <StatCard label="Base atual" value={plan.existingEntries.length} hint="OS já cadastradas" />
 
-        <StatCard
-          label="Prontas"
-          value={plan.entriesToInsert.length}
-          hint="podem ser inseridas agora"
-        />
+        <StatCard label="Prontas" value={plan.entriesToInsert.length} hint="podem ser inseridas agora" />
 
-        <StatCard
-          label="Já existem da fonte"
-          value={plan.skippedExisting.length}
-          hint="serão ignoradas"
-        />
+        <StatCard label="Já existem da fonte" value={plan.skippedExisting.length} hint="serão ignoradas" />
 
         <StatCard label="Inválidas" value={plan.invalid.length} hint="faltam dados obrigatórios" />
       </div>
 
       {hasDatasetDuplicates && (
-        <div className="alert-critical rounded-lg p-4 text-xs">
-          O dataset possui números de OS duplicados. A população foi bloqueada.
-        </div>
+        <div className="alert-critical rounded-lg p-4 text-xs">O dataset possui números de OS duplicados. A população foi bloqueada.</div>
       )}
 
       {lastResult && (
@@ -157,12 +134,8 @@ export const PopulatorView = () => {
           <div className="text-sm font-semibold">Última execução</div>
 
           <div className="text-xs text-slate-400 mt-2">
-            {'entriesToInsert' in lastResult && (
-              <>Inseridas: {lastResult.entriesToInsert.length} · </>
-            )}
-            {'skippedExisting' in lastResult && (
-              <>Já existentes: {lastResult.skippedExisting.length} · </>
-            )}
+            {'entriesToInsert' in lastResult && <>Inseridas: {lastResult.entriesToInsert.length} · </>}
+            {'skippedExisting' in lastResult && <>Já existentes: {lastResult.skippedExisting.length} · </>}
             {'overwritten' in lastResult && <>Sobrescritas: {lastResult.overwritten} · </>}
             {'deleted' in lastResult && <>Apagadas: {lastResult.deleted} · </>}
             Inválidas: {lastResult.invalid?.length || 0}
@@ -177,8 +150,7 @@ export const PopulatorView = () => {
           <div className="text-sm font-semibold">OS já cadastradas no Recebimento / Entrada</div>
 
           <div className="text-xs text-slate-500 mt-1">
-            Base atual utilizada pelo Populador para detectar duplicidades. Total:{' '}
-            {plan.existingEntries.length}.
+            Base atual utilizada pelo Populador para detectar duplicidades. Total: {plan.existingEntries.length}.
           </div>
         </div>
 
@@ -206,9 +178,7 @@ export const PopulatorView = () => {
               <tbody>
                 {plan.existingEntries.map((entry) => (
                   <tr key={entry.id || entry.orderNumber} className="border-t border-rkmborder">
-                    <td className="px-4 py-3 font-medium">
-                      {entry.orderNumber || entry.id || '—'}
-                    </td>
+                    <td className="px-4 py-3 font-medium">{entry.orderNumber || entry.id || '—'}</td>
 
                     <td className="px-4 py-3 text-slate-300">{entry.client || '—'}</td>
 
@@ -216,13 +186,9 @@ export const PopulatorView = () => {
 
                     <td className="px-4 py-3 text-slate-300">{entry.status || '—'}</td>
 
-                    <td className="px-4 py-3 text-slate-400">
-                      {entry.sourceMetadata?.system === 'lizy' ? 'Lizy' : 'Cadastro local'}
-                    </td>
+                    <td className="px-4 py-3 text-slate-400">{entry.sourceMetadata?.system === 'lizy' ? 'Lizy' : 'Cadastro local'}</td>
 
-                    <td className="px-4 py-3 text-slate-500">
-                      {formatStoredDate(entry.updatedAt || entry.createdAt)}
-                    </td>
+                    <td className="px-4 py-3 text-slate-500">{formatStoredDate(entry.updatedAt || entry.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -236,30 +202,18 @@ export const PopulatorView = () => {
           <div className="flex-1">
             <div className="text-sm font-semibold">Preview da importação</div>
 
-            <div className="text-xs text-slate-500 mt-1">
-              Nenhuma alteração é feita até confirmar a população.
-            </div>
+            <div className="text-xs text-slate-500 mt-1">Nenhuma alteração é feita até confirmar a população.</div>
           </div>
 
           <button type="button" className="btn btn-ghost" onClick={refresh}>
             Atualizar
           </button>
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={execute}
-            disabled={hasDatasetDuplicates || plan.entriesToInsert.length === 0}
-          >
+          <button type="button" className="btn btn-primary" onClick={execute} disabled={hasDatasetDuplicates || plan.entriesToInsert.length === 0}>
             Popular {plan.entriesToInsert.length} OS
           </button>
 
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={overwrite}
-            disabled={hasDatasetDuplicates}
-          >
+          <button type="button" className="btn btn-ghost" onClick={overwrite} disabled={hasDatasetDuplicates}>
             Sobrescrever OS da Lizy
           </button>
 
@@ -267,9 +221,7 @@ export const PopulatorView = () => {
             type="button"
             className="btn btn-ghost text-rose-300"
             onClick={remove}
-            disabled={
-              !plan.existingEntries.some((entry) => entry.sourceMetadata?.system === 'lizy')
-            }
+            disabled={!plan.existingEntries.some((entry) => entry.sourceMetadata?.system === 'lizy')}
           >
             Apagar OS da Lizy
           </button>
@@ -341,9 +293,8 @@ export const PopulatorView = () => {
       </div>
 
       <div className="rkm-card p-4 text-xs text-slate-500">
-        <strong className="text-slate-300">Política de importação:</strong> N.I. e campos vazios da
-        Lizy permanecem vazios. Fotos não são simuladas. Marcações de checklist sem associação
-        confiável não são convertidas em dados operacionais.
+        <strong className="text-slate-300">Política de importação:</strong> N.I. e campos vazios da Lizy permanecem vazios. Fotos não são simuladas.
+        Marcações de checklist sem associação confiável não são convertidas em dados operacionais.
       </div>
     </div>
   );

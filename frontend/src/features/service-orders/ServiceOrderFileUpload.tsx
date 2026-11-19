@@ -71,13 +71,9 @@ const ServiceOrderFileSourceToggle = ({ mode, onChange }) => (
         {mode === 'existing' ? <Images size={16} /> : <Upload size={16} />}
       </span>
       <span className="min-w-0">
-        <span className="block text-xs font-semibold text-slate-200">
-          {mode === 'existing' ? 'Biblioteca de arquivos' : 'Novo upload'}
-        </span>
+        <span className="block text-xs font-semibold text-slate-200">{mode === 'existing' ? 'Biblioteca de arquivos' : 'Novo upload'}</span>
         <span className="block truncate text-[11px] text-slate-500">
-          {mode === 'existing'
-            ? 'Escolha um arquivo já armazenado'
-            : 'Adicionar uma nova foto ou arquivo'}
+          {mode === 'existing' ? 'Escolha um arquivo já armazenado' : 'Adicionar uma nova foto ou arquivo'}
         </span>
       </span>
     </div>
@@ -90,16 +86,12 @@ const ServiceOrderFileSourceToggle = ({ mode, onChange }) => (
       />
       <span
         className={`relative flex h-8 w-14 items-center rounded-full border p-1 transition-all duration-200 ${
-          mode === 'existing'
-            ? 'border-sky-300/70 bg-sky-400/20 shadow-[0_0_16px_rgba(56,189,248,0.22)]'
-            : 'border-slate-600 bg-slate-800/90'
+          mode === 'existing' ? 'border-sky-300/70 bg-sky-400/20 shadow-[0_0_16px_rgba(56,189,248,0.22)]' : 'border-slate-600 bg-slate-800/90'
         }`}
       >
         <span
           className={`flex h-6 w-6 items-center justify-center rounded-full shadow-md transition-all duration-200 ${
-            mode === 'existing'
-              ? 'translate-x-6 bg-sky-200 text-sky-950'
-              : 'translate-x-0 bg-slate-200 text-slate-700'
+            mode === 'existing' ? 'translate-x-6 bg-sky-200 text-sky-950' : 'translate-x-0 bg-slate-200 text-slate-700'
           }`}
         >
           {mode === 'existing' ? <Images size={13} /> : <Upload size={13} />}
@@ -112,15 +104,8 @@ const ServiceOrderFileSourceToggle = ({ mode, onChange }) => (
 const ServiceOrderExistingFileList = ({ files, label, onSelect }) => (
   <div className="service-entry-invoice-library">
     {files.map((existingFile) => (
-      <div
-        className="service-entry-invoice-card service-entry-invoice-existing-card"
-        key={existingFile.id}
-      >
-        <ServiceOrderFilePreview
-          file={existingFile}
-          previewLabel={label}
-          documentLabel={existingFile.kind === 'Imagem' ? 'IMG' : 'FILE'}
-        />
+      <div className="service-entry-invoice-card service-entry-invoice-existing-card" key={existingFile.id}>
+        <ServiceOrderFilePreview file={existingFile} previewLabel={label} documentLabel={existingFile.kind === 'Imagem' ? 'IMG' : 'FILE'} />
         <div className="service-entry-invoice-details">
           <strong title={existingFile.name}>{existingFile.name}</strong>
           <small>{existingFile.size}</small>
@@ -136,26 +121,11 @@ const ServiceOrderExistingFileList = ({ files, label, onSelect }) => (
         </div>
       </div>
     ))}
-    {files.length === 0 && (
-      <div className="service-entry-invoice-empty">
-        Nenhum arquivo existente disponível para este campo.
-      </div>
-    )}
+    {files.length === 0 && <div className="service-entry-invoice-empty">Nenhum arquivo existente disponível para este campo.</div>}
   </div>
 );
 
-const ServiceOrderFileDropzone = ({
-  accept,
-  addLabel,
-  addHint,
-  dragging,
-  uploading,
-  onChange,
-  onDragEnter,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-}) => (
+const ServiceOrderFileDropzone = ({ accept, addLabel, addHint, dragging, uploading, onChange, onDragEnter, onDragOver, onDragLeave, onDrop }) => (
   <label
     className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}`}
     onDragEnter={onDragEnter}
@@ -210,8 +180,7 @@ export function ServiceOrderFileUpload({
           (candidate) =>
             candidate.bytes > 0 &&
             (accept !== 'image/*' || candidate.kind === 'Imagem') &&
-            (!category ||
-              candidate.category?.trim().toLowerCase() === category.trim().toLowerCase()),
+            (!category || candidate.category?.trim().toLowerCase() === category.trim().toLowerCase()),
         );
         setExistingFiles(availableFiles);
       })
@@ -255,11 +224,7 @@ export function ServiceOrderFileUpload({
   };
 
   return (
-    <div
-      className="service-entry-photo-field"
-      onDragOverCapture={dragOverFile}
-      onDropCapture={dropFile}
-    >
+    <div className="service-entry-photo-field" onDragOverCapture={dragOverFile} onDropCapture={dropFile}>
       <label className="service-entry-photo-label">{label}</label>
       <p>{hint}</p>
       {showLibrary && !selectedFile && (
@@ -284,11 +249,7 @@ export function ServiceOrderFileUpload({
       ) : selectedFile && !editingSelection ? (
         <div className="service-entry-invoice-card service-entry-invoice-selected-card">
           <div className="service-entry-invoice-lock-badge">{selectedBadge}</div>
-          <ServiceOrderFilePreview
-            file={selectedFile}
-            previewLabel={label}
-            documentLabel={selectedFile.kind === 'Imagem' ? 'IMG' : 'FILE'}
-          />
+          <ServiceOrderFilePreview file={selectedFile} previewLabel={label} documentLabel={selectedFile.kind === 'Imagem' ? 'IMG' : 'FILE'} />
           <div className="service-entry-invoice-details">
             <strong title={selectedFile.name}>{selectedFile.name}</strong>
             <small>Arquivo vinculado a esta OS</small>
@@ -337,11 +298,7 @@ export function ServiceOrderFileUpload({
       ) : (
         <>
           {selectedFile && editingSelection && (
-            <button
-              type="button"
-              className="service-entry-invoice-cancel-edit"
-              onClick={() => setEditingSelection(false)}
-            >
+            <button type="button" className="service-entry-invoice-cancel-edit" onClick={() => setEditingSelection(false)}>
               Cancelar troca
             </button>
           )}

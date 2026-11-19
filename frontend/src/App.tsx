@@ -19,21 +19,8 @@ import {
   AuthDecisionModal,
 } from './features/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  viewFromPath,
-  SIDEBAR_ITEMS,
-  OperationalPlaceholder,
-  CleanSidebar,
-  CleanTopBar,
-} from './app/navigation';
-import {
-  loadDraft,
-  saveDraft,
-  ITForm,
-  PendenciesView,
-  EvidencesView,
-  SummaryView,
-} from './features/service-workflow';
+import { viewFromPath, SIDEBAR_ITEMS, OperationalPlaceholder, CleanSidebar, CleanTopBar } from './app/navigation';
+import { loadDraft, saveDraft, ITForm, PendenciesView, EvidencesView, SummaryView } from './features/service-workflow';
 import { BenchesView } from './features/workshop/benches';
 import { ClientsView } from './features/pcp/clients';
 import { PriceCatalogView, type PriceCatalogPage } from './features/commercial/price-catalog';
@@ -233,8 +220,7 @@ const SupervisorBucket = ({ title, count, hint, accent, services, onOpenService 
       React.createElement(
         'div',
         {
-          className:
-            'w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold ' + accent,
+          className: 'w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold ' + accent,
         },
         count,
       ),
@@ -255,36 +241,20 @@ const SupervisorBucket = ({ title, count, hint, accent, services, onOpenService 
             {
               key: s.id,
               onClick: () => onOpenService && onOpenService(s),
-              className:
-                'w-full flex items-center gap-2 text-left text-xs text-slate-300 hover:text-blue-300 hover:bg-rkmcard2/40 px-2 py-1 rounded',
+              className: 'w-full flex items-center gap-2 text-left text-xs text-slate-300 hover:text-blue-300 hover:bg-rkmcard2/40 px-2 py-1 rounded',
             },
             React.createElement('span', { className: 'font-medium text-slate-200' }, s.id),
-            React.createElement(
-              'span',
-              { className: 'tag ' + (s.it === 'IT001' ? 'tag-blue' : 'tag-violet') },
-              s.it,
-            ),
+            React.createElement('span', { className: 'tag ' + (s.it === 'IT001' ? 'tag-blue' : 'tag-violet') }, s.it),
             React.createElement('span', { className: 'flex-1 truncate' }, s.client),
           ),
         ),
-        services.length > 4 &&
-          React.createElement(
-            'div',
-            { className: 'text-xs text-slate-500 px-2' },
-            '+ ',
-            services.length - 4,
-            ' mais\u2026',
-          ),
+        services.length > 4 && React.createElement('div', { className: 'text-xs text-slate-500 px-2' }, '+ ', services.length - 4, ' mais\u2026'),
       ),
   );
 const SupervisorView = ({ services, rec001, rec002, activeRole, onDecisionClick }) => {
-  const alertaCritico = services.filter((s) =>
-    /(execu|análise|pendente t[ée]cnico|bloque)/i.test(s.status),
-  );
+  const alertaCritico = services.filter((s) => /(execu|análise|pendente t[ée]cnico|bloque)/i.test(s.status));
   const bloqueados = services.filter((s) => /bloque/i.test(s.status));
-  const aguardandoValid = services.filter((s) =>
-    /pendente t[ée]cnico|aguardando valida/i.test(s.status),
-  );
+  const aguardandoValid = services.filter((s) => /pendente t[ée]cnico|aguardando valida/i.test(s.status));
   const condenado = services.filter((s) => /condenado/i.test(s.status));
   const duvida = services.filter((s) => /pendente t[ée]cnico/i.test(s.status));
   const ausenciaRef = services.filter((s) => /bloqueado por rastreab/i.test(s.status));
@@ -294,16 +264,8 @@ const SupervisorView = ({ services, rec001, rec002, activeRole, onDecisionClick 
     React.createElement(
       'div',
       { className: 'rkm-card p-5' },
-      React.createElement(
-        'div',
-        { className: 'text-xs text-blue-300 uppercase tracking-wider' },
-        'Supervisor',
-      ),
-      React.createElement(
-        'div',
-        { className: 'text-lg font-semibold mt-1' },
-        'Vis\u00E3o T\u00E9cnica de Controle',
-      ),
+      React.createElement('div', { className: 'text-xs text-blue-300 uppercase tracking-wider' }, 'Supervisor'),
+      React.createElement('div', { className: 'text-lg font-semibold mt-1' }, 'Vis\u00E3o T\u00E9cnica de Controle'),
       React.createElement(
         'div',
         { className: 'text-xs text-slate-400' },
@@ -374,9 +336,7 @@ const SupervisorView = ({ services, rec001, rec002, activeRole, onDecisionClick 
    VIEW — Visão da Qualidade
    ============================================================ */
 const QualityView = ({ services, rec001, rec002, activeRole, onDecisionClick }) => {
-  const aguardando = services.filter((s) =>
-    /aguardando qualidade|pendente.*qualidade/i.test(s.status),
-  );
+  const aguardando = services.filter((s) => /aguardando qualidade|pendente.*qualidade/i.test(s.status));
   const evidPendentes = services.filter((s) => /em execu|pendente t[ée]cnico/i.test(s.status));
   const laudoPend = services.filter((s) => !/liberado/i.test(s.status));
   const ressalva = services.filter((s) => /ressalva/i.test(s.status));
@@ -388,16 +348,8 @@ const QualityView = ({ services, rec001, rec002, activeRole, onDecisionClick }) 
     React.createElement(
       'div',
       { className: 'rkm-card p-5' },
-      React.createElement(
-        'div',
-        { className: 'text-xs text-emerald-300 uppercase tracking-wider' },
-        'Qualidade',
-      ),
-      React.createElement(
-        'div',
-        { className: 'text-lg font-semibold mt-1' },
-        'Vis\u00E3o da Qualidade',
-      ),
+      React.createElement('div', { className: 'text-xs text-emerald-300 uppercase tracking-wider' }, 'Qualidade'),
+      React.createElement('div', { className: 'text-lg font-semibold mt-1' }, 'Vis\u00E3o da Qualidade'),
       React.createElement(
         'div',
         { className: 'text-xs text-slate-400' },
@@ -465,26 +417,12 @@ const QualityView = ({ services, rec001, rec002, activeRole, onDecisionClick }) 
     React.createElement(
       'div',
       { className: 'rkm-card p-5' },
-      React.createElement(
-        'div',
-        { className: 'text-sm font-semibold mb-2' },
-        'Trip\u00E9 de aprova\u00E7\u00E3o IT002 \u00A717',
-      ),
+      React.createElement('div', { className: 'text-sm font-semibold mb-2' }, 'Trip\u00E9 de aprova\u00E7\u00E3o IT002 \u00A717'),
       React.createElement(
         'ul',
         { className: 'text-xs text-slate-300 space-y-1.5 list-disc pl-5' },
-        React.createElement(
-          'li',
-          null,
-          React.createElement('b', null, 'Mant\u00E9m press\u00E3o'),
-          ' \u2014 verifica\u00E7\u00E3o operacional.',
-        ),
-        React.createElement(
-          'li',
-          null,
-          React.createElement('b', null, 'Sem vazamento'),
-          ' \u2014 verifica\u00E7\u00E3o de estanqueidade.',
-        ),
+        React.createElement('li', null, React.createElement('b', null, 'Mant\u00E9m press\u00E3o'), ' \u2014 verifica\u00E7\u00E3o operacional.'),
+        React.createElement('li', null, React.createElement('b', null, 'Sem vazamento'), ' \u2014 verifica\u00E7\u00E3o de estanqueidade.'),
         React.createElement(
           'li',
           null,
@@ -725,19 +663,11 @@ const App = () => {
     const route = SIDEBAR_ITEMS.find((item) => item.key === view);
 
     if (route?.disabled) {
-      return React.createElement(
-        'main',
-        { className: 'p-6 text-slate-300' },
-        'Esta funcionalidade está indisponível.',
-      );
+      return React.createElement('main', { className: 'p-6 text-slate-300' }, 'Esta funcionalidade está indisponível.');
     }
 
     if (route && !route.roles.includes(activeRole)) {
-      return React.createElement(
-        'main',
-        { className: 'p-6 text-slate-300' },
-        'Você não tem permissão para acessar esta página.',
-      );
+      return React.createElement('main', { className: 'p-6 text-slate-300' }, 'Você não tem permissão para acessar esta página.');
     }
 
     if (view === 'workshop-benches') {
@@ -846,10 +776,7 @@ const App = () => {
           rec001: rec001,
           rec002: rec002,
           scope: activeRole === 'admin' ? 'all' : activeRole,
-          title:
-            activeRole === 'admin'
-              ? 'Histórico global de autorizações'
-              : 'Histórico de autorizações',
+          title: activeRole === 'admin' ? 'Histórico global de autorizações' : 'Histórico de autorizações',
         }),
       );
     }

@@ -43,12 +43,9 @@ const previewUrlCache = new Map<string, string>();
 const previewRequests = new Map<string, Promise<string>>();
 
 function fileKind(file: BackendFile): FileKind {
-  if (file.contentType === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))
-    return 'PDF';
-  if (file.contentType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name))
-    return 'Imagem';
-  if (file.contentType.includes('spreadsheet') || /\.(xls|xlsx|csv)$/i.test(file.name))
-    return 'Planilha';
+  if (file.contentType === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) return 'PDF';
+  if (file.contentType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name)) return 'Imagem';
+  if (file.contentType.includes('spreadsheet') || /\.(xls|xlsx|csv)$/i.test(file.name)) return 'Planilha';
   return 'Documento';
 }
 

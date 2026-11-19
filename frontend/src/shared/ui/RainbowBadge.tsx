@@ -9,10 +9,7 @@ const BADGE_COLORS = [
 ];
 
 function colorIndex(value: string): number {
-  return (
-    [...value].reduce((total, character) => total + character.charCodeAt(0), 0) %
-    BADGE_COLORS.length
-  );
+  return [...value].reduce((total, character) => total + character.charCodeAt(0), 0) % BADGE_COLORS.length;
 }
 
 type RainbowBadgeProps = {
@@ -24,9 +21,7 @@ export function RainbowBadge({ children, colorKey }: RainbowBadgeProps) {
   const key = colorKey ?? String(children);
 
   return (
-    <span
-      className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-xs font-medium ${BADGE_COLORS[colorIndex(key)]}`}
-    >
+    <span className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-xs font-medium ${BADGE_COLORS[colorIndex(key)]}`}>
       <span className="truncate">{children}</span>
     </span>
   );

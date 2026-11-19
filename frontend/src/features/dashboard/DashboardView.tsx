@@ -47,16 +47,11 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
     };
   }, []);
 
-  const services = useMemo(
-    () => entries.map((entry) => mapServiceEntryToDashboardService(entry, stages)),
-    [entries, stages],
-  );
+  const services = useMemo(() => entries.map((entry) => mapServiceEntryToDashboardService(entry, stages)), [entries, stages]);
   const open = services.filter((s) => /(execu|análise|recebido|pendente)/i.test(s.status)).length;
   const blocked = services.filter((s) => /bloque/i.test(s.status)).length;
   const approved = services.filter((s) => /(aprovad|liberad|finalizad)/i.test(s.status)).length;
-  const pending = services.filter((s) =>
-    /(bloque|pendente|aguardando|triagem)/i.test(s.status),
-  ).length;
+  const pending = services.filter((s) => /(bloque|pendente|aguardando|triagem)/i.test(s.status)).length;
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -71,10 +66,7 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
         <div className="operations-identity">
           <div className="operations-kicker">ORDENS DE SERVIÇO</div>
           <h1 className="text-xl md:text-2xl font-semibold">Visão geral das OS</h1>
-          <p className="operations-description">
-            Acompanhe as ordens cadastradas em Criar ordem de serviço, com status, responsável e
-            etapa atual.
-          </p>
+          <p className="operations-description">Acompanhe as ordens cadastradas em Criar ordem de serviço, com status, responsável e etapa atual.</p>
         </div>
         <div className="operations-actions">
           <div className="operations-actions-title">Ação rápida</div>
@@ -85,34 +77,10 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard
-          label="Em andamento"
-          value={open}
-          hint="OS cadastradas"
-          accent="bg-blue-500/20 text-blue-300"
-          icon="◫"
-        />
-        <KPICard
-          label="Finalizadas / liberadas"
-          value={approved}
-          hint="OS concluídas"
-          accent="bg-emerald-500/20 text-emerald-300"
-          icon="✓"
-        />
-        <KPICard
-          label="Bloqueados"
-          value={blocked}
-          hint="Segurança / rastreabilidade"
-          accent="bg-rose-500/20 text-rose-300"
-          icon="⊘"
-        />
-        <KPICard
-          label="Pendências"
-          value={pending}
-          hint="Bloqueios e aguardando"
-          accent="bg-amber-500/20 text-amber-300"
-          icon="!"
-        />
+        <KPICard label="Em andamento" value={open} hint="OS cadastradas" accent="bg-blue-500/20 text-blue-300" icon="◫" />
+        <KPICard label="Finalizadas / liberadas" value={approved} hint="OS concluídas" accent="bg-emerald-500/20 text-emerald-300" icon="✓" />
+        <KPICard label="Bloqueados" value={blocked} hint="Segurança / rastreabilidade" accent="bg-rose-500/20 text-rose-300" icon="⊘" />
+        <KPICard label="Pendências" value={pending} hint="Bloqueios e aguardando" accent="bg-amber-500/20 text-amber-300" icon="!" />
       </div>
 
       <div className="rkm-card overflow-hidden">
@@ -134,18 +102,7 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-slate-400 text-xs uppercase tracking-wide">
-                  {[
-                    'OS / Laudo',
-                    'Origem',
-                    'Cliente',
-                    'Equipamento',
-                    'Técnico',
-                    'Data',
-                    'Status',
-                    'Prioridade',
-                    'Etapa',
-                    'Ações',
-                  ].map((label) => (
+                  {['OS / Laudo', 'Origem', 'Cliente', 'Equipamento', 'Técnico', 'Data', 'Status', 'Prioridade', 'Etapa', 'Ações'].map((label) => (
                     <th key={label} className="text-left font-medium px-5 py-3">
                       {label}
                     </th>
@@ -154,10 +111,7 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
               </thead>
               <tbody>
                 {services.map((service) => (
-                  <tr
-                    key={service.id}
-                    className="border-t border-rkmborder hover:bg-rkmcard2/40 transition"
-                  >
+                  <tr key={service.id} className="border-t border-rkmborder hover:bg-rkmcard2/40 transition">
                     <td className="px-5 py-3 font-medium text-slate-100">{service.id}</td>
                     <td className="px-5 py-3">
                       <span className="tag tag-blue">RCM</span>
@@ -170,19 +124,13 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
                       <StatusTag status={service.status} className="table-tag table-status" />
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <PriorityTag
-                        priority={service.priority}
-                        className="table-tag table-priority"
-                      />
+                      <PriorityTag priority={service.priority} className="table-tag table-priority" />
                     </td>
                     <td className="px-5 py-3 text-slate-400">
                       {service.step}/{service.stepTotal}
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <button
-                        className="text-slate-400 hover:text-blue-300 px-2"
-                        title="Visualizar"
-                      >
+                      <button className="text-slate-400 hover:text-blue-300 px-2" title="Visualizar">
                         ◉
                       </button>
                     </td>

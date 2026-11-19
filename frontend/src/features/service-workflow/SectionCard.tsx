@@ -18,11 +18,9 @@ export const SectionCard = ({ title, subtitle, critical, children, headerRight }
           'div',
           { className: 'text-sm font-semibold flex items-center gap-2' },
           title,
-          critical &&
-            React.createElement('span', { className: 'tag tag-red' }, 'Etapa cr\u00EDtica'),
+          critical && React.createElement('span', { className: 'tag tag-red' }, 'Etapa cr\u00EDtica'),
         ),
-        subtitle &&
-          React.createElement('div', { className: 'text-xs text-slate-400 mt-0.5' }, subtitle),
+        subtitle && React.createElement('div', { className: 'text-xs text-slate-400 mt-0.5' }, subtitle),
       ),
       headerRight,
     ),

@@ -15,14 +15,8 @@ export const mapServiceEntryToDashboardService = (entry, stages = []) => {
   return {
     id: entry.orderNumber || entry.id,
     client: entry.client || 'Cliente não informado',
-    equipment:
-      [entry.equipment, entry.manufacturer].filter(Boolean).join(' • ') ||
-      'Equipamento não informado',
-    tech:
-      entry.serviceResponsible ||
-      entry.expertTechnician ||
-      entry.disassemblyOperator ||
-      'Não atribuído',
+    equipment: [entry.equipment, entry.manufacturer].filter(Boolean).join(' • ') || 'Equipamento não informado',
+    tech: entry.serviceResponsible || entry.expertTechnician || entry.disassemblyOperator || 'Não atribuído',
     date: formatDashboardDate(entry.updatedAt || entry.openingDate),
     status: entry.status || 'Recebido',
     priority: entry.urgent ? 'Alta' : 'Média',

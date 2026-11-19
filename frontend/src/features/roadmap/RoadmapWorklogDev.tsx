@@ -52,8 +52,7 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     },
     {
       category: 'Ambiente',
-      description:
-        'Diagnóstico e recuperação da integração WakaTime após recriação do frontend, reutilizando a configuração existente no Linux.',
+      description: 'Diagnóstico e recuperação da integração WakaTime após recriação do frontend, reutilizando a configuração existente no Linux.',
     },
   ],
   'pcp/abertura-os': [
@@ -108,8 +107,7 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     },
     {
       category: 'Transversal',
-      description:
-        'Padronização do feedback de validação em toast compacto, com fechamento manual, desaparecimento automático e barra de progresso.',
+      description: 'Padronização do feedback de validação em toast compacto, com fechamento manual, desaparecimento automático e barra de progresso.',
     },
     {
       category: 'Ambiente',
@@ -207,8 +205,7 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     },
     {
       category: 'Produto',
-      description:
-        'Criação da listagem administrativa de usuários consumindo o backend, com nome, e-mail, perfil, status e último login persistido.',
+      description: 'Criação da listagem administrativa de usuários consumindo o backend, com nome, e-mail, perfil, status e último login persistido.',
     },
     {
       category: 'Transversal',
@@ -338,16 +335,12 @@ export default function RoadmapWorklogDev({ featureId }: { featureId: string }) 
 
   return (
     <details className="rounded-lg border border-sky-400/20 bg-sky-400/5 p-3">
-      <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-sky-300">
-        Trabalho realizado
-      </summary>
+      <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-sky-300">Trabalho realizado</summary>
 
       <ul className="mt-3 space-y-3">
         {entries.map((entry, index) => (
           <li key={index} className="flex flex-col gap-1.5 sm:flex-row sm:gap-3">
-            <span
-              className={`h-fit w-fit shrink-0 rounded-md border px-2 py-0.5 text-[11px] font-medium ${styles[entry.category]}`}
-            >
+            <span className={`h-fit w-fit shrink-0 rounded-md border px-2 py-0.5 text-[11px] font-medium ${styles[entry.category]}`}>
               {entry.category}
             </span>
             <span className="text-xs leading-relaxed text-slate-300">{entry.description}</span>

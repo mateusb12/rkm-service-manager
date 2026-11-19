@@ -29,16 +29,7 @@ type CrudTableProps = {
   children: ReactNode;
 };
 
-export function CrudTable({
-  search,
-  count,
-  filters,
-  loading,
-  error,
-  empty,
-  footer,
-  children,
-}: CrudTableProps) {
+export function CrudTable({ search, count, filters, loading, error, empty, footer, children }: CrudTableProps) {
   return (
     <section className="rkm-card overflow-hidden">
       {(search || count || filters) && (
@@ -46,10 +37,7 @@ export function CrudTable({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             {search && (
               <div className="w-full max-w-lg">
-                <label
-                  htmlFor={search.id}
-                  className="mb-2 block text-sm font-medium text-slate-200"
-                >
+                <label htmlFor={search.id} className="mb-2 block text-sm font-medium text-slate-200">
                   {search.label}
                 </label>
                 <input
@@ -69,8 +57,7 @@ export function CrudTable({
                   count.loadingLabel
                 ) : (
                   <>
-                    <strong className="text-slate-100">{count.count}</strong>{' '}
-                    {count.count === 1 ? count.singularLabel : count.pluralLabel}
+                    <strong className="text-slate-100">{count.count}</strong> {count.count === 1 ? count.singularLabel : count.pluralLabel}
                   </>
                 )}
               </p>
@@ -105,9 +92,7 @@ export function CrudTable({
           </button>
         </div>
       ) : loading ? (
-        <div className="px-5 py-14 text-center text-sm text-slate-400">
-          {count?.loadingLabel || 'Carregando...'}
-        </div>
+        <div className="px-5 py-14 text-center text-sm text-slate-400">{count?.loadingLabel || 'Carregando...'}</div>
       ) : empty ? (
         <div className="px-5 py-14 text-center">
           <h2 className="text-lg font-medium text-slate-200">{empty.title}</h2>
@@ -120,36 +105,18 @@ export function CrudTable({
         children
       )}
 
-      {footer && (
-        <footer className="border-t border-rkmborder px-5 py-3 text-xs text-slate-500">
-          {footer}
-        </footer>
-      )}
+      {footer && <footer className="border-t border-rkmborder px-5 py-3 text-xs text-slate-500">{footer}</footer>}
     </section>
   );
 }
 
-export function CrudTableActions({
-  onEdit,
-  onDelete,
-}: {
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
+export function CrudTableActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
   return (
     <div className="flex justify-end gap-2">
-      <button
-        type="button"
-        className="rounded-lg border border-blue-500/25 px-3 py-2 text-blue-300 hover:bg-blue-500/10"
-        onClick={onEdit}
-      >
+      <button type="button" className="rounded-lg border border-blue-500/25 px-3 py-2 text-blue-300 hover:bg-blue-500/10" onClick={onEdit}>
         Editar
       </button>
-      <button
-        type="button"
-        className="rounded-lg border border-rose-500/25 px-3 py-2 text-rose-300 hover:bg-rose-500/10"
-        onClick={onDelete}
-      >
+      <button type="button" className="rounded-lg border border-rose-500/25 px-3 py-2 text-rose-300 hover:bg-rose-500/10" onClick={onDelete}>
         Excluir
       </button>
     </div>
