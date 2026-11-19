@@ -91,7 +91,12 @@ export function ServiceEntryUploadFile({
   onSelectExistingRef.current = onSelectExisting;
 
   useEffect(() => {
-    if (!showLibrary) return undefined;
+    if (!showLibrary) {
+      setExistingFiles([]);
+      setAutoSelectedFile(undefined);
+      setEditingSelection(false);
+      return undefined;
+    }
     let active = true;
     void listFiles()
       .then((files) => {

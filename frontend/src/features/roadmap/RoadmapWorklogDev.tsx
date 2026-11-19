@@ -193,6 +193,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
       description:
         'Refinamento da fila com skeleton somente para os dados do backend, fallback local das etapas, data de criação por extenso, badge do criador e bloqueio visual e funcional das etapas futuras.',
     },
+    {
+      category: 'Produto',
+      description:
+        'Correção da abertura de uma nova OS para não exibir arquivos da biblioteca global sem uma OS selecionada, limpando também o estado residual de arquivos ao desselecionar a OS.',
+    },
   ],
   'admin/usuarios': [
     {

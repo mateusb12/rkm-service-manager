@@ -457,6 +457,7 @@ const ServiceEntryArrivalStep = ({
     <div className="md:col-span-3">
       <ServiceEntryInvoiceFileField
         file={form.invoiceFile}
+        showLibrary={Boolean(form.id)}
         onUpload={onInvoiceFileUpload}
         onDeselect={() => {
           set('invoiceFileId', null);
