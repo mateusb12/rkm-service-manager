@@ -639,67 +639,10 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
 
 const ServiceEntryDisassemblyStep = (props) => <ServiceEntryDisassemblyChecklist {...props} />;
 
-const ServiceEntryBudgetStep = ({ form, set, addPhotos, removePhoto }) => (
-  <ServiceEntrySection title="Orçamento" description="Registre os achados, a recomendação de reparo e a aprovação do cliente.">
-    <Field label="Diagnóstico técnico *" className="md:col-span-3">
-      <TextArea
-        rows={4}
-        value={form.diagnosis}
-        onChange={(value) => set('diagnosis', value)}
-        placeholder="Causa provável, danos e conclusão da peritagem..."
-      />
-    </Field>
-    <Field label="Medições / tolerâncias" className="md:col-span-2">
-      <TextArea
-        rows={3}
-        value={form.measurements}
-        onChange={(value) => set('measurements', value)}
-        placeholder="Dimensões, folgas, pressão, valores de referência..."
-      />
-    </Field>
-    <Field label="Destino das peças *">
-      <select className="rkm-input zenit-field" value={form.partsDisposition} onChange={(event) => set('partsDisposition', event.target.value)}>
-        <option value="">Selecione</option>
-        <option>Reaproveitar</option>
-        <option>Substituir</option>
-        <option>Enviar para análise</option>
-        <option>Condenar</option>
-      </select>
-    </Field>
-    <Field label="Recomendação / escopo" className="md:col-span-3">
-      <TextArea
-        rows={3}
-        value={form.repairRecommendation}
-        onChange={(value) => set('repairRecommendation', value)}
-        placeholder="Serviços e peças recomendados para orçamento/laudo..."
-      />
-    </Field>
-    <Field label="Status da aprovação">
-      <select className="rkm-input zenit-field" value={form.approvalStatus} onChange={(event) => set('approvalStatus', event.target.value)}>
-        <option>Pendente</option>
-        <option>Aprovada</option>
-        <option>Reprovada</option>
-        <option>Ajuste solicitado</option>
-      </select>
-    </Field>
-    <Field label="Referência da aprovação">
-      <TextInput value={form.approvalReference} onChange={(value) => set('approvalReference', value)} placeholder="E-mail, pedido ou autorização" />
-    </Field>
-    <Field label="Disponibilidade de material">
-      <select className="rkm-input zenit-field" value={form.materialStatus} onChange={(event) => set('materialStatus', event.target.value)}>
-        <option>A verificar</option>
-        <option>Disponível</option>
-        <option>Aguardando compra</option>
-        <option>Não necessário</option>
-      </select>
-    </Field>
-    <div className="md:col-span-3">
-      <ServiceEntryPhotoField
-        label="Fotos dos achados"
-        photos={form.photos.diagnosis}
-        onFiles={(files) => addPhotos('diagnosis', files)}
-        onRemove={(photo) => removePhoto('diagnosis', photo)}
-      />
+const ServiceEntryBudgetStep = () => (
+  <ServiceEntrySection title="Orçamento" description="Esta etapa ainda não foi implementada.">
+    <div className="md:col-span-3 rounded-lg border border-dashed border-sky-400/30 bg-slate-950/20 p-8 text-center text-slate-400">
+      Ainda não implementado.
     </div>
   </ServiceEntrySection>
 );
