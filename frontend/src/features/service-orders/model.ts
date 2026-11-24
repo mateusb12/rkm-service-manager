@@ -31,6 +31,8 @@ export const CYLINDER_HEALTH_COMPONENTS = [
   'Outros',
 ];
 
+export const CYLINDER_OPTIONAL_ITEMS = ['Articulação traseira', 'Articulação dianteira', 'Garfo', 'Conexão', 'Olhal', 'Munhão', 'Outro'];
+
 export const createEmptyDisassemblyChecklist = () =>
   CYLINDER_HEALTH_COMPONENTS.map((component) => ({
     component,
@@ -66,6 +68,12 @@ export const createEmptyServiceEntry = () => ({
   equipment: '',
   model: '',
   claimedDefect: '',
+  cylinderInternalDiameter: '',
+  cylinderExternalDiameter: '',
+  cylinderLength: '',
+  cylinderRodDiameter: '',
+  cylinderOptionalItems: [],
+  cylinderOptionalItemsOther: '',
 
   shippingNotes: '',
   equipmentLocation: '',

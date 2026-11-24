@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React from 'react';
 
-import { Field, TextInput, TextArea, Select, Toggle, ChipMulti } from '../../../shared/ui/form-controls';
+import { Field, TextInput, TextArea, Select, Toggle, MultiSelectCheckboxes } from '../../../shared/ui/form-controls';
 
 import { AlertBox } from '../../../shared/ui/feedback';
 
@@ -999,7 +999,7 @@ export const StepSafetyIsolationIT002 = ({ r, set }) =>
     React.createElement(
       Field,
       { label: 'EPIs utilizados' },
-      React.createElement(ChipMulti, {
+      React.createElement(MultiSelectCheckboxes, {
         values: r.safetyIsolation.epis,
         onChange: (v) => set('safetyIsolation.epis', v),
         options: EPI_LIST,
@@ -1029,7 +1029,7 @@ export const StepAssessmentPistonIT002 = ({ r, set }) =>
     React.createElement(
       Field,
       { label: 'Condi\u00E7\u00F5es observadas' },
-      React.createElement(ChipMulti, {
+      React.createElement(MultiSelectCheckboxes, {
         values: r.assessment.piston.conditions,
         onChange: (v) => set('assessment.piston.conditions', v),
         options: [
@@ -1080,7 +1080,7 @@ export const StepAssessmentShellIT002 = ({ r, set }) =>
     React.createElement(
       Field,
       { label: 'Condi\u00E7\u00F5es observadas' },
-      React.createElement(ChipMulti, {
+      React.createElement(MultiSelectCheckboxes, {
         values: r.assessment.shellCylinder.conditions,
         onChange: (v) => set('assessment.shellCylinder.conditions', v),
         options: [
@@ -1147,7 +1147,7 @@ export const StepAssessmentCapsIT002 = ({ r, set }) =>
     React.createElement(
       Field,
       { label: 'Condi\u00E7\u00F5es observadas' },
-      React.createElement(ChipMulti, {
+      React.createElement(MultiSelectCheckboxes, {
         values: r.assessment.capsThreadsChannelsSeals.conditions,
         onChange: (v) => set('assessment.capsThreadsChannelsSeals.conditions', v),
         options: [
@@ -1904,7 +1904,7 @@ export const StepNonConformityIT002 = ({ r, set }) => {
         React.createElement(
           Field,
           { label: 'Tipos de ocorr\u00EAncia' },
-          React.createElement(ChipMulti, {
+          React.createElement(MultiSelectCheckboxes, {
             values: r.nonConformity.tipos,
             onChange: (v) => set('nonConformity.tipos', v),
             options: tipos,

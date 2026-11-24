@@ -2,6 +2,27 @@
 
 import { apiRequest } from '../../shared/api/http';
 
+const CYLINDER_FIELDS = [
+  'cylinderInternalDiameter',
+  'cylinderExternalDiameter',
+  'cylinderLength',
+  'cylinderRodDiameter',
+  'cylinderOptionalItems',
+  'cylinderOptionalItemsOther',
+];
+
+const normalizeServiceEntryPayload = (entry) => {
+  const { availableThroughStage, ...payload } = entry;
+
+  if (payload.orderType === 'Cilindro') {
+    payload.cylinderOptionalItems = Array.isArray(payload.cylinderOptionalItems) ? payload.cylinderOptionalItems : [];
+  } else {
+    CYLINDER_FIELDS.forEach((field) => delete payload[field]);
+  }
+
+  return payload;
+};
+
 /*
  * HTTP service for service orders.
  *
@@ -34,7 +55,7 @@ export const getServiceEntry = async (id) => {
 };
 
 export const saveServiceEntry = async (entry, update = Boolean(entry.id)) => {
-  const { availableThroughStage, ...payload } = entry;
+  const payload = normalizeServiceEntryPayload(entry);
   const response = await apiRequest(update && entry.id ? `/service-orders/${encodeURIComponent(entry.id)}` : '/service-orders', {
     method: update && entry.id ? 'PUT' : 'POST',
     body: JSON.stringify(payload),

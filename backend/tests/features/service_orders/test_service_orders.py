@@ -236,6 +236,11 @@ def test_mechanic_gets_general_order_data_but_only_step_three_details(service_or
             **order_payload("20265589"),
             "orderType": "Cilindro",
             "equipment": "Cilindro hidráulico",
+            "cylinderInternalDiameter": "80",
+            "cylinderExternalDiameter": "95",
+            "cylinderLength": "500",
+            "cylinderRodDiameter": "50",
+            "cylinderOptionalItems": ["Articulação traseira", "Garfo"],
             "serialNumber": "SER-1",
             "disassemblyNotes": "Abrir e registrar os componentes.",
             "diagnosis": "Informação restrita ao orçamento.",
@@ -249,6 +254,8 @@ def test_mechanic_gets_general_order_data_but_only_step_three_details(service_or
     assert details.status_code == 200
     assert details.json["orderType"] == "Cilindro"
     assert details.json["equipment"] == "Cilindro hidráulico"
+    assert details.json["cylinderInternalDiameter"] == "80"
+    assert details.json["cylinderOptionalItems"] == ["Articulação traseira", "Garfo"]
     assert "serialNumber" not in details.json
     assert details.json["disassemblyNotes"] == "Abrir e registrar os componentes."
     assert "diagnosis" in details.json

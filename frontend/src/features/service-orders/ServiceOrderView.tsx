@@ -14,12 +14,13 @@ import {
   createEmptyDisassemblyChecklist,
   getServiceEntryStageIndex,
   normalizeOrderNumber,
+  CYLINDER_OPTIONAL_ITEMS,
   SERVICE_ENTRY_DEFAULT_STAGES,
 } from './model';
 
 import { deleteServiceEntry, loadServiceEntries, loadServiceEntryStages, saveServiceEntry } from './service';
 
-import { Field, TextArea, TextInput } from '../../shared/ui/form-controls';
+import { Field, MultiSelectCheckboxes, TextArea, TextInput } from '../../shared/ui/form-controls';
 
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
@@ -463,6 +464,60 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
           placeholder="Ex.: Cilindro hidráulico soldado, dupla ação — Ø80/50 x 500 mm"
         />
       </Field>
+      {form.orderType === 'Cilindro' && (
+        <>
+          <div className="md:col-span-3 mt-2 border-t border-rkmborder pt-4">
+            <h3 className="text-sm font-semibold text-slate-200">Dimensões do cilindro</h3>
+            <p className="mt-1 text-xs text-slate-500">Informe as medidas em milímetros conforme recebido.</p>
+          </div>
+          <div className="md:col-span-3 grid gap-4 md:grid-cols-4">
+            <Field label="Diâmetro interno (mm)" required>
+              <TextInput
+                type="number"
+                value={form.cylinderInternalDiameter}
+                onChange={(value) => set('cylinderInternalDiameter', value)}
+                placeholder="Ex.: 80"
+              />
+            </Field>
+            <Field label="Diâmetro externo (mm)" required>
+              <TextInput
+                type="number"
+                value={form.cylinderExternalDiameter}
+                onChange={(value) => set('cylinderExternalDiameter', value)}
+                placeholder="Ex.: 95"
+              />
+            </Field>
+            <Field label="Comprimento (mm)" required>
+              <TextInput type="number" value={form.cylinderLength} onChange={(value) => set('cylinderLength', value)} placeholder="Ex.: 500" />
+            </Field>
+            <Field label="Diâmetro da haste (mm)" required>
+              <TextInput
+                type="number"
+                value={form.cylinderRodDiameter}
+                onChange={(value) => set('cylinderRodDiameter', value)}
+                placeholder="Ex.: 50"
+              />
+            </Field>
+          </div>
+          <Field label="Itens opcionais recebidos" className="md:col-span-3" hint="Marque os itens que acompanham o cilindro.">
+            <MultiSelectCheckboxes
+              values={form.cylinderOptionalItems}
+              onChange={(value) => set('cylinderOptionalItems', value)}
+              options={CYLINDER_OPTIONAL_ITEMS}
+              className="cylinder-optional-items"
+            />
+          </Field>
+          {form.cylinderOptionalItems?.includes('Outro') && (
+            <Field label="Outro item opcional" required className="md:col-span-3">
+              <TextInput
+                value={form.cylinderOptionalItemsOther}
+                onChange={(value) => set('cylinderOptionalItemsOther', value)}
+                placeholder="Descreva o item recebido"
+              />
+            </Field>
+          )}
+        </>
+      )}
     </ServiceEntrySection>
     <ServiceEntrySection title="Dados da chegada" description="Registre a cadeia de recebimento antes da avaliação e desmontagem.">
       <Field label="Como chegou" required className="md:col-span-3">

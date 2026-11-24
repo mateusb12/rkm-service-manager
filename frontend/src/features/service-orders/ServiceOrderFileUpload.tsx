@@ -252,7 +252,6 @@ export function ServiceOrderFileUpload({
           <ServiceOrderFilePreview file={selectedFile} previewLabel={label} documentLabel={selectedFile.kind === 'Imagem' ? 'IMG' : 'FILE'} />
           <div className="service-entry-invoice-details">
             <strong title={selectedFile.name}>{selectedFile.name}</strong>
-            <small>Arquivo vinculado a esta OS</small>
             <div>
               <button
                 type="button"

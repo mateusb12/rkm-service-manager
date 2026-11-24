@@ -1938,10 +1938,10 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 .service-entry-invoice-selected-card {
   position: relative;
   display: flex;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  min-height: 0;
+  width: min(100%, 300px);
+  min-height: 260px;
   flex-direction: column;
+  align-items: stretch;
   gap: 8px;
   overflow: hidden;
   padding: 8px;
@@ -1968,8 +1968,10 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-preview {
-  flex: 1 1 auto;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 220px;
+  height: auto;
+  align-self: center;
   min-width: 0;
   min-height: 0;
   aspect-ratio: auto;
@@ -1978,21 +1980,58 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 .service-entry-invoice-selected-card .service-entry-invoice-preview img,
 .service-entry-invoice-selected-card .service-entry-invoice-preview iframe {
   width: 100%;
-  height: 100%;
+  height: auto;
   min-height: 0;
-  object-fit: cover;
+  object-fit: initial;
+}
+
+.service-entry-invoice-selected-card .service-entry-invoice-preview iframe {
+  height: 260px;
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-details {
   flex: 0 0 auto;
   gap: 3px;
-  padding: 0 2px 2px;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border: 1px solid red;
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-details > div {
   align-self: center;
-  justify-content: center;
-  margin-top: 8px;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.service-entry-invoice-selected-card .service-entry-invoice-details strong {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-overflow: clip;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+@media (max-width: 700px) {
+  .service-entry-invoice-selected-card {
+    width: 100%;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .service-entry-invoice-selected-card .service-entry-invoice-preview {
+    flex-basis: auto;
+    width: 220px;
+    height: auto;
+  }
 }
 
 .service-entry-invoice-action {
@@ -2487,6 +2526,10 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   gap: 16px;
 }
 
+.cylinder-optional-items {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .service-entry-type-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2967,6 +3010,10 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   }
 
   .service-entry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cylinder-optional-items {
     grid-template-columns: 1fr;
   }
 

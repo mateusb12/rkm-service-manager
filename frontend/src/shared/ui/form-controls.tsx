@@ -56,23 +56,23 @@ export const Toggle = ({ checked, onChange, label }) =>
     }),
     React.createElement('span', { className: 'text-sm text-slate-200' }, label),
   );
-export const ChipMulti = ({ values = [], onChange, options }) =>
+export const MultiSelectCheckboxes = ({ values = [], onChange, options, className = '' }) =>
   React.createElement(
     'div',
-    { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
-    options.map((opt) => {
-      const checked = values.includes(opt);
+    { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 ' + className },
+    options.map((option) => {
+      const checked = values.includes(option);
       return React.createElement(
         'label',
-        { key: opt, className: 'rkm-check ' + (checked ? 'checked' : '') },
+        { key: option, className: 'rkm-check ' + (checked ? 'checked' : '') },
         React.createElement('input', {
           type: 'checkbox',
           checked: checked,
           onChange: () => {
-            onChange(checked ? values.filter((v) => v !== opt) : [...values, opt]);
+            onChange(checked ? values.filter((selectedValue) => selectedValue !== option) : [...values, option]);
           },
         }),
-        React.createElement('span', { className: 'text-sm text-slate-200' }, opt),
+        React.createElement('span', { className: 'text-sm text-slate-200' }, option),
       );
     }),
   );

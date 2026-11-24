@@ -45,5 +45,19 @@ export const getMissingServiceEntryFields = (form, stageIndex) => {
     });
   }
 
+  if (stageIndex === 1 && form.orderType === 'Cilindro') {
+    [
+      ['cylinderInternalDiameter', 'Diâmetro interno do cilindro'],
+      ['cylinderExternalDiameter', 'Diâmetro externo do cilindro'],
+      ['cylinderLength', 'Comprimento do cilindro'],
+      ['cylinderRodDiameter', 'Diâmetro da haste'],
+    ].forEach(([key, label]) => {
+      if (!String(form[key] || '').trim()) missing.push(label);
+    });
+    if (form.cylinderOptionalItems?.includes('Outro') && !String(form.cylinderOptionalItemsOther || '').trim()) {
+      missing.push('Descrição do item opcional');
+    }
+  }
+
   return missing;
 };

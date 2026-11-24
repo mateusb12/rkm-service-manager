@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React from 'react';
 
-import { Field, TextInput, TextArea, Select, Toggle, ChipMulti } from '../../../shared/ui/form-controls';
+import { Field, TextInput, TextArea, Select, Toggle, MultiSelectCheckboxes } from '../../../shared/ui/form-controls';
 
 import { AlertBox } from '../../../shared/ui/feedback';
 
@@ -936,7 +936,7 @@ const StepSafety = ({ r, set }) =>
     React.createElement(
       Field,
       { label: 'EPIs utilizados' },
-      React.createElement(ChipMulti, {
+      React.createElement(MultiSelectCheckboxes, {
         values: r.safety.epis,
         onChange: (v) => set('safety.epis', v),
         options: EPI_LIST,
@@ -1180,7 +1180,7 @@ const InspBlock = ({ titulo, path, condOpts, decOpts, r, set, extra }) => {
     React.createElement(
       Field,
       { label: `Condição — ${titulo}` },
-      React.createElement(ChipMulti, {
+      React.createElement(MultiSelectCheckboxes, {
         values: data.conditions,
         onChange: (v) => set(path + '.conditions', v),
         options: condOpts,
@@ -1905,7 +1905,7 @@ const StepFinalVerification = ({ r, set }) => {
     React.createElement(
       Field,
       { label: 'Itens verificados' },
-      React.createElement(ChipMulti, {
+      React.createElement(MultiSelectCheckboxes, {
         values: r.finalVerification.itens,
         onChange: (v) => set('finalVerification.itens', v),
         options: itens,
@@ -2068,7 +2068,7 @@ const StepNonConformity = ({ r, set }) => {
         React.createElement(
           Field,
           { label: 'Tipos de ocorr\u00EAncia' },
-          React.createElement(ChipMulti, {
+          React.createElement(MultiSelectCheckboxes, {
             values: r.nonConformity.tipos,
             onChange: (v) => set('nonConformity.tipos', v),
             options: tipos,
