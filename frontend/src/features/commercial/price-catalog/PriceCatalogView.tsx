@@ -6,16 +6,15 @@ import { PriceCatalogForm } from './PriceCatalogForm';
 import { CrudTable, CrudTableActions } from '../../../shared/ui/CrudTable';
 import { RainbowBadge } from '../../../shared/ui/RainbowBadge';
 import { PRICE_CATALOG_TYPE_LABELS, type PriceCatalogInput, type PriceCatalogItem } from './model';
-import { createPriceCatalogItem, getPriceCatalogItem, listPriceCatalogItems, removePriceCatalogItem, updatePriceCatalogItem } from './service';
+import { createPriceCatalogItem, listPriceCatalogItems, removePriceCatalogItem, updatePriceCatalogItem } from './service';
 
-export type PriceCatalogPage = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; itemId: string };
-type CatalogFilter = 'active' | 'all' | 'material' | 'service' | 'archived';
+export type PriceCatalogPage = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; itemId: number };
+type CatalogFilter = 'active' | 'material' | 'service';
 
 const filters: { key: CatalogFilter; label: string }[] = [
   { key: 'active', label: 'Todos' },
   { key: 'material', label: 'Materiais' },
   { key: 'service', label: 'Serviços' },
-  { key: 'archived', label: 'Arquivados' },
 ];
 
 const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogItem['type'], string>> = {
@@ -33,7 +32,7 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
   const [internalPage, setInternalPage] = useState<PriceCatalogPage>({ mode: 'list' });
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<CatalogFilter>('active');
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [success, setSuccess] = useState('');
@@ -64,12 +63,7 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
   const visibleItems = useMemo(() => {
     const normalizedSearch = normalizeText(search);
     return items
-      .filter((item) => {
-        if (filter === 'archived') return Boolean(item.deletedAt);
-        if (item.deletedAt) return false;
-        if (filter === 'active' || filter === 'all') return true;
-        return item.type === filter;
-      })
+      .filter((item) => filter === 'active' || item.type === filter)
       .filter((item) => !normalizedSearch || normalizeText(`${item.name} ${item.description}`).includes(normalizedSearch))
       .sort((first, second) => first.name.localeCompare(second.name, 'pt-BR', { sensitivity: 'base' }));
   }, [filter, items, search]);
@@ -80,7 +74,7 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
     changePage({ mode: 'create' });
   }
 
-  function openEdit(itemId: string) {
+  function openEdit(itemId: number) {
     setSuccess('');
     setActionError('');
     changePage({ mode: 'edit', itemId });
@@ -91,7 +85,7 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
     setPendingDeleteId(null);
   }
 
-  async function saveItem(input: PriceCatalogInput, itemId: string | null) {
+  async function saveItem(input: PriceCatalogInput, itemId: number | null) {
     const saved = itemId ? await updatePriceCatalogItem(itemId, input) : await createPriceCatalogItem(input);
     setItems((previous) => (itemId ? previous.map((item) => (item.id === itemId ? saved : item)) : [...previous, saved]));
     setSuccess(itemId ? 'Cadastro atualizado com sucesso.' : 'Cadastro criado com sucesso.');
@@ -99,18 +93,12 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
     returnToList();
   }
 
-  async function deleteItem(itemId: string) {
+  async function deleteItem(itemId: number) {
     setActionError('');
     try {
-      const removal = await removePriceCatalogItem(itemId);
-      if (removal.mode === 'archived') {
-        const archived = await getPriceCatalogItem(itemId);
-        setItems((previous) => previous.map((item) => (item.id === itemId ? archived : item)));
-        setSuccess('Arquivado por possuir histórico de orçamento.');
-      } else {
-        setItems((previous) => previous.filter((item) => item.id !== itemId));
-        setSuccess('Excluído permanentemente.');
-      }
+      await removePriceCatalogItem(itemId);
+      setItems((previous) => previous.filter((item) => item.id !== itemId));
+      setSuccess('Excluído com sucesso.');
       setPendingDeleteId(null);
     } catch {
       setActionError('Não foi possível excluir o cadastro.');
@@ -149,11 +137,6 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
         </button>
       </section>
 
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-300">Modo demonstração</span>
-        <span>Dados salvos apenas neste navegador.</span>
-      </div>
-
       {success && <Feedback kind="success" message={success} onDismiss={() => setSuccess('')} />}
       {actionError && <Feedback kind="error" message={actionError} onDismiss={() => setActionError('')} />}
 
@@ -182,27 +165,18 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
         empty={
           visibleItems.length === 0
             ? {
-                title: search.trim()
-                  ? 'Nenhum cadastro encontrado'
-                  : filter === 'archived'
-                    ? 'Nenhum cadastro arquivado'
-                    : 'Nenhum cadastro encontrado',
-                description: search.trim()
-                  ? 'Tente outro termo de pesquisa.'
-                  : filter === 'archived'
-                    ? 'Itens com histórico aparecerão aqui.'
-                    : 'Cadastre o primeiro item para começar.',
+                title: 'Nenhum cadastro encontrado',
+                description: search.trim() ? 'Tente outro termo de pesquisa.' : 'Cadastre o primeiro item para começar.',
                 actionLabel: search.trim() ? 'Limpar pesquisa' : 'Novo cadastro',
                 onAction: search.trim() ? () => setSearch('') : openCreate,
               }
             : undefined
         }
-        footer="Dados mantidos em memória nesta demonstração."
+        footer="Dados salvos no backend."
       >
         {visibleItems.length > 0 && (
           <CatalogTable
             items={visibleItems}
-            archived={filter === 'archived'}
             pendingDeleteId={pendingDeleteId}
             onEdit={openEdit}
             onDelete={setPendingDeleteId}
@@ -217,7 +191,6 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
 
 function CatalogTable({
   items,
-  archived,
   pendingDeleteId,
   onEdit,
   onDelete,
@@ -225,11 +198,10 @@ function CatalogTable({
   onCancelDelete,
 }: {
   items: PriceCatalogItem[];
-  archived: boolean;
-  pendingDeleteId: string | null;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onConfirmDelete: (id: string) => void;
+  pendingDeleteId: number | null;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+  onConfirmDelete: (id: number) => void;
   onCancelDelete: () => void;
 }) {
   return (
@@ -268,9 +240,7 @@ function CatalogTable({
               </td>
               <td className="px-5 py-4 text-center font-medium text-slate-100">{formatPriceCents(item.unitPriceCents)}</td>
               <td className="px-5 py-4 text-right">
-                {archived ? (
-                  <span className="text-xs text-slate-500">Somente consulta</span>
-                ) : pendingDeleteId === item.id ? (
+                {pendingDeleteId === item.id ? (
                   <span className="inline-flex items-center gap-2">
                     <span className="text-xs text-rose-300">Confirmar?</span>
                     <button type="button" className="text-xs text-rose-300 hover:text-rose-200" onClick={() => onConfirmDelete(item.id)}>

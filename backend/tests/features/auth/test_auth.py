@@ -209,6 +209,7 @@ def test_auth_contract(auth_client, subtests):
                 "dashboard.pcp",
                 "clients.view",
                 "clients.manage",
+                    "price_catalog.manage",
                     "files.view",
                     "files.manage",
             ],

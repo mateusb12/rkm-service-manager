@@ -12,7 +12,6 @@ import {
   type PriceCatalogInput,
   type PriceCatalogItem,
 } from './model';
-import { PriceCatalogServiceError } from './service';
 
 type Props = {
   item?: PriceCatalogItem;
@@ -69,12 +68,8 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
 
     try {
       await onSave({ ...input, name: input.name.trim(), description: input.description.trim() }, item?.id || null);
-    } catch (error) {
-      if (error instanceof PriceCatalogServiceError && error.errorCode === 'price_catalog_item_archived') {
-        setSubmissionError('Cadastros arquivados ficam disponíveis apenas para consulta.');
-      } else {
-        setSubmissionError(editing ? 'Não foi possível salvar as alterações.' : 'Não foi possível criar o cadastro.');
-      }
+    } catch {
+      setSubmissionError(editing ? 'Não foi possível salvar as alterações.' : 'Não foi possível criar o cadastro.');
     } finally {
       setSaving(false);
     }

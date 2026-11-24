@@ -1,162 +1,57 @@
-import {
-  PRICE_CATALOG_REFERENCE_IDS,
-  PRICE_CATALOG_SERVICE_UNIT,
-  PRICE_CATALOG_STORAGE_KEY,
-  type PriceCatalogInput,
-  type PriceCatalogItem,
-} from './model';
+import { apiRequest } from '../../../shared/api/http';
 
-export type PriceCatalogRemoval = {
-  mode: 'permanent' | 'archived';
+import type { PriceCatalogErrors, PriceCatalogInput, PriceCatalogItem } from './model';
+
+type PriceCatalogErrorPayload = {
+  error?: string;
+  fields?: PriceCatalogErrors;
 };
 
 export class PriceCatalogServiceError extends Error {
   readonly errorCode: string;
+  readonly status: number;
+  readonly fieldErrors: PriceCatalogErrors;
 
-  constructor(errorCode: string) {
+  constructor(errorCode: string, status: number, fieldErrors: PriceCatalogErrors = {}) {
     super(errorCode);
     this.name = 'PriceCatalogServiceError';
     this.errorCode = errorCode;
+    this.status = status;
+    this.fieldErrors = fieldErrors;
   }
 }
 
-const demoItems: PriceCatalogItem[] = [
-  createDemoItem('price-adaptador-45-41-5', 'Adaptador 45 × 41,5', 'material', 'un', 45000),
-  createDemoItem('price-gaxeta-45-55-7', 'Gaxeta 45 × 55 × 7', 'material', 'un', 32000),
-  createDemoItem('price-o-ring-60-3', 'O-ring 60 × 3', 'material', 'un', 3500),
-  createDemoItem(
-    'price-kit-vedacao-acumulador',
-    'Kit de vedação para acumulador',
-    'material',
-    'un',
-    68000,
-    'Kit composto por elementos de vedação para manutenção de acumuladores hidráulicos.',
-  ),
-  createDemoItem('price-recuperar-rosca-embolao', 'Recuperar rosca do êmbolo', 'service', PRICE_CATALOG_SERVICE_UNIT, 7500),
-  createDemoItem('price-pintura', 'Pintura', 'service', PRICE_CATALOG_SERVICE_UNIT, 8500),
-];
-const DEMO_SEED_VERSION_KEY = `${PRICE_CATALOG_STORAGE_KEY}-seed`;
-const DEMO_SEED_VERSION = '4';
-
-function createDemoItem(
-  id: string,
-  name: string,
-  type: PriceCatalogItem['type'],
-  unit: PriceCatalogItem['unit'],
-  unitPriceCents: number,
-  description = 'Dado fictício de demonstração baseado nas anotações da RKM.',
-): PriceCatalogItem {
-  const timestamp = '2026-01-15T12:00:00.000Z';
-
-  return {
-    id,
-    name,
-    description,
-    type,
-    unit,
-    unitPriceCents,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    deletedAt: null,
-  };
+async function throwPriceCatalogServiceError(response: Response, fallbackCode: string): Promise<never> {
+  const payload = (await response.json().catch(() => null)) as PriceCatalogErrorPayload | null;
+  throw new PriceCatalogServiceError(payload?.error || fallbackCode, response.status, payload?.fields || {});
 }
 
-function readItems(): PriceCatalogItem[] {
-  const stored = window.localStorage.getItem(PRICE_CATALOG_STORAGE_KEY);
-
-  if (!stored) {
-    writeItems(demoItems);
-    window.localStorage.setItem(DEMO_SEED_VERSION_KEY, DEMO_SEED_VERSION);
-    return demoItems;
-  }
-
-  try {
-    const parsed = JSON.parse(stored) as unknown;
-    if (Array.isArray(parsed)) {
-      const items = parsed as PriceCatalogItem[];
-      if (window.localStorage.getItem(DEMO_SEED_VERSION_KEY) !== DEMO_SEED_VERSION) {
-        const existingIds = new Set(items.map((item) => item.id));
-        const missingDemoItems = demoItems.filter((item) => !existingIds.has(item.id));
-        const migratedItems = items.map((item) => {
-          const legacyType = item.type as string;
-          const type = legacyType === 'piece' || legacyType === 'product' ? 'material' : item.type;
-          return type === 'service' ? { ...item, type, unit: PRICE_CATALOG_SERVICE_UNIT } : { ...item, type };
-        });
-        const mergedItems = [...migratedItems, ...missingDemoItems];
-        writeItems(mergedItems);
-        window.localStorage.setItem(DEMO_SEED_VERSION_KEY, DEMO_SEED_VERSION);
-        return mergedItems;
-      }
-      return items;
-    }
-  } catch {
-    // Recreate the demo dataset when a local browser value is invalid.
-  }
-
-  writeItems(demoItems);
-  window.localStorage.setItem(DEMO_SEED_VERSION_KEY, DEMO_SEED_VERSION);
-  return demoItems;
+export async function listPriceCatalogItems(search = ''): Promise<PriceCatalogItem[]> {
+  const query = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
+  const response = await apiRequest(`/price-catalog${query}`);
+  if (!response.ok) await throwPriceCatalogServiceError(response, 'price_catalog_query_failed');
+  return response.json();
 }
 
-function writeItems(items: PriceCatalogItem[]) {
-  window.localStorage.setItem(PRICE_CATALOG_STORAGE_KEY, JSON.stringify(items));
-}
-
-function normalizeInput(input: PriceCatalogInput): PriceCatalogInput {
-  return input.type === 'service' ? { ...input, unit: PRICE_CATALOG_SERVICE_UNIT } : input;
-}
-
-function generateId() {
-  return `price-${crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
-}
-
-export async function listPriceCatalogItems(): Promise<PriceCatalogItem[]> {
-  return readItems();
-}
-
-export async function getPriceCatalogItem(id: string): Promise<PriceCatalogItem> {
-  const item = readItems().find((candidate) => candidate.id === id);
-  if (!item) throw new PriceCatalogServiceError('price_catalog_item_not_found');
-  return item;
+export async function getPriceCatalogItem(id: number): Promise<PriceCatalogItem> {
+  const response = await apiRequest(`/price-catalog/${id}`);
+  if (!response.ok) await throwPriceCatalogServiceError(response, 'price_catalog_item_not_found');
+  return response.json();
 }
 
 export async function createPriceCatalogItem(input: PriceCatalogInput): Promise<PriceCatalogItem> {
-  const now = new Date().toISOString();
-  const normalizedInput = normalizeInput(input);
-  const item: PriceCatalogItem = {
-    ...normalizedInput,
-    id: generateId(),
-    createdAt: now,
-    updatedAt: now,
-    deletedAt: null,
-  };
-
-  writeItems([...readItems(), item]);
-  return item;
+  const response = await apiRequest('/price-catalog', { method: 'POST', body: JSON.stringify(input) });
+  if (!response.ok) await throwPriceCatalogServiceError(response, 'price_catalog_item_creation_failed');
+  return response.json();
 }
 
-export async function updatePriceCatalogItem(id: string, input: PriceCatalogInput): Promise<PriceCatalogItem> {
-  const items = readItems();
-  const currentItem = items.find((item) => item.id === id);
-  if (!currentItem) throw new PriceCatalogServiceError('price_catalog_item_not_found');
-  if (currentItem.deletedAt) throw new PriceCatalogServiceError('price_catalog_item_archived');
-
-  const updatedItem = { ...currentItem, ...normalizeInput(input), updatedAt: new Date().toISOString() };
-  writeItems(items.map((item) => (item.id === id ? updatedItem : item)));
-  return updatedItem;
+export async function updatePriceCatalogItem(id: number, input: PriceCatalogInput): Promise<PriceCatalogItem> {
+  const response = await apiRequest(`/price-catalog/${id}`, { method: 'PUT', body: JSON.stringify(input) });
+  if (!response.ok) await throwPriceCatalogServiceError(response, 'price_catalog_item_update_failed');
+  return response.json();
 }
 
-export async function removePriceCatalogItem(id: string): Promise<PriceCatalogRemoval> {
-  const items = readItems();
-  const currentItem = items.find((item) => item.id === id);
-  if (!currentItem) throw new PriceCatalogServiceError('price_catalog_item_not_found');
-
-  if (PRICE_CATALOG_REFERENCE_IDS.includes(id)) {
-    const archivedItem = { ...currentItem, deletedAt: new Date().toISOString() };
-    writeItems(items.map((item) => (item.id === id ? archivedItem : item)));
-    return { mode: 'archived' };
-  }
-
-  writeItems(items.filter((item) => item.id !== id));
-  return { mode: 'permanent' };
+export async function removePriceCatalogItem(id: number): Promise<void> {
+  const response = await apiRequest(`/price-catalog/${id}`, { method: 'DELETE' });
+  if (!response.ok) await throwPriceCatalogServiceError(response, 'price_catalog_item_deletion_failed');
 }

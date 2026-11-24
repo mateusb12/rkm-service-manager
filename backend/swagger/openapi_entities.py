@@ -11,11 +11,13 @@ try:
     from ..features.clients.model import Client
     from ..features.devmetrics.model import FeatureMetric
     from ..features.file_storage.model import File
+    from ..features.price_catalog.model import PriceCatalogItem
 except ImportError:
     from features.auth.model import AuthSession, User
     from features.clients.model import Client
     from features.devmetrics.model import FeatureMetric
     from features.file_storage.model import File
+    from features.price_catalog.model import PriceCatalogItem
 
 
 def _camel_case(value: str) -> str:
@@ -60,10 +62,16 @@ class FileEntitySchema(EntityAutoSchema):
         model = File
 
 
+class PriceCatalogItemEntitySchema(EntityAutoSchema):
+    class Meta(EntityAutoSchema.Meta):
+        model = PriceCatalogItem
+
+
 ENTITY_SCHEMAS = {
     "User": UserEntitySchema,
     "AuthSession": AuthSessionEntitySchema,
     "Client": ClientEntitySchema,
     "FeatureMetricEntity": FeatureMetricEntitySchema,
     "File": FileEntitySchema,
+    "PriceCatalogItemEntity": PriceCatalogItemEntitySchema,
 }

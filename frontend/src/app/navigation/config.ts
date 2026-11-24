@@ -138,7 +138,7 @@ export const SIDEBAR_ITEMS = [
     label: 'Tabela de preços',
     group: 'Comercial',
     status: 'incomplete',
-    roles: ['admin', 'commercial'],
+    roles: ['admin', 'pcp'],
     icon: 'table-properties',
   },
 

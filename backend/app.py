@@ -25,12 +25,14 @@ try:
     from .features.clients import register_clients
     from .features.devmetrics import register_devmetrics
     from .features.file_storage import register_file_storage
+    from .features.price_catalog import register_price_catalog
     from .features.service_orders import register_service_orders
 except ImportError:
     from features.auth import register_auth
     from features.clients import register_clients
     from features.devmetrics import register_devmetrics
     from features.file_storage import register_file_storage
+    from features.price_catalog import register_price_catalog
     from features.service_orders import register_service_orders
 
 
@@ -43,6 +45,7 @@ FRONTEND_API_PREFIXES = (
     "/clients",
     "/dev",
     "/files",
+    "/price-catalog",
     "/service-orders",
     "/health",
     "/openapi.json",
@@ -92,6 +95,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     register_clients(app)
     register_devmetrics(app)
     register_file_storage(app)
+    register_price_catalog(app)
     register_service_orders(app)
     register_api_docs(app)
     return app

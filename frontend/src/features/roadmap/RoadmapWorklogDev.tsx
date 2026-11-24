@@ -347,7 +347,17 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
-        'Migração dos serviços mockados existentes para hora e dos registros antigos de peça/produto para Material, com atualização automática da versão dos dados locais.',
+        'Atualização dos dados demonstrativos para usar Material e Serviço, com hora como unidade exclusiva dos serviços e normalização dos registros antigos do catálogo local.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Implementação da API persistente de materiais e serviços no backend Python, com CRUD completo, validações de contrato, exclusão definitiva e permissões para Admin e PCP.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Documentação dos endpoints da tabela de preços no Swagger/OpenAPI e substituição da persistência local do frontend por chamadas autenticadas ao backend.',
     },
     {
       category: 'Transversal',
@@ -357,12 +367,12 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
-        'Implementação do CRUD demonstrativo da tabela de preços, com cadastro de peças, produtos e serviços, edição, busca, filtros, validações, preços em centavos e persistência local. Inclui exclusão híbrida conforme a existência de vínculos simulados com orçamentos.',
+        'Implementação inicial do CRUD demonstrativo da tabela de preços, com cadastro de materiais e serviços, edição, busca, filtros, validações, preços em centavos e persistência local.',
     },
     {
       category: 'Produto',
       description:
-        'Refinamento visual dos tipos do catálogo, com ícones de peças e serviços, destaque das imagens na listagem e seleção visual dos tipos no formulário.',
+        'Refinamento visual dos tipos do catálogo, com ícones de materiais e serviços, destaque das imagens na listagem e seleção visual dos tipos no formulário.',
     },
     {
       category: 'Transversal',
