@@ -184,13 +184,13 @@ export const ROADMAP: RoadmapVersion[] = [
       {
         id: 'comercial',
         title: 'Comercial',
-        objective: 'Definir os preços usados no orçamento da OS.',
+        objective: 'Manter o cadastro de materiais e serviços com seus preços e unidades.',
         features: [
           feature(
             'comercial/tabela-precos',
             'Tabela de preços',
-            'O comercial consegue cadastrar e consultar materiais e serviços com seus respectivos valores e unidades (ex.: pintura a R$ 100,00/h).\nOs itens ficam disponíveis para uso no orçamento da OS.',
-            'Em andamento',
+            'Os usuários autorizados conseguem cadastrar, consultar, editar e excluir materiais e serviços com seus respectivos valores e unidades (ex.: pintura a R$ 100,00/h).',
+            'Concluída',
             [0],
           ),
         ],

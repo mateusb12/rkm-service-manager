@@ -362,6 +362,11 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Transversal',
       description:
+        'Migração dos registros existentes do localStorage para o PostgreSQL pelo túnel, com deduplicação e normalização dos serviços para a unidade hora.',
+    },
+    {
+      category: 'Transversal',
+      description:
         'Aplicação do RainbowBadge na coluna de unidade para destacar visualmente as unidades do catálogo, incluindo un para materiais e h para serviços.',
     },
     {
