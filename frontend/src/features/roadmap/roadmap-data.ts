@@ -99,8 +99,9 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'pcp/fila',
             'Encaminhamento da OS ao mecânico',
-            'O PCP consegue encaminhar uma OS para um mecânico pelo nome e consultar as OS em andamento.\nConsegue identificar a situação atual, com quem a OS está, se o serviço já começou e qual é a previsão informada.\nSe a OS estiver parada, o PCP consegue consultar um motivo simples da parada.\nMudanças de situação e responsável ficam registradas com data, hora e usuário, preparando o histórico da V3.',
-            'Em andamento',
+            'O PCP consegue encaminhar uma OS para um mecânico pelo nome e consultar as OS em andamento.\nConsegue identificar a situação atual, com quem a OS está e se o serviço já começou.',
+            'Concluída',
+            [0, 1],
           ),
         ],
       },
@@ -313,7 +314,7 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'controle/auditoria',
             'Histórico da OS',
-            'É possível consultar as principais mudanças ocorridas na OS, incluindo etapa, responsável e momento da alteração.',
+            'É possível consultar as principais mudanças ocorridas na OS, incluindo etapa, responsável, momento da alteração e o usuário que a realizou.',
           ),
         ],
       },

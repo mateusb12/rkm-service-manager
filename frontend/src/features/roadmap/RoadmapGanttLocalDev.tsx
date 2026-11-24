@@ -95,7 +95,7 @@ const GANTT_ROWS: GanttRow[] = [
 const GANTT_FEATURE_ACTIONS: Record<string, string> = {
   'pcp/clientes': 'Cadastrar clientes e pesquisá-los por CNPJ, razão social ou nome fantasia.',
   'pcp/abertura-os': 'Abrir uma OS com numeração automática, identificar o equipamento e avançar sem triagem de segurança.',
-  'pcp/fila': 'Consultar a situação das OS, seus responsáveis e os prazos previstos.',
+  'pcp/fila': 'Encaminhar a OS ao mecânico e consultar sua situação e responsável.',
   'oficina/bancadas': 'Cadastrar bancadas, vincular funcionários e consultar sua ocupação.',
   'oficina/diagnostico-minimo': 'Selecionar o mecânico responsável e registrar a desmontagem essencial e o diagnóstico inicial.',
   'oficina/execucao-minima': 'Atualizar o andamento do serviço, o responsável e o próximo passo.',
