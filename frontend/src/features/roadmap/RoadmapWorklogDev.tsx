@@ -217,6 +217,46 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Evolução das fotos do equipamento para múltiplos registros, com seleção entre arquivos já armazenados e upload de novas imagens no mesmo padrão usado na desmontagem.',
     },
   ],
+  'arquivos/upload': [
+    {
+      category: 'Produto',
+      description:
+        'Implementação do armazenamento de arquivos com upload, download, listagem e remoção, registrando nome original, tipo, tamanho, chave de armazenamento, categoria, usuário responsável e data do upload. (Adiantado na branch features/pcp/fila.)',
+    },
+  ],
+  'oficina/diagnostico-minimo': [
+    {
+      category: 'Produto',
+      description:
+        'Seleção de usuário ativo com perfil Mecânico como responsável pela desmontagem e data/hora de início pré-preenchida. (Adiantado na branch features/pcp/fila.)',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Registro dos dados técnicos do cilindro no recebimento (diâmetros interno e externo, comprimento, diâmetro da haste e itens opcionais) e lista dos componentes na desmontagem com campo de observações. (Adiantado na branch features/pcp/fila.)',
+    },
+  ],
+  'oficina/peritagem-cilindro': [
+    {
+      category: 'Produto',
+      description:
+        'Checklist de saúde do cilindro na desmontagem: cada componente (camisa, haste, êmbolo, cabeçotes, vedações, articulações e outros) recebe resultado Conforme/Não conforme, motivo obrigatório quando não conforme e foto opcional, persistidos na OS com salvamento progressivo. Falta registrar medidas básicas por componente. (Adiantado na branch features/pcp/fila.)',
+    },
+  ],
+  'oficina/evidencias': [
+    {
+      category: 'Produto',
+      description:
+        'Fotos já podem ser registradas por OS e categoria no recebimento e na desmontagem, com upload e seleção de arquivos armazenados. Falta estender às demais etapas do serviço. (Adiantado na branch features/pcp/fila.)',
+    },
+  ],
+  'finalizacao/anexos': [
+    {
+      category: 'Produto',
+      description:
+        'Nota fiscal pode ser anexada à OS por chave estrangeira para o arquivo armazenado. Falta associar e consultar outros documentos junto à OS. (Adiantado na branch features/pcp/fila.)',
+    },
+  ],
   'admin/usuarios': [
     {
       category: 'Produto',
