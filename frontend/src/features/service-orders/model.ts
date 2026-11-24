@@ -38,6 +38,10 @@ export const createEmptyDisassemblyChecklist = () =>
     component,
     status: '',
     notes: '',
+    budgetItem: '',
+    budgetItemId: null,
+    budgetUnit: '',
+    budgetQuantity: '',
   }));
 
 const currentLocalDateTime = () => {

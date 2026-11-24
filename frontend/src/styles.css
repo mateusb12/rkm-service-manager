@@ -2937,7 +2937,9 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-table th {
   padding: 10px 16px;
-  color: #64748b;
+  border-bottom: 1px solid #355273;
+  background: #132c49;
+  color: #9fc5ef;
   font-size: var(--font-xs);
   font-weight: 650;
   letter-spacing: 0.055em;
@@ -2947,13 +2949,14 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-table td {
   padding: 13px 16px;
-  border-top: 1px solid rgba(51, 65, 85, 0.38);
-  color: #cbd5e1;
+  border-top: 1px solid #294462;
+  color: #e2e8f0;
   vertical-align: middle;
 }
 
 .service-entry-table tbody tr:hover {
-  background: rgba(59, 130, 246, 0.035);
+  background: rgba(59, 130, 246, 0.08);
+  box-shadow: inset 3px 0 #60a5fa;
 }
 
 .service-entry-equipment-cell {

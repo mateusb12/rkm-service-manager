@@ -26,7 +26,9 @@ import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
 
 import { ClientSelector } from '../pcp/clients';
-import { UserSelector } from './UserSelector';
+import { listActiveUsers } from '../auth/security/service';
+import { listPriceCatalogItems } from '../commercial/price-catalog/service';
+import { SearchableSelector } from '../../shared/ui/SearchableSelector';
 import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage';
 import { ServiceOrderStepNavigator } from './ServiceOrderStepNavigator';
 import { ServiceOrderFileUpload } from './ServiceOrderFileUpload';
@@ -578,7 +580,17 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
         </div>
       </Field>
       <Field label="Recebido por" required>
-        <UserSelector value={form.receivedBy} onSelect={(user) => set('receivedBy', user.name)} onClear={() => set('receivedBy', '')} />
+        <SearchableSelector
+          value={form.receivedBy}
+          loadOptions={listActiveUsers}
+          getOptionKey={(user) => user.id}
+          getOptionLabel={(user) => user.name}
+          getOptionDescription={(user) => `${user.roleLabel} · ${user.email}`}
+          placeholder="Nome, e-mail ou perfil"
+          listLabel="Usuários ativos"
+          onSelect={(user) => set('receivedBy', user.name)}
+          onClear={() => set('receivedBy', '')}
+        />
       </Field>
       <Field label="Entregue por">
         <TextInput value={form.deliveredBy} onChange={(value) => set('deliveredBy', value)} placeholder="Motorista / cliente" />
@@ -614,11 +626,19 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
   return (
     <ServiceEntrySection title="Desmontagem" description="Preserve a identidade da OS e registre como os componentes foram encontrados.">
       <Field label="Responsável pela desmontagem *">
-        <UserSelector
+        <SearchableSelector
           value={form.disassemblyOperator}
+          loadOptions={listActiveUsers}
+          getOptionKey={(user) => user.id}
+          getOptionLabel={(user) => user.name}
+          getOptionDescription={(user) => `${user.roleLabel} · ${user.email}`}
+          placeholder="Nome, e-mail ou perfil"
+          listLabel="Mecânicos ativos"
+          filterOption={(user, search) =>
+            (!search || `${user.name} ${user.email} ${user.roleLabel}`.toLocaleLowerCase('pt-BR').includes(search)) && user.role === 'mechanic'
+          }
           onSelect={(user) => set('disassemblyOperator', user.name)}
           onClear={() => set('disassemblyOperator', '')}
-          roleFilter="mechanic"
         />
       </Field>
       <Field label="Início">
@@ -673,8 +693,8 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
                   </div>
                   {item.status === 'Não conforme' && (
                     <textarea
-                      rows={1}
-                      className="rkm-input zenit-field service-entry-checklist-space mt-3 h-8 min-h-0 w-full resize-y"
+                      rows={3}
+                      className="rkm-input zenit-field mt-3 w-full resize-y"
                       value={item.notes}
                       onChange={(event) => updateItem(index, 'notes', event.target.value)}
                       placeholder="Explique o motivo da não conformidade..."
@@ -721,13 +741,96 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
 
 const ServiceEntryDisassemblyStep = (props) => <ServiceEntryDisassemblyChecklist {...props} />;
 
-const ServiceEntryBudgetStep = () => (
-  <ServiceEntrySection title="Orçamento" description="Esta etapa ainda não foi implementada.">
-    <div className="md:col-span-3 rounded-lg border border-dashed border-sky-400/30 bg-slate-950/20 p-8 text-center text-slate-400">
-      Ainda não implementado.
-    </div>
-  </ServiceEntrySection>
-);
+const ServiceEntryBudgetStep = ({ form, set }) => {
+  const nonconformingItems = (Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : []).filter(
+    (item) => item.status === 'Não conforme',
+  );
+  const updateBudgetItem = (component, key, value) => {
+    const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
+    set(
+      'disassemblyChecklist',
+      checklist.map((item) => (item.component === component ? { ...item, [key]: value } : item)),
+    );
+  };
+  const selectBudgetItem = (component, catalogItem) => {
+    const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
+    set(
+      'disassemblyChecklist',
+      checklist.map((item) =>
+        item.component === component ? { ...item, budgetItem: catalogItem.name, budgetItemId: catalogItem.id, budgetUnit: catalogItem.unit } : item,
+      ),
+    );
+  };
+  const clearBudgetItem = (component) => {
+    const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
+    set(
+      'disassemblyChecklist',
+      checklist.map((item) => (item.component === component ? { ...item, budgetItem: '', budgetItemId: null, budgetUnit: '' } : item)),
+    );
+  };
+
+  return (
+    <ServiceEntrySection title="Orçamento" description="Consulte os componentes não conformes identificados na desmontagem.">
+      <div className="md:col-span-3">
+        {nonconformingItems.length > 0 ? (
+          <div className="overflow-x-auto rounded-lg border border-rkmborder">
+            <table className="service-entry-table min-w-[900px]">
+              <thead>
+                <tr>
+                  <th scope="col">Componente</th>
+                  <th scope="col">Observação da desmontagem</th>
+                  <th scope="col">Item</th>
+                  <th scope="col">Quantidade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {nonconformingItems.map((item) => (
+                  <tr key={item.component}>
+                    <td>
+                      <strong>{item.component}</strong>
+                    </td>
+                    <td>{item.notes || 'Sem observação informada.'}</td>
+                    <td>
+                      <SearchableSelector
+                        value={item.budgetItem || ''}
+                        loadOptions={listPriceCatalogItems}
+                        getOptionKey={(catalogItem) => catalogItem.id}
+                        getOptionLabel={(catalogItem) => catalogItem.name}
+                        getOptionDescription={(catalogItem) => `${catalogItem.type === 'service' ? 'Serviço' : 'Material'} · ${catalogItem.unit}`}
+                        getOptionIcon={(catalogItem) => (catalogItem.type === 'service' ? '/assets/serviço.png' : '/assets/produto.png')}
+                        placeholder="Pesquisar item"
+                        listLabel="Itens do catálogo de preços"
+                        emptyLabel="Nenhum item encontrado."
+                        onSelect={(catalogItem) => selectBudgetItem(item.component, catalogItem)}
+                        onClear={() => clearBudgetItem(item.component)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="rkm-input zenit-field w-full"
+                        value={item.budgetQuantity || ''}
+                        onChange={(event) => updateBudgetItem(item.component, 'budgetQuantity', event.target.value)}
+                        placeholder="Ex.: 3"
+                        aria-label={`Quantidade do orçamento para ${item.component}`}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="service-entry-empty rounded-lg border border-dashed border-sky-400/30 bg-slate-950/20">
+            Nenhum componente não conforme foi registrado na desmontagem.
+          </div>
+        )}
+      </div>
+    </ServiceEntrySection>
+  );
+};
 
 const ServiceEntryRepairStep = ({ form, set, addPhotos, removePhoto }) => (
   <ServiceEntrySection title="Reparo" description="Registre o serviço executado e os resultados da validação.">
