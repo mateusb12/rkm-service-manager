@@ -103,6 +103,11 @@ export const ROADMAP: RoadmapVersion[] = [
             'Concluída',
             [0, 1],
           ),
+          feature(
+            'pcp/orcamento',
+            'Orçamento da OS',
+            'Na etapa de orçamento, o PCP consulta em uma tabela compacta os componentes marcados como não conformes na desmontagem, com o motivo informado pelo mecânico (ex.: Haste com risco, vai precisar de brunimento), sem exibir fotos.\nO PCP adiciona à OS itens da tabela de preços com a quantidade necessária (ex.: 3 h de pintura) e o sistema calcula automaticamente o valor de cada item e o total.\nO orçamento fica salvo na OS. A aprovação ou recusa pelo cliente fica para a V2.',
+          ),
         ],
       },
       {
@@ -173,6 +178,20 @@ export const ROADMAP: RoadmapVersion[] = [
             'O usuário autenticado consegue enviar um arquivo para o armazenamento do sistema e consultar os metadados do upload.\nO registro informa o nome original, tipo, tamanho, chave de armazenamento, usuário responsável e data do upload.\nNesta versão, o arquivo não precisa estar vinculado a uma OS ou outra entidade do domínio.',
             'Concluída',
             [0, 1, 2],
+          ),
+        ],
+      },
+      {
+        id: 'comercial',
+        title: 'Comercial',
+        objective: 'Definir os preços usados no orçamento da OS.',
+        features: [
+          feature(
+            'comercial/tabela-precos',
+            'Tabela de preços',
+            'O comercial consegue cadastrar e consultar peças, produtos e serviços com seus respectivos valores e unidades (ex.: pintura a R$ 100,00/h).\nOs itens ficam salvos no sistema, não apenas no navegador, e são usados pelo orçamento da OS.',
+            'Em andamento',
+            [0],
           ),
         ],
       },
@@ -276,17 +295,12 @@ export const ROADMAP: RoadmapVersion[] = [
       {
         id: 'comercial',
         title: 'Comercial',
-        objective: 'Definir preços e registrar o orçamento necessário para o serviço continuar.',
+        objective: 'Revisar o orçamento e registrar a decisão necessária para o serviço continuar.',
         features: [
-          feature(
-            'comercial/tabela-precos',
-            'Tabela de preços',
-            'O comercial consegue cadastrar e consultar itens e serviços utilizados na formação do orçamento, com seus respectivos valores.',
-          ),
           feature(
             'comercial/orcamento-minimo',
             'Orçamento',
-            'O comercial monta o orçamento da OS utilizando os serviços e valores aplicáveis.\nO orçamento registra a descrição do que será feito, os valores e o total.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
+            'O comercial revisa o orçamento montado pelo PCP na V0, ajustando serviços e valores quando necessário.\nA decisão pode ser registrada como aprovada, em revisão ou recusada.',
           ),
         ],
       },
