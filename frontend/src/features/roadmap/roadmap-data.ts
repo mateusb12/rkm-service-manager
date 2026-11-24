@@ -189,7 +189,7 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'comercial/tabela-precos',
             'Tabela de preços',
-            'O comercial consegue cadastrar e consultar peças, produtos e serviços com seus respectivos valores e unidades (ex.: pintura a R$ 100,00/h).\nOs itens ficam salvos no sistema, não apenas no navegador, e são usados pelo orçamento da OS.',
+            'O comercial consegue cadastrar e consultar materiais e serviços com seus respectivos valores e unidades (ex.: pintura a R$ 100,00/h).\nOs itens ficam disponíveis para uso no orçamento da OS.',
             'Em andamento',
             [0],
           ),

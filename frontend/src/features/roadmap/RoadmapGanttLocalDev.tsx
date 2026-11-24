@@ -100,7 +100,7 @@ const GANTT_FEATURE_ACTIONS: Record<string, string> = {
   'oficina/bancadas': 'Cadastrar bancadas, vincular funcionários e consultar sua ocupação.',
   'oficina/diagnostico-minimo': 'Selecionar o mecânico responsável e registrar a desmontagem essencial e o diagnóstico inicial.',
   'oficina/execucao-minima': 'Atualizar o andamento do serviço, o responsável e o próximo passo.',
-  'comercial/tabela-precos': 'Cadastrar e consultar peças, produtos e serviços com seus preços.',
+  'comercial/tabela-precos': 'Cadastrar e consultar materiais e serviços com seus preços.',
   'comercial/orcamento-minimo': 'Montar um orçamento e registrar sua aprovação, revisão ou recusa.',
   'finalizacao/encerramento': 'Encerrar uma OS e registrar a saída do material.',
   'finalizacao/relatorio-pdf': 'Gerar um PDF básico com os dados da OS e do serviço realizado.',

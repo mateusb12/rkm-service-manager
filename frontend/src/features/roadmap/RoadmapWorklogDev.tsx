@@ -337,6 +337,26 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
+        'Unificação dos cadastros de peça e produto no tipo Material, mantendo o ícone de caixa para representar itens físicos do catálogo e simplificando os filtros e a seleção do formulário.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Definição de hora como unidade exclusiva para serviços, com campo bloqueado no formulário, validação na entrada e normalização na criação e edição dos cadastros.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Migração dos serviços mockados existentes para hora e dos registros antigos de peça/produto para Material, com atualização automática da versão dos dados locais.',
+    },
+    {
+      category: 'Transversal',
+      description:
+        'Aplicação do RainbowBadge na coluna de unidade para destacar visualmente as unidades do catálogo, incluindo un para materiais e h para serviços.',
+    },
+    {
+      category: 'Produto',
+      description:
         'Implementação do CRUD demonstrativo da tabela de preços, com cadastro de peças, produtos e serviços, edição, busca, filtros, validações, preços em centavos e persistência local. Inclui exclusão híbrida conforme a existência de vínculos simulados com orçamentos.',
     },
     {
