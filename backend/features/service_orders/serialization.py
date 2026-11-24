@@ -45,11 +45,16 @@ def _section(
     payload: dict[str, Any],
     fields: tuple[str, ...],
     photo_category: str | None = None,
+    photo_category_prefixes: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     result = {field: payload[field] for field in fields if field in payload}
     if photo_category:
+        photos = payload.get("photos") or {}
         result["photos"] = {
-            photo_category: (payload.get("photos") or {}).get(photo_category, [])
+            category: files
+            for category, files in photos.items()
+            if category == photo_category
+            or any(category.startswith(prefix) for prefix in photo_category_prefixes)
         }
     return result
 
@@ -97,6 +102,7 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
             "cylinderOptionalItems", "cylinderOptionalItemsOther",
         ),
         "disassembly",
+        ("disassemblyChecklist-",),
     ),
     ServiceOrderSection.ORCAMENTO: lambda payload: _section(
         payload,

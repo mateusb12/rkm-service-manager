@@ -97,10 +97,14 @@ def test_disassembly_checklist_is_returned_to_mechanic(service_orders_client):
             "notes": "Veio quebrada",
         }
     ]
+    photos = {
+        "disassembly": [{"id": "foto-desmontagem"}],
+        "disassemblyChecklist-0": [{"id": "foto-haste"}],
+    }
     create = service_orders_client.post(
         "/service-orders",
         headers=login(service_orders_client, "admin@rkm.com.br"),
-        json={**order_payload("20265588"), "disassemblyChecklist": checklist},
+        json={**order_payload("20265588"), "disassemblyChecklist": checklist, "photos": photos},
     )
 
     assert create.status_code == 201
@@ -112,6 +116,8 @@ def test_disassembly_checklist_is_returned_to_mechanic(service_orders_client):
 
     assert fetched.status_code == 200
     assert fetched.json["disassemblyChecklist"] == checklist
+    assert fetched.json["photos"]["disassembly"] == photos["disassembly"]
+    assert fetched.json["photos"]["disassemblyChecklist-0"] == photos["disassemblyChecklist-0"]
 
 
 def test_service_order_links_invoice_file_by_foreign_key(service_orders_client):
