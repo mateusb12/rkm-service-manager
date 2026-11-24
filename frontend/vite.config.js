@@ -19,21 +19,15 @@ const localCommitTitle = git('%s');
 
 let githubCommit = null;
 
-if (
-  /^[0-9a-f]{7,40}$/i.test(commit) &&
-  (localCommitDate === 'unknown' || localCommitTitle === 'unknown')
-) {
+if (/^[0-9a-f]{7,40}$/i.test(commit) && (localCommitDate === 'unknown' || localCommitTitle === 'unknown')) {
   try {
-    const response = await fetch(
-      `https://api.github.com/repos/mateusb12/rkm-service-manager/commits/${commit}`,
-      {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          'User-Agent': 'rkm-service-manager-build',
-        },
-        signal: AbortSignal.timeout(8000),
+    const response = await fetch(`https://api.github.com/repos/mateusb12/rkm-service-manager/commits/${commit}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'rkm-service-manager-build',
       },
-    );
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!response.ok) {
       throw new Error(`GitHub API HTTP ${response.status}`);
@@ -54,13 +48,9 @@ if (
   }
 }
 
-const commitDate =
-  process.env.VITE_COMMIT_DATE ||
-  (localCommitDate !== 'unknown' ? localCommitDate : githubCommit?.date || 'unknown');
+const commitDate = process.env.VITE_COMMIT_DATE || (localCommitDate !== 'unknown' ? localCommitDate : githubCommit?.date || 'unknown');
 
-const commitTitle =
-  process.env.VITE_COMMIT_TITLE ||
-  (localCommitTitle !== 'unknown' ? localCommitTitle : githubCommit?.title || 'unknown');
+const commitTitle = process.env.VITE_COMMIT_TITLE || (localCommitTitle !== 'unknown' ? localCommitTitle : githubCommit?.title || 'unknown');
 
 export default defineConfig({
   plugins: [react()],
@@ -78,16 +68,13 @@ export default defineConfig({
       '/api': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
       '/auth': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
       '/admin': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
-      '/clients':
-        process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/clients': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
       '/dev': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
       '/files': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
-      '/service-orders':
-        process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
-      '/health':
-        process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
-      '/openapi.json':
-        process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/price-catalog': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/service-orders': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/health': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
+      '/openapi.json': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
       '/docs': process.env.BACKEND_URL || 'http://127.0.0.1:' + (process.env.BACKEND_PORT || 8787),
     },
   },
