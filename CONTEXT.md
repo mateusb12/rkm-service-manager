@@ -58,3 +58,13 @@ _Evitar_: Diagnóstico e aprovação, diagnóstico
 **Entrega**:
 Etapa em que a ordem de serviço concluída é devolvida ao cliente ou encaminhada pela forma de saída definida.
 _Evitar_: Expedição
+
+## Comercial
+
+**Material**:
+Cadastro físico comercial da oficina, incluindo peças, kits, componentes e consumíveis.
+_Evitar_: separar peça e produto como tipos de cadastro distintos
+
+**Serviço**:
+Cadastro de uma atividade executada pela empresa e precificada exclusivamente por hora.
+_Evitar_: serviço com unidade de medida diferente de hora

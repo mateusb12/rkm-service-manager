@@ -4,23 +4,22 @@ import { formatPriceCents } from '../../../utils/currency';
 import { normalizeText } from '../../../utils/text';
 import { PriceCatalogForm } from './PriceCatalogForm';
 import { CrudTable, CrudTableActions } from '../../../shared/ui/CrudTable';
+import { RainbowBadge } from '../../../shared/ui/RainbowBadge';
 import { PRICE_CATALOG_TYPE_LABELS, type PriceCatalogInput, type PriceCatalogItem } from './model';
 import { createPriceCatalogItem, getPriceCatalogItem, listPriceCatalogItems, removePriceCatalogItem, updatePriceCatalogItem } from './service';
 
 export type PriceCatalogPage = { mode: 'list' } | { mode: 'create' } | { mode: 'edit'; itemId: string };
-type CatalogFilter = 'active' | 'all' | 'piece' | 'product' | 'service' | 'archived';
+type CatalogFilter = 'active' | 'all' | 'material' | 'service' | 'archived';
 
 const filters: { key: CatalogFilter; label: string }[] = [
   { key: 'active', label: 'Todos' },
-  { key: 'piece', label: 'Peças' },
-  { key: 'product', label: 'Produtos' },
+  { key: 'material', label: 'Materiais' },
   { key: 'service', label: 'Serviços' },
   { key: 'archived', label: 'Arquivados' },
 ];
 
 const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogItem['type'], string>> = {
-  piece: '/assets/peça.png',
-  product: '/assets/produto.png',
+  material: '/assets/produto.png',
   service: '/assets/serviço.png',
 };
 
@@ -143,7 +142,7 @@ export function PriceCatalogView({ page: controlledPage, onPageChange }: Props) 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-blue-400">COMERCIAL · CATÁLOGO</p>
           <h1 className="mt-2 text-2xl font-semibold text-slate-100">Tabela de preços</h1>
-          <p className="mt-2 text-sm text-slate-400">Peças, produtos e serviços com preço de venda em BRL.</p>
+          <p className="mt-2 text-sm text-slate-400">Materiais e serviços com preço de venda em BRL.</p>
         </div>
         <button type="button" className="btn btn-primary shrink-0 justify-center" onClick={openCreate} disabled={loading}>
           <span aria-hidden="true">＋</span> Novo cadastro
@@ -264,7 +263,9 @@ function CatalogTable({
                   <span className="tag tag-blue">{PRICE_CATALOG_TYPE_LABELS[item.type]}</span>
                 )}
               </td>
-              <td className="px-5 py-4 text-slate-300">{item.unit}</td>
+              <td className="px-5 py-4">
+                <RainbowBadge colorKey={item.unit}>{item.unit}</RainbowBadge>
+              </td>
               <td className="px-5 py-4 text-center font-medium text-slate-100">{formatPriceCents(item.unitPriceCents)}</td>
               <td className="px-5 py-4 text-right">
                 {archived ? (

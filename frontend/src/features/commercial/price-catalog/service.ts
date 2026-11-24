@@ -1,4 +1,10 @@
-import { PRICE_CATALOG_REFERENCE_IDS, PRICE_CATALOG_STORAGE_KEY, type PriceCatalogInput, type PriceCatalogItem } from './model';
+import {
+  PRICE_CATALOG_REFERENCE_IDS,
+  PRICE_CATALOG_SERVICE_UNIT,
+  PRICE_CATALOG_STORAGE_KEY,
+  type PriceCatalogInput,
+  type PriceCatalogItem,
+} from './model';
 
 export type PriceCatalogRemoval = {
   mode: 'permanent' | 'archived';
@@ -15,22 +21,22 @@ export class PriceCatalogServiceError extends Error {
 }
 
 const demoItems: PriceCatalogItem[] = [
-  createDemoItem('price-adaptador-45-41-5', 'Adaptador 45 × 41,5', 'piece', 'un', 45000),
-  createDemoItem('price-gaxeta-45-55-7', 'Gaxeta 45 × 55 × 7', 'piece', 'un', 32000),
-  createDemoItem('price-o-ring-60-3', 'O-ring 60 × 3', 'piece', 'un', 3500),
+  createDemoItem('price-adaptador-45-41-5', 'Adaptador 45 × 41,5', 'material', 'un', 45000),
+  createDemoItem('price-gaxeta-45-55-7', 'Gaxeta 45 × 55 × 7', 'material', 'un', 32000),
+  createDemoItem('price-o-ring-60-3', 'O-ring 60 × 3', 'material', 'un', 3500),
   createDemoItem(
     'price-kit-vedacao-acumulador',
     'Kit de vedação para acumulador',
-    'product',
+    'material',
     'un',
     68000,
     'Kit composto por elementos de vedação para manutenção de acumuladores hidráulicos.',
   ),
-  createDemoItem('price-recuperar-rosca-embolao', 'Recuperar rosca do êmbolo', 'service', 'un', 7500),
-  createDemoItem('price-pintura', 'Pintura', 'service', 'un', 8500),
+  createDemoItem('price-recuperar-rosca-embolao', 'Recuperar rosca do êmbolo', 'service', PRICE_CATALOG_SERVICE_UNIT, 7500),
+  createDemoItem('price-pintura', 'Pintura', 'service', PRICE_CATALOG_SERVICE_UNIT, 8500),
 ];
 const DEMO_SEED_VERSION_KEY = `${PRICE_CATALOG_STORAGE_KEY}-seed`;
-const DEMO_SEED_VERSION = '2';
+const DEMO_SEED_VERSION = '4';
 
 function createDemoItem(
   id: string,
@@ -71,7 +77,12 @@ function readItems(): PriceCatalogItem[] {
       if (window.localStorage.getItem(DEMO_SEED_VERSION_KEY) !== DEMO_SEED_VERSION) {
         const existingIds = new Set(items.map((item) => item.id));
         const missingDemoItems = demoItems.filter((item) => !existingIds.has(item.id));
-        const mergedItems = [...items, ...missingDemoItems];
+        const migratedItems = items.map((item) => {
+          const legacyType = item.type as string;
+          const type = legacyType === 'piece' || legacyType === 'product' ? 'material' : item.type;
+          return type === 'service' ? { ...item, type, unit: PRICE_CATALOG_SERVICE_UNIT } : { ...item, type };
+        });
+        const mergedItems = [...migratedItems, ...missingDemoItems];
         writeItems(mergedItems);
         window.localStorage.setItem(DEMO_SEED_VERSION_KEY, DEMO_SEED_VERSION);
         return mergedItems;
@@ -91,6 +102,10 @@ function writeItems(items: PriceCatalogItem[]) {
   window.localStorage.setItem(PRICE_CATALOG_STORAGE_KEY, JSON.stringify(items));
 }
 
+function normalizeInput(input: PriceCatalogInput): PriceCatalogInput {
+  return input.type === 'service' ? { ...input, unit: PRICE_CATALOG_SERVICE_UNIT } : input;
+}
+
 function generateId() {
   return `price-${crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
 }
@@ -107,8 +122,9 @@ export async function getPriceCatalogItem(id: string): Promise<PriceCatalogItem>
 
 export async function createPriceCatalogItem(input: PriceCatalogInput): Promise<PriceCatalogItem> {
   const now = new Date().toISOString();
+  const normalizedInput = normalizeInput(input);
   const item: PriceCatalogItem = {
-    ...input,
+    ...normalizedInput,
     id: generateId(),
     createdAt: now,
     updatedAt: now,
@@ -125,7 +141,7 @@ export async function updatePriceCatalogItem(id: string, input: PriceCatalogInpu
   if (!currentItem) throw new PriceCatalogServiceError('price_catalog_item_not_found');
   if (currentItem.deletedAt) throw new PriceCatalogServiceError('price_catalog_item_archived');
 
-  const updatedItem = { ...currentItem, ...input, updatedAt: new Date().toISOString() };
+  const updatedItem = { ...currentItem, ...normalizeInput(input), updatedAt: new Date().toISOString() };
   writeItems(items.map((item) => (item.id === id ? updatedItem : item)));
   return updatedItem;
 }

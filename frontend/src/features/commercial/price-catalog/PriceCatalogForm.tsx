@@ -6,6 +6,7 @@ import {
   PRICE_CATALOG_TYPE_LABELS,
   PRICE_CATALOG_TYPES,
   PRICE_CATALOG_UNITS,
+  PRICE_CATALOG_SERVICE_UNIT,
   validatePriceCatalogInput,
   type PriceCatalogErrors,
   type PriceCatalogInput,
@@ -20,13 +21,14 @@ type Props = {
 };
 
 const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogInput['type'], string>> = {
-  piece: '/assets/peça.png',
-  product: '/assets/produto.png',
+  material: '/assets/produto.png',
   service: '/assets/serviço.png',
 };
 
 export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
-  const [input, setInput] = useState<PriceCatalogInput>(() => (item ? { ...item } : { ...EMPTY_PRICE_CATALOG_INPUT }));
+  const [input, setInput] = useState<PriceCatalogInput>(() =>
+    item ? { ...item, unit: item.type === 'service' ? PRICE_CATALOG_SERVICE_UNIT : item.unit } : { ...EMPTY_PRICE_CATALOG_INPUT },
+  );
   const [priceDisplay, setPriceDisplay] = useState(() => formatPriceInput(item?.unitPriceCents || 0));
   const [errors, setErrors] = useState<PriceCatalogErrors>({});
   const [submissionError, setSubmissionError] = useState('');
@@ -35,7 +37,14 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
   const editing = Boolean(item);
 
   function changeField<Key extends keyof PriceCatalogInput>(key: Key, value: PriceCatalogInput[Key]) {
-    setInput((previous) => ({ ...previous, [key]: value }));
+    setInput((previous) => {
+      const next = { ...previous, [key]: value } as PriceCatalogInput;
+
+      if (key === 'type' && value === 'service') next.unit = PRICE_CATALOG_SERVICE_UNIT;
+      if (key === 'type' && previous.type === 'service' && value !== 'service') next.unit = 'un';
+
+      return next;
+    });
     setErrors((previous) => ({ ...previous, [key]: undefined }));
     setSubmissionError('');
   }
@@ -111,7 +120,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
                 id="price-unit"
                 className={fieldClass(Boolean(errors.unit))}
                 value={input.unit}
-                disabled={saving}
+                disabled={saving || input.type === 'service'}
                 onChange={(event) => changeField('unit', event.target.value as PriceCatalogInput['unit'])}
               >
                 {PRICE_CATALOG_UNITS.map((unit) => (
@@ -120,6 +129,7 @@ export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
                   </option>
                 ))}
               </select>
+              {input.type === 'service' && <span className="mt-1 block text-xs text-slate-500">Serviços são cobrados por hora.</span>}
             </Field>
 
             <Field label="Preço de venda" required error={errors.unitPriceCents}>
