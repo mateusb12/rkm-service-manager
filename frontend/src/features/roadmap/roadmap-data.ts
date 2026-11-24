@@ -120,9 +120,9 @@ export const ROADMAP: RoadmapVersion[] = [
           feature(
             'oficina/peritagem-cilindro',
             'Registro dos componentes do cilindro',
-            'O mecânico consegue abrir cada componente da lista de peritagem do cilindro e registrar manualmente sua condição, observações e medidas básicas.\nO progresso pode ser salvo sem exigir regras automáticas, diagnóstico estruturado ou suporte imediato a outros equipamentos.',
-            'Em andamento',
-            [1],
+            'O mecânico consegue abrir cada componente da lista de peritagem do cilindro e registrar manualmente sua condição e observações.\nO progresso pode ser salvo sem exigir regras automáticas, diagnóstico estruturado ou suporte imediato a outros equipamentos.',
+            'Concluída',
+            [0, 1],
           ),
           feature(
             'oficina/execucao-minima',

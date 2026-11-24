@@ -240,7 +240,7 @@ const WORKLOG: Record<string, WorkEntry[]> = {
     {
       category: 'Produto',
       description:
-        'Checklist de saúde do cilindro na desmontagem: cada componente (camisa, haste, êmbolo, cabeçotes, vedações, articulações e outros) recebe resultado Conforme/Não conforme, motivo obrigatório quando não conforme e foto opcional, persistidos na OS com salvamento progressivo. Falta registrar medidas básicas por componente. (Adiantado na branch features/pcp/fila.)',
+        'Checklist de saúde do cilindro na desmontagem: cada componente (camisa, haste, êmbolo, cabeçotes, vedações, articulações e outros) recebe resultado Conforme/Não conforme, motivo obrigatório quando não conforme e foto opcional, persistidos na OS com salvamento progressivo. Medidas por componente ficam para oficina/medicoes (V1). (Adiantado na branch features/pcp/fila.)',
     },
   ],
   'oficina/evidencias': [
