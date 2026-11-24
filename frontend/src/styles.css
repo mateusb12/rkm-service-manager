@@ -1999,7 +1999,6 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   gap: 12px;
   padding: 10px 12px;
   box-sizing: border-box;
-  border: 1px solid red;
 }
 
 .service-entry-invoice-selected-card .service-entry-invoice-details > div {
@@ -2443,6 +2442,12 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 .service-entry-section {
   padding: 22px 24px 24px;
   border-bottom: 1px solid var(--rkm-border, #1e3550);
+}
+
+.service-entry-receiving-media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .service-entry-section:last-of-type {
@@ -3024,6 +3029,10 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
   .service-entry-section {
     padding: 18px;
+  }
+
+  .service-entry-receiving-media-grid {
+    grid-template-columns: 1fr;
   }
 
   .service-entry-actions {

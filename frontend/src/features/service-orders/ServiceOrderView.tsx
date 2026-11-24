@@ -44,8 +44,8 @@ const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
   Outro: '/assets/outro.png',
 };
 
-const ServiceEntrySection = ({ title, description, children }) => (
-  <section className="service-entry-section">
+const ServiceEntrySection = ({ title, description, children, className = '' }) => (
+  <section className={`service-entry-section ${className}`}>
     <div className="service-entry-section-header">
       <div>
         <h2>{title}</h2>
@@ -56,7 +56,7 @@ const ServiceEntrySection = ({ title, description, children }) => (
   </section>
 );
 
-const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint }) => {
+const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelectExisting, hint }) => {
   const [previews, setPreviews] = useState({});
   const previewUrls = useRef([]);
 
@@ -71,7 +71,7 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
       previewUrls.current.push(nextPreviews[key]);
     });
     setPreviews((prev) => ({ ...prev, ...nextPreviews }));
-    await onFiles(files.slice(0, 1));
+    await onFiles(files);
     event.target.value = '';
   };
 
@@ -79,11 +79,29 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, hint })
     <div className="service-entry-photo-field">
       <label className="service-entry-photo-label">{label}</label>
       {hint && <p>{hint}</p>}
-      {photos.length === 0 && (
+      {onSelectExisting && (
+        <ServiceOrderFileUpload
+          onUpload={(selectedFile) => onFiles([selectedFile])}
+          onDeselect={() => undefined}
+          onDelete={() => undefined}
+          onSelectExisting={onSelectExisting}
+          label="Origem das fotos"
+          hint="Selecione um arquivo já armazenado ou envie uma nova foto."
+          selectedBadge="Foto selecionada"
+          addLabel="Adicionar foto"
+          addHint="Clique ou arraste uma imagem por vez"
+          uploadingLabel="Preparando fotos..."
+          uploadingHint="Aguarde enquanto as fotos são preparadas."
+          accept="image/*"
+          category="recebimento"
+          showLibrary
+        />
+      )}
+      {!onSelectExisting && (
         <label className="service-entry-photo-picker">
-          <input type="file" accept="image/*" capture="environment" onChange={selectFiles} />
+          <input type="file" accept="image/*" capture="environment" multiple onChange={selectFiles} />
           <span aria-hidden="true">＋</span>
-          <strong>Adicionar foto</strong>
+          <strong>Adicionar foto{photos.length > 0 ? 's' : ''}</strong>
           <small>JPG, PNG ou HEIC · armazenada neste navegador</small>
         </label>
       )}
@@ -372,59 +390,68 @@ const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder, class
 ));
 
 const ServiceEntryArrivalStep = ({ form, set, onInvoiceFileUpload, onInvoiceFileRemove, addPhotos, removePhoto }) => (
-  <ServiceEntrySection
-    title="Recebimento PCP"
-    description="Registre somente o necessário para abrir a OS. A identificação técnica fica para a oficina."
-  >
-    <Field label="Cliente" required className="md:col-span-2">
-      <ClientSelector
-        value={form.client}
-        onSelect={(client) => {
-          set('client', client.nomeFantasia);
-          set('clientId', client.id);
-        }}
-        onClear={() => {
-          set('client', '');
-          set('clientId', null);
-        }}
-      />
-    </Field>
-    <Field label="Nº da OS" required hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}>
-      <TextInput value={form.orderNumber} onChange={(value) => set('orderNumber', value)} placeholder="Ex.: 254186" disabled={!!form.id} />
-    </Field>
-    <Field
-      label="Nota fiscal / documento"
-      className="md:col-span-2"
-      hint="Opcional — informe o número da NF quando houver. Você também pode usar N/A para registrar ausência de documento."
+  <>
+    <ServiceEntrySection
+      title="Recebimento PCP"
+      description="Registre somente o necessário para abrir a OS. A identificação técnica fica para a oficina."
     >
-      <TextInput value={form.invoiceNumber} onChange={(value) => set('invoiceNumber', value)} placeholder="Número da NF, N/A ou deixe em branco" />
-    </Field>
-    <div className="md:col-span-3">
-      <ServiceOrderInvoiceFileField
-        file={form.invoiceFile}
-        showLibrary={Boolean(form.id)}
-        onUpload={onInvoiceFileUpload}
-        onDeselect={() => {
-          set('invoiceFileId', null);
-          set('invoiceFile', null);
-        }}
-        onDelete={onInvoiceFileRemove}
-        onSelectExisting={(existingFile) => {
-          set('invoiceFileId', existingFile.id);
-          set('invoiceFile', existingFile);
-        }}
-      />
+      <Field label="Cliente" required className="md:col-span-2">
+        <ClientSelector
+          value={form.client}
+          onSelect={(client) => {
+            set('client', client.nomeFantasia);
+            set('clientId', client.id);
+          }}
+          onClear={() => {
+            set('client', '');
+            set('clientId', null);
+          }}
+        />
+      </Field>
+      <Field label="Nº da OS" required hint={form.id ? 'Identificador fixo após a abertura da OS.' : undefined}>
+        <TextInput value={form.orderNumber} onChange={(value) => set('orderNumber', value)} placeholder="Ex.: 254186" disabled={!!form.id} />
+      </Field>
+    </ServiceEntrySection>
+    <div className="service-entry-receiving-media-grid">
+      <ServiceEntrySection title="Nota fiscal / documento" description="Registre o número e anexe uma única nota fiscal ou documento de entrada.">
+        <Field label="Número da NF / documento" className="md:col-span-3" hint="Opcional — use N/A para registrar ausência de documento.">
+          <TextInput
+            value={form.invoiceNumber}
+            onChange={(value) => set('invoiceNumber', value)}
+            placeholder="Número da NF, N/A ou deixe em branco"
+          />
+        </Field>
+        <div className="md:col-span-3">
+          <ServiceOrderInvoiceFileField
+            file={form.invoiceFile}
+            showLibrary={Boolean(form.id)}
+            onUpload={onInvoiceFileUpload}
+            onDeselect={() => {
+              set('invoiceFileId', null);
+              set('invoiceFile', null);
+            }}
+            onDelete={onInvoiceFileRemove}
+            onSelectExisting={(existingFile) => {
+              set('invoiceFileId', existingFile.id);
+              set('invoiceFile', existingFile);
+            }}
+          />
+        </div>
+      </ServiceEntrySection>
+      <ServiceEntrySection title="Fotos do equipamento" description="Adicione uma ou várias fotos para registrar como o equipamento chegou.">
+        <div className="md:col-span-3">
+          <ServiceEntryPhotoField
+            label="Fotos da peça"
+            hint="Opcional no recebimento — você pode adicionar várias fotos."
+            photos={form.photos.arrival}
+            onFiles={(files) => addPhotos('arrival', files)}
+            onRemove={(photo) => removePhoto('arrival', photo)}
+            onSelectExisting={(photo) => set('photos', { ...form.photos, arrival: [...form.photos.arrival, photo] })}
+          />
+        </div>
+      </ServiceEntrySection>
     </div>
-    <div className="md:col-span-3">
-      <ServiceEntryPhotoField
-        label="Fotos da peça"
-        hint="Opcional no recebimento — pode ser adicionada depois, se necessário."
-        photos={form.photos.arrival}
-        onFiles={(files) => addPhotos('arrival', files)}
-        onRemove={(photo) => removePhoto('arrival', photo)}
-      />
-    </div>
-  </ServiceEntrySection>
+  </>
 );
 
 const ServiceEntryIdentificationStep = ({ form, set }) => (
@@ -995,7 +1022,8 @@ export const ServiceOrderView = () => {
 
   const removePhoto = async (category, photo) => {
     try {
-      await deleteServiceEntryPhoto(photo.id);
+      if (photo.key) await deleteFile(photo.key);
+      else await deleteServiceEntryPhoto(photo.id);
     } catch {}
     setForm((prev) => ({
       ...prev,

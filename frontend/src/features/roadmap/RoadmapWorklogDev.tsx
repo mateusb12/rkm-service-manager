@@ -196,6 +196,26 @@ const WORKLOG: Record<string, WorkEntry[]> = {
       description:
         'Correção da abertura de uma nova OS para não exibir arquivos da biblioteca global sem uma OS selecionada, limpando também o estado residual de arquivos ao desselecionar a OS.',
     },
+    {
+      category: 'Produto',
+      description:
+        'Inclusão dos dados técnicos obrigatórios do cilindro no recebimento: diâmetros interno e externo, comprimento, diâmetro da haste e itens opcionais recebidos, com validação específica para esse tipo de equipamento.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Ampliação da serialização e da atualização PCP no backend para preservar os dados dimensionais e os acessórios do cilindro durante todo o fluxo da OS, incluindo o acesso da oficina na desmontagem.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Reorganização visual do recebimento em blocos laterais simétricos para nota fiscal e fotos do equipamento, aproveitando o espaço horizontal e mantendo o layout responsivo.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Evolução das fotos do equipamento para múltiplos registros, com seleção entre arquivos já armazenados e upload de novas imagens no mesmo padrão usado na desmontagem.',
+    },
   ],
   'admin/usuarios': [
     {
