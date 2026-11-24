@@ -50,7 +50,7 @@ export const CleanSidebar = ({ view, setView, authenticatedUser, activeRole, onL
   return React.createElement(
     'aside',
     {
-      className: `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ` + `${collapsed ? 'sidebar-collapsed w-[72px]' : 'w-80'}`,
+      className: `hidden md:flex sticky top-0 h-screen shrink-0 flex-col sidebar-shell ` + `${collapsed ? 'sidebar-collapsed w-[72px]' : 'w-64'}`,
     },
 
     React.createElement(
