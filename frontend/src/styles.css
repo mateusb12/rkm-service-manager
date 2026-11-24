@@ -2959,6 +2959,30 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   box-shadow: inset 3px 0 #60a5fa;
 }
 
+.service-entry-table tbody:has(tr.is-budget-multiline:hover) tr.is-budget-multiline {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.service-entry-table tbody:has(tr.is-budget-multiline:hover) tr.is-budget-multiline-start {
+  box-shadow: inset 3px 0 #60a5fa;
+}
+
+.service-entry-table tfoot th {
+  border-top: 1px solid #355273;
+  background: #132c49;
+  color: #dbeafe;
+}
+
+.service-entry-budget-quantity {
+  -moz-appearance: textfield;
+}
+
+.service-entry-budget-quantity::-webkit-outer-spin-button,
+.service-entry-budget-quantity::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
 .service-entry-equipment-cell {
   display: flex;
   align-items: center;

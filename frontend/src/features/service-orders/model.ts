@@ -41,7 +41,9 @@ export const createEmptyDisassemblyChecklist = () =>
     budgetItem: '',
     budgetItemId: null,
     budgetUnit: '',
+    budgetUnitPriceCents: 0,
     budgetQuantity: '',
+    budgetItems: [],
   }));
 
 const currentLocalDateTime = () => {

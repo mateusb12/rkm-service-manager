@@ -35,6 +35,7 @@ import { ServiceOrderFileUpload } from './ServiceOrderFileUpload';
 import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
 import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
+import { formatPriceCents } from '../../utils/currency';
 import { createDemoServiceEntry } from './demo-fixture';
 import { deleteFile, getFilePreviewUrl, listFiles, uploadFile } from '../files/service';
 
@@ -745,29 +746,82 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
   const nonconformingItems = (Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : []).filter(
     (item) => item.status === 'Não conforme',
   );
-  const updateBudgetItem = (component, key, value) => {
+  const emptyBudgetLine = () => ({ budgetItem: '', budgetItemId: null, budgetUnit: '', budgetUnitPriceCents: 0, budgetQuantity: '' });
+  const getBudgetLines = (item) => {
+    if (item.component !== 'Vedações') {
+      return [
+        {
+          budgetItem: item.budgetItem || '',
+          budgetItemId: item.budgetItemId || null,
+          budgetUnit: item.budgetUnit || '',
+          budgetUnitPriceCents: item.budgetUnitPriceCents || 0,
+          budgetQuantity: item.budgetQuantity || '',
+        },
+      ];
+    }
+
+    if (Array.isArray(item.budgetItems) && item.budgetItems.length > 0) return item.budgetItems;
+    if (item.budgetItem) {
+      return [
+        {
+          budgetItem: item.budgetItem,
+          budgetItemId: item.budgetItemId || null,
+          budgetUnit: item.budgetUnit || '',
+          budgetUnitPriceCents: item.budgetUnitPriceCents || 0,
+          budgetQuantity: item.budgetQuantity || '',
+        },
+      ];
+    }
+    return [emptyBudgetLine()];
+  };
+  const updateBudgetLine = (component, lineIndex, changes) => {
     const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
     set(
       'disassemblyChecklist',
-      checklist.map((item) => (item.component === component ? { ...item, [key]: value } : item)),
+      checklist.map((item) => {
+        if (item.component !== component) return item;
+        if (component !== 'Vedações') return { ...item, ...changes };
+        const lines = getBudgetLines(item).map((line) => ({ ...line }));
+        lines[lineIndex] = { ...lines[lineIndex], ...changes };
+        return { ...item, budgetItems: lines, budgetItem: '', budgetItemId: null, budgetUnit: '', budgetUnitPriceCents: 0, budgetQuantity: '' };
+      }),
     );
   };
-  const selectBudgetItem = (component, catalogItem) => {
+  const addBudgetLine = (component) => {
     const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
     set(
       'disassemblyChecklist',
-      checklist.map((item) =>
-        item.component === component ? { ...item, budgetItem: catalogItem.name, budgetItemId: catalogItem.id, budgetUnit: catalogItem.unit } : item,
+      checklist.map((item) => (item.component === component ? { ...item, budgetItems: [...getBudgetLines(item), emptyBudgetLine()] } : item)),
+    );
+  };
+  const removeBudgetLine = (component, lineIndex) => {
+    const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
+    set(
+      'disassemblyChecklist',
+      checklist.map((item) => {
+        if (item.component !== component) return item;
+        const remainingLines = getBudgetLines(item).filter((_, index) => index !== lineIndex);
+        return {
+          ...item,
+          budgetItems: remainingLines.length > 0 ? remainingLines : [emptyBudgetLine()],
+          budgetItem: '',
+          budgetItemId: null,
+          budgetUnit: '',
+          budgetUnitPriceCents: 0,
+          budgetQuantity: '',
+        };
+      }),
+    );
+  };
+  const totalBudgetCents = nonconformingItems.reduce(
+    (total, item) =>
+      total +
+      getBudgetLines(item).reduce(
+        (lineTotal, line) => lineTotal + Math.round(Number(line.budgetQuantity || 0) * Number(line.budgetUnitPriceCents || 0)),
+        0,
       ),
-    );
-  };
-  const clearBudgetItem = (component) => {
-    const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
-    set(
-      'disassemblyChecklist',
-      checklist.map((item) => (item.component === component ? { ...item, budgetItem: '', budgetItemId: null, budgetUnit: '' } : item)),
-    );
-  };
+    0,
+  );
 
   return (
     <ServiceEntrySection title="Orçamento" description="Consulte os componentes não conformes identificados na desmontagem.">
@@ -780,46 +834,110 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                   <th scope="col">Componente</th>
                   <th scope="col">Observação da desmontagem</th>
                   <th scope="col">Item</th>
-                  <th scope="col">Quantidade</th>
+                  <th scope="col">Qtd.</th>
+                  <th scope="col">Preço</th>
                 </tr>
               </thead>
               <tbody>
-                {nonconformingItems.map((item) => (
-                  <tr key={item.component}>
-                    <td>
-                      <strong>{item.component}</strong>
-                    </td>
-                    <td>{item.notes || 'Sem observação informada.'}</td>
-                    <td>
-                      <SearchableSelector
-                        value={item.budgetItem || ''}
-                        loadOptions={listPriceCatalogItems}
-                        getOptionKey={(catalogItem) => catalogItem.id}
-                        getOptionLabel={(catalogItem) => catalogItem.name}
-                        getOptionDescription={(catalogItem) => `${catalogItem.type === 'service' ? 'Serviço' : 'Material'} · ${catalogItem.unit}`}
-                        getOptionIcon={(catalogItem) => (catalogItem.type === 'service' ? '/assets/serviço.png' : '/assets/produto.png')}
-                        placeholder="Pesquisar item"
-                        listLabel="Itens do catálogo de preços"
-                        emptyLabel="Nenhum item encontrado."
-                        onSelect={(catalogItem) => selectBudgetItem(item.component, catalogItem)}
-                        onClear={() => clearBudgetItem(item.component)}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        className="rkm-input zenit-field w-full"
-                        value={item.budgetQuantity || ''}
-                        onChange={(event) => updateBudgetItem(item.component, 'budgetQuantity', event.target.value)}
-                        placeholder="Ex.: 3"
-                        aria-label={`Quantidade do orçamento para ${item.component}`}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                {nonconformingItems.flatMap((item) => {
+                  const lines = getBudgetLines(item);
+                  return lines.map((line, lineIndex) => (
+                    <tr
+                      key={`${item.component}-${lineIndex}`}
+                      className={
+                        item.component === 'Vedações' ? `is-budget-multiline${lineIndex === 0 ? ' is-budget-multiline-start' : ''}` : undefined
+                      }
+                    >
+                      {lineIndex === 0 && (
+                        <>
+                          <td rowSpan={lines.length}>
+                            <strong>{item.component}</strong>
+                          </td>
+                          <td rowSpan={lines.length}>{item.notes || 'Sem observação informada.'}</td>
+                        </>
+                      )}
+                      <td>
+                        <SearchableSelector
+                          value={line.budgetItem || ''}
+                          loadOptions={listPriceCatalogItems}
+                          getOptionKey={(catalogItem) => catalogItem.id}
+                          getOptionLabel={(catalogItem) => catalogItem.name}
+                          getOptionDescription={(catalogItem) => `${catalogItem.type === 'service' ? 'Serviço' : 'Material'} · ${catalogItem.unit}`}
+                          getOptionIcon={(catalogItem) => (catalogItem.type === 'service' ? '/assets/serviço.png' : '/assets/produto.png')}
+                          placeholder="Pesquisar item"
+                          listLabel="Itens do catálogo de preços"
+                          emptyLabel="Nenhum item encontrado."
+                          onSelect={(catalogItem) =>
+                            updateBudgetLine(item.component, lineIndex, {
+                              budgetItem: catalogItem.name,
+                              budgetItemId: catalogItem.id,
+                              budgetUnit: catalogItem.unit,
+                              budgetUnitPriceCents: catalogItem.unitPriceCents,
+                            })
+                          }
+                          onClear={() =>
+                            updateBudgetLine(item.component, lineIndex, {
+                              budgetItem: '',
+                              budgetItemId: null,
+                              budgetUnit: '',
+                              budgetUnitPriceCents: 0,
+                            })
+                          }
+                        />
+                        {item.component === 'Vedações' && lineIndex === lines.length - 1 && (
+                          <button
+                            type="button"
+                            className="mt-2 text-xs font-medium text-sky-300 hover:text-sky-200"
+                            onClick={() => addBudgetLine(item.component)}
+                          >
+                            ＋ Adicionar item
+                          </button>
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            className="rkm-input zenit-field service-entry-budget-quantity w-16 max-w-16 min-w-0"
+                            value={line.budgetQuantity || ''}
+                            onChange={(event) => updateBudgetLine(item.component, lineIndex, { budgetQuantity: event.target.value })}
+                            placeholder="Ex.: 3"
+                            aria-label={`Quantidade do orçamento para ${item.component}`}
+                          />
+                          <span className="min-w-7 text-sm font-semibold text-slate-300" aria-label={`Unidade: ${line.budgetUnit || 'não definida'}`}>
+                            {line.budgetUnit || '—'}
+                          </span>
+                          {item.component === 'Vedações' && (
+                            <button
+                              type="button"
+                              className="service-entry-delete shrink-0"
+                              aria-label={`Remover item de ${item.component}`}
+                              onClick={() => removeBudgetLine(item.component, lineIndex)}
+                            >
+                              <Trash2 size={15} strokeWidth={2} aria-hidden="true" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap font-semibold text-slate-100">
+                        {line.budgetItem
+                          ? formatPriceCents(Math.round(Number(line.budgetQuantity || 0) * Number(line.budgetUnitPriceCents || 0)))
+                          : '—'}
+                      </td>
+                    </tr>
+                  ));
+                })}
               </tbody>
+              <tfoot>
+                <tr>
+                  <th colSpan="4" scope="row" className="text-right">
+                    Total do orçamento
+                  </th>
+                  <th className="whitespace-nowrap text-right text-base text-sky-200">{formatPriceCents(totalBudgetCents)}</th>
+                </tr>
+              </tfoot>
             </table>
           </div>
         ) : (
