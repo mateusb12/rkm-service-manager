@@ -91,7 +91,8 @@ export function SearchableSelector<Option>({
 
   const keyboardOptions = loading || error ? [] : visibleOptions;
   const customIndex = keyboardOptions.length;
-  const optionCount = customIndex + (onSelectCustom && showCustomOption ? 1 : 0);
+  const canSelectCustom = Boolean(onSelectCustom && showCustomOption && !loading && !error && visibleOptions.length === 0);
+  const optionCount = customIndex + (canSelectCustom ? 1 : 0);
 
   function selectCustom() {
     const name = searchTerm.trim();
@@ -136,7 +137,7 @@ export function SearchableSelector<Option>({
     }
 
     if (event.key === 'Enter' && open) {
-      if (onSelectCustom && showCustomOption && activeIndex === customIndex) {
+      if (canSelectCustom && activeIndex === customIndex) {
         event.preventDefault();
         selectCustom();
       } else if (keyboardOptions[activeIndex]) {
@@ -167,7 +168,7 @@ export function SearchableSelector<Option>({
           aria-activedescendant={
             !open
               ? undefined
-              : onSelectCustom && showCustomOption && activeIndex === customIndex
+              : canSelectCustom && activeIndex === customIndex
                 ? `${listboxId}-custom`
                 : keyboardOptions[activeIndex]
                   ? `${listboxId}-option-${getOptionKey(keyboardOptions[activeIndex])}`
@@ -234,7 +235,7 @@ export function SearchableSelector<Option>({
                 </span>
               </button>
             ))}
-          {onSelectCustom && showCustomOption && (
+          {canSelectCustom && (
             <button
               id={`${listboxId}-custom`}
               type="button"

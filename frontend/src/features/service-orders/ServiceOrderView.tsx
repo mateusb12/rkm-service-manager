@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { ArrowLeft, ArrowRight, Check, FileCheck2, Pencil, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, FileCheck2, LockKeyhole, Pencil, Save, Trash2, X } from 'lucide-react';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -892,35 +892,31 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                       )}
                       <td>
                         {isManualBudgetLine(line) ? (
-                          <div>
+                          <div className="relative">
                             <input
-                              className="rkm-input zenit-field"
+                              className="rkm-input zenit-field pr-9 disabled:cursor-not-allowed disabled:border-slate-700 disabled:bg-slate-950/60 disabled:text-slate-500 disabled:placeholder:text-slate-600"
                               value={line.budgetItem || ''}
                               placeholder="Nome do item avulso"
                               aria-label={`Item avulso de ${item.component}`}
-                              onChange={(event) =>
+                              disabled
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-sky-300"
+                              aria-label="Desbloquear e buscar no catálogo"
+                              title="Desbloquear e buscar no catálogo"
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() =>
                                 updateBudgetLine(item.component, lineIndex, {
-                                  budgetItem: event.target.value,
+                                  budgetItem: '',
+                                  budgetItemId: null,
+                                  budgetUnit: '',
+                                  budgetUnitPriceCents: 0,
                                 })
                               }
-                            />
-                            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                              <span className="text-slate-400">Item avulso</span>
-                              <button
-                                type="button"
-                                className="text-sky-300 hover:text-sky-200"
-                                onClick={() =>
-                                  updateBudgetLine(item.component, lineIndex, {
-                                    budgetItem: '',
-                                    budgetItemId: null,
-                                    budgetUnit: '',
-                                    budgetUnitPriceCents: 0,
-                                  })
-                                }
-                              >
-                                Buscar no catálogo
-                              </button>
-                            </div>
+                            >
+                              <LockKeyhole size={15} aria-hidden="true" />
+                            </button>
                           </div>
                         ) : (
                           <SearchableSelector
