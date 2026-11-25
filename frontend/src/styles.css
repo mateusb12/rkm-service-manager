@@ -3009,6 +3009,11 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   font-size: var(--font-xs);
 }
 
+.service-entry-budget-notes {
+  display: grid;
+  gap: 4px;
+}
+
 .service-entry-creation-date {
   color: inherit !important;
   font-size: inherit !important;

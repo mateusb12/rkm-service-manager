@@ -20,7 +20,7 @@ import {
 
 import { deleteServiceEntry, loadServiceEntries, loadServiceEntryStages, saveServiceEntry } from './service';
 
-import { Field, MultiSelectCheckboxes, TextArea, TextInput } from '../../shared/ui/form-controls';
+import { BulletTextArea, Field, MultiSelectCheckboxes, TextArea, TextInput } from '../../shared/ui/form-controls';
 
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
@@ -692,16 +692,25 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
                       ))}
                     </div>
                   </div>
-                  {item.status === 'Não conforme' && (
-                    <textarea
-                      rows={3}
-                      className="rkm-input zenit-field mt-3 w-full resize-y"
-                      value={item.notes}
-                      onChange={(event) => updateItem(index, 'notes', event.target.value)}
-                      placeholder="Explique o motivo da não conformidade..."
-                      aria-label={`Motivo da não conformidade em ${item.component}`}
-                    />
-                  )}
+                  {item.status === 'Não conforme' &&
+                    (item.component === 'Vedações' ? (
+                      <BulletTextArea
+                        rows={5}
+                        className="mt-3 w-full resize-y"
+                        value={item.notes}
+                        onChange={(value) => updateItem(index, 'notes', value)}
+                        placeholder="Descreva cada não conformidade em uma linha..."
+                      />
+                    ) : (
+                      <textarea
+                        rows={3}
+                        className="rkm-input zenit-field mt-3 w-full resize-y"
+                        value={item.notes}
+                        onChange={(event) => updateItem(index, 'notes', event.target.value)}
+                        placeholder="Explique o motivo da não conformidade..."
+                        aria-label={`Motivo da não conformidade em ${item.component}`}
+                      />
+                    ))}
                   {item.status !== 'Não conforme' && <div className="service-entry-checklist-space mt-3 h-8" aria-hidden="true" />}
                   <div className="mt-3">
                     <ServiceEntryChecklistFileField
@@ -773,6 +782,16 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
       ];
     }
     return [emptyBudgetLine()];
+  };
+  const getBudgetNotes = (item) => {
+    if (item.component !== 'Vedações') return item.notes || 'Sem observação informada.';
+
+    const notes = String(item.notes || '')
+      .split('\n')
+      .map((line) => line.replace(/^\s*(?:•|[-*])\s*/, '').trim())
+      .filter(Boolean);
+
+    return notes.length > 0 ? notes : ['Sem observação informada.'];
   };
   const updateBudgetLine = (component, lineIndex, changes) => {
     const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
@@ -853,7 +872,17 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                           <td rowSpan={lines.length}>
                             <strong>{item.component}</strong>
                           </td>
-                          <td rowSpan={lines.length}>{item.notes || 'Sem observação informada.'}</td>
+                          <td rowSpan={lines.length}>
+                            {item.component === 'Vedações' ? (
+                              <div className="service-entry-budget-notes">
+                                {getBudgetNotes(item).map((note, noteIndex) => (
+                                  <div key={`${item.component}-note-${noteIndex}`}>• {note}</div>
+                                ))}
+                              </div>
+                            ) : (
+                              getBudgetNotes(item)
+                            )}
+                          </td>
                         </>
                       )}
                       <td>
