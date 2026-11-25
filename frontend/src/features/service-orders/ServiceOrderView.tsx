@@ -35,7 +35,8 @@ import { ServiceOrderFileUpload } from './ServiceOrderFileUpload';
 import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
 import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
-import { formatPriceCents } from '../../utils/currency';
+import { formatPriceCents, formatPriceInput, parsePriceInput } from '../../utils/currency';
+import { PRICE_CATALOG_UNITS } from '../commercial/price-catalog/model';
 import { createDemoServiceEntry } from './demo-fixture';
 import { deleteFile, getFilePreviewUrl, listFiles, uploadFile } from '../files/service';
 
@@ -783,6 +784,8 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
     }
     return [emptyBudgetLine()];
   };
+  const isManualBudgetLine = (line) => line.budgetItemId == null && Boolean(line.budgetItem || line.budgetUnit);
+
   const getBudgetNotes = (item) => {
     if (item.component !== 'Vedações') return item.notes || 'Sem observação informada.';
 
@@ -836,7 +839,8 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
     (total, item) =>
       total +
       getBudgetLines(item).reduce(
-        (lineTotal, line) => lineTotal + Math.round(Number(line.budgetQuantity || 0) * Number(line.budgetUnitPriceCents || 0)),
+        (lineTotal, line) =>
+          lineTotal + (line.budgetItem?.trim() ? Math.round(Number(line.budgetQuantity || 0) * Number(line.budgetUnitPriceCents || 0)) : 0),
         0,
       ),
     0,
@@ -847,14 +851,15 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
       <div className="md:col-span-3">
         {nonconformingItems.length > 0 ? (
           <div className="overflow-x-auto rounded-lg border border-rkmborder">
-            <table className="service-entry-table min-w-[900px]">
+            <table className="service-entry-table min-w-[1100px]">
               <thead>
                 <tr>
                   <th scope="col">Componente</th>
                   <th scope="col">Observação da desmontagem</th>
                   <th scope="col">Item</th>
                   <th scope="col">Qtd.</th>
-                  <th scope="col">Preço</th>
+                  <th scope="col">Valor unitário</th>
+                  <th scope="col">Subtotal</th>
                 </tr>
               </thead>
               <tbody>
@@ -886,33 +891,75 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                         </>
                       )}
                       <td>
-                        <SearchableSelector
-                          value={line.budgetItem || ''}
-                          loadOptions={listPriceCatalogItems}
-                          getOptionKey={(catalogItem) => catalogItem.id}
-                          getOptionLabel={(catalogItem) => catalogItem.name}
-                          getOptionDescription={(catalogItem) => `${catalogItem.type === 'service' ? 'Serviço' : 'Material'} · ${catalogItem.unit}`}
-                          getOptionIcon={(catalogItem) => (catalogItem.type === 'service' ? '/assets/serviço.png' : '/assets/produto.png')}
-                          placeholder="Pesquisar item"
-                          listLabel="Itens do catálogo de preços"
-                          emptyLabel="Nenhum item encontrado."
-                          onSelect={(catalogItem) =>
-                            updateBudgetLine(item.component, lineIndex, {
-                              budgetItem: catalogItem.name,
-                              budgetItemId: catalogItem.id,
-                              budgetUnit: catalogItem.unit,
-                              budgetUnitPriceCents: catalogItem.unitPriceCents,
-                            })
-                          }
-                          onClear={() =>
-                            updateBudgetLine(item.component, lineIndex, {
-                              budgetItem: '',
-                              budgetItemId: null,
-                              budgetUnit: '',
-                              budgetUnitPriceCents: 0,
-                            })
-                          }
-                        />
+                        {isManualBudgetLine(line) ? (
+                          <div>
+                            <input
+                              className="rkm-input zenit-field"
+                              value={line.budgetItem || ''}
+                              placeholder="Nome do item avulso"
+                              aria-label={`Item avulso de ${item.component}`}
+                              onChange={(event) =>
+                                updateBudgetLine(item.component, lineIndex, {
+                                  budgetItem: event.target.value,
+                                })
+                              }
+                            />
+                            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                              <span className="text-slate-400">Item avulso</span>
+                              <button
+                                type="button"
+                                className="text-sky-300 hover:text-sky-200"
+                                onClick={() =>
+                                  updateBudgetLine(item.component, lineIndex, {
+                                    budgetItem: '',
+                                    budgetItemId: null,
+                                    budgetUnit: '',
+                                    budgetUnitPriceCents: 0,
+                                  })
+                                }
+                              >
+                                Buscar no catálogo
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <SearchableSelector
+                            value={line.budgetItem || ''}
+                            onSelectCustom={(name) =>
+                              updateBudgetLine(item.component, lineIndex, {
+                                budgetItem: name,
+                                budgetItemId: null,
+                                budgetUnit: 'un',
+                                budgetUnitPriceCents: 0,
+                              })
+                            }
+                            showCustomOption={true}
+                            loadOptions={listPriceCatalogItems}
+                            getOptionKey={(catalogItem) => catalogItem.id}
+                            getOptionLabel={(catalogItem) => catalogItem.name}
+                            getOptionDescription={(catalogItem) => `${catalogItem.type === 'service' ? 'Serviço' : 'Material'} · ${catalogItem.unit}`}
+                            getOptionIcon={(catalogItem) => (catalogItem.type === 'service' ? '/assets/serviço.png' : '/assets/produto.png')}
+                            placeholder="Buscar no catálogo"
+                            listLabel="Catálogo"
+                            emptyLabel="Nenhum item encontrado."
+                            onSelect={(catalogItem) =>
+                              updateBudgetLine(item.component, lineIndex, {
+                                budgetItem: catalogItem.name,
+                                budgetItemId: catalogItem.id,
+                                budgetUnit: catalogItem.unit,
+                                budgetUnitPriceCents: catalogItem.unitPriceCents,
+                              })
+                            }
+                            onClear={() =>
+                              updateBudgetLine(item.component, lineIndex, {
+                                budgetItem: '',
+                                budgetItemId: null,
+                                budgetUnit: '',
+                                budgetUnitPriceCents: 0,
+                              })
+                            }
+                          />
+                        )}
                         {item.component === 'Vedações' && lineIndex === lines.length - 1 && (
                           <button
                             type="button"
@@ -935,9 +982,31 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                             placeholder="Ex.: 3"
                             aria-label={`Quantidade do orçamento para ${item.component}`}
                           />
-                          <span className="min-w-7 text-sm font-semibold text-slate-300" aria-label={`Unidade: ${line.budgetUnit || 'não definida'}`}>
-                            {line.budgetUnit || '—'}
-                          </span>
+                          {isManualBudgetLine(line) ? (
+                            <select
+                              className="rkm-input zenit-field w-20"
+                              value={line.budgetUnit || 'un'}
+                              aria-label={`Unidade do item de ${item.component}`}
+                              onChange={(event) =>
+                                updateBudgetLine(item.component, lineIndex, {
+                                  budgetUnit: event.target.value,
+                                })
+                              }
+                            >
+                              {PRICE_CATALOG_UNITS.map((unit) => (
+                                <option key={unit} value={unit}>
+                                  {unit}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span
+                              className="min-w-7 text-sm font-semibold text-slate-300"
+                              aria-label={`Unidade: ${line.budgetUnit || 'não definida'}`}
+                            >
+                              {line.budgetUnit || '—'}
+                            </span>
+                          )}
                           {item.component === 'Vedações' && (
                             <button
                               type="button"
@@ -950,8 +1019,28 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                           )}
                         </div>
                       </td>
+                      <td className="whitespace-nowrap">
+                        {isManualBudgetLine(line) ? (
+                          <input
+                            className="rkm-input zenit-field min-w-[110px]"
+                            inputMode="numeric"
+                            value={formatPriceInput(line.budgetUnitPriceCents || 0)}
+                            placeholder="R$ 0,00"
+                            aria-label={`Valor unitário de ${item.component}`}
+                            onChange={(event) =>
+                              updateBudgetLine(item.component, lineIndex, {
+                                budgetUnitPriceCents: parsePriceInput(event.target.value),
+                              })
+                            }
+                          />
+                        ) : line.budgetItem ? (
+                          <span className="text-sm text-slate-300">{formatPriceCents(line.budgetUnitPriceCents || 0)}</span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
                       <td className="whitespace-nowrap font-semibold text-slate-100">
-                        {line.budgetItem
+                        {line.budgetItem?.trim()
                           ? formatPriceCents(Math.round(Number(line.budgetQuantity || 0) * Number(line.budgetUnitPriceCents || 0)))
                           : '—'}
                       </td>
@@ -961,7 +1050,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
               </tbody>
               <tfoot>
                 <tr>
-                  <th colSpan="4" scope="row" className="text-right">
+                  <th colSpan="5" scope="row" className="text-right">
                     Total do orçamento
                   </th>
                   <th className="whitespace-nowrap text-right text-base text-sky-200">{formatPriceCents(totalBudgetCents)}</th>

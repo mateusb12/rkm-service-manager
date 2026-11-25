@@ -4,6 +4,8 @@ type SearchableSelectorProps<Option> = {
   value: string;
   onSelect: (option: Option) => void;
   onClear: () => void;
+  onSelectCustom?: (value: string) => void;
+  showCustomOption?: boolean;
   loadOptions: () => Promise<Option[]>;
   getOptionKey: (option: Option) => string | number;
   getOptionLabel: (option: Option) => string;
@@ -21,6 +23,8 @@ export function SearchableSelector<Option>({
   value,
   onSelect,
   onClear,
+  onSelectCustom,
+  showCustomOption = true,
   loadOptions,
   getOptionKey,
   getOptionLabel,
@@ -68,11 +72,15 @@ export function SearchableSelector<Option>({
 
   useEffect(() => {
     function closeOnOutsideClick(event: MouseEvent) {
-      if (event.target instanceof Node && !containerRef.current?.contains(event.target)) setOpen(false);
+      if (event.target instanceof Node && !containerRef.current?.contains(event.target)) {
+        setOpen(false);
+        setActiveIndex(-1);
+        if (onSelectCustom) setSearchTerm(value);
+      }
     }
     document.addEventListener('mousedown', closeOnOutsideClick);
     return () => document.removeEventListener('mousedown', closeOnOutsideClick);
-  }, []);
+  }, [value, onSelectCustom]);
 
   const normalizedSearch = searchTerm.trim().toLocaleLowerCase('pt-BR');
   const visibleOptions = options.filter((option) =>
@@ -80,6 +88,18 @@ export function SearchableSelector<Option>({
       ? filterOption(option, normalizedSearch)
       : `${getOptionLabel(option)} ${getOptionDescription?.(option) || ''}`.toLocaleLowerCase('pt-BR').includes(normalizedSearch),
   );
+
+  const keyboardOptions = loading || error ? [] : visibleOptions;
+  const customIndex = keyboardOptions.length;
+  const optionCount = customIndex + (onSelectCustom && showCustomOption ? 1 : 0);
+
+  function selectCustom() {
+    const name = searchTerm.trim();
+    setSearchTerm(name);
+    setOpen(false);
+    setActiveIndex(-1);
+    onSelectCustom?.(name);
+  }
 
   function selectOption(option: Option) {
     setSearchTerm(getOptionLabel(option));
@@ -92,28 +112,45 @@ export function SearchableSelector<Option>({
     if (event.key === 'Escape') {
       event.preventDefault();
       setOpen(false);
+      setActiveIndex(-1);
+      if (onSelectCustom) setSearchTerm(value);
       return;
     }
+
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       setOpen(true);
-      if (visibleOptions.length > 0) {
+
+      if (optionCount > 0) {
         setActiveIndex((current) => {
+          if (current < 0 || current >= optionCount) {
+            return event.key === 'ArrowDown' ? 0 : optionCount - 1;
+          }
+
           const direction = event.key === 'ArrowDown' ? 1 : -1;
-          return (current + direction + visibleOptions.length) % visibleOptions.length;
+          return (current + direction + optionCount) % optionCount;
         });
       }
+
       return;
     }
-    if (event.key === 'Enter' && open && visibleOptions[activeIndex]) {
-      event.preventDefault();
-      selectOption(visibleOptions[activeIndex]);
+
+    if (event.key === 'Enter' && open) {
+      if (onSelectCustom && showCustomOption && activeIndex === customIndex) {
+        event.preventDefault();
+        selectCustom();
+      } else if (keyboardOptions[activeIndex]) {
+        event.preventDefault();
+        selectOption(keyboardOptions[activeIndex]);
+      }
     }
   }
 
   function handleBlur(event: FocusEvent<HTMLDivElement>) {
     if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
     setOpen(false);
+    setActiveIndex(-1);
+    if (onSelectCustom) setSearchTerm(value);
   }
 
   return (
@@ -127,7 +164,15 @@ export function SearchableSelector<Option>({
           aria-autocomplete="list"
           aria-expanded={open}
           aria-controls={listboxId}
-          aria-activedescendant={activeIndex >= 0 ? `${listboxId}-option-${getOptionKey(visibleOptions[activeIndex])}` : undefined}
+          aria-activedescendant={
+            !open
+              ? undefined
+              : onSelectCustom && showCustomOption && activeIndex === customIndex
+                ? `${listboxId}-custom`
+                : keyboardOptions[activeIndex]
+                  ? `${listboxId}-option-${getOptionKey(keyboardOptions[activeIndex])}`
+                  : undefined
+          }
           onFocus={() => setOpen(true)}
           onChange={(event) => {
             setSearchTerm(event.target.value);
@@ -189,6 +234,24 @@ export function SearchableSelector<Option>({
                 </span>
               </button>
             ))}
+          {onSelectCustom && showCustomOption && (
+            <button
+              id={`${listboxId}-custom`}
+              type="button"
+              role="option"
+              aria-selected={activeIndex === customIndex}
+              className={`sticky bottom-0 block w-full border-t border-rkmborder px-3 py-2.5 text-left ${
+                activeIndex === customIndex ? 'bg-rkmcard2' : 'bg-[var(--zenit-color-page)] hover:bg-rkmcard2'
+              }`}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={selectCustom}
+            >
+              <span className="block text-sm font-medium text-sky-300">
+                {searchTerm.trim() ? `+ Usar "${searchTerm.trim()}" como item avulso` : '+ Informar item avulso'}
+              </span>
+              <span className="block text-xs text-slate-500">Informar nome e preço sem cadastrar no catálogo</span>
+            </button>
+          )}
         </div>
       )}
     </div>
