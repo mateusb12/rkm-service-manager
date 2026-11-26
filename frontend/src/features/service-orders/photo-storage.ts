@@ -37,20 +37,4 @@ const runPhotoTransaction = (mode: IDBTransactionMode, operation: (store: IDBObj
 export const storeServiceEntryPhoto = (id, file) =>
   runPhotoTransaction('readwrite', (store) => store.put(file, id), 'Não foi possível salvar a foto.');
 
-export const getServiceEntryPhoto = (id): Promise<Blob | undefined> =>
-  openPhotoDb().then(
-    (db) =>
-      new Promise((resolve, reject) => {
-        const request = db.transaction('photos', 'readonly').objectStore('photos').get(id);
-        request.onsuccess = () => {
-          db.close();
-          resolve(request.result);
-        };
-        request.onerror = () => {
-          db.close();
-          reject(request.error || new Error('Não foi possível ler a foto.'));
-        };
-      }),
-  );
-
 export const deleteServiceEntryPhoto = (id) => runPhotoTransaction('readwrite', (store) => store.delete(id), 'Não foi possível remover a foto.');
