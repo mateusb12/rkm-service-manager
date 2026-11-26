@@ -110,6 +110,7 @@ export const createEmptyServiceEntry = () => ({
   receivedAccessories: '',
   disassemblyOperator: '',
   disassemblyStartedAt: currentLocalDateTime(),
+  disassemblyEndedAt: '',
   disassemblyComplete: false,
   disassemblyControlled: false,
   partsSeparated: false,

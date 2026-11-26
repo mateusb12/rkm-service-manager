@@ -95,7 +95,7 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
     ServiceOrderSection.DESMONTAGEM: lambda payload: _section(
         payload,
         (
-            "disassemblyOperator", "disassemblyStartedAt", "disassemblyComplete",
+            "disassemblyOperator", "disassemblyStartedAt", "disassemblyEndedAt", "disassemblyComplete",
             "disassemblyControlled", "partsSeparated", "oilCollected", "disassemblyNotes",
             "partsDisposition", "disassemblyChecklist", "cylinderInternalDiameter",
             "cylinderExternalDiameter", "cylinderLength", "cylinderStroke", "cylinderRodDiameter",

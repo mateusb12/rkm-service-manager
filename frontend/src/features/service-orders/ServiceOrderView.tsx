@@ -663,6 +663,21 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
           wrapperClassName="service-entry-date-picker"
         />
       </Field>
+      <Field label="Fim">
+        <DatePicker
+          selected={parseStoredDateTime(form.disassemblyEndedAt)}
+          onChange={(value) => set('disassemblyEndedAt', serializeDateTime(value))}
+          dateFormat="dd 'de' MMMM 'de' yyyy 'às' HH'h'mm"
+          locale="pt-BR"
+          showTimeSelect
+          timeFormat="HH:mm"
+          timeIntervals={15}
+          timeCaption="Horário"
+          placeholderText="DD de mês de YYYY às HHhmm"
+          customInput={<ReadOnlyDatePickerInput />}
+          wrapperClassName="service-entry-date-picker"
+        />
+      </Field>
       {isCylinderOrderType(form.orderType) && (
         <div className="md:col-span-3 space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-2">
