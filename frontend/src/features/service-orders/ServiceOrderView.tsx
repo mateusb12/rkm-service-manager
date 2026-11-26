@@ -35,6 +35,7 @@ import { SearchableSelector } from '../../shared/ui/SearchableSelector';
 import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage';
 import { ServiceOrderStepNavigator } from './ServiceOrderStepNavigator';
 import { ServiceOrderFileUpload } from './ServiceOrderFileUpload';
+import { ServiceOrderBudgetReport } from './ServiceOrderBudgetReport';
 import { getMissingServiceEntryFields } from './validation';
 import { formatDateLabel, parseStoredDateTime, serializeDateTime } from '../../utils/date';
 import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
@@ -1148,6 +1149,17 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
           </div>
         )}
       </div>
+      <ServiceOrderBudgetReport
+        form={form}
+        totalCents={totalBudgetCents}
+        rows={nonconformingItems.flatMap((item) =>
+          getBudgetLines(item).map((line) => ({
+            ...line,
+            component: item.component,
+            subtotalCents: line.budgetItem?.trim() ? Math.round(Number(line.budgetQuantity || 0) * Number(line.budgetUnitPriceCents || 0)) : 0,
+          })),
+        )}
+      />
     </ServiceEntrySection>
   );
 };
