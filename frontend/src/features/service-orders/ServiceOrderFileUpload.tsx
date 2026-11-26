@@ -19,6 +19,7 @@ type ServiceOrderFileUploadProps = {
   accept?: string;
   category?: string;
   showLibrary?: boolean;
+  variant?: 'default' | 'checklist';
 };
 
 function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
@@ -65,7 +66,7 @@ function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
 type FilePickerMode = 'upload' | 'existing';
 
 const ServiceOrderFileSourceToggle = ({ mode, onChange }) => (
-  <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-700/80 bg-slate-950/25 px-3 py-2.5 shadow-inner shadow-slate-950/20">
+  <div className="service-entry-file-source-toggle mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-700/80 bg-slate-950/25 px-3 py-2.5 shadow-inner shadow-slate-950/20">
     <div className="flex min-w-0 items-center gap-2.5">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-sky-400/20 bg-sky-400/10 text-sky-300">
         {mode === 'existing' ? <Images size={16} /> : <Upload size={16} />}
@@ -158,6 +159,7 @@ export function ServiceOrderFileUpload({
   accept = '*/*',
   category,
   showLibrary = true,
+  variant = 'default',
 }: ServiceOrderFileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -224,9 +226,13 @@ export function ServiceOrderFileUpload({
   };
 
   return (
-    <div className="service-entry-photo-field" onDragOverCapture={dragOverFile} onDropCapture={dropFile}>
+    <div
+      className={`service-entry-photo-field${variant === 'checklist' ? ' service-entry-photo-field-checklist' : ''}`}
+      onDragOverCapture={dragOverFile}
+      onDropCapture={dropFile}
+    >
       <label className="service-entry-photo-label">{label}</label>
-      <p>{hint}</p>
+      {hint && <p>{hint}</p>}
       {showLibrary && !selectedFile && (
         <ServiceOrderFileSourceToggle
           mode={selectionMode}

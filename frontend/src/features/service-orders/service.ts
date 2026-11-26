@@ -1,11 +1,13 @@
 // @ts-nocheck
 
 import { apiRequest } from '../../shared/api/http';
+import { isCylinderOrderType } from './model';
 
 const CYLINDER_FIELDS = [
   'cylinderInternalDiameter',
   'cylinderExternalDiameter',
   'cylinderLength',
+  'cylinderStroke',
   'cylinderRodDiameter',
   'cylinderOptionalItems',
   'cylinderOptionalItemsOther',
@@ -14,7 +16,7 @@ const CYLINDER_FIELDS = [
 const normalizeServiceEntryPayload = (entry) => {
   const { availableThroughStage, ...payload } = entry;
 
-  if (payload.orderType === 'Cilindro') {
+  if (isCylinderOrderType(payload.orderType)) {
     payload.cylinderOptionalItems = Array.isArray(payload.cylinderOptionalItems) ? payload.cylinderOptionalItems : [];
   } else {
     CYLINDER_FIELDS.forEach((field) => delete payload[field]);

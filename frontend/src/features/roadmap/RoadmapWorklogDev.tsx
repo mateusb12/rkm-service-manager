@@ -106,6 +106,31 @@ const WORKLOG: Record<string, WorkEntry[]> = {
         'Criação da checklist visual de saúde do cilindro com botões para camisa, haste, êmbolo, cabeçotes, vedações, articulações e outros componentes, preparada para a próxima etapa de avaliação.',
     },
     {
+      category: 'Produto',
+      description:
+        'Evolução da identificação do cilindro para selecionar os componentes realmente existentes — camisa, haste, êmbolo, cabeçote, vedação e articulação — fazendo a desmontagem exibir e avaliar somente os itens selecionados.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Inclusão do curso do cilindro em milímetros nas dimensões técnicas, com campo obrigatório, persistência, serialização e validação integradas ao fluxo de abertura da OS.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Refatoração da checklist de desmontagem com grid compacto de avaliação, contador de progresso e detalhamento separado das não conformidades, preservando a ordem e o índice original de cada componente.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Ajuste das evidências das não conformidades com upload localizado, prévias proporcionais sem corte, ações de arquivo preservadas e layout responsivo em duas colunas para foto e justificativa.',
+    },
+    {
+      category: 'Produto',
+      description:
+        'Compatibilização da desmontagem com ordens existentes, normalizando componentes e checklists legados sem perder justificativas, fotos, seleção de componentes ou integração com o orçamento.',
+    },
+    {
       category: 'Transversal',
       description: 'Padronização do feedback de validação em toast compacto, com fechamento manual, desaparecimento automático e barra de progresso.',
     },

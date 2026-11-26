@@ -49,6 +49,7 @@ PCP_RECEIVING_FIELDS = {
     "cylinderInternalDiameter",
     "cylinderExternalDiameter",
     "cylinderLength",
+    "cylinderStroke",
     "cylinderRodDiameter",
     "cylinderOptionalItems",
     "cylinderOptionalItemsOther",

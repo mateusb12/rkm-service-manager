@@ -19,22 +19,36 @@ export const SERVICE_ENTRY_DEFAULT_STAGES = [
   { id: 'entrega', label: 'Entrega', status: 'Em entrega', canView: true },
 ];
 
-export const CYLINDER_HEALTH_COMPONENTS = [
-  'Camisa',
-  'Haste',
-  'Êmbolo',
-  'Cabeçote dianteiro',
-  'Cabeçote traseiro',
-  'Vedações',
-  'Articulação dianteira',
-  'Articulação traseira',
-  'Outros',
+export const CYLINDER_HEALTH_COMPONENTS = ['Camisa', 'Haste', 'Êmbolo', 'Cabeçote', 'Vedação', 'Articulação'];
+
+export const CYLINDER_OPTIONAL_ITEMS = CYLINDER_HEALTH_COMPONENTS;
+
+export const CYLINDER_ORDER_TYPES = ['Cilindro hidráulico', 'Cilindro pneumático'];
+
+export const isCylinderOrderType = (orderType) => orderType === 'Cilindro' || CYLINDER_ORDER_TYPES.includes(orderType);
+
+const LEGACY_CYLINDER_COMPONENTS = {
+  'Cabeçote dianteiro': 'Cabeçote',
+  'Cabeçote traseiro': 'Cabeçote',
+  Vedações: 'Vedação',
+  'Articulação dianteira': 'Articulação',
+  'Articulação traseira': 'Articulação',
+  Garfo: 'Articulação',
+  Conexão: 'Articulação',
+  Olhal: 'Articulação',
+  Munhão: 'Articulação',
+  Outros: null,
+  Outro: null,
+};
+
+export const normalizeCylinderComponent = (component) => LEGACY_CYLINDER_COMPONENTS[component] || component;
+
+export const normalizeCylinderComponents = (components = []) => [
+  ...new Set(components.map(normalizeCylinderComponent).filter((component) => CYLINDER_HEALTH_COMPONENTS.includes(component))),
 ];
 
-export const CYLINDER_OPTIONAL_ITEMS = ['Articulação traseira', 'Articulação dianteira', 'Garfo', 'Conexão', 'Olhal', 'Munhão', 'Outro'];
-
-export const createEmptyDisassemblyChecklist = () =>
-  CYLINDER_HEALTH_COMPONENTS.map((component) => ({
+export const createEmptyDisassemblyChecklist = (components = []) =>
+  components.map((component) => ({
     component,
     status: '',
     notes: '',
@@ -77,6 +91,7 @@ export const createEmptyServiceEntry = () => ({
   cylinderInternalDiameter: '',
   cylinderExternalDiameter: '',
   cylinderLength: '',
+  cylinderStroke: '',
   cylinderRodDiameter: '',
   cylinderOptionalItems: [],
   cylinderOptionalItemsOther: '',

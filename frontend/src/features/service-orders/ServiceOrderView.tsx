@@ -14,7 +14,10 @@ import {
   createEmptyDisassemblyChecklist,
   getServiceEntryStageIndex,
   normalizeOrderNumber,
+  normalizeCylinderComponent,
+  normalizeCylinderComponents,
   CYLINDER_OPTIONAL_ITEMS,
+  isCylinderOrderType,
   SERVICE_ENTRY_DEFAULT_STAGES,
 } from './model';
 
@@ -41,7 +44,8 @@ import { createDemoServiceEntry } from './demo-fixture';
 import { deleteFile, getFilePreviewUrl, listFiles, uploadFile } from '../files/service';
 
 const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
-  Cilindro: '/assets/cilindro.png',
+  'Cilindro hidráulico': '/assets/cilindro.png',
+  'Cilindro pneumático': '/assets/cilindro.png',
   Acumulador: '/assets/acumulador.png',
   Bomba: '/assets/bomba-hidraulica.png',
   'Motor hidráulico': '/assets/motor-hidraulico.png',
@@ -367,7 +371,7 @@ const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, 
       onDeselect={() => file && onRemove(file)}
       onDelete={() => file && onRemove(file)}
       label={label}
-      hint="Opcional — foto da evidência."
+      hint=""
       selectedBadge="Foto selecionada"
       addLabel="Adicionar foto"
       addHint="Clique ou arraste uma imagem"
@@ -376,6 +380,7 @@ const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, 
       accept="image/*"
       onSelectExisting={onSelectExisting}
       showLibrary
+      variant="checklist"
     />
   );
 };
@@ -495,13 +500,13 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
           placeholder="Ex.: Cilindro hidráulico soldado, dupla ação — Ø80/50 x 500 mm"
         />
       </Field>
-      {form.orderType === 'Cilindro' && (
+      {isCylinderOrderType(form.orderType) && (
         <>
           <div className="md:col-span-3 mt-2 border-t border-rkmborder pt-4">
             <h3 className="text-sm font-semibold text-slate-200">Dimensões do cilindro</h3>
             <p className="mt-1 text-xs text-slate-500">Informe as medidas em milímetros conforme recebido.</p>
           </div>
-          <div className="md:col-span-3 grid gap-4 md:grid-cols-4">
+          <div className="md:col-span-3 grid gap-4 md:grid-cols-5">
             <Field label="Diâmetro interno (mm)" required>
               <TextInput
                 type="number"
@@ -521,6 +526,9 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
             <Field label="Comprimento (mm)" required>
               <TextInput type="number" value={form.cylinderLength} onChange={(value) => set('cylinderLength', value)} placeholder="Ex.: 500" />
             </Field>
+            <Field label="Curso (mm)" required>
+              <TextInput type="number" value={form.cylinderStroke} onChange={(value) => set('cylinderStroke', value)} placeholder="Ex.: 300" />
+            </Field>
             <Field label="Diâmetro da haste (mm)" required>
               <TextInput
                 type="number"
@@ -530,7 +538,11 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
               />
             </Field>
           </div>
-          <Field label="Itens opcionais recebidos" className="md:col-span-3" hint="Marque os itens que acompanham o cilindro.">
+          <Field
+            label="Componentes do cilindro"
+            className="md:col-span-3"
+            hint="Marque os componentes existentes. Eles serão avaliados na desmontagem."
+          >
             <MultiSelectCheckboxes
               values={form.cylinderOptionalItems}
               onChange={(value) => set('cylinderOptionalItems', value)}
@@ -538,15 +550,6 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
               className="cylinder-optional-items"
             />
           </Field>
-          {form.cylinderOptionalItems?.includes('Outro') && (
-            <Field label="Outro item opcional" required className="md:col-span-3">
-              <TextInput
-                value={form.cylinderOptionalItemsOther}
-                onChange={(value) => set('cylinderOptionalItemsOther', value)}
-                placeholder="Descreva o item recebido"
-              />
-            </Field>
-          )}
         </>
       )}
     </ServiceEntrySection>
@@ -610,7 +613,9 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
 );
 
 const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, addChecklistPhotos, removeChecklistPhoto }) => {
-  const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : createEmptyDisassemblyChecklist();
+  const checklist = Array.isArray(form.disassemblyChecklist)
+    ? form.disassemblyChecklist
+    : createEmptyDisassemblyChecklist(form.cylinderOptionalItems);
 
   const updateItem = (index, key, value) => {
     const next = checklist.map((item, itemIndex) =>
@@ -658,75 +663,143 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
           wrapperClassName="service-entry-date-picker"
         />
       </Field>
-      {form.orderType === 'Cilindro' && (
+      {isCylinderOrderType(form.orderType) && (
         <div className="md:col-span-3 space-y-3">
-          <div>
-            <span className="block text-xs font-semibold uppercase tracking-wide text-slate-300">Checklist de saúde do cilindro *</span>
-            <p className="mt-1 text-xs text-slate-500">
-              Avalie todos os itens. A foto é opcional; a justificativa é obrigatória quando estiver não conforme.
-            </p>
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <span className="block text-xs font-semibold uppercase tracking-wide text-slate-300">Checklist de saúde do cilindro *</span>
+              <p className="mt-1 text-xs text-slate-500">
+                Avalie todos os itens. A foto é opcional; a justificativa é obrigatória quando estiver não conforme.
+              </p>
+            </div>
+            <span className="service-entry-checklist-progress">
+              {checklist.filter((item) => item.status === 'Conforme' || item.status === 'Não conforme').length}/{checklist.length} avaliados
+            </span>
           </div>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {checklist.map((item, index) => {
-              const photoCategory = `disassemblyChecklist-${index}`;
+              const hasJustification = Boolean(String(item.notes || '').trim());
+              const statusLabel =
+                item.status === 'Conforme'
+                  ? 'Conforme'
+                  : item.status === 'Não conforme'
+                    ? hasJustification
+                      ? 'Justificativa preenchida'
+                      : 'Justificativa pendente'
+                    : 'Aguardando avaliação';
+
               return (
-                <div key={item.component} className="flex min-h-[260px] h-full flex-col rounded-lg border border-rkmborder bg-rkmcard2/40 p-4">
-                  <div>
+                <div
+                  key={item.component}
+                  className="service-entry-checklist-card flex flex-col rounded-lg border border-rkmborder bg-rkmcard2/40 p-4"
+                >
+                  <div className="flex min-h-6 items-start justify-between gap-2">
                     <span className="font-medium text-slate-200">{item.component}</span>
-                    <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={`Resultado de ${item.component}`}>
-                      {['Conforme', 'Não conforme'].map((status) => (
-                        <button
-                          key={status}
-                          type="button"
-                          aria-pressed={item.status === status}
-                          onClick={() => updateItem(index, 'status', status)}
-                          className={`rounded-md border px-3 py-2 text-xs font-semibold transition ${
-                            item.status === status
-                              ? status === 'Conforme'
-                                ? 'border-emerald-400/70 bg-emerald-400/15 text-emerald-300'
-                                : 'border-rose-400/70 bg-rose-400/15 text-rose-300'
-                              : 'border-rkmborder text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
-                          }`}
-                        >
-                          {status}
-                        </button>
-                      ))}
-                    </div>
+                    <span
+                      className={`service-entry-checklist-status ${
+                        item.status === 'Conforme'
+                          ? 'is-compliant'
+                          : item.status === 'Não conforme'
+                            ? hasJustification
+                              ? 'is-justified'
+                              : 'is-pending'
+                            : ''
+                      }`}
+                    >
+                      {statusLabel}
+                    </span>
                   </div>
-                  {item.status === 'Não conforme' &&
-                    (item.component === 'Vedações' ? (
-                      <BulletTextArea
-                        rows={5}
-                        className="mt-3 w-full resize-y"
-                        value={item.notes}
-                        onChange={(value) => updateItem(index, 'notes', value)}
-                        placeholder="Descreva cada não conformidade em uma linha..."
-                      />
-                    ) : (
-                      <textarea
-                        rows={3}
-                        className="rkm-input zenit-field mt-3 w-full resize-y"
-                        value={item.notes}
-                        onChange={(event) => updateItem(index, 'notes', event.target.value)}
-                        placeholder="Explique o motivo da não conformidade..."
-                        aria-label={`Motivo da não conformidade em ${item.component}`}
-                      />
+                  <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={`Resultado de ${item.component}`}>
+                    {['Conforme', 'Não conforme'].map((status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        aria-pressed={item.status === status}
+                        onClick={() => updateItem(index, 'status', status)}
+                        className={`rounded-md border px-3 py-2 text-xs font-semibold transition ${
+                          item.status === status
+                            ? status === 'Conforme'
+                              ? 'border-emerald-400/70 bg-emerald-400/15 text-emerald-300'
+                              : 'border-rose-400/70 bg-rose-400/15 text-rose-300'
+                            : 'border-rkmborder text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                        }`}
+                      >
+                        {status}
+                      </button>
                     ))}
-                  {item.status !== 'Não conforme' && <div className="service-entry-checklist-space mt-3 h-8" aria-hidden="true" />}
-                  <div className="mt-3">
-                    <ServiceEntryChecklistFileField
-                      label={`Foto de ${item.component} (opcional)`}
-                      files={form.photos[photoCategory] || []}
-                      category={`desmontagem (${item.component.toLowerCase()})`}
-                      onFiles={(files) => addChecklistPhotos(photoCategory, item.component, files)}
-                      onRemove={(file) => removeChecklistPhoto(photoCategory, file)}
-                      onSelectExisting={(file) => set('photos', { ...form.photos, [photoCategory]: [file] })}
-                    />
                   </div>
                 </div>
               );
             })}
           </div>
+          {checklist.some((item) => item.status === 'Não conforme') && (
+            <div className="service-entry-checklist-details space-y-3">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-200">Detalhamento das não conformidades</h3>
+                <p className="mt-1 text-xs text-slate-500">Informe o motivo e, se necessário, adicione uma foto para cada item não conforme.</p>
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {checklist
+                  .map((item, index) => ({ item, index }))
+                  .filter(({ item }) => item.status === 'Não conforme')
+                  .map(({ item, index }) => {
+                    const photoCategory = `disassemblyChecklist-${index}`;
+                    return (
+                      <div
+                        key={item.component}
+                        className="service-entry-checklist-detail-card flex h-full flex-col rounded-lg border border-rkmborder bg-rkmcard2/40 p-4"
+                      >
+                        <span className="service-entry-checklist-status service-entry-checklist-detail-badge is-pending">Não conforme</span>
+                        <div className="service-entry-checklist-detail-body">
+                          <div className="service-entry-checklist-upload">
+                            <div className="service-entry-checklist-detail-heading">
+                              <span className="service-entry-checklist-detail-title">{item.component}</span>
+                              {form.photos[photoCategory]?.[0]?.name && (
+                                <small className="service-entry-checklist-detail-file" title={form.photos[photoCategory][0].name}>
+                                  {form.photos[photoCategory][0].name}
+                                </small>
+                              )}
+                            </div>
+                            <ServiceEntryChecklistFileField
+                              label="Evidência fotográfica"
+                              files={form.photos[photoCategory] || []}
+                              category={`desmontagem (${item.component.toLowerCase()})`}
+                              onFiles={(files) => addChecklistPhotos(photoCategory, item.component, files)}
+                              onRemove={(file) => removeChecklistPhoto(photoCategory, file)}
+                              onSelectExisting={(file) => set('photos', { ...form.photos, [photoCategory]: [file] })}
+                            />
+                          </div>
+                          <div className="service-entry-checklist-notes">
+                            <label className="service-entry-checklist-notes-label" htmlFor={`disassembly-note-${index}`}>
+                              Justificativa <span aria-hidden="true">*</span>
+                            </label>
+                            {item.component === 'Vedação' ? (
+                              <BulletTextArea
+                                rows={5}
+                                className="service-entry-checklist-notes-input w-full resize-y"
+                                value={item.notes}
+                                onChange={(value) => updateItem(index, 'notes', value)}
+                                placeholder="Descreva cada não conformidade em uma linha..."
+                              />
+                            ) : (
+                              <textarea
+                                id={`disassembly-note-${index}`}
+                                rows={5}
+                                className="rkm-input zenit-field service-entry-checklist-notes-input w-full resize-y"
+                                value={item.notes}
+                                onChange={(event) => updateItem(index, 'notes', event.target.value)}
+                                placeholder="Explique o motivo da não conformidade..."
+                                aria-label={`Motivo da não conformidade em ${item.component}`}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
         </div>
       )}
       <Field label="Observações da desmontagem" className="md:col-span-3">
@@ -758,7 +831,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
   );
   const emptyBudgetLine = () => ({ budgetItem: '', budgetItemId: null, budgetUnit: '', budgetUnitPriceCents: 0, budgetQuantity: '' });
   const getBudgetLines = (item) => {
-    if (item.component !== 'Vedações') {
+    if (item.component !== 'Vedação') {
       return [
         {
           budgetItem: item.budgetItem || '',
@@ -787,7 +860,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
   const isManualBudgetLine = (line) => line.budgetItemId == null && Boolean(line.budgetItem || line.budgetUnit);
 
   const getBudgetNotes = (item) => {
-    if (item.component !== 'Vedações') return item.notes || 'Sem observação informada.';
+    if (item.component !== 'Vedação') return item.notes || 'Sem observação informada.';
 
     const notes = String(item.notes || '')
       .split('\n')
@@ -802,7 +875,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
       'disassemblyChecklist',
       checklist.map((item) => {
         if (item.component !== component) return item;
-        if (component !== 'Vedações') return { ...item, ...changes };
+        if (component !== 'Vedação') return { ...item, ...changes };
         const lines = getBudgetLines(item).map((line) => ({ ...line }));
         lines[lineIndex] = { ...lines[lineIndex], ...changes };
         return { ...item, budgetItems: lines, budgetItem: '', budgetItemId: null, budgetUnit: '', budgetUnitPriceCents: 0, budgetQuantity: '' };
@@ -869,7 +942,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                     <tr
                       key={`${item.component}-${lineIndex}`}
                       className={
-                        item.component === 'Vedações' ? `is-budget-multiline${lineIndex === 0 ? ' is-budget-multiline-start' : ''}` : undefined
+                        item.component === 'Vedação' ? `is-budget-multiline${lineIndex === 0 ? ' is-budget-multiline-start' : ''}` : undefined
                       }
                     >
                       {lineIndex === 0 && (
@@ -878,7 +951,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                             <strong>{item.component}</strong>
                           </td>
                           <td rowSpan={lines.length}>
-                            {item.component === 'Vedações' ? (
+                            {item.component === 'Vedação' ? (
                               <div className="service-entry-budget-notes">
                                 {getBudgetNotes(item).map((note, noteIndex) => (
                                   <div key={`${item.component}-note-${noteIndex}`}>• {note}</div>
@@ -956,7 +1029,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                             }
                           />
                         )}
-                        {item.component === 'Vedações' && lineIndex === lines.length - 1 && (
+                        {item.component === 'Vedação' && lineIndex === lines.length - 1 && (
                           <button
                             type="button"
                             className="mt-2 text-xs font-medium text-sky-300 hover:text-sky-200"
@@ -1003,7 +1076,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                               {line.budgetUnit || '—'}
                             </span>
                           )}
-                          {item.component === 'Vedações' && (
+                          {item.component === 'Vedação' && (
                             <button
                               type="button"
                               className="service-entry-delete shrink-0"
@@ -1171,10 +1244,18 @@ export const ServiceOrderView = () => {
   }, [successMessage]);
 
   const set = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setForm((prev) => {
+      if (key !== 'cylinderOptionalItems') return { ...prev, [key]: value };
+
+      const selectedComponents = normalizeCylinderComponents(Array.isArray(value) ? value : []);
+      const previousChecklist = Array.isArray(prev.disassemblyChecklist) ? prev.disassemblyChecklist : [];
+      const disassemblyChecklist = selectedComponents.map((component) => {
+        const existing = previousChecklist.find((item) => normalizeCylinderComponent(item.component) === component);
+        return existing ? { ...existing, component } : createEmptyDisassemblyChecklist([component])[0];
+      });
+
+      return { ...prev, cylinderOptionalItems: selectedComponents, disassemblyChecklist };
+    });
 
     if (error) setError('');
   };
@@ -1396,9 +1477,18 @@ export const ServiceOrderView = () => {
     setError('');
     const emptyEntry = createEmptyServiceEntry();
 
+    const selectedComponents = normalizeCylinderComponents(entry.cylinderOptionalItems);
+    const previousChecklist = Array.isArray(entry.disassemblyChecklist) ? entry.disassemblyChecklist : [];
+    const disassemblyChecklist = selectedComponents.map((component) => {
+      const existing = previousChecklist.find((item) => normalizeCylinderComponent(item.component) === component);
+      return existing ? { ...existing, component } : createEmptyDisassemblyChecklist([component])[0];
+    });
+
     setForm({
       ...emptyEntry,
       ...entry,
+      cylinderOptionalItems: selectedComponents,
+      disassemblyChecklist,
       disassemblyStartedAt: entry.disassemblyStartedAt || emptyEntry.disassemblyStartedAt,
       photos: { ...emptyEntry.photos, ...(entry.photos || {}) },
     });

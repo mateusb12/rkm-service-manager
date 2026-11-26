@@ -1,4 +1,4 @@
-import { CYLINDER_HEALTH_COMPONENTS } from './model';
+import { isCylinderOrderType } from './model';
 
 const REQUIRED_FIELDS_BY_STAGE = {
   0: [
@@ -34,29 +34,28 @@ export const getMissingServiceEntryFields = (form, stageIndex) => {
     }
   }
 
-  if (stageIndex === 2 && form.orderType === 'Cilindro') {
+  if (stageIndex === 2 && isCylinderOrderType(form.orderType)) {
     const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
-    CYLINDER_HEALTH_COMPONENTS.forEach((component, index) => {
-      const item = checklist[index] || { component, status: '', notes: '' };
-      if (!item.status) missing.push(`${item.component}: resultado`);
+    const selectedComponents = Array.isArray(form.cylinderOptionalItems) ? form.cylinderOptionalItems : [];
+    selectedComponents.forEach((component) => {
+      const item = checklist.find((checklistItem) => checklistItem.component === component) || { component, status: '', notes: '' };
+      if (!item.status) missing.push(`${component}: resultado`);
       if (item.status === 'Não conforme' && !String(item.notes || '').trim()) {
-        missing.push(`${item.component}: motivo da não conformidade`);
+        missing.push(`${component}: motivo da não conformidade`);
       }
     });
   }
 
-  if (stageIndex === 1 && form.orderType === 'Cilindro') {
+  if (stageIndex === 1 && isCylinderOrderType(form.orderType)) {
     [
       ['cylinderInternalDiameter', 'Diâmetro interno do cilindro'],
       ['cylinderExternalDiameter', 'Diâmetro externo do cilindro'],
       ['cylinderLength', 'Comprimento do cilindro'],
+      ['cylinderStroke', 'Curso do cilindro'],
       ['cylinderRodDiameter', 'Diâmetro da haste'],
     ].forEach(([key, label]) => {
       if (!String(form[key] || '').trim()) missing.push(label);
     });
-    if (form.cylinderOptionalItems?.includes('Outro') && !String(form.cylinderOptionalItemsOther || '').trim()) {
-      missing.push('Descrição do item opcional');
-    }
   }
 
   return missing;
