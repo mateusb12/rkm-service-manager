@@ -34,7 +34,7 @@ from .serialization import (
     serialize_service_order_summary,
     serialize_service_order_stage_catalog,
 )
-from .stages import SERVICE_ORDER_STAGES, parse_stage
+from .stages import SERVICE_ORDER_STAGES, STAGE_STATUSES, parse_stage
 
 
 PCP_RECEIVING_FIELDS = {
@@ -212,10 +212,11 @@ def update_order(order_id: str):
             return jsonify({"error": "service_order_not_found"}), 404
         current_stage = get_service_order_stage(order)
         requested_stage = parse_stage(payload["stage"])
+        is_stage_downgrade = SERVICE_ORDER_STAGES.index(requested_stage) < SERVICE_ORDER_STAGES.index(current_stage)
         pcp_receiving_only = (
             g.current_user.role == "pcp" and current_stage not in {parse_stage("recebimento"), parse_stage("identificacao")}
         )
-        if pcp_receiving_only and SERVICE_ORDER_STAGES.index(requested_stage) < SERVICE_ORDER_STAGES.index(current_stage):
+        if is_stage_downgrade:
             target_stage = current_stage
         else:
             target_stage = requested_stage
@@ -229,6 +230,11 @@ def update_order(order_id: str):
             payload = _merge_pcp_receiving_payload(order.payload, payload)
         else:
             order.status = payload.get("status", order.status)
+            order.stage = target_stage.value
+        if is_stage_downgrade:
+            payload["stage"] = target_stage.value
+            payload["status"] = STAGE_STATUSES[target_stage]
+            order.status = STAGE_STATUSES[target_stage]
             order.stage = target_stage.value
         client = find_client(database, client_id)
         if not client:

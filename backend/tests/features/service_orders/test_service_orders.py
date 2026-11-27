@@ -66,6 +66,42 @@ def test_service_order_persists_flexible_document(service_orders_client):
     assert fetched.json["photos"]["arrival"][0]["id"] == "photo-1"
 
 
+def test_update_never_downgrades_service_order_stage(service_orders_client):
+    headers = login(service_orders_client, "admin@rkm.com.br")
+    create = service_orders_client.post(
+        "/service-orders",
+        headers=headers,
+        json={**order_payload("20265589"), "stage": "orcamento", "status": "Em orçamento"},
+    )
+    assert create.status_code == 201
+
+    update_payload = {
+        **create.json,
+        "stage": "identificacao",
+        "status": "Em identificação",
+    }
+    update = service_orders_client.put(
+        "/service-orders/20265589",
+        headers=headers,
+        json=update_payload,
+    )
+
+    assert update.status_code == 200
+    assert update.json["stage"] == "orcamento"
+    assert update.json["status"] == "Em orçamento"
+
+    with app.app_context():
+        database = auth_database.session()
+        try:
+            order = database.get(ServiceOrder, "OS-20265589")
+            assert order.stage == "orcamento"
+            assert order.status == "Em orçamento"
+            assert order.payload["stage"] == "orcamento"
+            assert order.payload["status"] == "Em orçamento"
+        finally:
+            database.close()
+
+
 def test_arrival_method_is_persisted_as_a_column(service_orders_client):
     headers = login(service_orders_client)
     create = service_orders_client.post(
