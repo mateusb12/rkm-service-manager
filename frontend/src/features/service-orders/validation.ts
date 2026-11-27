@@ -13,10 +13,7 @@ const REQUIRED_FIELDS_BY_STAGE = {
     ['receivedBy', 'Responsável pelo recebimento'],
   ],
   2: [['disassemblyOperator', 'Responsável pela desmontagem']],
-  3: [
-    ['diagnosis', 'Diagnóstico do orçamento'],
-    ['partsDisposition', 'Destino das peças'],
-  ],
+  3: [],
   4: [
     ['workPerformed', 'Serviço executado'],
     ['testResult', 'Resultado dos testes'],
@@ -30,6 +27,7 @@ export const getMissingServiceEntryFields = (form, stageIndex) => {
   if (stageIndex === 3) {
     const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
     const budgetLines = checklist
+      .filter((item) => item.status === 'Não conforme')
       .flatMap((item) => {
         if (Array.isArray(item.budgetItems) && item.budgetItems.length > 0) return item.budgetItems;
         return item.budgetItem ? [item] : [];
