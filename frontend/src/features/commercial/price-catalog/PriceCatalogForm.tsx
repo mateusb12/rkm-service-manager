@@ -26,7 +26,15 @@ const PRICE_CATALOG_TYPE_ICONS: Partial<Record<PriceCatalogInput['type'], string
 
 export function PriceCatalogForm({ item, onCancel, onSave }: Props) {
   const [input, setInput] = useState<PriceCatalogInput>(() =>
-    item ? { ...item, unit: item.type === 'service' ? PRICE_CATALOG_SERVICE_UNIT : item.unit } : { ...EMPTY_PRICE_CATALOG_INPUT },
+    item
+      ? {
+          name: item.name,
+          description: item.description,
+          type: item.type,
+          unit: item.type === 'service' ? PRICE_CATALOG_SERVICE_UNIT : item.unit,
+          unitPriceCents: item.unitPriceCents,
+        }
+      : { ...EMPTY_PRICE_CATALOG_INPUT },
   );
   const [priceDisplay, setPriceDisplay] = useState(() => formatPriceInput(item?.unitPriceCents || 0));
   const [errors, setErrors] = useState<PriceCatalogErrors>({});

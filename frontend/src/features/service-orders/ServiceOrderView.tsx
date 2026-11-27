@@ -980,7 +980,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
     <ServiceEntrySection title="Orçamento" description="Consulte os componentes não conformes identificados na desmontagem.">
       <div className="md:col-span-3">
         {nonconformingItems.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border border-rkmborder">
+          <div className="service-entry-budget-table-wrap rounded-lg border border-rkmborder">
             <table className="service-entry-table min-w-[1100px]">
               <thead>
                 <tr>

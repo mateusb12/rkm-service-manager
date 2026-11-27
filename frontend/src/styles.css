@@ -3159,6 +3159,18 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   text-transform: uppercase;
 }
 
+.service-entry-budget-table-wrap {
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+}
+
+@media (max-width: 900px) {
+  .service-entry-budget-table-wrap {
+    overflow-x: auto;
+  }
+}
+
 .service-entry-table td {
   padding: 13px 16px;
   border-top: 1px solid #294462;
