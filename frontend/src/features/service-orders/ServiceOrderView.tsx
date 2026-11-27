@@ -927,7 +927,14 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
   const nonconformingItems = (Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : []).filter(
     (item) => item.status === 'Não conforme',
   );
-  const emptyBudgetLine = () => ({ budgetItem: '', budgetItemId: null, budgetUnit: '', budgetUnitPriceCents: 0, budgetQuantity: '' });
+  const emptyBudgetLine = () => ({
+    budgetItem: '',
+    budgetItemId: null,
+    budgetUnit: '',
+    budgetUnitPriceCents: 0,
+    budgetQuantity: '',
+    stockReceived: false,
+  });
   const getBudgetLines = (item) => {
     if (item.component !== 'Vedação') {
       return [
@@ -937,6 +944,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
           budgetUnit: item.budgetUnit || '',
           budgetUnitPriceCents: item.budgetUnitPriceCents || 0,
           budgetQuantity: item.budgetQuantity || '',
+          stockReceived: Boolean(item.stockReceived),
         },
       ];
     }
@@ -950,6 +958,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
           budgetUnit: item.budgetUnit || '',
           budgetUnitPriceCents: item.budgetUnitPriceCents || 0,
           budgetQuantity: item.budgetQuantity || '',
+          stockReceived: Boolean(item.stockReceived),
         },
       ];
     }
@@ -1028,9 +1037,10 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                   <th scope="col">Componente</th>
                   <th scope="col">Observação da desmontagem</th>
                   <th scope="col">Item</th>
-                  <th scope="col">Qtd.</th>
+                  <th scope="col">Quantidade</th>
                   <th scope="col">Valor unitário</th>
                   <th scope="col">Subtotal</th>
+                  <th scope="col">Estoque</th>
                 </tr>
               </thead>
               <tbody>
@@ -1211,13 +1221,22 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                           ? formatPriceCents(Math.round(Number(line.budgetQuantity || 0) * Number(line.budgetUnitPriceCents || 0)))
                           : '—'}
                       </td>
+                      <td className="text-center">
+                        <input
+                          type="checkbox"
+                          className="service-entry-stock-checkbox"
+                          checked={Boolean(line.stockReceived)}
+                          onChange={(event) => updateBudgetLine(item.component, lineIndex, { stockReceived: event.target.checked })}
+                          aria-label={`Item ${line.budgetItem || 'do orçamento'} chegou na oficina`}
+                        />
+                      </td>
                     </tr>
                   ));
                 })}
               </tbody>
               <tfoot>
                 <tr>
-                  <th colSpan="5" scope="row" className="text-right">
+                  <th colSpan="6" scope="row" className="text-right">
                     Total do orçamento
                   </th>
                   <th className="whitespace-nowrap text-right text-base text-sky-200">{formatPriceCents(totalBudgetCents)}</th>

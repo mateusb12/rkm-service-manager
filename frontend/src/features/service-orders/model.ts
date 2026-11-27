@@ -57,6 +57,7 @@ export const createEmptyDisassemblyChecklist = (components = []) =>
     budgetUnit: '',
     budgetUnitPriceCents: 0,
     budgetQuantity: '',
+    stockReceived: false,
     budgetItems: [],
   }));
 

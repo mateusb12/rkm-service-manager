@@ -24,8 +24,8 @@ const buildReportHtml = ({ form, rows, totalCents, entryPhotos = [] }) => {
   const budgetCells = (row) =>
     row?.budgetItem
       ? `<td>${esc(row.budgetItem)}</td><td class="num">${show(row.budgetQuantity, row.budgetUnit ? ' ' + esc(row.budgetUnit) : '')}</td>
-        <td class="num">${formatPriceCents(row.budgetUnitPriceCents || 0)}</td><td class="num">${formatPriceCents(row.subtotalCents)}</td>`
-      : '<td>—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>';
+        <td class="num">${formatPriceCents(row.budgetUnitPriceCents || 0)}</td><td class="num">${formatPriceCents(row.subtotalCents)}</td><td class="center">${row.stockReceived ? 'Sim' : 'Não'}</td>`
+      : '<td>—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="center">Não</td>';
 
   const checklistRows = (form.disassemblyChecklist || [])
     .map((item) => {
@@ -51,7 +51,7 @@ const buildReportHtml = ({ form, rows, totalCents, entryPhotos = [] }) => {
     table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; vertical-align: top; }
     th { background: #f1f5f9; font-size: 10px; text-transform: uppercase; } .num { text-align: right; white-space: nowrap; }
     tfoot th { font-size: 12px; }
-    .notes { white-space: pre-line; } .muted { color: #64748b; }
+    .notes { white-space: pre-line; } .muted { color: #64748b; } .center { text-align: center; }
     .photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
     .photos figure { margin: 0; break-inside: avoid; } .photos img { width: 100%; max-height: 260px; object-fit: contain; border: 1px solid #cbd5e1; border-radius: 4px; }
     .photos figcaption { font-size: 10px; color: #64748b; text-transform: uppercase; }
@@ -97,8 +97,8 @@ const buildReportHtml = ({ form, rows, totalCents, entryPhotos = [] }) => {
     </dl>
     ${
       checklistRows
-        ? `<table style="margin:8px 0"><thead><tr><th>Componente</th><th>Situação</th><th style="width:24%">Motivo / justificativa</th><th style="width:22%">Item</th><th class="num">Qtd.</th><th class="num">Valor unitário</th><th class="num">Subtotal</th></tr></thead>
-      <tbody>${checklistRows}</tbody><tfoot><tr><th colspan="6" class="num">Total do orçamento</th><th class="num">${formatPriceCents(totalCents)}</th></tr></tfoot></table>`
+        ? `<table style="margin:8px 0"><thead><tr><th>Componente</th><th>Situação</th><th style="width:24%">Motivo / justificativa</th><th style="width:22%">Item</th><th class="num">Quantidade</th><th class="num">Valor unitário</th><th class="num">Subtotal</th><th class="center">Estoque</th></tr></thead>
+      <tbody>${checklistRows}</tbody><tfoot><tr><th colspan="7" class="num">Total do orçamento</th><th class="num">${formatPriceCents(totalCents)}</th></tr></tfoot></table>`
         : '<p class="muted">Nenhum componente avaliado.</p>'
     }
     <dl><div style="grid-column: 1 / -1"><dt>Observações da desmontagem</dt><dd class="notes">${show(form.disassemblyNotes)}</dd></div></dl>
