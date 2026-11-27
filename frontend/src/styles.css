@@ -3337,6 +3337,22 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   box-shadow: inset 3px 0 #60a5fa;
 }
 
+.service-entry-table tbody tr.is-budget-stock-missing {
+  background: rgba(244, 63, 94, 0.1);
+  box-shadow: inset 3px 0 #fb7185;
+}
+
+.service-entry-table tbody tr.is-budget-stock-missing:hover {
+  background: rgba(244, 63, 94, 0.18);
+  box-shadow:
+    inset 4px 0 #fb7185,
+    0 0 18px rgba(244, 63, 94, 0.08);
+}
+
+.service-entry-table tbody tr.is-budget-stock-missing td {
+  border-top-color: rgba(251, 113, 133, 0.38);
+}
+
 .service-entry-table tfoot th {
   border-top: 1px solid #355273;
   background: #132c49;

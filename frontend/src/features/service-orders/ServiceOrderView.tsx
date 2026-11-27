@@ -923,7 +923,7 @@ const ServiceEntryDisassemblyChecklist = ({ form, set, addPhotos, removePhoto, a
 
 const ServiceEntryDisassemblyStep = (props) => <ServiceEntryDisassemblyChecklist {...props} />;
 
-const ServiceEntryBudgetStep = ({ form, set }) => {
+const ServiceEntryBudgetStep = ({ form, set, highlightMissingStock }) => {
   const nonconformingItems = (Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : []).filter(
     (item) => item.status === 'Não conforme',
   );
@@ -1049,9 +1049,9 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
                   return lines.map((line, lineIndex) => (
                     <tr
                       key={`${item.component}-${lineIndex}`}
-                      className={
-                        item.component === 'Vedação' ? `is-budget-multiline${lineIndex === 0 ? ' is-budget-multiline-start' : ''}` : undefined
-                      }
+                      className={`${item.component === 'Vedação' ? `is-budget-multiline${lineIndex === 0 ? ' is-budget-multiline-start' : ''}` : ''}${
+                        highlightMissingStock && line.budgetItem?.trim() && !line.stockReceived ? ' is-budget-stock-missing' : ''
+                      }`}
                     >
                       {lineIndex === 0 && (
                         <>
@@ -1267,6 +1267,7 @@ const ServiceEntryBudgetStep = ({ form, set }) => {
 
 const ServiceEntryRepairStep = ({ form, set, addPhotos, removePhoto }) => (
   <ServiceEntrySection title="Reparo" description="Registre o serviço executado e os resultados da validação.">
+    <div className="md:col-span-3 rounded-lg border border-sky-400/20 bg-sky-400/5 px-4 py-3 text-sm font-semibold text-sky-200">Hello World</div>
     <Field label="Serviço executado *" className="md:col-span-3">
       <TextArea
         rows={4}
@@ -1334,6 +1335,7 @@ export const ServiceOrderView = () => {
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
+  const [highlightMissingStock, setHighlightMissingStock] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
 
@@ -1548,6 +1550,7 @@ export const ServiceOrderView = () => {
   };
 
   const advance = async () => {
+    if (step === 3) setHighlightMissingStock(true);
     if (!validateStep()) return;
     if (step === stages.length - 1) {
       if (await persistEntry('Finalizado')) setError('');
@@ -1624,7 +1627,9 @@ export const ServiceOrderView = () => {
   const currentStep = stages[step] || { label: '', status: '' };
   const canEditCurrentStep = currentStep.canEdit !== false;
   const currentStepMissingFields = getMissingServiceEntryFields(form, step);
-  const canAdvanceCurrentStep = canEditCurrentStep && currentStepMissingFields.length === 0;
+  // Na etapa de orçamento, mantenha o botão visível para que a validação
+  // explique quais itens ainda precisam ser marcados em Estoque.
+  const canAdvanceCurrentStep = canEditCurrentStep && (currentStepMissingFields.length === 0 || step === 3);
   const progressStep = form.id ? getServiceEntryStageIndex(stages, form.stage) : 0;
   const visibleProgressStep = form.id ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage) : 0;
 
@@ -1906,7 +1911,7 @@ export const ServiceOrderView = () => {
             removeChecklistPhoto={removeChecklistPhoto}
           />
         )}
-        {canEditCurrentStep && step === 3 && <ServiceEntryBudgetStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
+        {canEditCurrentStep && step === 3 && <ServiceEntryBudgetStep form={form} set={set} highlightMissingStock={highlightMissingStock} />}
         {canEditCurrentStep && step === 4 && <ServiceEntryRepairStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
         {canEditCurrentStep && step === 5 && <ServiceEntryDispatchStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
 

@@ -27,6 +27,22 @@ const REQUIRED_FIELDS_BY_STAGE = {
 export const getMissingServiceEntryFields = (form, stageIndex) => {
   const missing = (REQUIRED_FIELDS_BY_STAGE[stageIndex] || []).filter(([key]) => !String(form[key] || '').trim()).map(([, label]) => label);
 
+  if (stageIndex === 3) {
+    const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
+    const budgetLines = checklist
+      .flatMap((item) => {
+        if (Array.isArray(item.budgetItems) && item.budgetItems.length > 0) return item.budgetItems;
+        return item.budgetItem ? [item] : [];
+      })
+      .filter((line) => String(line.budgetItem || '').trim());
+
+    if (budgetLines.length === 0) {
+      missing.push('pelo menos 1 item de orçamento');
+    } else if (budgetLines.some((line) => !line.stockReceived)) {
+      missing.push('estoque de todos os itens do orçamento');
+    }
+  }
+
   if (stageIndex === 4) {
     if (form.testResult !== 'Aprovado') missing.push('teste aprovado');
     if ((form.photos.execution || []).length === 0) {
