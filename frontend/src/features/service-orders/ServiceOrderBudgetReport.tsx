@@ -19,17 +19,22 @@ const dateTime = (value) => {
 
 const buildReportHtml = ({ form, rows, totalCents }) => {
   const orderNumber = normalizeOrderNumber(form.orderNumber);
-  const checklistRows = (form.disassemblyChecklist || [])
-    .map((item) => `<tr><td>${esc(item.component)}</td><td>${show(item.status)}</td><td class="notes">${show(item.notes)}</td></tr>`)
-    .join('');
+  // Uma linha por item de orçamento; componente/situação/justificativa mesclados (rowspan) quando há várias (ex.: Vedação).
+  const budgetCells = (row) =>
+    row?.budgetItem
+      ? `<td>${esc(row.budgetItem)}</td><td class="num">${show(row.budgetQuantity, row.budgetUnit ? ' ' + esc(row.budgetUnit) : '')}</td>
+        <td class="num">${formatPriceCents(row.budgetUnitPriceCents || 0)}</td><td class="num">${formatPriceCents(row.subtotalCents)}</td>`
+      : '<td>—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>';
 
-  const budgetRows = rows
-    .map(
-      (row) => `<tr><td>${esc(row.component)}</td><td>${show(row.budgetItem)}</td>
-        <td class="num">${row.budgetItem ? show(row.budgetQuantity, row.budgetUnit ? ' ' + esc(row.budgetUnit) : '') : '—'}</td>
-        <td class="num">${row.budgetItem ? formatPriceCents(row.budgetUnitPriceCents || 0) : '—'}</td>
-        <td class="num">${row.budgetItem ? formatPriceCents(row.subtotalCents) : '—'}</td></tr>`,
-    )
+  const checklistRows = (form.disassemblyChecklist || [])
+    .map((item) => {
+      const lines = rows.filter((row) => row.component === item.component);
+      const [first, ...rest] = lines.length ? lines : [null];
+      const span = rest.length ? ` rowspan="${rest.length + 1}"` : '';
+      return `<tr><td${span}>${esc(item.component)}</td><td${span}>${show(item.status)}</td><td class="notes"${span}>${show(item.notes)}</td>${budgetCells(first)}</tr>${rest
+        .map((row) => `<tr>${budgetCells(row)}</tr>`)
+        .join('')}`;
+    })
     .join('');
 
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório ${esc(orderNumber)}</title><style>
@@ -77,22 +82,19 @@ const buildReportHtml = ({ form, rows, totalCents }) => {
       <div style="grid-column: 1 / -1"><dt>Defeito relatado</dt><dd class="notes">${show(form.claimedDefect)}</dd></div>
     </dl>
 
-    <h2>3. Desmontagem</h2>
+    <h2>3. Desmontagem e orçamento</h2>
     <dl>
       <div><dt>Responsável</dt><dd>${show(form.disassemblyOperator)}</dd></div>
       <div><dt>Início</dt><dd>${esc(dateTime(form.disassemblyStartedAt))}</dd></div>
       <div><dt>Fim</dt><dd>${esc(dateTime(form.disassemblyEndedAt))}</dd></div>
     </dl>
-    ${checklistRows ? `<table style="margin:8px 0"><thead><tr><th>Componente</th><th>Situação</th><th>Motivo / justificativa</th></tr></thead><tbody>${checklistRows}</tbody></table>` : ''}
-    <dl><div style="grid-column: 1 / -1"><dt>Observações da desmontagem</dt><dd class="notes">${show(form.disassemblyNotes)}</dd></div></dl>
-
-    <h2>4. Orçamento</h2>
     ${
-      rows.length
-        ? `<table><thead><tr><th>Componente</th><th>Item</th><th class="num">Qtd.</th><th class="num">Valor unitário</th><th class="num">Subtotal</th></tr></thead>
-      <tbody>${budgetRows}</tbody><tfoot><tr><th colspan="4" class="num">Total do orçamento</th><th class="num">${formatPriceCents(totalCents)}</th></tr></tfoot></table>`
-        : '<p class="muted">Nenhum componente não conforme.</p>'
+      checklistRows
+        ? `<table style="margin:8px 0"><thead><tr><th>Componente</th><th>Situação</th><th style="width:24%">Motivo / justificativa</th><th style="width:22%">Item</th><th class="num">Qtd.</th><th class="num">Valor unitário</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>${checklistRows}</tbody><tfoot><tr><th colspan="6" class="num">Total do orçamento</th><th class="num">${formatPriceCents(totalCents)}</th></tr></tfoot></table>`
+        : '<p class="muted">Nenhum componente avaliado.</p>'
     }
+    <dl><div style="grid-column: 1 / -1"><dt>Observações da desmontagem</dt><dd class="notes">${show(form.disassemblyNotes)}</dd></div></dl>
   </body></html>`;
 };
 
