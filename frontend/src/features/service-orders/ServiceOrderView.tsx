@@ -45,12 +45,17 @@ import { createDemoServiceEntry } from './demo-fixture';
 import { deleteFile, getFilePreviewUrl, listFiles, uploadFile } from '../files/service';
 
 const SERVICE_ENTRY_ORDER_TYPE_ICONS = {
-  'Cilindro hidráulico': '/assets/cilindro.png',
-  'Cilindro pneumático': '/assets/cilindro.png',
+  'Cilindro hidráulico': '/assets/cilindro-hidraulico.png',
+  'Cilindro pneumático': '/assets/cilindro-pneumatico.png',
   Acumulador: '/assets/acumulador.png',
   Bomba: '/assets/bomba-hidraulica.png',
   'Motor hidráulico': '/assets/motor-hidraulico.png',
   Outro: '/assets/outro.png',
+};
+
+const SERVICE_ENTRY_ORDER_TYPE_ICON_CLASSES = {
+  'Cilindro hidráulico': 'scale-x-[1.2]',
+  'Cilindro pneumático': 'scale-x-[1.4]',
 };
 
 const ServiceEntrySection = ({ title, description, children, className = '' }) => (
@@ -527,7 +532,12 @@ const ServiceEntryIdentificationStep = ({ form, set }) => (
                 onClick={() => set('orderType', type)}
               >
                 <span className="flex h-20 w-20 items-center justify-center p-1">
-                  <img src={icon} alt="" aria-hidden="true" className="h-full w-full object-contain" />
+                  <img
+                    src={icon}
+                    alt=""
+                    aria-hidden="true"
+                    className={`h-full w-full object-contain ${SERVICE_ENTRY_ORDER_TYPE_ICON_CLASSES[type] || ''}`}
+                  />
                 </span>
                 <span className="text-xs font-medium">{type}</span>
               </button>
