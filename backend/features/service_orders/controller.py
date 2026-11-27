@@ -16,6 +16,7 @@ except ImportError:
     from features.auth.repository import session
 
 from .model import ArrivalMethod, ServiceOrder
+from .disassembly import apply_disassembly_transition, is_cylinder
 try:
     from ..clients.repository import find_client
     from ..file_storage.repository import find_record_by_id
@@ -50,10 +51,31 @@ PCP_RECEIVING_FIELDS = {
     "cylinderOptionalItemsOther",
 }
 
+MECHANIC_DISASSEMBLY_FIELDS = {
+    "orderNumber", "stage", "status", "updatedAt", "disassemblyAction", "disassemblyIndex",
+    "disassemblyOperator", "disassemblyStartedAt", "disassemblyEndedAt", "disassemblyComplete",
+    "disassemblyTimingVersion", "disassemblyControlled", "partsSeparated", "oilCollected",
+    "disassemblyNotes", "partsDisposition", "disassemblyChecklist", "cylinderOptionalItems",
+    "cylinderOptionalItemsOther", "cylinderInternalDiameter", "cylinderExternalDiameter",
+    "cylinderLength", "cylinderStroke", "cylinderRodDiameter",
+}
+
+
+def _merge_mechanic_payload(existing: dict, incoming: dict) -> dict:
+    merged = {**existing, **{key: value for key, value in incoming.items() if key in MECHANIC_DISASSEMBLY_FIELDS}}
+    old_photos = dict(existing.get("photos") or {})
+    for category, files in (incoming.get("photos") or {}).items():
+        if category == "disassembly" or category.startswith("disassemblyChecklist-"):
+            old_photos[category] = files
+    merged["photos"] = old_photos
+    return merged
+
 def _merge_pcp_receiving_payload(existing: dict, incoming: dict) -> dict:
     """Merge only PCP-owned receiving data into an already advanced order."""
     merged = dict(existing or {})
     for field in PCP_RECEIVING_FIELDS:
+        if existing.get("disassemblyTimingVersion") and field in {"cylinderOptionalItems", "cylinderOptionalItemsOther"}:
+            continue
         if field in incoming:
             merged[field] = incoming[field]
     existing_photos = dict(merged.get("photos") or {})
@@ -158,6 +180,12 @@ def create_order():
         return error
     if not can_create_service_order(g.current_user.role, parse_stage(payload["stage"])):
         return jsonify({"error": "service_order_stage_restricted"}), 403
+    if payload.get("disassemblyAction"):
+        return jsonify({"error": "save_order_before_disassembly"}), 409
+    if g.current_user.role == "pcp":
+        for field in ("disassemblyAction", "disassemblyIndex", "disassemblyStartedAt", "disassemblyEndedAt",
+                      "disassemblyComplete", "disassemblyTimingVersion", "disassemblyChecklist"):
+            payload.pop(field, None)
     database = session()
     client = find_client(database, client_id)
     if not client:
@@ -172,6 +200,16 @@ def create_order():
         database.close()
         return jsonify({"error": "invoice_file_not_found"}), 400
     now = datetime.now(timezone.utc)
+    if is_cylinder(payload) and payload["stage"] in {"recebimento", "identificacao", "desmontagem"}:
+        payload.pop("disassemblyTimingVersion", None)
+        payload["disassemblyStartedAt"] = ""
+        payload["disassemblyEndedAt"] = ""
+        payload["disassemblyComplete"] = False
+        for item in payload.get("disassemblyChecklist") or []:
+            if item.get("status") or item.get("firstAssessedAt") or item.get("confirmedAt") or item.get("confirmedBy"):
+                database.close()
+                return jsonify({"error": "evaluation_before_start"}), 409
+    payload["updatedAt"] = now.isoformat()
     order = ServiceOrder(
         id=payload["orderNumber"],
         order_number=payload["orderNumber"],
@@ -210,7 +248,7 @@ def update_order(order_id: str):
         return jsonify({"error": "order_number_cannot_change"}), 400
     database = session()
     try:
-        order = find_service_order(database, normalized_id)
+        order = database.query(ServiceOrder).filter_by(id=normalized_id).with_for_update().one_or_none()
         if not order:
             return jsonify({"error": "service_order_not_found"}), 404
         current_stage = get_service_order_stage(order)
@@ -223,14 +261,30 @@ def update_order(order_id: str):
             target_stage = current_stage
         else:
             target_stage = requested_stage
+        if order.payload.get("disassemblyTimingVersion") and payload.get("updatedAt") != order.payload.get("updatedAt"):
+            return jsonify({"error": "stale_service_order"}), 409
         if not can_update_service_order(
             g.current_user.role,
             current_stage,
             target_stage,
         ):
             return jsonify({"error": "service_order_update_restricted"}), 403
+        if g.current_user.role == "pcp" and payload.get("disassemblyAction"):
+            return jsonify({"error": "service_order_update_restricted"}), 403
+        if order.payload.get("disassemblyTimingVersion") and payload.get("orderType") != order.payload.get("orderType"):
+            return jsonify({"error": "disassembly_preparation_locked"}), 409
         if pcp_receiving_only:
             payload = _merge_pcp_receiving_payload(order.payload, payload)
+        elif g.current_user.role == "mechanic":
+            payload = _merge_mechanic_payload(order.payload, payload)
+        transition_error = apply_disassembly_transition(
+            order.payload, payload, g.current_user, current_stage.value, target_stage.value
+        )
+        if transition_error:
+            return jsonify({"error": transition_error}), 409
+        if pcp_receiving_only:
+            payload["stage"] = current_stage.value
+            payload["status"] = order.status
         else:
             order.status = payload.get("status", order.status)
             order.stage = target_stage.value
@@ -249,15 +303,17 @@ def update_order(order_id: str):
         )
         if invoice_file_id and not invoice_file:
             return jsonify({"error": "invoice_file_not_found"}), 400
-        order.client_id = client.id
-        order.invoice_file_id = invoice_file.id if invoice_file else None
-        order.arrival_method = (
-            ArrivalMethod(raw_payload["arrivalMethod"])
-            if raw_payload.get("arrivalMethod")
-            else None
-        )
-        order.payload = payload
+        if g.current_user.role != "mechanic":
+            order.client_id = client.id
+            order.invoice_file_id = invoice_file.id if invoice_file else None
+            order.arrival_method = (
+                ArrivalMethod(raw_payload["arrivalMethod"])
+                if raw_payload.get("arrivalMethod")
+                else None
+            )
         order.updated_at = datetime.now(timezone.utc)
+        payload["updatedAt"] = order.updated_at.isoformat()
+        order.payload = payload
         database.commit()
         return jsonify(serialize_service_order(order, g.current_user.role))
     finally:

@@ -46,11 +46,12 @@ const formatBulletText = (value) =>
     .filter((line) => line !== '')
     .join('\n');
 
-export const BulletTextArea = ({ value, onChange, placeholder, rows = 4, className = '' }) => {
+export const BulletTextArea = ({ value, onChange, placeholder, rows = 4, className = '', disabled = false, readOnly = false }) => {
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const displayValue = formatBulletText(value);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (readOnly || disabled) return;
     const textarea = event.currentTarget;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -107,6 +108,8 @@ export const BulletTextArea = ({ value, onChange, placeholder, rows = 4, classNa
     rows,
     value: displayValue,
     placeholder: placeholder || '',
+    disabled,
+    readOnly,
     onKeyDown: handleKeyDown,
     onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => onChange(formatBulletText(event.target.value)),
   });

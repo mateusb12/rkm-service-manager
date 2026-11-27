@@ -228,6 +228,20 @@ def delete_file(key: str):
         record = find_record(database, key)
         if not record:
             return jsonify({"error": "file_not_found"}), 404
+        # The OS must be removed through its authorized endpoint before a
+        # confirmed assessment's evidence can be deleted from object storage.
+        try:
+            from ..service_orders.model import ServiceOrder
+        except ImportError:
+            from features.service_orders.model import ServiceOrder
+        for order in database.query(ServiceOrder).with_for_update().all():
+            payload = order.payload or {}
+            for index, item in enumerate(payload.get("disassemblyChecklist") or []):
+                if item.get("confirmedAt") and any(
+                    photo.get("key") == key or photo.get("id") == record.id
+                    for photo in (payload.get("photos") or {}).get(f"disassemblyChecklist-{index}", [])
+                ):
+                    return jsonify({"error": "confirmed_evidence_locked"}), 409
         _storage().delete(record.storage_key)
         delete_record(database, record)
         database.commit()

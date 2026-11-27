@@ -20,6 +20,7 @@ type ServiceOrderFileUploadProps = {
   category?: string;
   showLibrary?: boolean;
   variant?: 'default' | 'checklist';
+  readOnly?: boolean;
 };
 
 function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
@@ -191,6 +192,7 @@ export function ServiceOrderFileUpload({
   category,
   showLibrary = true,
   variant = 'default',
+  readOnly = false,
 }: ServiceOrderFileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -199,10 +201,10 @@ export function ServiceOrderFileUpload({
   const [editingSelection, setEditingSelection] = useState(false);
   const [selectionMode, setSelectionMode] = useState<FilePickerMode>('upload');
   const selectedFile = file;
-  const showingExistingFiles = showLibrary && selectionMode === 'existing';
+  const showingExistingFiles = !readOnly && showLibrary && selectionMode === 'existing';
 
   useEffect(() => {
-    if (!showLibrary) {
+    if (!showLibrary || readOnly) {
       return undefined;
     }
     let active = true;
@@ -228,7 +230,7 @@ export function ServiceOrderFileUpload({
     return () => {
       active = false;
     };
-  }, [accept, category, showLibrary, showingExistingFiles]);
+  }, [accept, category, readOnly, showLibrary, showingExistingFiles]);
 
   const uploadSelectedFile = async (selectedFile?: File) => {
     if (!selectedFile) return;
@@ -263,12 +265,12 @@ export function ServiceOrderFileUpload({
   return (
     <div
       className={`service-entry-photo-field${variant === 'checklist' ? ' service-entry-photo-field-checklist' : ''}`}
-      onDragOverCapture={dragOverFile}
-      onDropCapture={dropFile}
+      onDragOverCapture={readOnly ? undefined : dragOverFile}
+      onDropCapture={readOnly ? undefined : dropFile}
     >
       <label className="service-entry-photo-label">{label}</label>
       {hint && <p>{hint}</p>}
-      {showLibrary && !selectedFile && (
+      {showLibrary && !selectedFile && !readOnly && (
         <ServiceOrderFileSourceToggle
           mode={selectionMode}
           onChange={(mode) => {
@@ -287,53 +289,59 @@ export function ServiceOrderFileUpload({
             <small>{uploadingHint}</small>
           </div>
         </div>
-      ) : selectedFile && !editingSelection ? (
+      ) : selectedFile && (readOnly || !editingSelection) ? (
         <div className="service-entry-invoice-card service-entry-invoice-selected-card">
           <div className="service-entry-invoice-lock-badge">{selectedBadge}</div>
           <ServiceOrderFilePreview file={selectedFile} previewLabel={label} documentLabel={selectedFile.kind === 'Imagem' ? 'IMG' : 'FILE'} />
           <div className="service-entry-invoice-details">
             <strong title={selectedFile.name}>{selectedFile.name}</strong>
-            <div>
-              <button
-                type="button"
-                className="service-entry-invoice-action service-entry-invoice-edit"
-                aria-label={`Trocar ${selectedFile.name}`}
-                title="Trocar arquivo"
-                onClick={() => {
-                  setEditingSelection(true);
-                  setSelectionMode('existing');
-                }}
-              >
-                <Pencil size={18} strokeWidth={1.9} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="service-entry-invoice-action service-entry-invoice-deselect"
-                aria-label={`Desselecionar ${selectedFile.name}`}
-                title="Desselecionar arquivo"
-                onClick={() => {
-                  setEditingSelection(false);
-                  setSelectionMode('upload');
-                  onDeselect();
-                }}
-              >
-                <X size={19} strokeWidth={2} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="service-entry-invoice-action service-entry-invoice-delete"
-                aria-label={`Apagar ${selectedFile.name}`}
-                title="Apagar arquivo"
-                onClick={() => {
-                  setEditingSelection(false);
-                  setSelectionMode('upload');
-                  onDelete();
-                }}
-              >
-                <Trash2 size={18} strokeWidth={1.9} aria-hidden="true" />
-              </button>
-            </div>
+            {!readOnly && (
+              <div>
+                <button
+                  type="button"
+                  className="service-entry-invoice-action service-entry-invoice-edit"
+                  aria-label={`Trocar ${selectedFile.name}`}
+                  title="Trocar arquivo"
+                  onClick={() => {
+                    setEditingSelection(true);
+                    setSelectionMode('existing');
+                  }}
+                >
+                  <Pencil size={18} strokeWidth={1.9} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="service-entry-invoice-action service-entry-invoice-deselect"
+                  aria-label={`Desselecionar ${selectedFile.name}`}
+                  title="Desselecionar arquivo"
+                  onClick={() => {
+                    setEditingSelection(false);
+                    setSelectionMode('upload');
+                    onDeselect();
+                  }}
+                >
+                  <X size={19} strokeWidth={2} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="service-entry-invoice-action service-entry-invoice-delete"
+                  aria-label={`Apagar ${selectedFile.name}`}
+                  title="Apagar arquivo"
+                  onClick={() => {
+                    setEditingSelection(false);
+                    setSelectionMode('upload');
+                    onDelete();
+                  }}
+                >
+                  <Trash2 size={18} strokeWidth={1.9} aria-hidden="true" />
+                </button>
+              </div>
+            )}
           </div>
+        </div>
+      ) : readOnly ? (
+        <div className="service-entry-invoice-card service-entry-invoice-add-card" aria-label="Sem fotografia">
+          <small>Sem fotografia</small>
         </div>
       ) : (
         <>

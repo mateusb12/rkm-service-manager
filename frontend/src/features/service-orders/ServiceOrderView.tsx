@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
 
@@ -42,6 +42,10 @@ export const ServiceOrderView = () => {
   const [highlightMissingStock, setHighlightMissingStock] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [deletingOrderId, setDeletingOrderId] = useState('');
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [uploadingChecklist, setUploadingChecklist] = useState(false);
+  const uploadingChecklistRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -79,6 +83,7 @@ export const ServiceOrderView = () => {
 
   const set = (key, value) => {
     setForm((prev) => {
+      if (prev.disassemblyTimingVersion && (key === 'cylinderOptionalItems' || key === 'cylinderOptionalItemsOther')) return prev;
       if (key !== 'cylinderOptionalItems') return { ...prev, [key]: value };
 
       const selectedComponents = normalizeCylinderComponents(Array.isArray(value) ? value : []);
@@ -139,11 +144,20 @@ export const ServiceOrderView = () => {
     return true;
   };
 
-  const persistEntry = async (statusOverride, stepOverride = step) => {
+  const persistEntry = async (statusOverride, stepOverride = step, changes = {}) => {
+    if (uploadingChecklistRef.current) {
+      setError('Aguarde o envio da fotografia antes de salvar ou confirmar.');
+      return false;
+    }
+    if (savingRef.current) return false;
+    savingRef.current = true;
+    setSaving(true);
     setSuccessMessage('');
     const normalizedId = form.id || normalizeOrderNumber(form.orderNumber);
     if (!normalizedId) {
       setError('Informe o número da OS antes de salvar o progresso.');
+      savingRef.current = false;
+      setSaving(false);
       return false;
     }
     const duplicate = entries.find(
@@ -151,6 +165,8 @@ export const ServiceOrderView = () => {
     );
     if (duplicate) {
       setError(`A ${normalizeOrderNumber(form.orderNumber)} já foi cadastrada nesta demonstração.`);
+      savingRef.current = false;
+      setSaving(false);
       return false;
     }
 
@@ -158,13 +174,13 @@ export const ServiceOrderView = () => {
 
     const entry = {
       ...form,
+      ...changes,
       id: normalizedId,
       orderNumber: normalizeOrderNumber(form.orderNumber),
       photos,
       status: statusOverride || stages[stepOverride].status,
       stage: stages[stepOverride].id,
       createdAt: form.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     const previousInvoiceFile = form.id ? entries.find((item) => item.id === form.id)?.invoiceFile : null;
     try {
@@ -179,7 +195,13 @@ export const ServiceOrderView = () => {
         ...persistedEntry,
         photos: { ...previous.photos, ...(persistedEntry.photos || {}) },
       }));
-      setSuccessMessage('Alterações salvas com sucesso.');
+      setSuccessMessage(
+        changes.disassemblyAction === 'start'
+          ? 'Desmontagem iniciada e salva.'
+          : changes.disassemblyAction === 'assess'
+            ? 'Resultado registrado e travado.'
+            : 'Alterações salvas com sucesso.',
+      );
       window.dispatchEvent(new Event('service-orders-changed'));
       return true;
     } catch (saveError) {
@@ -189,12 +211,40 @@ export const ServiceOrderView = () => {
       setError(
         saveError.message === 'service_order_already_exists'
           ? `A ${normalizeOrderNumber(form.orderNumber)} já foi cadastrada.`
-          : 'Não foi possível salvar a OS no servidor.',
+          : {
+              stale_service_order:
+                'Conflito: esta OS foi alterada em outra sessão. Reabra a OS para carregar a versão atual; nenhuma alteração foi salva.',
+              disassembly_already_started: 'Conflito: a desmontagem já foi iniciada. Reabra a OS para ver o horário registrado.',
+              confirmed_evaluation_locked: 'Conflito: esta avaliação já foi confirmada e está travada. Reabra a OS.',
+              disassembly_preparation_incomplete: 'Informe responsável, dimensões válidas e componentes antes de começar.',
+              justification_required: 'Informe a justificativa da não conformidade antes de avançar.',
+              evaluation_before_start: 'Comece a desmontagem antes de avaliar componentes.',
+              disassembly_incomplete: 'Confirme todos os componentes antes de avançar.',
+              disassembly_preparation_locked: 'Conflito: responsável ou dimensões foram alterados após o início. Reabra a OS.',
+              disassembly_checklist_locked: 'Conflito: a composição ou ordem do checklist está travada. Reabra a OS.',
+              disassembly_completion_locked: 'Conflito: o término é registrado automaticamente pelo servidor. Reabra a OS.',
+              evaluation_requires_action: 'Conflito: selecione um resultado antes de editar esta avaliação. Reabra a OS.',
+              invalid_assessment: 'Conflito: resultado inválido ou avaliação já confirmada. Reabra a OS.',
+              disassembly_stage_required: 'Conflito: abra a etapa Desmontagem antes de iniciar.',
+            }[saveError.message] ||
+              (saveError.message === 'service_order_save_failed'
+                ? 'Não foi possível salvar a OS no servidor.'
+                : `Conflito: ${saveError.message}. Reabra a OS para carregar a versão atual.`),
       );
       return false;
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   };
 
+  const startDisassembly = () => persistEntry(undefined, step, { disassemblyAction: 'start' });
+  const assessComponent = (index, status) => {
+    const checklist = form.disassemblyChecklist.map((item, position) =>
+      position === index ? { ...item, status, ...(status === 'Conforme' ? { notes: '' } : {}) } : item,
+    );
+    return persistEntry(undefined, step, { disassemblyChecklist: checklist, disassemblyAction: 'assess', disassemblyIndex: index });
+  };
   const addPhotos = async (category, files) => {
     try {
       const uploadCategory = category === 'arrival' ? 'recebimento' : category;
@@ -210,6 +260,9 @@ export const ServiceOrderView = () => {
   };
 
   const addChecklistPhotos = async (category, component, files) => {
+    if (uploadingChecklistRef.current || savingRef.current) return;
+    uploadingChecklistRef.current = true;
+    setUploadingChecklist(true);
     try {
       const uploadCategory = `desmontagem (${component.toLowerCase()})`;
       const uploaded = await Promise.all(files.map((file) => uploadFile(file, uploadCategory)));
@@ -220,6 +273,9 @@ export const ServiceOrderView = () => {
       setError('');
     } catch {
       setError('Não foi possível enviar as fotos do checklist.');
+    } finally {
+      uploadingChecklistRef.current = false;
+      setUploadingChecklist(false);
     }
   };
 
@@ -278,19 +334,28 @@ export const ServiceOrderView = () => {
     setError('');
     const emptyEntry = createEmptyServiceEntry();
 
-    const selectedComponents = normalizeCylinderComponents(entry.cylinderOptionalItems);
     const previousChecklist = Array.isArray(entry.disassemblyChecklist) ? entry.disassemblyChecklist : [];
-    const disassemblyChecklist = selectedComponents.map((component) => {
-      const existing = previousChecklist.find((item) => normalizeCylinderComponent(item.component) === component);
-      return existing ? { ...existing, component } : createEmptyDisassemblyChecklist([component])[0];
-    });
+    const legacyAdvanced = !entry.disassemblyTimingVersion && ['orcamento', 'reparo', 'entrega'].includes(entry.stage);
+    const legacyWithAssessments = !entry.disassemblyTimingVersion && previousChecklist.some((item) => item.status);
+    const preserveChecklist = legacyAdvanced || legacyWithAssessments || entry.disassemblyTimingVersion;
+    const selectedComponents = preserveChecklist
+      ? (entry.cylinderOptionalItems || []).length
+        ? entry.cylinderOptionalItems
+        : previousChecklist.map((item) => item.component)
+      : normalizeCylinderComponents(entry.cylinderOptionalItems);
+    const disassemblyChecklist = preserveChecklist
+      ? previousChecklist
+      : selectedComponents.map((component) => {
+          const existing = previousChecklist.find((item) => normalizeCylinderComponent(item.component) === component);
+          return existing ? { ...existing, component } : createEmptyDisassemblyChecklist([component])[0];
+        });
 
     setForm({
       ...emptyEntry,
       ...entry,
       cylinderOptionalItems: selectedComponents,
       disassemblyChecklist,
-      disassemblyStartedAt: entry.disassemblyStartedAt || emptyEntry.disassemblyStartedAt,
+      disassemblyStartedAt: entry.disassemblyStartedAt || '',
       photos: { ...emptyEntry.photos, ...(entry.photos || {}) },
     });
     setStep(getServiceEntryStageIndex(stages, entry.availableThroughStage || entry.stage));
@@ -304,20 +369,26 @@ export const ServiceOrderView = () => {
     setDeletingOrderId(entry.id);
     try {
       const photos = [...Object.values(entry.photos || {}).flat(), ...(form.id === entry.id ? Object.values(form.photos || {}).flat() : [])];
+      await deleteServiceEntry(entry);
       const deletedPhotos = new Set();
+      let failedPhotoCleanup = false;
       for (const photo of photos) {
         const photoReference = photo.key || photo.id;
         if (!photoReference || deletedPhotos.has(photoReference)) continue;
         deletedPhotos.add(photoReference);
-        if (photo.key) await deleteFile(photo.key);
-        else await deleteServiceEntryPhoto(photo.id);
+        try {
+          if (photo.key) await deleteFile(photo.key);
+          else await deleteServiceEntryPhoto(photo.id);
+        } catch {
+          failedPhotoCleanup = true;
+        }
       }
 
-      await deleteServiceEntry(entry);
       const next = entries.filter((item) => item.id !== entry.id);
       setEntries(next);
       window.dispatchEvent(new Event('service-orders-changed'));
       if (form.id === entry.id) reset();
+      if (failedPhotoCleanup) setError(`A OS ${entry.orderNumber} foi excluída, mas alguns arquivos não puderam ser removidos.`);
     } catch {
       setError(`Não foi possível excluir a OS ${entry.orderNumber}. Tente novamente.`);
     } finally {
@@ -602,10 +673,12 @@ export const ServiceOrderView = () => {
           <ServiceOrderDisassemblyStep
             form={form}
             set={set}
-            addPhotos={addPhotos}
-            removePhoto={removePhoto}
             addChecklistPhotos={addChecklistPhotos}
             removeChecklistPhoto={removeChecklistPhoto}
+            onStart={startDisassembly}
+            onAssess={assessComponent}
+            saving={saving}
+            photoBusy={uploadingChecklist}
           />
         )}
         {canEditCurrentStep && step === 3 && <ServiceOrderBudgetStep form={form} set={set} highlightMissingStock={highlightMissingStock} />}
@@ -623,14 +696,18 @@ export const ServiceOrderView = () => {
             <button
               type="button"
               className="btn btn-primary service-entry-save service-entry-action-save"
-              disabled={!canEditCurrentStep}
+              disabled={!canEditCurrentStep || saving || uploadingChecklist}
               onClick={saveProgress}
             >
               <Save size={16} strokeWidth={2} aria-hidden="true" />
               Salvar
             </button>
             {canAdvanceCurrentStep && (
-              <button type="submit" className="btn btn-primary service-entry-advance service-entry-action-advance">
+              <button
+                type="submit"
+                disabled={saving || uploadingChecklist}
+                className="btn btn-primary service-entry-advance service-entry-action-advance"
+              >
                 {step === stages.length - 1 ? 'Finalizar OS' : 'Avançar'}
                 {step === stages.length - 1 ? (
                   <Check size={17} strokeWidth={2.2} aria-hidden="true" />

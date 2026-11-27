@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 from typing import Any, Callable
+from datetime import timezone
 
 from .model import ServiceOrder
 from ..file_storage.model import serialize_file
 from .policy import MECHANIC_EDITABLE_STAGE, ServiceOrderSection, visible_sections
 from .stages import SERVICE_ORDER_STAGES, STAGE_LABELS, STAGE_STATUSES, ServiceOrderStage
+
+
+def _utc_iso(value):
+    return value.replace(tzinfo=value.tzinfo or timezone.utc).astimezone(timezone.utc).isoformat() if value else None
 
 
 def serialize_service_order_stage_catalog(role: str) -> list[dict[str, Any]]:
@@ -92,7 +97,7 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
     ServiceOrderSection.DESMONTAGEM: lambda payload: _section(
         payload,
         (
-            "disassemblyOperator", "disassemblyStartedAt", "disassemblyEndedAt", "disassemblyComplete",
+            "disassemblyOperator", "disassemblyStartedAt", "disassemblyEndedAt", "disassemblyComplete", "disassemblyTimingVersion",
             "disassemblyControlled", "partsSeparated", "oilCollected", "disassemblyNotes",
             "partsDisposition", "disassemblyChecklist", "cylinderInternalDiameter", "cylinderExternalDiameter",
             "cylinderLength", "cylinderStroke", "cylinderRodDiameter", "cylinderOptionalItems", "cylinderOptionalItemsOther",
@@ -129,13 +134,14 @@ def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
     return {
         "id": order.id,
         "orderNumber": order.order_number,
-        "createdAt": order.created_at.isoformat() if order.created_at else None,
+        "createdAt": _utc_iso(order.created_at),
         "createdBy": {
             "id": order.created_by,
             "name": order.created_by_user.name if order.created_by_user else "",
         },
         "client": payload.get("client", ""),
         "clientId": order.client_id,
+        "arrivalMethod": order.arrival_method.value if order.arrival_method else None,
         "clientDetails": {
             "id": order.client.id,
             "razaoSocial": order.client.razao_social,
@@ -148,7 +154,7 @@ def serialize_service_order_summary(order: ServiceOrder) -> dict[str, Any]:
         "status": order.status,
         "stage": stage.value,
         "stageLabel": STAGE_LABELS[stage],
-        "updatedAt": order.updated_at.isoformat() if order.updated_at else None,
+        "updatedAt": _utc_iso(order.updated_at),
     }
 
 
@@ -157,7 +163,7 @@ def serialize_service_order(order: ServiceOrder, role: str) -> dict[str, Any]:
     stage = get_service_order_stage(order)
     result = {
         **serialize_service_order_summary(order),
-        "createdAt": order.created_at.isoformat() if order.created_at else None,
+        "createdAt": _utc_iso(order.created_at),
     }
     if role == "pcp":
         result["availableThroughStage"] = ServiceOrderStage.IDENTIFICACAO.value
@@ -166,6 +172,8 @@ def serialize_service_order(order: ServiceOrder, role: str) -> dict[str, Any]:
         result[section.value] = section_payload
         if role in {"pcp", "mechanic"}:
             # Keep the current form compatible while exposing only permitted fields.
+            if "photos" in section_payload:
+                section_payload = {**section_payload, "photos": {**result.get("photos", {}), **section_payload["photos"]}}
             result.update(section_payload)
 
     # Keep the existing flat response for roles that can inspect the full OS.
@@ -178,8 +186,8 @@ def serialize_service_order(order: ServiceOrder, role: str) -> dict[str, Any]:
                 "status": order.status,
                 "stage": stage.value,
                 "stageLabel": STAGE_LABELS[stage],
-                "createdAt": order.created_at.isoformat() if order.created_at else None,
-                "updatedAt": order.updated_at.isoformat() if order.updated_at else None,
+                "createdAt": _utc_iso(order.created_at),
+                "updatedAt": _utc_iso(order.updated_at),
             }
         )
     return result

@@ -1,8 +1,7 @@
-import { createEmptyServiceEntry } from './model';
+import { createEmptyDisassemblyChecklist, createEmptyServiceEntry } from './model';
 
 export const createDemoServiceEntry = () => {
   const now = new Date();
-  const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   const expectedDate = new Date(now);
   expectedDate.setDate(expectedDate.getDate() + 10);
   const localExpectedDate = new Date(expectedDate.getTime() - expectedDate.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -17,7 +16,7 @@ export const createDemoServiceEntry = () => {
 
   return {
     ...createEmptyServiceEntry(),
-    orderType: 'Acumulador',
+    orderType: 'Cilindro hidráulico',
     orderNumber,
     previousOrderNumber: 'OS-DEV-ANTERIOR',
     expectedDeliveryDate: localExpectedDate,
@@ -26,7 +25,14 @@ export const createDemoServiceEntry = () => {
     clientReference: 'PED-DEV-001',
     requester: 'Solicitante de exemplo',
     invoiceNumber: 'NF-DEV-001',
-    equipment: 'Acumulador hidráulico',
+    equipment: 'Cilindro hidráulico',
+    cylinderInternalDiameter: '80',
+    cylinderExternalDiameter: '95',
+    cylinderLength: '500',
+    cylinderStroke: '300',
+    cylinderRodDiameter: '50',
+    cylinderOptionalItems: ['Camisa', 'Haste', 'Vedação'],
+    disassemblyChecklist: createEmptyDisassemblyChecklist(['Camisa', 'Haste', 'Vedação']),
     claimedDefect: 'Perda de pressão relatada pelo cliente (exemplo).',
     shippingNotes: 'Acondicionar e enviar pela transportadora de exemplo.',
     equipmentLocation: 'Área de recebimento — DEV',
@@ -40,8 +46,8 @@ export const createDemoServiceEntry = () => {
     deliveredBy: 'Transportadora de exemplo',
     receivedAccessories: 'Conexões e tampa de proteção (exemplo).',
     disassemblyOperator: 'Técnico de desmontagem DEV',
-    disassemblyStartedAt: localDateTime,
-    disassemblyComplete: true,
+    disassemblyStartedAt: '',
+    disassemblyComplete: false,
     disassemblyControlled: true,
     partsSeparated: true,
     oilCollected: true,

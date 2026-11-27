@@ -14,7 +14,7 @@ const esc = (value) =>
 const show = (value, suffix = '') => (String(value ?? '').trim() ? esc(value) + suffix : '—');
 
 const dateTime = (value) => {
-  const date = parseStoredDateTime(value);
+  const date = /(?:Z|[+-]\d{2}:\d{2})$/.test(String(value || '')) ? new Date(value) : parseStoredDateTime(value);
   return date ? formatLongDateTimeBR(date) : '—';
 };
 

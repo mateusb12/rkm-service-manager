@@ -52,6 +52,9 @@ export const createEmptyDisassemblyChecklist = (components = []) =>
     component,
     status: '',
     notes: '',
+    firstAssessedAt: null,
+    confirmedAt: null,
+    confirmedBy: null,
     budgetItem: '',
     budgetItemId: null,
     budgetUnit: '',
@@ -60,13 +63,6 @@ export const createEmptyDisassemblyChecklist = (components = []) =>
     stockReceived: false,
     budgetItems: [],
   }));
-
-const currentLocalDateTime = () => {
-  const now = new Date();
-  const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-
-  return localNow.toISOString().slice(0, 16);
-};
 
 export const createEmptyServiceEntry = () => ({
   orderType: '',
@@ -107,7 +103,7 @@ export const createEmptyServiceEntry = () => ({
   deliveredBy: '',
   receivedAccessories: '',
   disassemblyOperator: '',
-  disassemblyStartedAt: currentLocalDateTime(),
+  disassemblyStartedAt: '',
   disassemblyEndedAt: '',
   disassemblyComplete: false,
   disassemblyControlled: false,

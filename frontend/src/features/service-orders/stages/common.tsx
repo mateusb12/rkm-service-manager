@@ -159,7 +159,7 @@ export const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, 
   );
 };
 
-export const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, onSelectExisting, category }) => {
+export const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, onSelectExisting, category, readOnly = false }) => {
   const file = files[0];
 
   return (
@@ -180,6 +180,7 @@ export const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onR
       category={category}
       showLibrary
       variant="checklist"
+      readOnly={readOnly}
     />
   );
 };
