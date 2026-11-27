@@ -60,7 +60,7 @@ export const getMissingServiceEntryFields = (form, stageIndex) => {
     });
   }
 
-  if (stageIndex === 1 && isCylinderOrderType(form.orderType)) {
+  if (stageIndex === 2 && isCylinderOrderType(form.orderType)) {
     [
       ['cylinderInternalDiameter', 'Diâmetro interno do cilindro'],
       ['cylinderExternalDiameter', 'Diâmetro externo do cilindro'],

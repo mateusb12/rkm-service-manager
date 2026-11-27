@@ -49,42 +49,6 @@ export const ServiceOrderIdentificationStep = ({ form, set }) => (
       </Field>
       {isCylinderOrderType(form.orderType) && (
         <>
-          <div className="md:col-span-3 mt-2 border-t border-rkmborder pt-4">
-            <h3 className="text-sm font-semibold text-slate-200">Dimensões do cilindro</h3>
-            <p className="mt-1 text-xs text-slate-500">Informe as medidas em milímetros conforme recebido.</p>
-          </div>
-          <div className="md:col-span-3 grid gap-4 md:grid-cols-5">
-            <Field label="Diâmetro interno (mm)" required>
-              <TextInput
-                type="number"
-                value={form.cylinderInternalDiameter}
-                onChange={(value) => set('cylinderInternalDiameter', value)}
-                placeholder="Ex.: 80"
-              />
-            </Field>
-            <Field label="Diâmetro externo (mm)" required>
-              <TextInput
-                type="number"
-                value={form.cylinderExternalDiameter}
-                onChange={(value) => set('cylinderExternalDiameter', value)}
-                placeholder="Ex.: 95"
-              />
-            </Field>
-            <Field label="Comprimento (mm)" required>
-              <TextInput type="number" value={form.cylinderLength} onChange={(value) => set('cylinderLength', value)} placeholder="Ex.: 500" />
-            </Field>
-            <Field label="Curso (mm)" required>
-              <TextInput type="number" value={form.cylinderStroke} onChange={(value) => set('cylinderStroke', value)} placeholder="Ex.: 300" />
-            </Field>
-            <Field label="Diâmetro da haste (mm)" required>
-              <TextInput
-                type="number"
-                value={form.cylinderRodDiameter}
-                onChange={(value) => set('cylinderRodDiameter', value)}
-                placeholder="Ex.: 50"
-              />
-            </Field>
-          </div>
           <Field
             label="Componentes do cilindro"
             className="md:col-span-3"

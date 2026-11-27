@@ -302,6 +302,50 @@ def test_mechanic_gets_general_order_data_but_only_step_three_details(service_or
     assert "diagnosis" in details.json
 
 
+def test_mechanic_can_save_cylinder_dimensions_in_disassembly(service_orders_client):
+    headers = login(service_orders_client)
+    create = service_orders_client.post(
+        "/service-orders",
+        headers=headers,
+        json={**order_payload("20265590"), "orderType": "Cilindro"},
+    )
+    assert create.status_code == 201
+
+    update = service_orders_client.put(
+        "/service-orders/OS-20265590",
+        headers=headers,
+        json={
+            **create.json,
+            "stage": "desmontagem",
+            "cylinderInternalDiameter": "80",
+            "cylinderExternalDiameter": "95",
+            "cylinderLength": "500",
+            "cylinderStroke": "300",
+            "cylinderRodDiameter": "50",
+        },
+    )
+
+    assert update.status_code == 200
+    assert update.json["stage"] == "desmontagem"
+    assert update.json["cylinderStroke"] == "300"
+
+
+def test_pcp_cannot_fill_cylinder_dimensions(service_orders_client):
+    response = service_orders_client.post(
+        "/service-orders",
+        headers=login(service_orders_client, "pcp@rkm.com.br"),
+        json={
+            **order_payload("20265591"),
+            "stage": "identificacao",
+            "orderType": "Cilindro",
+            "cylinderInternalDiameter": "80",
+        },
+    )
+
+    assert response.status_code == 201
+    assert "cylinderInternalDiameter" not in response.json
+
+
 def test_pcp_can_create_initial_service_order(service_orders_client):
     headers = login(service_orders_client, "pcp@rkm.com.br")
     create = service_orders_client.post(

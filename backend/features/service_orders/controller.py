@@ -46,11 +46,6 @@ PCP_RECEIVING_FIELDS = {
     "receivedBy",
     "deliveredBy",
     "receivedAccessories",
-    "cylinderInternalDiameter",
-    "cylinderExternalDiameter",
-    "cylinderLength",
-    "cylinderStroke",
-    "cylinderRodDiameter",
     "cylinderOptionalItems",
     "cylinderOptionalItemsOther",
 }
@@ -110,6 +105,15 @@ def _validated_payload():
     normalized.pop("invoiceFile", None)
     normalized.pop("client", None)
     normalized.pop("arrivalMethod", None)
+    if g.current_user.role == "pcp":
+        for field in (
+            "cylinderInternalDiameter",
+            "cylinderExternalDiameter",
+            "cylinderLength",
+            "cylinderStroke",
+            "cylinderRodDiameter",
+        ):
+            normalized.pop(field, None)
     return normalized, data["clientId"], data.get("invoiceFileId"), None
 
 

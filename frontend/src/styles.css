@@ -2625,6 +2625,42 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   background: #0f2741;
 }
 
+.service-entry-page
+  .react-datepicker__time-container
+  .react-datepicker__time
+  .react-datepicker__time-box
+  ul.react-datepicker__time-list
+  li.react-datepicker__time-list-item {
+  background: #0f2741;
+  color: #cbd5e1;
+}
+
+.service-entry-page
+  .react-datepicker__time-container
+  .react-datepicker__time
+  .react-datepicker__time-box
+  ul.react-datepicker__time-list
+  li.react-datepicker__time-list-item:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #f8fafc;
+}
+
+.service-entry-page
+  .react-datepicker__time-container
+  .react-datepicker__time
+  .react-datepicker__time-box
+  ul.react-datepicker__time-list
+  li.react-datepicker__time-list-item--selected,
+.service-entry-page
+  .react-datepicker__time-container
+  .react-datepicker__time
+  .react-datepicker__time-box
+  ul.react-datepicker__time-list
+  li.react-datepicker__time-list-item--selected:hover {
+  background: #1683f7;
+  color: #fff;
+}
+
 .service-entry-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
