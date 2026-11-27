@@ -97,13 +97,7 @@ export const mapLizyOrderToServiceEntry = (source, timestamp = new Date().toISOS
 
     invoiceNumber: source.invoiceNumber || '',
 
-    serialNumber: source.serialNumber || '',
-
-    manufacturer: source.manufacturer || '',
-
     equipment: source.equipment || '',
-
-    model: source.model || '',
 
     claimedDefect: source.claimedDefect || '',
 

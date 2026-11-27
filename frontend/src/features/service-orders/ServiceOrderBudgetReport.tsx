@@ -66,9 +66,6 @@ const buildReportHtml = ({ form, rows, totalCents }) => {
     <dl>
       <div><dt>Tipo</dt><dd>${show(form.orderType)}</dd></div>
       <div style="grid-column: span 2"><dt>Equipamento</dt><dd>${show(form.equipment)}</dd></div>
-      <div><dt>Fabricante</dt><dd>${show(form.manufacturer)}</dd></div>
-      <div><dt>Modelo</dt><dd>${show(form.model)}</dd></div>
-      <div><dt>Nº de série</dt><dd>${show(form.serialNumber)}</dd></div>
       ${
         isCylinderOrderType(form.orderType)
           ? `

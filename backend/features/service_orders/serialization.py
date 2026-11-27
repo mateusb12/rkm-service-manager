@@ -85,8 +85,7 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
     ServiceOrderSection.IDENTIFICACAO: lambda payload: _section(
         payload,
         (
-            "orderType", "clientReference", "serialNumber", "manufacturer", "equipment",
-            "model", "claimedDefect", "hydraulic", "pneumatic", "fluidApplication",
+            "orderType", "clientReference", "equipment", "claimedDefect", "hydraulic", "pneumatic", "fluidApplication",
             "equipmentLocation", "cylinderInternalDiameter", "cylinderExternalDiameter",
             "cylinderLength", "cylinderStroke", "cylinderRodDiameter", "cylinderOptionalItems",
             "cylinderOptionalItemsOther",

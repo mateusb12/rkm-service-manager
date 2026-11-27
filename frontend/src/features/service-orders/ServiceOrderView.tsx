@@ -1684,10 +1684,6 @@ export const ServiceOrderView = () => {
                           )}
                           <div>
                             <div>{entry.equipment || 'A identificar'}</div>
-                            <small>
-                              {entry.manufacturer}
-                              {entry.model ? ` · ${entry.model}` : ''}
-                            </small>
                           </div>
                         </div>
                       </td>

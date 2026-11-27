@@ -55,7 +55,6 @@ PCP_RECEIVING_FIELDS = {
     "cylinderOptionalItemsOther",
 }
 
-
 def _merge_pcp_receiving_payload(existing: dict, incoming: dict) -> dict:
     """Merge only PCP-owned receiving data into an already advanced order."""
     merged = dict(existing or {})

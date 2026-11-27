@@ -283,7 +283,6 @@ def test_mechanic_gets_general_order_data_but_only_step_three_details(service_or
             "cylinderLength": "500",
             "cylinderRodDiameter": "50",
             "cylinderOptionalItems": ["Articulação traseira", "Garfo"],
-            "serialNumber": "SER-1",
             "disassemblyNotes": "Abrir e registrar os componentes.",
             "diagnosis": "Informação restrita ao orçamento.",
         },

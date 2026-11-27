@@ -83,10 +83,7 @@ export const createEmptyServiceEntry = () => ({
   invoiceFileId: null,
   invoiceFile: null,
 
-  serialNumber: '',
-  manufacturer: '',
   equipment: '',
-  model: '',
   claimedDefect: '',
   cylinderInternalDiameter: '',
   cylinderExternalDiameter: '',
