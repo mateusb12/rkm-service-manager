@@ -1,11 +1,12 @@
 // @ts-nocheck
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FileDown } from 'lucide-react';
 
 import { isCylinderOrderType, normalizeOrderNumber } from './model';
 import { formatDateLabel, parseStoredDateTime } from '../../utils/date';
 import { formatLongDateTimeBR } from '../../utils/formatLongDateTimeBR';
 import { formatPriceCents } from '../../utils/currency';
+import { getFilePreviewUrl } from '../files/service';
 
 const esc = (value) =>
   String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -17,7 +18,7 @@ const dateTime = (value) => {
   return date ? formatLongDateTimeBR(date) : '—';
 };
 
-const buildReportHtml = ({ form, rows, totalCents }) => {
+const buildReportHtml = ({ form, rows, totalCents, entryPhotos = [] }) => {
   const orderNumber = normalizeOrderNumber(form.orderNumber);
   // Uma linha por item de orçamento; componente/situação/justificativa mesclados (rowspan) quando há várias (ex.: Vedação).
   const budgetCells = (row) =>
@@ -51,8 +52,17 @@ const buildReportHtml = ({ form, rows, totalCents }) => {
     th { background: #f1f5f9; font-size: 10px; text-transform: uppercase; } .num { text-align: right; white-space: nowrap; }
     tfoot th { font-size: 12px; }
     .notes { white-space: pre-line; } .muted { color: #64748b; }
+    .photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
+    .photos figure { margin: 0; break-inside: avoid; } .photos img { width: 100%; max-height: 260px; object-fit: contain; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .photos figcaption { font-size: 10px; color: #64748b; text-transform: uppercase; }
   </style></head><body>
     <header><div><h1>Relatório da OS</h1><span class="muted">RKM Hidráulica · emitido em ${esc(formatLongDateTimeBR(new Date()))}</span></div><span class="os">${esc(orderNumber)}</span></header>
+
+    ${
+      entryPhotos.length
+        ? `<div class="photos">${entryPhotos.map((photo) => `<figure><img src="${esc(photo.url)}" alt="${esc(photo.label)}" /><figcaption>${esc(photo.label)}</figcaption></figure>`).join('')}</div>`
+        : ''
+    }
 
     <h2>1. Recebimento</h2>
     <dl>
@@ -97,7 +107,32 @@ const buildReportHtml = ({ form, rows, totalCents }) => {
 
 export const ServiceOrderBudgetReport = ({ form, rows, totalCents }) => {
   const frameRef = useRef(null);
-  const html = buildReportHtml({ form, rows, totalCents });
+  const [entryPhotos, setEntryPhotos] = useState([]);
+  const sources = (form.photos?.arrival || [])
+    .filter((photo) => photo.key && photo.category === 'recebimento')
+    .map((photo) => ({ key: photo.key, label: 'Foto de entrada' }));
+  const sourcesKey = sources.map((source) => source.key).join('|');
+
+  useEffect(() => {
+    let cancelled = false;
+    // ponytail: foto que falhar ao carregar só fica fora do relatório
+    Promise.all(
+      sources.map((source) =>
+        getFilePreviewUrl(source.key).then(
+          (url) => ({ ...source, url }),
+          () => null,
+        ),
+      ),
+    ).then((loaded) => {
+      if (!cancelled) setEntryPhotos(loaded.filter(Boolean));
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sourcesKey resume as chaves
+  }, [sourcesKey]);
+
+  const html = buildReportHtml({ form, rows, totalCents, entryPhotos });
 
   return (
     <div className="md:col-span-3 space-y-3">
