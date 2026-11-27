@@ -1,0 +1,160 @@
+import { Field, MultiSelectCheckboxes, TextArea, TextInput } from '../../../shared/ui/form-controls';
+import { SearchableSelector } from '../../../shared/ui/SearchableSelector';
+import { listActiveUsers } from '../../auth/security/service';
+import { CYLINDER_OPTIONAL_ITEMS, isCylinderOrderType } from '../model';
+import { SERVICE_ENTRY_ORDER_TYPE_ICONS, SERVICE_ENTRY_ORDER_TYPE_ICON_CLASSES } from './constants';
+import { ServiceEntrySection } from './common';
+
+export const ServiceOrderIdentificationStep = ({ form, set }) => (
+  <>
+    <ServiceEntrySection title="Identificação inicial" description="A oficina identifica o tipo de peça antes da avaliação e desmontagem.">
+      <Field label="Categoria do equipamento" required className="md:col-span-3">
+        <div className="service-entry-order-types" role="radiogroup" aria-label="Categoria do equipamento">
+          {Object.entries(SERVICE_ENTRY_ORDER_TYPE_ICONS).map(([type, icon]) => {
+            const selected = form.orderType === type;
+
+            return (
+              <button
+                key={type}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                  selected
+                    ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
+                    : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                }`}
+                onClick={() => set('orderType', type)}
+              >
+                <span className="flex h-20 w-20 items-center justify-center p-1">
+                  <img
+                    src={icon}
+                    alt=""
+                    aria-hidden="true"
+                    className={`h-full w-full object-contain ${SERVICE_ENTRY_ORDER_TYPE_ICON_CLASSES[type] || ''}`}
+                  />
+                </span>
+                <span className="text-xs font-medium">{type}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <Field label="Equipamento" required className="md:col-span-2">
+        <TextInput
+          value={form.equipment}
+          onChange={(value) => set('equipment', value)}
+          placeholder="Ex.: Cilindro hidráulico soldado, dupla ação — Ø80/50 x 500 mm"
+        />
+      </Field>
+      {isCylinderOrderType(form.orderType) && (
+        <>
+          <div className="md:col-span-3 mt-2 border-t border-rkmborder pt-4">
+            <h3 className="text-sm font-semibold text-slate-200">Dimensões do cilindro</h3>
+            <p className="mt-1 text-xs text-slate-500">Informe as medidas em milímetros conforme recebido.</p>
+          </div>
+          <div className="md:col-span-3 grid gap-4 md:grid-cols-5">
+            <Field label="Diâmetro interno (mm)" required>
+              <TextInput
+                type="number"
+                value={form.cylinderInternalDiameter}
+                onChange={(value) => set('cylinderInternalDiameter', value)}
+                placeholder="Ex.: 80"
+              />
+            </Field>
+            <Field label="Diâmetro externo (mm)" required>
+              <TextInput
+                type="number"
+                value={form.cylinderExternalDiameter}
+                onChange={(value) => set('cylinderExternalDiameter', value)}
+                placeholder="Ex.: 95"
+              />
+            </Field>
+            <Field label="Comprimento (mm)" required>
+              <TextInput type="number" value={form.cylinderLength} onChange={(value) => set('cylinderLength', value)} placeholder="Ex.: 500" />
+            </Field>
+            <Field label="Curso (mm)" required>
+              <TextInput type="number" value={form.cylinderStroke} onChange={(value) => set('cylinderStroke', value)} placeholder="Ex.: 300" />
+            </Field>
+            <Field label="Diâmetro da haste (mm)" required>
+              <TextInput
+                type="number"
+                value={form.cylinderRodDiameter}
+                onChange={(value) => set('cylinderRodDiameter', value)}
+                placeholder="Ex.: 50"
+              />
+            </Field>
+          </div>
+          <Field
+            label="Componentes do cilindro"
+            className="md:col-span-3"
+            hint="Marque os componentes existentes. Eles serão avaliados na desmontagem."
+          >
+            <MultiSelectCheckboxes
+              values={form.cylinderOptionalItems}
+              onChange={(value) => set('cylinderOptionalItems', value)}
+              options={CYLINDER_OPTIONAL_ITEMS}
+              className="cylinder-optional-items"
+            />
+          </Field>
+        </>
+      )}
+    </ServiceEntrySection>
+    <ServiceEntrySection title="Dados da chegada" description="Registre a cadeia de recebimento antes da avaliação e desmontagem.">
+      <Field label="Como chegou" required className="md:col-span-3">
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Como chegou">
+          {[
+            ['coleta_cliente', 'Coleta no cliente', '/assets/coleta-no-cliente.png'],
+            ['cliente_entregou', 'Cliente trouxe à oficina', '/assets/cliente-trouxe-pra-oficina.png'],
+          ].map(([value, label, icon]) => {
+            const selected = form.arrivalMethod === value;
+
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={`flex min-h-[128px] min-w-[148px] flex-col items-center justify-center gap-2 rounded-lg border p-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                  selected
+                    ? 'border-blue-300/70 bg-blue-400/10 text-sky-300 shadow-[0_0_12px_rgba(59,130,246,.14)]'
+                    : 'border-rkmborder bg-rkmcard2/40 text-slate-400 hover:border-blue-400/50 hover:text-slate-200'
+                }`}
+                onClick={() => set('arrivalMethod', value)}
+              >
+                <span className="flex h-20 w-20 items-center justify-center p-1">
+                  <img src={icon} alt="" aria-hidden="true" className="h-full w-full object-contain" />
+                </span>
+                <span className={`text-xs font-medium ${selected ? 'text-sky-300' : 'text-white'}`}>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <Field label="Recebido por" required>
+        <SearchableSelector
+          value={form.receivedBy}
+          loadOptions={listActiveUsers}
+          getOptionKey={(user) => user.id}
+          getOptionLabel={(user) => user.name}
+          getOptionDescription={(user) => `${user.roleLabel} · ${user.email}`}
+          placeholder="Nome, e-mail ou perfil"
+          listLabel="Usuários ativos"
+          onSelect={(user) => set('receivedBy', user.name)}
+          onClear={() => set('receivedBy', '')}
+        />
+      </Field>
+      <Field label="Entregue por">
+        <TextInput value={form.deliveredBy} onChange={(value) => set('deliveredBy', value)} placeholder="Motorista / cliente" />
+      </Field>
+      <Field label="Acessórios / itens recebidos" className="md:col-span-2">
+        <TextArea
+          rows={2}
+          value={form.receivedAccessories}
+          onChange={(value) => set('receivedAccessories', value)}
+          placeholder="Conexões, válvulas, peças soltas, embalagem..."
+        />
+      </Field>
+    </ServiceEntrySection>
+  </>
+);
