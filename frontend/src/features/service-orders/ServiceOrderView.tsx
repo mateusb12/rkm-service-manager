@@ -32,7 +32,7 @@ import { ClientSelector } from '../pcp/clients';
 import { listActiveUsers } from '../auth/security/service';
 import { listPriceCatalogItems } from '../commercial/price-catalog/service';
 import { SearchableSelector } from '../../shared/ui/SearchableSelector';
-import { deleteServiceEntryPhoto, storeServiceEntryPhoto } from './photo-storage';
+import { deleteServiceEntryPhoto } from './photo-storage';
 import { ServiceOrderStepNavigator } from './ServiceOrderStepNavigator';
 import { ServiceOrderFileUpload } from './ServiceOrderFileUpload';
 import { ServiceOrderBudgetReport } from './ServiceOrderBudgetReport';
@@ -71,15 +71,52 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelec
 
   useEffect(() => () => previewUrls.current.forEach((previewUrl) => URL.revokeObjectURL(previewUrl)), []);
 
-  const selectFiles = async (event) => {
-    const files = Array.from(event.target.files || []);
+  useEffect(() => {
+    let active = true;
+    const pendingPhotos = photos.filter((photo) => {
+      if (!photo.key) return false;
+      const previewKey = `${photo.name}-${photo.lastModified || ''}-${photo.size || ''}`;
+      return !previews[previewKey];
+    });
+
+    if (!pendingPhotos.length) return undefined;
+
+    void Promise.all(
+      pendingPhotos.map(async (photo) => {
+        const previewKey = `${photo.name}-${photo.lastModified || ''}-${photo.size || ''}`;
+        try {
+          const previewUrl = await getFilePreviewUrl(photo.key);
+          return [previewKey, previewUrl];
+        } catch {
+          return null;
+        }
+      }),
+    ).then((loadedPreviews) => {
+      if (!active) return;
+      setPreviews((previous) => ({
+        ...previous,
+        ...Object.fromEntries(loadedPreviews.filter(Boolean)),
+      }));
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [photos, previews]);
+
+  const registerLocalPreviews = (files) => {
     const nextPreviews = {};
     files.forEach((file) => {
       const key = `${file.name}-${file.lastModified}-${file.size}`;
       nextPreviews[key] = URL.createObjectURL(file);
       previewUrls.current.push(nextPreviews[key]);
     });
-    setPreviews((prev) => ({ ...prev, ...nextPreviews }));
+    setPreviews((previous) => ({ ...previous, ...nextPreviews }));
+  };
+
+  const selectFiles = async (event) => {
+    const files = Array.from(event.target.files || []);
+    registerLocalPreviews(files);
     await onFiles(files);
     event.target.value = '';
   };
@@ -90,7 +127,10 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelec
       {hint && <p>{hint}</p>}
       {onSelectExisting && (
         <ServiceOrderFileUpload
-          onUpload={(selectedFile) => onFiles([selectedFile])}
+          onUpload={(selectedFile) => {
+            registerLocalPreviews([selectedFile]);
+            return onFiles([selectedFile]);
+          }}
           onDeselect={() => undefined}
           onDelete={() => undefined}
           onSelectExisting={onSelectExisting}
@@ -111,7 +151,7 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelec
           <input type="file" accept="image/*" capture="environment" multiple onChange={selectFiles} />
           <span aria-hidden="true">＋</span>
           <strong>Adicionar foto{photos.length > 0 ? 's' : ''}</strong>
-          <small>JPG, PNG ou HEIC · armazenada neste navegador</small>
+          <small>JPG, PNG ou HEIC · armazenada no sistema</small>
         </label>
       )}
       {photos.length > 0 && (
@@ -1348,21 +1388,6 @@ export const ServiceOrderView = () => {
     }
 
     const photos = { ...form.photos };
-    try {
-      for (const category of Object.keys(photos)) {
-        photos[category] = await Promise.all(
-          (photos[category] || []).map(async (photo) => {
-            if (!photo.file) return photo;
-            await storeServiceEntryPhoto(photo.id, photo.file);
-            const { file, previewUrl, lastModified, ...metadata } = photo;
-            return metadata;
-          }),
-        );
-      }
-    } catch (storageError) {
-      setError(storageError.message || 'Não foi possível guardar as fotos neste navegador.');
-      return false;
-    }
 
     const entry = {
       ...form,
@@ -1404,32 +1429,16 @@ export const ServiceOrderView = () => {
   };
 
   const addPhotos = async (category, files) => {
-    const orderId = form.id || normalizeOrderNumber(form.orderNumber);
-    if (!orderId) {
-      setError('Informe o número da OS antes de anexar fotos.');
-      return;
-    }
     try {
-      const uploaded = await Promise.all(
-        files.map(async (file) => {
-          const id = `${orderId}:${category}:${crypto.randomUUID()}`;
-          await storeServiceEntryPhoto(id, file);
-          return {
-            id,
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-          };
-        }),
-      );
+      const uploadCategory = category === 'arrival' ? 'recebimento' : category;
+      const uploaded = await Promise.all(files.map((file) => uploadFile(file, uploadCategory)));
       setForm((prev) => ({
         ...prev,
         photos: { ...prev.photos, [category]: [...(prev.photos[category] || []), ...uploaded] },
       }));
       setError('');
-    } catch (storageError) {
-      setError(storageError.message || 'Não foi possível anexar as fotos.');
+    } catch {
+      setError('Não foi possível enviar as fotos para o sistema de arquivos.');
     }
   };
 
@@ -1524,7 +1533,7 @@ export const ServiceOrderView = () => {
   };
 
   const deleteEntry = async (entry) => {
-    const confirmed = window.confirm(`Excluir a OS ${entry.orderNumber} e as fotos salvas neste navegador? Esta ação não pode ser desfeita.`);
+    const confirmed = window.confirm(`Excluir a OS ${entry.orderNumber} e as fotos salvas no sistema? Esta ação não pode ser desfeita.`);
     if (!confirmed) return;
 
     setDeletingOrderId(entry.id);
@@ -1570,7 +1579,7 @@ export const ServiceOrderView = () => {
       {showDevGuides && (
         <LizyReferenceCard
           source="Serviços → Desmontagem → Criar Ordem"
-          detail="Fluxo operacional da chegada à expedição; fotos e registros ficam salvos localmente neste navegador."
+          detail="Fluxo operacional da chegada à expedição; fotos e registros ficam salvos no sistema."
         />
       )}
 

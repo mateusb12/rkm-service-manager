@@ -2307,7 +2307,7 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-photo-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 9px;
 }
 
@@ -2324,8 +2324,8 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-photo-item img,
 .service-entry-photo-placeholder {
-  width: 42px;
-  height: 42px;
+  width: 220px;
+  height: 165px;
   flex: none;
   border-radius: 6px;
   object-fit: cover;
