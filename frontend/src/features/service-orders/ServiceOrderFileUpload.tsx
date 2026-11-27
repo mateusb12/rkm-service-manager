@@ -24,26 +24,39 @@ type ServiceOrderFileUploadProps = {
 
 function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
   const [previewUrl, setPreviewUrl] = useState('');
+  const [previewState, setPreviewState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const contentType = file?.contentType;
 
   useEffect(() => {
     if (!file?.key) {
       setPreviewUrl('');
-      return undefined;
+      setPreviewState('error');
+      return;
     }
 
     let active = true;
+    setPreviewUrl('');
+    setPreviewState('loading');
     void getFilePreviewUrl(file.key)
       .then((url) => {
-        if (active) setPreviewUrl(url);
+        if (!active) return;
+        setPreviewUrl(url);
+        // O blob já foi baixado com sucesso. Não dependemos do onLoad do
+        // elemento para sair do skeleton, pois URLs blob podem ser cacheadas
+        // antes que o listener seja ligado em alguns navegadores.
+        setPreviewState('ready');
       })
       .catch(() => {
-        if (active) setPreviewUrl('');
+        if (active) {
+          setPreviewUrl('');
+          setPreviewState('error');
+        }
       });
 
     return () => {
       active = false;
     };
-  }, [file?.key]);
+  }, [contentType, file?.key]);
 
   return (
     <button
@@ -52,12 +65,17 @@ function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
       title={`Abrir ${file.name}`}
       onClick={() => previewUrl && window.open(previewUrl, '_blank', 'noopener,noreferrer')}
     >
-      {previewUrl && file.contentType?.startsWith('image/') ? (
-        <img src={previewUrl} alt={`${previewLabel} ${file.name}`} />
-      ) : previewUrl && file.contentType === 'application/pdf' ? (
-        <iframe title={`${previewLabel} ${file.name}`} src={previewUrl} />
+      {previewState === 'loading' ? (
+        <span className="service-entry-preview-skeleton" aria-label="Carregando prévia" />
+      ) : previewState !== 'error' && previewUrl && file.contentType?.startsWith('image/') ? (
+        <img src={previewUrl} alt={`${previewLabel} ${file.name}`} onLoad={() => setPreviewState('ready')} onError={() => setPreviewState('error')} />
+      ) : previewState !== 'error' && previewUrl && file.contentType === 'application/pdf' ? (
+        <iframe title={`${previewLabel} ${file.name}`} src={previewUrl} onLoad={() => setPreviewState('ready')} />
       ) : (
-        <span className="service-entry-invoice-document">{documentLabel}</span>
+        <span className="service-entry-invoice-document service-entry-invoice-document-error">
+          <span>{documentLabel}</span>
+          <small>Prévia indisponível</small>
+        </span>
       )}
     </button>
   );
@@ -122,11 +140,20 @@ const ServiceOrderExistingFileList = ({ files, label, onSelect, loading }) => (
         </div>
       </div>
     ))}
-    {loading ? (
-      <div className="service-entry-invoice-empty">Carregando arquivos...</div>
-    ) : (
-      files.length === 0 && <div className="service-entry-invoice-empty">Nenhum arquivo existente disponível para este campo.</div>
-    )}
+    {loading
+      ? Array.from({ length: 3 }, (_, index) => (
+          <div
+            className="service-entry-invoice-card service-entry-invoice-existing-card service-entry-invoice-skeleton-card"
+            key={`file-skeleton-${index}`}
+            aria-hidden="true"
+          >
+            <span className="service-entry-preview-skeleton" />
+            <span className="service-entry-skeleton-line service-entry-skeleton-line-wide" />
+            <span className="service-entry-skeleton-line service-entry-skeleton-line-short" />
+            <span className="service-entry-skeleton-button" />
+          </div>
+        ))
+      : files.length === 0 && <div className="service-entry-invoice-empty">Nenhum arquivo existente disponível para este campo.</div>}
   </div>
 );
 

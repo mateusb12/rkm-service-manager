@@ -72,6 +72,8 @@ const ServiceEntrySection = ({ title, description, children, className = '' }) =
 
 const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelectExisting, hint }) => {
   const [previews, setPreviews] = useState({});
+  const [loadingPreviews, setLoadingPreviews] = useState({});
+  const [failedPreviews, setFailedPreviews] = useState({});
   const previewUrls = useRef([]);
 
   useEffect(() => () => previewUrls.current.forEach((previewUrl) => URL.revokeObjectURL(previewUrl)), []);
@@ -86,6 +88,11 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelec
 
     if (!pendingPhotos.length) return undefined;
 
+    setLoadingPreviews((previous) => ({
+      ...previous,
+      ...Object.fromEntries(pendingPhotos.map((photo) => [`${photo.name}-${photo.lastModified || ''}-${photo.size || ''}`, true])),
+    }));
+
     void Promise.all(
       pendingPhotos.map(async (photo) => {
         const previewKey = `${photo.name}-${photo.lastModified || ''}-${photo.size || ''}`;
@@ -93,14 +100,23 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelec
           const previewUrl = await getFilePreviewUrl(photo.key);
           return [previewKey, previewUrl];
         } catch {
-          return null;
+          return [previewKey, null];
         }
       }),
     ).then((loadedPreviews) => {
       if (!active) return;
+      const loadedEntries = loadedPreviews.filter(Boolean);
       setPreviews((previous) => ({
         ...previous,
-        ...Object.fromEntries(loadedPreviews.filter(Boolean)),
+        ...Object.fromEntries(loadedEntries.filter(([, url]) => url)),
+      }));
+      setLoadingPreviews((previous) => ({
+        ...previous,
+        ...Object.fromEntries(loadedEntries.map(([key]) => [key, false])),
+      }));
+      setFailedPreviews((previous) => ({
+        ...previous,
+        ...Object.fromEntries(loadedEntries.filter(([, url]) => !url).map(([key]) => [key, true])),
       }));
     });
 
@@ -166,9 +182,24 @@ const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelec
             return (
               <div className="service-entry-photo-item" key={photo.id}>
                 {previews[previewKey] ? (
-                  <img src={previews[previewKey]} alt={`Foto: ${photo.name}`} />
+                  <img
+                    src={previews[previewKey]}
+                    alt={`Foto: ${photo.name}`}
+                    onError={() => {
+                      setFailedPreviews((previous) => ({ ...previous, [previewKey]: true }));
+                      setPreviews((previous) => {
+                        const next = { ...previous };
+                        delete next[previewKey];
+                        return next;
+                      });
+                    }}
+                  />
+                ) : loadingPreviews[previewKey] ? (
+                  <span className="service-entry-photo-skeleton" aria-label="Carregando prévia" />
                 ) : (
-                  <span className="service-entry-photo-placeholder">{photo.demo ? 'DEMO' : 'IMG'}</span>
+                  <span className="service-entry-photo-placeholder">
+                    {failedPreviews[previewKey] ? 'Prévia indisponível' : photo.demo ? 'DEMO' : 'IMG'}
+                  </span>
                 )}
                 <span title={photo.name}>{photo.name}</span>
                 <button type="button" onClick={() => onRemove(photo)}>

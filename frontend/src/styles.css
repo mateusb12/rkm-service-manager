@@ -2206,6 +2206,83 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   cursor: pointer;
 }
 
+.service-entry-preview-skeleton,
+.service-entry-photo-skeleton {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  background: linear-gradient(105deg, #111c30 8%, #223552 18%, #111c30 33%);
+  background-size: 200% 100%;
+  animation: service-entry-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.service-entry-preview-skeleton {
+  min-height: 130px;
+}
+
+.service-entry-photo-skeleton {
+  width: 100%;
+  min-height: 104px;
+  border-radius: 8px;
+}
+
+.service-entry-invoice-document-error {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+}
+
+.service-entry-invoice-document-error small {
+  color: #64748b;
+  font-size: 10px;
+}
+
+.service-entry-invoice-skeleton-card {
+  min-height: 0;
+}
+
+.service-entry-skeleton-line,
+.service-entry-skeleton-button {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(105deg, #17243a 8%, #293d5d 18%, #17243a 33%);
+  background-size: 200% 100%;
+  animation: service-entry-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.service-entry-skeleton-line {
+  height: 11px;
+}
+
+.service-entry-skeleton-line-wide {
+  width: 82%;
+}
+
+.service-entry-skeleton-line-short {
+  width: 46%;
+}
+
+.service-entry-skeleton-button {
+  width: 44px;
+  height: 36px;
+  margin: 2px auto 0;
+  border-radius: 9px;
+}
+
+@keyframes service-entry-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .service-entry-invoice-card.is-uploading {
   max-width: 430px;
 }
@@ -2307,15 +2384,16 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-photo-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 9px;
 }
 
 .service-entry-photo-item {
   min-width: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 9px 10px;
   padding: 8px;
   border: 1px solid rgba(100, 116, 139, 0.2);
   border-radius: 8px;
@@ -2324,11 +2402,18 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-photo-item img,
 .service-entry-photo-placeholder {
-  width: 220px;
-  height: 165px;
-  flex: none;
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 180px;
   border-radius: 6px;
   object-fit: cover;
+}
+
+.service-entry-photo-item .service-entry-photo-skeleton {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 180px;
+  min-height: 0;
 }
 
 .service-entry-photo-placeholder {
@@ -2347,7 +2432,6 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 
 .service-entry-photo-item > span[title] {
   min-width: 0;
-  flex: 1;
   overflow: hidden;
   color: #cbd5e1;
   font-size: var(--font-xs);
@@ -2366,9 +2450,15 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
 }
 
 .service-entry-photo-item button {
-  flex: none;
+  justify-self: end;
   color: #fda4af;
   font-size: var(--font-xs);
+}
+
+@media (max-width: 520px) {
+  .service-entry-photo-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .service-entry-step-actions {
