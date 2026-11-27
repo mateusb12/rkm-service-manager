@@ -102,7 +102,7 @@ const ServiceOrderFileSourceToggle = ({ mode, onChange }) => (
   </div>
 );
 
-const ServiceOrderExistingFileList = ({ files, label, onSelect }) => (
+const ServiceOrderExistingFileList = ({ files, label, onSelect, loading }) => (
   <div className="service-entry-invoice-library">
     {files.map((existingFile) => (
       <div className="service-entry-invoice-card service-entry-invoice-existing-card" key={existingFile.id}>
@@ -122,7 +122,11 @@ const ServiceOrderExistingFileList = ({ files, label, onSelect }) => (
         </div>
       </div>
     ))}
-    {files.length === 0 && <div className="service-entry-invoice-empty">Nenhum arquivo existente disponível para este campo.</div>}
+    {loading ? (
+      <div className="service-entry-invoice-empty">Carregando arquivos...</div>
+    ) : (
+      files.length === 0 && <div className="service-entry-invoice-empty">Nenhum arquivo existente disponível para este campo.</div>
+    )}
   </div>
 );
 
@@ -164,17 +168,18 @@ export function ServiceOrderFileUpload({
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [existingFiles, setExistingFiles] = useState<FileRecord[]>([]);
+  const [loadingExistingFiles, setLoadingExistingFiles] = useState(false);
   const [editingSelection, setEditingSelection] = useState(false);
   const [selectionMode, setSelectionMode] = useState<FilePickerMode>('upload');
   const selectedFile = file;
   const showingExistingFiles = showLibrary && selectionMode === 'existing';
 
   useEffect(() => {
-    if (!showingExistingFiles) {
-      setExistingFiles([]);
+    if (!showLibrary) {
       return undefined;
     }
     let active = true;
+    setLoadingExistingFiles(true);
     void listFiles()
       .then((files) => {
         if (!active) return;
@@ -184,16 +189,19 @@ export function ServiceOrderFileUpload({
             (accept !== 'image/*' || candidate.kind === 'Imagem') &&
             (!category || candidate.category?.trim().toLowerCase() === category.trim().toLowerCase()),
         );
-        setExistingFiles(availableFiles);
+        if (showingExistingFiles) setExistingFiles(availableFiles);
       })
       .catch(() => {
-        if (active) setExistingFiles([]);
+        if (active && showingExistingFiles) setExistingFiles([]);
+      })
+      .finally(() => {
+        if (active) setLoadingExistingFiles(false);
       });
 
     return () => {
       active = false;
     };
-  }, [accept, category, showingExistingFiles]);
+  }, [accept, category, showLibrary, showingExistingFiles]);
 
   const uploadSelectedFile = async (selectedFile?: File) => {
     if (!selectedFile) return;
@@ -311,6 +319,7 @@ export function ServiceOrderFileUpload({
             <ServiceOrderExistingFileList
               files={existingFiles}
               label={label}
+              loading={loadingExistingFiles}
               onSelect={(existingFile) => {
                 onSelectExisting(existingFile);
                 setEditingSelection(false);

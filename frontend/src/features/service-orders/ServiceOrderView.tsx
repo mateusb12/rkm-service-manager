@@ -402,7 +402,7 @@ const ServiceOrderInvoiceFileField = (props) => (
   <ServiceOrderFileUpload {...props} uploadingLabel="Enviando nota fiscal..." uploadingHint="Aguarde enquanto o arquivo é armazenado." />
 );
 
-const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, onSelectExisting }) => {
+const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, onSelectExisting, category }) => {
   const file = files[0];
 
   return (
@@ -420,6 +420,7 @@ const ServiceEntryChecklistFileField = ({ label, files = [], onFiles, onRemove, 
       uploadingHint="Aguarde enquanto a foto é armazenada."
       accept="image/*"
       onSelectExisting={onSelectExisting}
+      category={category}
       showLibrary
       variant="checklist"
     />
