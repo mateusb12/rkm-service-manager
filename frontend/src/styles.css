@@ -2345,6 +2345,12 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   animation: service-entry-skeleton-shimmer 1.35s ease-in-out infinite;
 }
 
+.file-preview-skeleton {
+  background: linear-gradient(105deg, #17243a 8%, #355074 28%, #17243a 48%);
+  background-size: 220% 100%;
+  animation: service-entry-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
 .service-entry-skeleton-line {
   height: 11px;
 }

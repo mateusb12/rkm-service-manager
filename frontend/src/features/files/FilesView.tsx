@@ -45,15 +45,19 @@ function formatCategory(category: string): string {
 
 function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void }) {
   const [previewUrl, setPreviewUrl] = useState('');
+  const [previewState, setPreviewState] = useState<'loading' | 'ready' | 'error'>(file.kind === 'Imagem' ? 'loading' : 'error');
 
   useEffect(() => {
     if (file.kind !== 'Imagem') {
       setPreviewUrl('');
+      setPreviewState('error');
       return undefined;
     }
 
     let active = true;
     let objectUrl = '';
+    setPreviewUrl('');
+    setPreviewState('loading');
 
     void fetchFile(file.key)
       .then((blob) => {
@@ -62,7 +66,10 @@ function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void
         setPreviewUrl(objectUrl);
       })
       .catch(() => {
-        if (active) setPreviewUrl('');
+        if (active) {
+          setPreviewUrl('');
+          setPreviewState('error');
+        }
       });
 
     return () => {
@@ -71,7 +78,7 @@ function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void
     };
   }, [file.key, file.kind]);
 
-  if (file.kind === 'Imagem' && previewUrl) {
+  if (file.kind === 'Imagem' && previewUrl && previewState !== 'error') {
     return (
       <button
         type="button"
@@ -79,7 +86,27 @@ function FilePreview({ file, onClick }: { file: FileRecord; onClick?: () => void
         onClick={onClick}
         className="relative h-14 w-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-900 transition hover:border-blue-300/70 hover:ring-2 hover:ring-blue-400/20"
       >
-        <img src={previewUrl} alt={`Preview de ${file.name}`} className="h-full w-full object-cover" />
+        {previewState === 'loading' && <span aria-hidden="true" className="file-preview-skeleton absolute inset-0" />}
+        <img
+          src={previewUrl}
+          alt={`Preview de ${file.name}`}
+          onLoad={() => setPreviewState('ready')}
+          onError={() => setPreviewState('error')}
+          className={`h-full w-full object-cover transition-opacity ${previewState === 'ready' ? 'opacity-100' : 'opacity-0'}`}
+        />
+      </button>
+    );
+  }
+
+  if (file.kind === 'Imagem' && previewState === 'loading') {
+    return (
+      <button
+        type="button"
+        title={`Abrir ${file.name}`}
+        onClick={onClick}
+        className="relative h-14 w-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-white/10 bg-slate-700/70"
+      >
+        <span aria-hidden="true" className="file-preview-skeleton absolute inset-0" />
       </button>
     );
   }
