@@ -4304,6 +4304,27 @@ html:not(.dark) .app-shell .service-entry-delete {
   box-shadow: 0 0 7px rgba(16, 185, 129, 0.24);
 }
 
+/* A restrição de acesso prevalece sobre a cor de etapa concluída. */
+.service-entry-amazon-stepper .service-entry-step.is-role-restricted,
+.service-entry-amazon-stepper .service-entry-step.is-role-restricted.is-done {
+  border-color: rgba(180, 145, 91, 0.48);
+  background: linear-gradient(135deg, rgba(120, 91, 48, 0.17), rgba(35, 32, 29, 0.96));
+  color: #b7a27e;
+  box-shadow: none;
+}
+
+.service-entry-amazon-stepper .service-entry-step.is-role-restricted > span:first-child {
+  border-color: rgba(180, 145, 91, 0.56);
+  background: rgba(120, 91, 48, 0.25);
+  color: #cdb992;
+  box-shadow: none;
+}
+
+.service-entry-amazon-stepper .service-entry-step.is-role-restricted::after {
+  background: #665638;
+  box-shadow: none;
+}
+
 /* ==================================================================
    LARGE DESKTOP
    ================================================================== */
