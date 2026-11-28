@@ -172,6 +172,25 @@ body {
   top: 50%;
   transform: translateY(-50%);
 }
+.service-entry-choice-lock-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: #94a3b8;
+  filter: drop-shadow(0 1px 2px rgb(15 23 42 / 90%));
+}
+.service-entry-choice-lock:disabled button {
+  cursor: not-allowed;
+  border-color: #475569;
+  background: #1e293b;
+  color: #94a3b8;
+  box-shadow: none;
+}
+.service-entry-choice-lock:disabled button[aria-checked='true'] {
+  border-color: #64748b;
+  background: #334155;
+  color: #cbd5e1;
+}
 .lockable-field-icon-left .lockable-field-icon {
   left: 12px;
   right: auto;
