@@ -188,17 +188,6 @@ export const ServiceOrderDisassemblyStep = ({ form, set, addChecklistPhotos, rem
             </div>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {checklist.map((item, index) => {
-                const hasJustification = Boolean(String(item.notes || '').trim());
-                const statusLabel = item.confirmedAt
-                  ? item.status
-                  : item.status === 'Conforme'
-                    ? 'Conforme'
-                    : item.status === 'Não conforme'
-                      ? hasJustification
-                        ? 'Justificativa preenchida'
-                        : 'Justificativa pendente'
-                      : 'Aguardando avaliação';
-
                 return (
                   <div
                     key={item.component}
@@ -210,20 +199,6 @@ export const ServiceOrderDisassemblyStep = ({ form, set, addChecklistPhotos, rem
                         {(!started || legacyAdvanced) && (
                           <Lock size={14} className="text-slate-400" aria-label="Avaliação bloqueada" title="Avaliação bloqueada" />
                         )}
-                      </span>
-                      <span
-                        className={`service-entry-checklist-status ${
-                          item.status === 'Conforme'
-                            ? 'is-compliant'
-                            : item.status === 'Não conforme'
-                              ? hasJustification
-                                ? 'is-justified'
-                                : 'is-pending'
-                              : ''
-                        }`}
-                      >
-                        {item.confirmedAt && <Lock size={12} className="inline mr-1" aria-hidden="true" />}
-                        {statusLabel}
                       </span>
                     </div>
                     {item.confirmedAt && (

@@ -666,6 +666,7 @@ export const ServiceOrderView = () => {
             onInvoiceFileRemove={removeInvoiceFile}
             addPhotos={addPhotos}
             removePhoto={removePhoto}
+            fieldsLocked={Boolean(form.id && progressStep > 0)}
           />
         ) : null}
         {!canEditCurrentStep ? null : step === 1 ? <ServiceOrderIdentificationStep form={form} set={set} /> : null}
@@ -682,8 +683,12 @@ export const ServiceOrderView = () => {
           />
         )}
         {canEditCurrentStep && step === 3 && <ServiceOrderBudgetStep form={form} set={set} highlightMissingStock={highlightMissingStock} />}
-        {canEditCurrentStep && step === 4 && <ServiceOrderRepairStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
-        {canEditCurrentStep && step === 5 && <ServiceOrderDispatchStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} />}
+        {canEditCurrentStep && step === 4 && (
+          <ServiceOrderRepairStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} photosLocked={progressStep > 4} />
+        )}
+        {canEditCurrentStep && step === 5 && (
+          <ServiceOrderDispatchStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} photosLocked={progressStep > 5} />
+        )}
 
         <div className="service-entry-actions service-entry-step-actions">
           <div className="service-entry-action-group">

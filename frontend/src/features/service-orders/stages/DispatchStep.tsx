@@ -1,7 +1,7 @@
 import { Field, TextArea, TextInput } from '../../../shared/ui/form-controls';
 import { ServiceEntryPhotoField, ServiceEntrySection } from './common';
 
-export const ServiceOrderDispatchStep = ({ form, set, addPhotos, removePhoto }) => (
+export const ServiceOrderDispatchStep = ({ form, set, addPhotos, removePhoto, photosLocked = false }) => (
   <ServiceEntrySection title="Entrega" description="Registre como a ordem foi entregue e a confirmação de saída.">
     <Field label="Forma de entrega *">
       <select className="rkm-input zenit-field" value={form.dispatchMethod} onChange={(event) => set('dispatchMethod', event.target.value)}>
@@ -28,6 +28,7 @@ export const ServiceOrderDispatchStep = ({ form, set, addPhotos, removePhoto }) 
         photos={form.photos.dispatch}
         onFiles={(files) => addPhotos('dispatch', files)}
         onRemove={(photo) => removePhoto('dispatch', photo)}
+        locked={photosLocked}
       />
     </div>
   </ServiceEntrySection>

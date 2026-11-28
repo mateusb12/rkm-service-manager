@@ -21,6 +21,7 @@ type ServiceOrderFileUploadProps = {
   showLibrary?: boolean;
   variant?: 'default' | 'checklist';
   readOnly?: boolean;
+  locked?: boolean;
 };
 
 function ServiceOrderFilePreview({ file, previewLabel, documentLabel }) {
@@ -158,15 +159,27 @@ const ServiceOrderExistingFileList = ({ files, label, onSelect, loading }) => (
   </div>
 );
 
-const ServiceOrderFileDropzone = ({ accept, addLabel, addHint, dragging, uploading, onChange, onDragEnter, onDragOver, onDragLeave, onDrop }) => (
+const ServiceOrderFileDropzone = ({
+  accept,
+  addLabel,
+  addHint,
+  dragging,
+  uploading,
+  locked,
+  onChange,
+  onDragEnter,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+}) => (
   <label
-    className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}`}
-    onDragEnter={onDragEnter}
-    onDragOver={onDragOver}
-    onDragLeave={onDragLeave}
-    onDrop={onDrop}
+    className={`service-entry-invoice-card service-entry-invoice-add-card${dragging ? ' is-dragging' : ''}${locked ? ' is-locked' : ''}`}
+    onDragEnter={locked ? undefined : onDragEnter}
+    onDragOver={locked ? undefined : onDragOver}
+    onDragLeave={locked ? undefined : onDragLeave}
+    onDrop={locked ? undefined : onDrop}
   >
-    <input type="file" accept={accept} onChange={onChange} disabled={uploading} />
+    <input type="file" accept={accept} onChange={onChange} disabled={uploading || locked} />
     <span className="service-entry-invoice-add-icon" aria-hidden="true">
       ＋
     </span>
@@ -193,6 +206,7 @@ export function ServiceOrderFileUpload({
   showLibrary = true,
   variant = 'default',
   readOnly = false,
+  locked = false,
 }: ServiceOrderFileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -201,10 +215,10 @@ export function ServiceOrderFileUpload({
   const [editingSelection, setEditingSelection] = useState(false);
   const [selectionMode, setSelectionMode] = useState<FilePickerMode>('upload');
   const selectedFile = file;
-  const showingExistingFiles = !readOnly && showLibrary && selectionMode === 'existing';
+  const showingExistingFiles = !readOnly && !locked && showLibrary && selectionMode === 'existing';
 
   useEffect(() => {
-    if (!showLibrary || readOnly) {
+    if (!showLibrary || readOnly || locked) {
       return undefined;
     }
     let active = true;
@@ -230,10 +244,10 @@ export function ServiceOrderFileUpload({
     return () => {
       active = false;
     };
-  }, [accept, category, readOnly, showLibrary, showingExistingFiles]);
+  }, [accept, category, locked, readOnly, showLibrary, showingExistingFiles]);
 
   const uploadSelectedFile = async (selectedFile?: File) => {
-    if (!selectedFile) return;
+    if (!selectedFile || locked) return;
     setUploading(true);
     try {
       await onUpload(selectedFile);
@@ -265,12 +279,12 @@ export function ServiceOrderFileUpload({
   return (
     <div
       className={`service-entry-photo-field${variant === 'checklist' ? ' service-entry-photo-field-checklist' : ''}`}
-      onDragOverCapture={readOnly ? undefined : dragOverFile}
-      onDropCapture={readOnly ? undefined : dropFile}
+      onDragOverCapture={readOnly || locked ? undefined : dragOverFile}
+      onDropCapture={readOnly || locked ? undefined : dropFile}
     >
       <label className="service-entry-photo-label">{label}</label>
       {hint && <p>{hint}</p>}
-      {showLibrary && !selectedFile && !readOnly && (
+      {showLibrary && !selectedFile && !readOnly && !locked && (
         <ServiceOrderFileSourceToggle
           mode={selectionMode}
           onChange={(mode) => {
@@ -289,13 +303,13 @@ export function ServiceOrderFileUpload({
             <small>{uploadingHint}</small>
           </div>
         </div>
-      ) : selectedFile && (readOnly || !editingSelection) ? (
+      ) : selectedFile && (readOnly || locked || !editingSelection) ? (
         <div className="service-entry-invoice-card service-entry-invoice-selected-card">
           <div className="service-entry-invoice-lock-badge">{selectedBadge}</div>
           <ServiceOrderFilePreview file={selectedFile} previewLabel={label} documentLabel={selectedFile.kind === 'Imagem' ? 'IMG' : 'FILE'} />
           <div className="service-entry-invoice-details">
             <strong title={selectedFile.name}>{selectedFile.name}</strong>
-            {!readOnly && (
+            {!readOnly && !locked && (
               <div>
                 <button
                   type="button"
@@ -345,7 +359,7 @@ export function ServiceOrderFileUpload({
         </div>
       ) : (
         <>
-          {selectedFile && editingSelection && (
+          {selectedFile && editingSelection && !locked && (
             <button type="button" className="service-entry-invoice-cancel-edit" onClick={() => setEditingSelection(false)}>
               Cancelar troca
             </button>
@@ -368,6 +382,7 @@ export function ServiceOrderFileUpload({
               addHint={addHint}
               dragging={dragging}
               uploading={uploading}
+              locked={locked}
               onChange={selectFile}
               onDragEnter={(event) => {
                 event.preventDefault();

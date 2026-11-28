@@ -2,7 +2,7 @@ import { Field, TextInput } from '../../../shared/ui/form-controls';
 import { ClientSelector } from '../../pcp/clients';
 import { ServiceEntryPhotoField, ServiceEntrySection, ServiceOrderInvoiceFileField } from './common';
 
-export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onInvoiceFileRemove, addPhotos, removePhoto }) => (
+export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onInvoiceFileRemove, addPhotos, removePhoto, fieldsLocked = false }) => (
   <>
     <ServiceEntrySection
       title="Recebimento PCP"
@@ -37,6 +37,7 @@ export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onIn
         <div className="md:col-span-3">
           <ServiceOrderInvoiceFileField
             file={form.invoiceFile}
+            locked={fieldsLocked}
             showLibrary={Boolean(form.id)}
             onUpload={onInvoiceFileUpload}
             onDeselect={() => {
@@ -60,6 +61,7 @@ export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onIn
             onFiles={(files) => addPhotos('arrival', files)}
             onRemove={(photo) => removePhoto('arrival', photo)}
             onSelectExisting={(photo) => set('photos', { ...form.photos, arrival: [...form.photos.arrival, photo] })}
+            locked={fieldsLocked}
           />
         </div>
       </ServiceEntrySection>

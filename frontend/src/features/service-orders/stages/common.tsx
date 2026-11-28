@@ -15,7 +15,7 @@ export const ServiceEntrySection = ({ title, description, children, className = 
   </section>
 );
 
-export const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelectExisting, hint }) => {
+export const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, onSelectExisting, hint, locked = false }) => {
   const [previews, setPreviews] = useState({});
   const [loadingPreviews, setLoadingPreviews] = useState({});
   const [failedPreviews, setFailedPreviews] = useState({});
@@ -81,6 +81,7 @@ export const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, 
   };
 
   const selectFiles = async (event) => {
+    if (locked) return;
     const files = Array.from(event.target.files || []);
     registerLocalPreviews(files);
     await onFiles(files);
@@ -110,11 +111,12 @@ export const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, 
           accept="image/*"
           category="recebimento"
           showLibrary
+          locked={locked}
         />
       )}
       {!onSelectExisting && (
-        <label className="service-entry-photo-picker">
-          <input type="file" accept="image/*" capture="environment" multiple onChange={selectFiles} />
+        <label className={`service-entry-photo-picker${locked ? ' is-locked' : ''}`}>
+          <input type="file" accept="image/*" capture="environment" multiple onChange={selectFiles} disabled={locked} />
           <span aria-hidden="true">＋</span>
           <strong>Adicionar foto{photos.length > 0 ? 's' : ''}</strong>
           <small>JPG, PNG ou HEIC · armazenada no sistema</small>
@@ -147,9 +149,11 @@ export const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, 
                   </span>
                 )}
                 <span title={photo.name}>{photo.name}</span>
-                <button type="button" onClick={() => onRemove(photo)}>
-                  Remover
-                </button>
+                {!locked && (
+                  <button type="button" onClick={() => onRemove(photo)}>
+                    Remover
+                  </button>
+                )}
               </div>
             );
           })}
@@ -198,6 +202,11 @@ export const ReadOnlyDatePickerInput = forwardRef(({ value, onClick, placeholder
   />
 ));
 
-export const ServiceOrderInvoiceFileField = (props) => (
-  <ServiceOrderFileUpload {...props} uploadingLabel="Enviando nota fiscal..." uploadingHint="Aguarde enquanto o arquivo é armazenado." />
+export const ServiceOrderInvoiceFileField = ({ locked = false, ...props }) => (
+  <ServiceOrderFileUpload
+    {...props}
+    locked={locked}
+    uploadingLabel="Enviando nota fiscal..."
+    uploadingHint="Aguarde enquanto o arquivo é armazenado."
+  />
 );

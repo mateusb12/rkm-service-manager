@@ -1,7 +1,7 @@
 import { Field, TextArea } from '../../../shared/ui/form-controls';
 import { ServiceEntryPhotoField, ServiceEntrySection } from './common';
 
-export const ServiceOrderRepairStep = ({ form, set, addPhotos, removePhoto }) => (
+export const ServiceOrderRepairStep = ({ form, set, addPhotos, removePhoto, photosLocked = false }) => (
   <ServiceEntrySection title="Reparo" description="Registre o serviço executado e os resultados da validação.">
     <Field label="Serviço executado *" className="md:col-span-3">
       <TextArea
@@ -25,6 +25,7 @@ export const ServiceOrderRepairStep = ({ form, set, addPhotos, removePhoto }) =>
         photos={form.photos.execution}
         onFiles={(files) => addPhotos('execution', files)}
         onRemove={(photo) => removePhoto('execution', photo)}
+        locked={photosLocked}
       />
     </div>
   </ServiceEntrySection>
