@@ -682,7 +682,15 @@ export const ServiceOrderView = () => {
             photoBusy={uploadingChecklist}
           />
         )}
-        {canEditCurrentStep && step === 3 && <ServiceOrderBudgetStep form={form} set={set} highlightMissingStock={highlightMissingStock} />}
+        {canEditCurrentStep && step === 3 && (
+          <ServiceOrderBudgetStep
+            form={form}
+            set={set}
+            highlightMissingStock={highlightMissingStock}
+            saving={saving}
+            onStockReceivedChange={(disassemblyChecklist) => persistEntry(undefined, step, { disassemblyChecklist })}
+          />
+        )}
         {canEditCurrentStep && step === 4 && (
           <ServiceOrderRepairStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} photosLocked={progressStep > 4} />
         )}

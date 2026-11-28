@@ -7,7 +7,7 @@ import { formatPriceCents, formatPriceInput, parsePriceInput } from '../../../ut
 import { ServiceOrderBudgetReport } from '../ServiceOrderBudgetReport';
 import { ServiceEntrySection } from './common';
 
-export const ServiceOrderBudgetStep = ({ form, set, highlightMissingStock }) => {
+export const ServiceOrderBudgetStep = ({ form, set, highlightMissingStock, saving = false, onStockReceivedChange }) => {
   const nonconformingItems = (Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : []).filter(
     (item) => item.status === 'Não conforme',
   );
@@ -60,18 +60,20 @@ export const ServiceOrderBudgetStep = ({ form, set, highlightMissingStock }) => 
 
     return notes.length > 0 ? notes : ['Sem observação informada.'];
   };
-  const updateBudgetLine = (component, lineIndex, changes) => {
+  const updateBudgetLine = (component, lineIndex, changes, persist = false) => {
     const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
-    set(
-      'disassemblyChecklist',
-      checklist.map((item) => {
-        if (item.component !== component) return item;
-        if (component !== 'Vedação') return { ...item, ...changes };
-        const lines = getBudgetLines(item).map((line) => ({ ...line }));
-        lines[lineIndex] = { ...lines[lineIndex], ...changes };
-        return { ...item, budgetItems: lines, budgetItem: '', budgetItemId: null, budgetUnit: '', budgetUnitPriceCents: 0, budgetQuantity: '' };
-      }),
-    );
+    const updatedChecklist = checklist.map((item) => {
+      if (item.component !== component) return item;
+      if (component !== 'Vedação') return { ...item, ...changes };
+      const lines = getBudgetLines(item).map((line) => ({ ...line }));
+      lines[lineIndex] = { ...lines[lineIndex], ...changes };
+      return { ...item, budgetItems: lines, budgetItem: '', budgetItemId: null, budgetUnit: '', budgetUnitPriceCents: 0, budgetQuantity: '' };
+    });
+    if (persist) {
+      void onStockReceivedChange(updatedChecklist);
+      return;
+    }
+    set('disassemblyChecklist', updatedChecklist);
   };
   const addBudgetLine = (component) => {
     const checklist = Array.isArray(form.disassemblyChecklist) ? form.disassemblyChecklist : [];
@@ -310,7 +312,8 @@ export const ServiceOrderBudgetStep = ({ form, set, highlightMissingStock }) => 
                           type="checkbox"
                           className="service-entry-stock-checkbox"
                           checked={Boolean(line.stockReceived)}
-                          onChange={(event) => updateBudgetLine(item.component, lineIndex, { stockReceived: event.target.checked })}
+                          disabled={saving}
+                          onChange={(event) => updateBudgetLine(item.component, lineIndex, { stockReceived: event.target.checked }, true)}
                           aria-label={`Item ${line.budgetItem || 'do orçamento'} chegou na oficina`}
                         />
                       </td>
