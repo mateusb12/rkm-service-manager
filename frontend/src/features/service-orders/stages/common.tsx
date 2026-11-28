@@ -101,6 +101,7 @@ export const ServiceEntryPhotoField = ({ label, photos = [], onFiles, onRemove, 
           onDeselect={() => undefined}
           onDelete={() => undefined}
           onSelectExisting={onSelectExisting}
+          selectedFiles={photos}
           label="Origem das fotos"
           hint="Selecione um arquivo já armazenado ou envie uma nova foto."
           selectedBadge="Foto selecionada"
@@ -206,6 +207,7 @@ export const ServiceOrderInvoiceFileField = ({ locked = false, ...props }) => (
   <ServiceOrderFileUpload
     {...props}
     locked={locked}
+    category="nota_fiscal"
     uploadingLabel="Enviando nota fiscal..."
     uploadingHint="Aguarde enquanto o arquivo é armazenado."
   />

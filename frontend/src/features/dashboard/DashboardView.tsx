@@ -17,7 +17,7 @@ const KPICard = ({ label, value, hint, accent, icon }) => (
   </div>
 );
 
-export const DashboardView = ({ onOpenServiceEntry }) => {
+export const DashboardView = ({ onOpenServiceEntry, userRole = '' }) => {
   const showDevGuides = useLocalDevelopment();
   const [entries, setEntries] = useState([]);
   const [stages, setStages] = useState([]);
@@ -68,12 +68,14 @@ export const DashboardView = ({ onOpenServiceEntry }) => {
           <h1 className="text-xl md:text-2xl font-semibold">Visão geral das OS</h1>
           <p className="operations-description">Acompanhe as ordens cadastradas em Criar ordem de serviço, com status, responsável e etapa atual.</p>
         </div>
-        <div className="operations-actions">
-          <div className="operations-actions-title">Ação rápida</div>
-          <button className="btn btn-primary operations-new" onClick={onOpenServiceEntry}>
-            + Nova OS
-          </button>
-        </div>
+        {userRole !== 'commercial' && (
+          <div className="operations-actions">
+            <div className="operations-actions-title">Ação rápida</div>
+            <button className="btn btn-primary operations-new" onClick={onOpenServiceEntry}>
+              + Nova OS
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

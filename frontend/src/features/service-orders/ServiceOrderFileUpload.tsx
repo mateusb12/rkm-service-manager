@@ -19,6 +19,8 @@ type ServiceOrderFileUploadProps = {
   accept?: string;
   category?: string;
   showLibrary?: boolean;
+  allowDeleteSelected?: boolean;
+  selectedFiles?: Array<Pick<FileRecord, 'id' | 'key'>>;
   variant?: 'default' | 'checklist';
   readOnly?: boolean;
   locked?: boolean;
@@ -122,26 +124,35 @@ const ServiceOrderFileSourceToggle = ({ mode, onChange }) => (
   </div>
 );
 
-const ServiceOrderExistingFileList = ({ files, label, onSelect, loading }) => (
+const ServiceOrderExistingFileList = ({ files, label, onSelect, loading, selectedFiles = [] }) => (
   <div className="service-entry-invoice-library">
-    {files.map((existingFile) => (
-      <div className="service-entry-invoice-card service-entry-invoice-existing-card" key={existingFile.id}>
-        <ServiceOrderFilePreview file={existingFile} previewLabel={label} documentLabel={existingFile.kind === 'Imagem' ? 'IMG' : 'FILE'} />
-        <div className="service-entry-invoice-details">
-          <strong title={existingFile.name}>{existingFile.name}</strong>
-          <small>{existingFile.size}</small>
-          <button
-            type="button"
-            className="service-entry-invoice-select"
-            aria-label={`Usar a foto ${existingFile.name}`}
-            title="Usar esta foto"
-            onClick={() => onSelect(existingFile)}
-          >
-            <CircleCheck size={23} strokeWidth={1.9} aria-hidden="true" />
-          </button>
+    {files.map((existingFile) => {
+      const isAlreadySelected = selectedFiles.some((selectedFile) => selectedFile.id === existingFile.id || selectedFile.key === existingFile.key);
+      return (
+        <div
+          className={`service-entry-invoice-card service-entry-invoice-existing-card${isAlreadySelected ? ' is-already-selected' : ''}`}
+          key={existingFile.id}
+        >
+          {isAlreadySelected && <span className="service-entry-invoice-already-selected">Já selecionada</span>}
+          <ServiceOrderFilePreview file={existingFile} previewLabel={label} documentLabel={existingFile.kind === 'Imagem' ? 'IMG' : 'FILE'} />
+          <div className="service-entry-invoice-details">
+            <strong title={existingFile.name}>{existingFile.name}</strong>
+            <small>{existingFile.size}</small>
+            <button
+              type="button"
+              className={`service-entry-invoice-select${isAlreadySelected ? ' is-selected' : ''}`}
+              aria-label={isAlreadySelected ? `${existingFile.name} já está selecionada` : `Usar a foto ${existingFile.name}`}
+              title={isAlreadySelected ? 'Já adicionada à OS' : 'Usar esta foto'}
+              disabled={isAlreadySelected}
+              onClick={() => onSelect(existingFile)}
+            >
+              <CircleCheck size={23} strokeWidth={1.9} aria-hidden="true" />
+              {isAlreadySelected && <span>Selecionada</span>}
+            </button>
+          </div>
         </div>
-      </div>
-    ))}
+      );
+    })}
     {loading
       ? Array.from({ length: 3 }, (_, index) => (
           <div
@@ -204,6 +215,8 @@ export function ServiceOrderFileUpload({
   accept = '*/*',
   category,
   showLibrary = true,
+  allowDeleteSelected = true,
+  selectedFiles = [],
   variant = 'default',
   readOnly = false,
   locked = false,
@@ -336,19 +349,21 @@ export function ServiceOrderFileUpload({
                 >
                   <X size={19} strokeWidth={2} aria-hidden="true" />
                 </button>
-                <button
-                  type="button"
-                  className="service-entry-invoice-action service-entry-invoice-delete"
-                  aria-label={`Apagar ${selectedFile.name}`}
-                  title="Apagar arquivo"
-                  onClick={() => {
-                    setEditingSelection(false);
-                    setSelectionMode('upload');
-                    onDelete();
-                  }}
-                >
-                  <Trash2 size={18} strokeWidth={1.9} aria-hidden="true" />
-                </button>
+                {allowDeleteSelected && (
+                  <button
+                    type="button"
+                    className="service-entry-invoice-action service-entry-invoice-delete"
+                    aria-label={`Apagar ${selectedFile.name}`}
+                    title="Apagar arquivo"
+                    onClick={() => {
+                      setEditingSelection(false);
+                      setSelectionMode('upload');
+                      onDelete();
+                    }}
+                  >
+                    <Trash2 size={18} strokeWidth={1.9} aria-hidden="true" />
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -369,7 +384,9 @@ export function ServiceOrderFileUpload({
               files={existingFiles}
               label={label}
               loading={loadingExistingFiles}
+              selectedFiles={selectedFiles}
               onSelect={(existingFile) => {
+                if (selectedFiles.some((selectedFile) => selectedFile.id === existingFile.id || selectedFile.key === existingFile.key)) return;
                 onSelectExisting(existingFile);
                 setEditingSelection(false);
                 setSelectionMode('upload');

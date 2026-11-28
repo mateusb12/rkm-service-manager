@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useEffect, useRef, useState } from 'react';
 
-import { ArrowLeft, ArrowRight, Check, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Plus, Save } from 'lucide-react';
 
 import {
   createEmptyServiceEntry,
@@ -21,7 +21,7 @@ import { ServiceOrderStepNavigator } from './ServiceOrderStepNavigator';
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
 import { formatDateLabel, formatLongDateBR } from '../../shared/utils/date';
-import { deleteFile, uploadFile } from '../files/service';
+import { deleteFile, fetchFile, uploadFile } from '../files/service';
 import { ServiceEntrySection } from './stages/common';
 import { SERVICE_ENTRY_ORDER_TYPE_ICONS } from './stages/constants';
 import { ServiceOrderReceptionStep } from './stages/ReceptionStep';
@@ -30,9 +30,15 @@ import { ServiceOrderDisassemblyStep } from './stages/DisassemblyStep';
 import { ServiceOrderBudgetStep } from './stages/BudgetStep';
 import { ServiceOrderRepairStep } from './stages/RepairStep';
 
-export const ServiceOrderView = () => {
+const getFileFingerprint = async (fileOrBlob) => {
+  const digest = await crypto.subtle.digest('SHA-256', await fileOrBlob.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+};
+
+export const ServiceOrderView = ({ userRole = '' }) => {
   const showDevGuides = useLocalDevelopment();
   const [form, setForm] = useState(() => createEmptyServiceEntry());
+  const [invoiceFileIsExisting, setInvoiceFileIsExisting] = useState(false);
   const [entries, setEntries] = useState([]);
   const [stages, setStages] = useState(SERVICE_ENTRY_DEFAULT_STAGES);
   const [loadingEntries, setLoadingEntries] = useState(true);
@@ -100,6 +106,7 @@ export const ServiceOrderView = () => {
 
   const reset = () => {
     setForm(createEmptyServiceEntry());
+    setInvoiceFileIsExisting(false);
     setStep(0);
     setError('');
   };
@@ -114,6 +121,7 @@ export const ServiceOrderView = () => {
     try {
       const uploaded = await uploadFile(file, 'nota_fiscal');
       setForm((prev) => ({ ...prev, invoiceFileId: uploaded.id, invoiceFile: uploaded }));
+      setInvoiceFileIsExisting(false);
       setError('');
     } catch {
       setError('Não foi possível enviar o arquivo da nota fiscal.');
@@ -126,6 +134,7 @@ export const ServiceOrderView = () => {
     try {
       if (file?.key) await deleteFile(file.key);
       setForm((prev) => ({ ...prev, invoiceFileId: null, invoiceFile: null }));
+      setInvoiceFileIsExisting(false);
       setError('');
     } catch {
       setError('Não foi possível remover o arquivo da nota fiscal.');
@@ -215,9 +224,6 @@ export const ServiceOrderView = () => {
       window.dispatchEvent(new Event('service-orders-changed'));
       return true;
     } catch (saveError) {
-      if (form.invoiceFile?.key && form.invoiceFile.key !== previousInvoiceFile?.key) {
-        await deleteFile(form.invoiceFile.key).catch(() => undefined);
-      }
       setError(
         saveError.message === 'service_order_already_exists'
           ? `A ${normalizeOrderNumber(form.orderNumber)} já foi cadastrada.`
@@ -237,6 +243,12 @@ export const ServiceOrderView = () => {
               invalid_assessment: 'Conflito: resultado inválido ou avaliação já confirmada. Reabra a OS.',
               disassembly_stage_required: 'Conflito: abra a etapa Desmontagem antes de iniciar.',
               repair_stage_required: 'Conflito: abra a etapa Reparo antes de alterar a execução.',
+              client_required_or_not_found: 'Selecione um cliente válido antes de salvar a OS.',
+              invoice_file_not_found: 'O arquivo da nota fiscal não foi encontrado. Anexe-o novamente.',
+              validation_failed: 'Algum dado da OS foi rejeitado. Confira os campos e tente novamente.',
+              invalid_json: 'Os dados da OS chegaram em um formato inválido. Tente novamente.',
+              service_order_stage_restricted: 'Seu cargo não pode criar uma OS nesta etapa.',
+              permission_denied: 'Seu cargo não tem permissão para criar uma OS.',
               repair_mechanic_required: 'Selecione e salve o mecânico responsável pelo reparo antes de iniciar.',
               repair_transition_requires_action: 'Conflito: os horários e conclusões são registrados pelo servidor. Reabra a OS.',
               repair_mechanic_already_assigned: 'O mecânico responsável já foi salvo e está bloqueado.',
@@ -251,7 +263,7 @@ export const ServiceOrderView = () => {
             }[saveError.message] ||
               (saveError.message === 'service_order_save_failed'
                 ? 'Não foi possível salvar a OS no servidor.'
-                : `Conflito: ${saveError.message}. Reabra a OS para carregar a versão atual.`),
+                : `Falha ao salvar a OS: ${saveError.message}.`),
       );
       return false;
     } finally {
@@ -274,12 +286,26 @@ export const ServiceOrderView = () => {
   const addPhotos = async (category, files) => {
     try {
       const uploadCategory = category === 'arrival' ? 'recebimento' : category;
-      const uploaded = await Promise.all(files.map((file) => uploadFile(file, uploadCategory)));
+      const currentPhotos = form.photos[category] || [];
+      const existingFingerprints = new Set(
+        await Promise.all(currentPhotos.filter((photo) => photo.key).map(async (photo) => getFileFingerprint(await fetchFile(photo.key)))),
+      );
+      const batchFingerprints = new Set();
+      const uniqueFiles = [];
+      for (const file of files) {
+        const fingerprint = await getFileFingerprint(file);
+        if (existingFingerprints.has(fingerprint) || batchFingerprints.has(fingerprint)) continue;
+        batchFingerprints.add(fingerprint);
+        uniqueFiles.push(file);
+      }
+      if (uniqueFiles.length < files.length) setError('Essa foto já foi adicionada à OS.');
+      if (!uniqueFiles.length) return;
+      const uploaded = await Promise.all(uniqueFiles.map((file) => uploadFile(file, uploadCategory)));
       setForm((prev) => ({
         ...prev,
         photos: { ...prev.photos, [category]: [...(prev.photos[category] || []), ...uploaded] },
       }));
-      setError('');
+      if (uniqueFiles.length === files.length) setError('');
     } catch {
       setError('Não foi possível enviar as fotos para o sistema de arquivos.');
     }
@@ -343,11 +369,10 @@ export const ServiceOrderView = () => {
       return;
     }
     const nextStep = step + 1;
-    const nextStage = stages[nextStep];
-    const canAdvanceToNextStep = nextStep < stages.length && nextStep <= progressStep + 1 && nextStage?.canAdvanceTo !== false;
+    const canAdvanceToNextStep = nextStep < stages.length && nextStep <= progressStep + 1 && currentStep.canAdvanceTo !== false;
     if (await persistEntry(undefined, canAdvanceToNextStep ? nextStep : step)) {
       if (!canAdvanceToNextStep) return;
-      setStep(Math.min(nextStep, visibleProgressStep));
+      setStep(nextStep);
     }
   };
 
@@ -358,6 +383,7 @@ export const ServiceOrderView = () => {
 
   const openEntry = (entry) => {
     setError('');
+    setInvoiceFileIsExisting(false);
     const emptyEntry = createEmptyServiceEntry();
 
     const previousChecklist = Array.isArray(entry.disassemblyChecklist) ? entry.disassemblyChecklist : [];
@@ -449,13 +475,19 @@ export const ServiceOrderView = () => {
         <div className="flex-1 min-w-0">
           <div className="service-entry-kicker">Ciclo operacional · Entrada</div>
 
-          <h1>{form.id ? form.orderNumber : 'Criar ordem de serviço'}</h1>
+          <h1>{form.id ? form.orderNumber : ['mechanic', 'commercial'].includes(userRole) ? 'Ordens de serviço' : 'Criar ordem de serviço'}</h1>
 
-          <p>Registre a entrada da peça ou equipamento e reúna as informações necessárias antes da peritagem.</p>
+          <p>
+            {['mechanic', 'commercial'].includes(userRole) && !form.id
+              ? userRole === 'commercial'
+                ? 'Consulte as ordens de serviço em acompanhamento.'
+                : 'Selecione uma OS existente na tabela para acompanhar ou atualizar.'
+              : 'Registre a entrada da peça ou equipamento e reúna as informações necessárias antes da peritagem.'}
+          </p>
         </div>
 
         <div className="service-entry-hero-controls">
-          {showDevGuides && (
+          {showDevGuides && userRole !== 'mechanic' && (
             <button type="button" className="btn btn-ghost service-entry-demo-fill" onClick={fillDemo}>
               Preencher exemplo DEV
             </button>
@@ -492,8 +524,6 @@ export const ServiceOrderView = () => {
               </div>
             ))}
           </div>
-        ) : entries.length === 0 ? (
-          <div className="service-entry-empty">Nenhuma ordem criada ainda.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="service-entry-table">
@@ -510,6 +540,13 @@ export const ServiceOrderView = () => {
               </thead>
 
               <tbody>
+                {entries.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="service-entry-empty-cell">
+                      Nenhuma ordem criada ainda.
+                    </td>
+                  </tr>
+                )}
                 {entries.slice(0, 8).map((entry) => {
                   const isSelected = form.id === entry.id;
                   const entryStep = Math.max(0, getServiceEntryStageIndex(stages, entry.stage));
@@ -517,12 +554,14 @@ export const ServiceOrderView = () => {
                     <tr
                       key={entry.id}
                       className={isSelected ? 'is-selected' : ''}
-                      tabIndex={0}
+                      tabIndex={userRole === 'commercial' ? undefined : 0}
                       aria-current={isSelected ? 'true' : undefined}
                       onClick={() => {
+                        if (userRole === 'commercial') return;
                         if (!isSelected) openEntry(entry);
                       }}
                       onKeyDown={(event) => {
+                        if (userRole === 'commercial') return;
                         if (event.target !== event.currentTarget) return;
                         if (event.key === 'Enter' || event.key === ' ') {
                           event.preventDefault();
@@ -565,71 +604,95 @@ export const ServiceOrderView = () => {
                         </small>
                       </td>
                       <td>
-                        <div className="service-entry-open-actions">
-                          <button
-                            type="button"
-                            className="btn btn-ghost service-entry-open"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openEntry(entry);
-                            }}
-                            aria-pressed={isSelected}
-                            disabled={isSelected}
-                          >
-                            {isSelected ? 'Selecionada' : 'Abrir OS'}
-                          </button>
-                          {isSelected && (
+                        {userRole === 'commercial' ? (
+                          <span className="text-xs text-slate-500">Somente leitura</span>
+                        ) : (
+                          <div className="service-entry-open-actions">
                             <button
                               type="button"
-                              className="service-entry-deselect"
-                              aria-label={`Desselecionar OS ${entry.orderNumber}`}
-                              title="Desselecionar OS"
+                              className="btn btn-ghost service-entry-open"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                reset();
+                                openEntry(entry);
+                              }}
+                              aria-pressed={isSelected}
+                              disabled={isSelected}
+                            >
+                              {isSelected ? 'Selecionada' : 'Abrir OS'}
+                            </button>
+                            {isSelected && (
+                              <button
+                                type="button"
+                                className="service-entry-deselect"
+                                aria-label={`Desselecionar OS ${entry.orderNumber}`}
+                                title="Desselecionar OS"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  reset();
+                                }}
+                              >
+                                ×
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="service-entry-delete w-9 h-9 !p-0 inline-flex items-center justify-center"
+                              aria-label={`Excluir OS ${entry.orderNumber}`}
+                              title={`Excluir OS ${entry.orderNumber}`}
+                              disabled={deletingOrderId === entry.id}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                deleteEntry(entry);
                               }}
                             >
-                              ×
+                              {deletingOrderId === entry.id ? (
+                                <span aria-hidden="true">…</span>
+                              ) : (
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.8"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M3 6h18" />
+                                  <path d="M8 6V4h8v2" />
+                                  <path d="M7 6l1 14h8l1-14" />
+                                  <path d="M10 10v6" />
+                                  <path d="M14 10v6" />
+                                </svg>
+                              )}
                             </button>
-                          )}
-                          <button
-                            type="button"
-                            className="service-entry-delete w-9 h-9 !p-0 inline-flex items-center justify-center"
-                            aria-label={`Excluir OS ${entry.orderNumber}`}
-                            title={`Excluir OS ${entry.orderNumber}`}
-                            disabled={deletingOrderId === entry.id}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              deleteEntry(entry);
-                            }}
-                          >
-                            {deletingOrderId === entry.id ? (
-                              <span aria-hidden="true">…</span>
-                            ) : (
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                              >
-                                <path d="M3 6h18" />
-                                <path d="M8 6V4h8v2" />
-                                <path d="M7 6l1 14h8l1-14" />
-                                <path d="M10 10v6" />
-                                <path d="M14 10v6" />
-                              </svg>
-                            )}
-                          </button>
-                        </div>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
                 })}
+                {['admin', 'pcp'].includes(userRole) && (
+                  <tr
+                    className="service-entry-add-row"
+                    tabIndex={0}
+                    onClick={reset}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        reset();
+                      }
+                    }}
+                  >
+                    <td colSpan={7}>
+                      <span className="service-entry-add-label">
+                        <Plus size={16} aria-hidden="true" />
+                        Adicionar nova OS
+                      </span>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -656,112 +719,128 @@ export const ServiceOrderView = () => {
         </div>
       )}
 
-      <ServiceOrderStepNavigator stages={stages} step={step} progressStep={progressStep} hasEntry={Boolean(form.id)} onChangeStep={changeStep} />
-
-      <div className="service-entry-step-context">
-        <span>
-          ETAPA {step + 1} DE {stages.length}
-        </span>
-        <strong>{currentStep.label}</strong>
-        <span className="service-entry-step-role-badge">{SERVICE_ENTRY_STAGE_RESPONSIBILITIES[currentStep.id] || '—'}</span>
-      </div>
-
-      <form
-        className="rkm-card service-entry-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          advance();
-        }}
-      >
-        {step === 5 ? (
-          <ServiceEntrySection title="Entrega">
-            <div className="md:col-span-3 py-4 text-lg font-semibold text-slate-100">Hello World</div>
-          </ServiceEntrySection>
-        ) : !canEditCurrentStep ? (
-          <ServiceEntrySection
-            title="Etapa somente para consulta"
-            description="Seu cargo pode acompanhar os dados gerais da OS, mas não pode editar o conteúdo desta etapa."
-          >
-            <div className="md:col-span-3 text-sm text-slate-400">Selecione uma etapa permitida para continuar.</div>
-          </ServiceEntrySection>
-        ) : step === 0 ? (
-          <ServiceOrderReceptionStep
-            form={form}
-            set={set}
-            onInvoiceFileUpload={uploadInvoiceFile}
-            onInvoiceFileRemove={removeInvoiceFile}
-            addPhotos={addPhotos}
-            removePhoto={removePhoto}
-            fieldsLocked={Boolean(form.id && progressStep > 0)}
-          />
-        ) : null}
-        {!canEditCurrentStep ? null : step === 1 ? <ServiceOrderIdentificationStep form={form} set={set} /> : null}
-        {canEditCurrentStep && step === 2 && (
-          <ServiceOrderDisassemblyStep
-            form={form}
-            set={set}
-            addChecklistPhotos={addChecklistPhotos}
-            removeChecklistPhoto={removeChecklistPhoto}
-            onStart={startDisassembly}
-            onAssess={assessComponent}
-            saving={saving}
-            photoBusy={uploadingChecklist}
-          />
-        )}
-        {canEditCurrentStep && step === 3 && (
-          <ServiceOrderBudgetStep
-            form={form}
-            set={set}
-            highlightMissingStock={highlightMissingStock}
-            saving={saving}
-            onStockReceivedChange={(disassemblyChecklist) => persistEntry(undefined, step, { disassemblyChecklist })}
-          />
-        )}
-        {canEditCurrentStep && step === 4 && (
-          <ServiceOrderRepairStep
-            form={form}
-            set={set}
-            stageLocked={progressStep > 4}
-            saving={saving}
-            onSaveMechanic={saveRepairMechanic}
-            onStartRepair={startRepair}
-            onCompleteBudgetLine={completeRepairBudgetLine}
-          />
-        )}
-        <div className="service-entry-actions service-entry-step-actions">
-          <div className="service-entry-action-group">
-            {step > 0 && (
-              <button type="button" className="btn btn-ghost service-entry-action-back" onClick={() => changeStep(step - 1)}>
-                <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
-                Voltar
-              </button>
-            )}
-            <button
-              type="button"
-              className="btn btn-primary service-entry-save service-entry-action-save"
-              disabled={!canEditCurrentStep || saving || uploadingChecklist}
-              onClick={saveProgress}
-            >
-              <Save size={16} strokeWidth={2} aria-hidden="true" />
-              Salvar
-            </button>
-            {canAdvanceCurrentStep && (
-              <button
-                type="submit"
-                disabled={saving || uploadingChecklist}
-                className="btn btn-primary service-entry-advance service-entry-action-advance"
-              >
-                {step === stages.length - 1 ? 'Finalizar OS' : 'Avançar'}
-                {step === stages.length - 1 ? (
-                  <Check size={17} strokeWidth={2.2} aria-hidden="true" />
-                ) : (
-                  <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
-                )}
-              </button>
-            )}
-          </div>
+      {['mechanic', 'commercial'].includes(userRole) && !form.id ? (
+        <div className="rkm-card p-5 text-sm text-slate-400">
+          {userRole === 'commercial'
+            ? 'A listagem acima mostra as OS disponíveis para consulta.'
+            : 'Selecione uma OS existente para acompanhar ou atualizar.'}
         </div>
-      </form>
+      ) : (
+        <>
+          <ServiceOrderStepNavigator stages={stages} step={step} progressStep={progressStep} hasEntry={Boolean(form.id)} onChangeStep={changeStep} />
+
+          <div className="service-entry-step-context">
+            <span>
+              ETAPA {step + 1} DE {stages.length}
+            </span>
+            <strong>{currentStep.label}</strong>
+            <span className="service-entry-step-role-badge">{SERVICE_ENTRY_STAGE_RESPONSIBILITIES[currentStep.id] || '—'}</span>
+          </div>
+
+          <form
+            className="rkm-card service-entry-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              advance();
+            }}
+          >
+            {step === 5 ? (
+              <ServiceEntrySection title="Entrega">
+                <div className="md:col-span-3 py-4 text-lg font-semibold text-slate-100">Hello World</div>
+              </ServiceEntrySection>
+            ) : !canEditCurrentStep ? (
+              <ServiceEntrySection
+                title="Etapa somente para consulta"
+                description="Seu cargo pode acompanhar os dados gerais da OS, mas não pode editar o conteúdo desta etapa."
+              >
+                <div className="md:col-span-3 text-sm text-slate-400">Selecione uma etapa permitida para continuar.</div>
+              </ServiceEntrySection>
+            ) : step === 0 ? (
+              <ServiceOrderReceptionStep
+                form={form}
+                set={set}
+                onInvoiceFileUpload={uploadInvoiceFile}
+                onInvoiceFileRemove={removeInvoiceFile}
+                invoiceFileIsExisting={invoiceFileIsExisting}
+                onInvoiceFileSelectExisting={(existingFile) => {
+                  set('invoiceFileId', existingFile.id);
+                  set('invoiceFile', existingFile);
+                  setInvoiceFileIsExisting(true);
+                }}
+                addPhotos={addPhotos}
+                removePhoto={removePhoto}
+                fieldsLocked={Boolean(form.id && progressStep > 0)}
+              />
+            ) : null}
+            {!canEditCurrentStep ? null : step === 1 ? <ServiceOrderIdentificationStep form={form} set={set} /> : null}
+            {canEditCurrentStep && step === 2 && (
+              <ServiceOrderDisassemblyStep
+                form={form}
+                set={set}
+                addChecklistPhotos={addChecklistPhotos}
+                removeChecklistPhoto={removeChecklistPhoto}
+                onStart={startDisassembly}
+                onAssess={assessComponent}
+                saving={saving}
+                photoBusy={uploadingChecklist}
+              />
+            )}
+            {canEditCurrentStep && step === 3 && (
+              <ServiceOrderBudgetStep
+                form={form}
+                set={set}
+                highlightMissingStock={highlightMissingStock}
+                saving={saving}
+                onStockReceivedChange={(disassemblyChecklist) => persistEntry(undefined, step, { disassemblyChecklist })}
+              />
+            )}
+            {canEditCurrentStep && step === 4 && (
+              <ServiceOrderRepairStep
+                form={form}
+                set={set}
+                stageLocked={progressStep > 4}
+                saving={saving}
+                onSaveMechanic={saveRepairMechanic}
+                onStartRepair={startRepair}
+                onCompleteBudgetLine={completeRepairBudgetLine}
+              />
+            )}
+            <div className="service-entry-actions service-entry-step-actions">
+              <div className="service-entry-action-group">
+                {step > 0 && (
+                  <button type="button" className="btn btn-ghost service-entry-action-back" onClick={() => changeStep(step - 1)}>
+                    <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
+                    Voltar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-primary service-entry-save service-entry-action-save"
+                  disabled={!canEditCurrentStep || saving || uploadingChecklist}
+                  onClick={saveProgress}
+                >
+                  <Save size={16} strokeWidth={2} aria-hidden="true" />
+                  Salvar
+                </button>
+                {canAdvanceCurrentStep && (
+                  <button
+                    type="submit"
+                    disabled={saving || uploadingChecklist}
+                    className="btn btn-primary service-entry-advance service-entry-action-advance"
+                  >
+                    {step === stages.length - 1 ? 'Finalizar OS' : 'Avançar'}
+                    {step === stages.length - 1 ? (
+                      <Check size={17} strokeWidth={2.2} aria-hidden="true" />
+                    ) : (
+                      <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+        </>
+      )}
     </div>
   );
 };

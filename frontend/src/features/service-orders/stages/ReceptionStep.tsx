@@ -2,7 +2,17 @@ import { Field, TextInput } from '../../../shared/ui/form-controls';
 import { ClientSelector } from '../../pcp/clients';
 import { ServiceEntryPhotoField, ServiceEntrySection, ServiceOrderInvoiceFileField } from './common';
 
-export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onInvoiceFileRemove, addPhotos, removePhoto, fieldsLocked = false }) => (
+export const ServiceOrderReceptionStep = ({
+  form,
+  set,
+  onInvoiceFileUpload,
+  onInvoiceFileRemove,
+  onInvoiceFileSelectExisting,
+  invoiceFileIsExisting = false,
+  addPhotos,
+  removePhoto,
+  fieldsLocked = false,
+}) => (
   <>
     <ServiceEntrySection
       title="Recebimento PCP"
@@ -40,17 +50,15 @@ export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onIn
           <ServiceOrderInvoiceFileField
             file={form.invoiceFile}
             locked={fieldsLocked}
-            showLibrary={Boolean(form.id)}
+            showLibrary
+            allowDeleteSelected={!invoiceFileIsExisting}
             onUpload={onInvoiceFileUpload}
             onDeselect={() => {
               set('invoiceFileId', null);
               set('invoiceFile', null);
             }}
             onDelete={onInvoiceFileRemove}
-            onSelectExisting={(existingFile) => {
-              set('invoiceFileId', existingFile.id);
-              set('invoiceFile', existingFile);
-            }}
+            onSelectExisting={onInvoiceFileSelectExisting}
           />
         </div>
       </ServiceEntrySection>

@@ -34,9 +34,7 @@ def can_view_service_order_details(role: str, stage: ServiceOrderStage) -> bool:
 
 
 def can_create_service_order(role: str, stage: ServiceOrderStage) -> bool:
-    return role == "admin" or (
-        role == "mechanic" and stage == MECHANIC_EDITABLE_STAGE
-    ) or (role == "pcp" and stage in INITIAL_STAGES)
+    return role == "admin" or (role == "pcp" and stage in INITIAL_STAGES)
 
 
 def can_update_service_order(
@@ -49,7 +47,10 @@ def can_update_service_order(
     if role == "mechanic":
         if current_stage == MECHANIC_REPAIR_STAGE:
             return target_stage in {MECHANIC_REPAIR_STAGE, ServiceOrderStage.ENTREGA}
-        return current_stage == MECHANIC_EDITABLE_STAGE and target_stage == MECHANIC_EDITABLE_STAGE
+        return current_stage == MECHANIC_EDITABLE_STAGE and target_stage in {
+            MECHANIC_EDITABLE_STAGE,
+            ServiceOrderStage.ORCAMENTO,
+        }
     if role != "pcp":
         return False
     if current_stage in INITIAL_STAGES:

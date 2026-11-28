@@ -26,7 +26,7 @@ export const SIDEBAR_ITEMS = [
     placeholder: true,
     source: 'Serviços → Desmontagem → Criar Ordem',
     description: 'Entrada da peça/equipamento, abertura da OS e identificação inicial.',
-    roles: ['admin', 'mechanic', 'pcp'],
+    roles: ['admin', 'mechanic', 'pcp', 'commercial'],
     icon: 'M4 4h16v16H4zM8 8h8M8 12h8M8 16h5',
   },
   {

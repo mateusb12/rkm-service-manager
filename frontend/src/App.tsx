@@ -698,10 +698,11 @@ const App = () => {
     }
 
     if (view === 'receiving') {
-      return React.createElement(ServiceOrderView);
+      return React.createElement(ServiceOrderView, { userRole: activeRole });
     }
     if (view === 'dashboard') {
       return React.createElement(DashboardView, {
+        userRole: activeRole,
         onOpenServiceEntry: () => navigate('/receiving'),
       });
     }

@@ -53,6 +53,8 @@ def _validated_payload():
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return None, None, None, (jsonify({"error": "invalid_json"}), 400)
+    if payload.get("arrivalMethod") == "":
+        payload["arrivalMethod"] = None
     try:
         data = ServiceOrderInputSchema().load(payload)
     except Exception:

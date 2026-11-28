@@ -63,11 +63,8 @@ export const saveServiceEntry = async (entry, update = Boolean(entry.id)) => {
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    if (response.status === 409) {
-      const body = await response.json().catch(() => ({}));
-      throw new Error(body.error || 'service_order_conflict');
-    }
-    throw new Error('service_order_save_failed');
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || (response.status === 409 ? 'service_order_conflict' : 'service_order_save_failed'));
   }
   return response.json();
 };

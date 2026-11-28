@@ -10,9 +10,9 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 ROLE_PERMISSIONS = {
     "admin": ["*"],
-    "mechanic": ["service.view_assigned", "service.create", "service.edit_assigned", "authorization.request", "dashboard.mybench", "files.view", "files.manage"],
+    "mechanic": ["service.view_assigned", "service.edit_assigned", "authorization.request", "dashboard.mybench", "files.view", "files.manage"],
     "pcp": ["service.view_status", "service.create", "service.update_initial", "service.close_administrative", "dashboard.pcp", "clients.view", "clients.manage", "price_catalog.manage", "files.view", "files.manage"],
-    "commercial": ["dashboard.view"],
+    "commercial": ["dashboard.view", "service.view_status"],
 }
 
 ROLE_LABELS = {"admin": "Admin", "mechanic": "Mecânico", "pcp": "PCP", "commercial": "Comercial"}
