@@ -19,6 +19,15 @@ export const SERVICE_ENTRY_DEFAULT_STAGES = [
   { id: 'entrega', label: 'Entrega', status: 'Em entrega', canView: true },
 ];
 
+export const SERVICE_ENTRY_STAGE_RESPONSIBILITIES = {
+  recebimento: 'PCP',
+  identificacao: 'PCP',
+  desmontagem: 'Mecânico',
+  orcamento: 'Comercial',
+  reparo: 'Mecânico',
+  entrega: 'Comercial',
+};
+
 export const CYLINDER_HEALTH_COMPONENTS = ['Camisa', 'Haste', 'Êmbolo', 'Cabeçote', 'Vedação', 'Articulação'];
 
 export const CYLINDER_OPTIONAL_ITEMS = CYLINDER_HEALTH_COMPONENTS;

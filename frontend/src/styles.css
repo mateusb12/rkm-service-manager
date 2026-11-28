@@ -1916,8 +1916,7 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   background: rgba(15, 23, 42, 0.16);
 }
 
-.service-entry-step-context > span {
-  grid-row: span 2;
+.service-entry-step-context > span:first-child {
   color: #60a5fa;
   font-size: var(--font-xs);
   font-weight: 750;
@@ -1929,9 +1928,17 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   font-size: var(--font-xs);
 }
 
-.service-entry-step-context > small {
-  color: #64748b;
+.service-entry-step-role-badge {
+  grid-column: 2;
+  justify-self: start;
+  padding: 5px 9px;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #bfdbfe;
   font-size: var(--font-xs);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .service-entry-checks {
@@ -3772,6 +3779,12 @@ html:not(.dark) .app-shell .service-entry-step-context {
   background: #f8fbff;
 }
 
+html:not(.dark) .app-shell .service-entry-step-role-badge {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
 html:not(.dark) .app-shell .service-entry-step-context > strong,
 html:not(.dark) .app-shell .service-entry-photo-label,
 html:not(.dark) .app-shell .service-entry-photo-item strong,
@@ -3861,8 +3874,8 @@ html:not(.dark) .app-shell .service-entry-order-type.is-active {
 .service-entry-page .service-entry-hero-status,
 .service-entry-page .service-entry-step > span,
 .service-entry-page .service-entry-step strong,
-.service-entry-page .service-entry-step-context > span,
-.service-entry-page .service-entry-step-context > small,
+.service-entry-page .service-entry-step-context > span:first-child,
+.service-entry-page .service-entry-step-role-badge,
 .service-entry-page .service-entry-blocked,
 .service-entry-page .service-entry-photo-field > p,
 .service-entry-page .service-entry-photo-picker,

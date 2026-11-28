@@ -11,6 +11,7 @@ import {
   normalizeCylinderComponent,
   normalizeCylinderComponents,
   SERVICE_ENTRY_DEFAULT_STAGES,
+  SERVICE_ENTRY_STAGE_RESPONSIBILITIES,
 } from './model';
 import { deleteServiceEntry, loadServiceEntries, loadServiceEntryStages, saveServiceEntry } from './service';
 import { deleteServiceEntryPhoto } from './photo-storage';
@@ -662,11 +663,7 @@ export const ServiceOrderView = () => {
           ETAPA {step + 1} DE {stages.length}
         </span>
         <strong>{currentStep.label}</strong>
-        <small>
-          {form.id
-            ? `${form.orderNumber} · ${form.status || currentStep.status}`
-            : 'Salve a primeira etapa para abrir a OS e continuar o acompanhamento.'}
-        </small>
+        <span className="service-entry-step-role-badge">{SERVICE_ENTRY_STAGE_RESPONSIBILITIES[currentStep.id] || '—'}</span>
       </div>
 
       <form
