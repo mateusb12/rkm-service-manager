@@ -64,12 +64,14 @@ export const ServiceOrderIdentificationStep = ({ form, set }) => {
               className="md:col-span-3"
               hint="Marque os componentes existentes. Eles serão avaliados na desmontagem."
             >
-              <MultiSelectCheckboxes
-                values={form.cylinderOptionalItems}
-                onChange={(value) => set('cylinderOptionalItems', value)}
-                options={CYLINDER_OPTIONAL_ITEMS}
-                className="cylinder-optional-items"
-              />
+              <LockableField locked={locked} showIcon={false} className="service-entry-choice-lock">
+                <MultiSelectCheckboxes
+                  values={form.cylinderOptionalItems}
+                  onChange={(value) => set('cylinderOptionalItems', value)}
+                  options={CYLINDER_OPTIONAL_ITEMS}
+                  className="cylinder-optional-items"
+                />
+              </LockableField>
             </Field>
           </>
         )}

@@ -191,6 +191,20 @@ body {
   background: #334155;
   color: #cbd5e1;
 }
+.service-entry-choice-lock:disabled .rkm-check {
+  border-color: #475569;
+  background: #1e293b;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+.service-entry-choice-lock:disabled .rkm-check.checked {
+  border-color: #64748b;
+  background: #334155;
+  color: #cbd5e1;
+}
+.service-entry-choice-lock:disabled .rkm-check input {
+  cursor: not-allowed;
+}
 .lockable-field-icon-left .lockable-field-icon {
   left: 12px;
   right: auto;
