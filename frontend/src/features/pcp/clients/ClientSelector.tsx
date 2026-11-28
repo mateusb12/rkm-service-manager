@@ -7,6 +7,7 @@ type Props = {
   value: string;
   onSelect: (client: Client) => void;
   onClear: () => void;
+  disabled?: boolean;
 };
 
 const SEARCH_DEBOUNCE_MS = 250;
@@ -17,7 +18,7 @@ function getClientDisplayName(client: Client): string {
   return client.nomeFantasia || client.razaoSocial;
 }
 
-export function ClientSelector({ value, onSelect, onClear }: Props) {
+export function ClientSelector({ value, onSelect, onClear, disabled = false }: Props) {
   const listboxId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +39,14 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
       setSelectedClient(null);
     }
   }, [selectedClientMatchesValue]);
+
+  useEffect(() => {
+    if (!disabled) return;
+    setComboboxOpen(false);
+    setSearchTerm('');
+    setClientResults([]);
+    setActiveResultIndex(-1);
+  }, [disabled]);
 
   useEffect(() => {
     function handleOutsideMouseDown(event: MouseEvent) {
@@ -247,11 +256,12 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
           aria-activedescendant={activeResult ? `${listboxId}-option-${activeResult.id}` : undefined}
           className="rkm-input zenit-field !pl-10 !pr-20"
           value={displayedValue}
-          onFocus={openCombobox}
+          onFocus={disabled ? undefined : openCombobox}
           onChange={changeSearchTerm}
           onKeyDown={handleKeyboard}
           placeholder="CNPJ, razão social ou nome fantasia"
           autoComplete="off"
+          disabled={disabled}
         />
 
         <div className="absolute inset-y-0 right-2 flex items-center gap-1">
@@ -259,6 +269,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
             <button
               type="button"
               className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-700/50 hover:text-slate-100"
+              disabled={disabled}
               aria-label="Limpar cliente selecionado"
               title="Limpar cliente"
               onMouseDown={(event) => event.preventDefault()}
@@ -271,6 +282,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
           <button
             type="button"
             className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-700/50 hover:text-slate-100"
+            disabled={disabled}
             aria-label={comboboxOpen ? 'Fechar lista de clientes' : 'Abrir lista de clientes'}
             aria-expanded={comboboxOpen}
             onMouseDown={(event) => event.preventDefault()}
@@ -302,7 +314,7 @@ export function ClientSelector({ value, onSelect, onClear }: Props) {
 
       {selectedClientDescription && <p className="mt-1.5 truncate text-xs text-slate-500">{selectedClientDescription}</p>}
 
-      {comboboxOpen && (
+      {comboboxOpen && !disabled && (
         <div
           id={listboxId}
           role="listbox"

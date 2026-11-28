@@ -11,6 +11,7 @@ export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onIn
       <Field label="Cliente" required className="md:col-span-2">
         <ClientSelector
           value={form.client}
+          disabled={fieldsLocked}
           onSelect={(client) => {
             set('client', client.nomeFantasia);
             set('clientId', client.id);
@@ -32,6 +33,7 @@ export const ServiceOrderReceptionStep = ({ form, set, onInvoiceFileUpload, onIn
             value={form.invoiceNumber}
             onChange={(value) => set('invoiceNumber', value)}
             placeholder="Número da NF, N/A ou deixe em branco"
+            disabled={fieldsLocked}
           />
         </Field>
         <div className="md:col-span-3">
