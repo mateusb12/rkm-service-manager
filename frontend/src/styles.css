@@ -2874,6 +2874,117 @@ html:not(.dark) .app-shell .bench-actions-menu button:hover {
   min-height: 124px;
 }
 
+.service-entry-repair-group {
+  min-width: 0;
+}
+
+.service-entry-repair-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.service-entry-repair-groups.is-locked .service-entry-repair-list {
+  border-color: rgba(100, 116, 139, 0.18);
+  background: rgba(2, 6, 23, 0.3);
+}
+
+.service-entry-repair-groups.is-locked .service-entry-repair-task-name strong {
+  color: #bac7d8;
+}
+
+.service-entry-repair-groups.is-locked .service-entry-repair-quantity {
+  color: #94a3b8;
+}
+
+.service-entry-repair-groups.is-locked .service-entry-repair-task input {
+  opacity: 0.55;
+}
+
+.service-entry-repair-list {
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.24);
+}
+
+.service-entry-repair-task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 11px 13px;
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.service-entry-repair-task + .service-entry-repair-task {
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.service-entry-repair-task:has(input:disabled) {
+  cursor: default;
+}
+
+.service-entry-repair-task input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #38bdf8;
+}
+
+.service-entry-repair-task-name {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.service-entry-repair-task-name strong {
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.service-entry-repair-task-name small {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.service-entry-repair-completion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service-entry-repair-completion-date {
+  white-space: nowrap;
+}
+
+.service-entry-repair-quantity {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 76px;
+  margin-left: auto;
+  color: #cbd5e1;
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.service-entry-repair-task.is-complete {
+  background: rgba(16, 185, 129, 0.08);
+}
+
 .service-entry-checklist-progress,
 .service-entry-checklist-status {
   display: inline-flex;

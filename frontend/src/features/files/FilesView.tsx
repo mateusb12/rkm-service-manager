@@ -16,7 +16,7 @@ import {
 
 import { CrudTable } from '../../shared/ui/CrudTable';
 import { RainbowBadge } from '../../shared/ui/RainbowBadge';
-import { formatLongDateTimeBR } from '../../utils/formatLongDateTimeBR';
+import { formatLongDateTimeBR } from '../../shared/utils/date';
 import { deleteFile, fetchFile, getStorageHealth, listFiles, uploadFile, type FileRecord, type FileKind } from './service';
 
 const KIND_OPTIONS = ['Todos', 'PDF', 'Imagem', 'Planilha', 'Documento'];

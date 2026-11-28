@@ -14,10 +14,6 @@ const REQUIRED_FIELDS_BY_STAGE = {
   ],
   2: [['disassemblyOperator', 'Responsável pela desmontagem']],
   3: [],
-  4: [
-    ['workPerformed', 'Serviço executado'],
-    ['testResult', 'Resultado dos testes'],
-  ],
   5: [['dispatchMethod', 'Forma de entrega']],
 };
 
@@ -45,13 +41,6 @@ export const getMissingServiceEntryFields = (form, stageIndex) => {
       missing.push('pelo menos 1 item de orçamento');
     } else if (budgetLines.some((line) => !line.stockReceived)) {
       missing.push('estoque de todos os itens do orçamento');
-    }
-  }
-
-  if (stageIndex === 4) {
-    if (form.testResult !== 'Aprovado') missing.push('teste aprovado');
-    if ((form.photos.execution || []).length === 0) {
-      missing.push('evidência fotográfica da execução/teste');
     }
   }
 

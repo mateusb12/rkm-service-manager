@@ -11,6 +11,8 @@ from features.service_orders.model import ServiceOrder
 
 @pytest.fixture
 def service_orders_client(tmp_path, monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setitem(app.config, "DATABASE_URL", "")
     monkeypatch.setitem(app.config, "DB_PATH", str(tmp_path / "service-orders.db"))
     monkeypatch.setitem(app.config, "APP_ENV", "development")
     monkeypatch.setenv("AUTH_JWT_SECRET", "test-secret-with-at-least-32-bytes")
@@ -220,8 +222,8 @@ def test_stage_catalog_exposes_role_capabilities(service_orders_client):
     )
     assert mechanic.status_code == 200
     assert [stage["canView"] for stage in mechanic.json] == [False, False, True, True, True, True]
-    assert [stage["canEdit"] for stage in mechanic.json] == [False, False, True, False, False, False]
-    assert [stage["canComplete"] for stage in mechanic.json] == [False, False, True, False, False, False]
+    assert [stage["canEdit"] for stage in mechanic.json] == [False, False, True, False, True, False]
+    assert [stage["canComplete"] for stage in mechanic.json] == [False, False, True, False, True, False]
 
 
 def test_service_order_updates_without_changing_identity(service_orders_client):
@@ -449,6 +451,30 @@ def _prepared(order):
             "cylinderRodDiameter": "50"}
 
 
+def _repair_order(client, number, checklist_item=None):
+    response = client.post(
+        "/service-orders",
+        headers=login(client, "admin@rkm.com.br"),
+        json={
+            **order_payload(number),
+            "orderType": "Acumulador",
+            "stage": "reparo",
+            "status": "Em reparo",
+            "disassemblyChecklist": [checklist_item or {
+                    "component": "Haste",
+                    "status": "Não conforme",
+                    "budgetItem": "Usinagem da haste",
+                    "budgetUnit": "h",
+                    "budgetQuantity": "2",
+                    "budgetUnitPriceCents": 5000,
+                    "stockReceived": False,
+                }],
+        },
+    )
+    assert response.status_code == 201
+    return response.json
+
+
 def test_disassembly_start_requires_dimensions_and_is_server_owned(service_orders_client):
     client = service_orders_client
     headers = login(client)
@@ -466,7 +492,7 @@ def test_disassembly_start_requires_dimensions_and_is_server_owned(service_order
     assert duplicate.json["error"] == "disassembly_already_started"
 
 
-def test_disassembly_assessment_confirmation_conflicts_and_budget_fields(service_orders_client):
+def test_disassembly_assessment_locks_result_and_preserves_budget_fields(service_orders_client):
     client = service_orders_client
     headers = login(client)
     order = _new_cylinder(client, headers, "30992")
@@ -480,54 +506,51 @@ def test_disassembly_assessment_confirmation_conflicts_and_budget_fields(service
     first = _put_order(client, headers, started, disassemblyAction="assess", disassemblyIndex=0,
                        disassemblyChecklist=[{**started["disassemblyChecklist"][0], "status": "Conforme"}, started["disassemblyChecklist"][1]])
     assert first.status_code == 200
-    first_at = first.json["disassemblyChecklist"][0]["firstAssessedAt"]
-    changed = _put_order(client, headers, first.json, disassemblyAction="assess", disassemblyIndex=0,
-                         disassemblyChecklist=[{**first.json["disassemblyChecklist"][0], "status": "Não conforme", "notes": "Risco"}, first.json["disassemblyChecklist"][1]])
-    assert changed.status_code == 200
-    assert changed.json["disassemblyChecklist"][0]["firstAssessedAt"] == first_at
-    stale = _put_order(client, headers, first.json, disassemblyAction="confirm", disassemblyIndex=0)
+    stale = _put_order(client, headers, started, disassemblyAction="assess", disassemblyIndex=0,
+                       disassemblyChecklist=[{**started["disassemblyChecklist"][0], "status": "Conforme"}, started["disassemblyChecklist"][1]])
     assert stale.status_code == 409
     assert stale.json["error"] == "stale_service_order"
-    confirmed = _put_order(client, headers, changed.json, disassemblyAction="confirm", disassemblyIndex=0)
-    assert confirmed.status_code == 200
-    item = confirmed.json["disassemblyChecklist"][0]
+    item = first.json["disassemblyChecklist"][0]
     assert item["confirmedBy"]["id"]
     assert item["confirmedAt"].endswith("+00:00")
-    assert not confirmed.json["disassemblyComplete"]
-    tampered = _put_order(client, headers, confirmed.json, disassemblyChecklist=[
-        {**item, "notes": "Alteração indevida"}, confirmed.json["disassemblyChecklist"][1]])
+    assert not first.json["disassemblyComplete"]
+    tampered = _put_order(client, headers, first.json, disassemblyAction="assess", disassemblyIndex=0,
+                          disassemblyChecklist=[{**item, "status": "Não conforme"}, first.json["disassemblyChecklist"][1]])
     assert tampered.status_code == 409
     assert tampered.json["error"] == "confirmed_evaluation_locked"
-    assert _put_order(client, headers, confirmed.json, orderType="Acumulador").status_code == 409
-    commercial = _put_order(client, headers, confirmed.json, disassemblyChecklist=[
-        {**item, "budgetItem": "Haste nova", "budgetQuantity": "1"}, confirmed.json["disassemblyChecklist"][1]])
+    assert _put_order(client, headers, first.json, orderType="Acumulador").status_code == 409
+    commercial = _put_order(client, headers, first.json, disassemblyChecklist=[
+        {**item, "budgetItem": "Haste nova", "budgetQuantity": "1"}, first.json["disassemblyChecklist"][1]])
     assert commercial.status_code == 200
     assert commercial.json["disassemblyChecklist"][0]["budgetItem"] == "Haste nova"
     reloaded = client.get(f"/service-orders/{order['id']}", headers=headers)
     assert reloaded.json["disassemblyChecklist"][0]["confirmedAt"] == item["confirmedAt"]
 
 
-def test_last_confirmation_finishes_without_advancing_and_requires_justification(service_orders_client):
+def test_last_assessment_finishes_checklist_and_advance_requires_justification(service_orders_client):
     client = service_orders_client
     headers = login(client)
     order = _new_cylinder(client, headers, "30993", ["Vedação"])
     started = _put_order(client, headers, _prepared(order), disassemblyAction="start").json
-    draft = _put_order(client, headers, started, disassemblyAction="assess", disassemblyIndex=0,
-                       disassemblyChecklist=[{**started["disassemblyChecklist"][0], "status": "Não conforme"}]).json
-    rejected = _put_order(client, headers, draft, disassemblyAction="confirm", disassemblyIndex=0)
+    assessed = _put_order(client, headers, started, disassemblyAction="assess", disassemblyIndex=0,
+                          disassemblyChecklist=[{**started["disassemblyChecklist"][0], "status": "Não conforme"}])
+    assert assessed.status_code == 200
+    assert assessed.json["disassemblyComplete"] is True
+    assert assessed.json["disassemblyEndedAt"].endswith("+00:00")
+    assert assessed.json["stage"] == "desmontagem"
+    admin = login(client, "admin@rkm.com.br")
+    rejected = _put_order(client, admin, assessed.json, stage="orcamento")
     assert rejected.status_code == 409
     assert rejected.json["error"] == "justification_required"
-    confirmed = _put_order(client, headers, draft, disassemblyAction="confirm", disassemblyIndex=0,
-                           disassemblyChecklist=[{**draft["disassemblyChecklist"][0], "notes": "Vazamento"}])
+    confirmed = _put_order(client, admin, assessed.json, stage="orcamento",
+                           disassemblyChecklist=[{**assessed.json["disassemblyChecklist"][0], "notes": "Vazamento"}])
     assert confirmed.status_code == 200
     assert confirmed.json["disassemblyComplete"] is True
     assert confirmed.json["disassemblyEndedAt"].endswith("+00:00")
-    assert confirmed.json["stage"] == "desmontagem"
-    assert _put_order(client, headers, confirmed.json, disassemblyAction="confirm", disassemblyIndex=0).status_code == 409
-    admin = login(client, "admin@rkm.com.br")
-    budget = _put_order(client, admin, confirmed.json, stage="orcamento", disassemblyChecklist=[
+    assert confirmed.json["stage"] == "orcamento"
+    budget = _put_order(client, admin, confirmed.json, disassemblyChecklist=[
         {**confirmed.json["disassemblyChecklist"][0], "budgetItem": "Jogo de vedações", "budgetQuantity": "1"}])
-    assert budget.status_code == 200
+    assert budget.status_code == 200, budget.json
     assert budget.json["disassemblyChecklist"][0]["budgetItem"] == "Jogo de vedações"
     assert budget.json["disassemblyChecklist"][0]["confirmedAt"] == confirmed.json["disassemblyChecklist"][0]["confirmedAt"]
     stale_after_advance = _put_order(client, headers, confirmed.json, disassemblyNotes="Formulário antigo")
@@ -565,11 +588,10 @@ def test_confirmed_photo_cannot_be_deleted_directly(service_orders_client):
         database.close()
     order = _new_cylinder(client, headers, "30996", ["Haste"])
     started = _put_order(client, headers, _prepared(order), disassemblyAction="start").json
-    draft = _put_order(client, headers, started, disassemblyAction="assess", disassemblyIndex=0,
-                       disassemblyChecklist=[{**started["disassemblyChecklist"][0], "status": "Conforme"}]).json
-    confirmed = _put_order(client, headers, draft, disassemblyAction="confirm", disassemblyIndex=0,
-                           photos={**draft.get("photos", {}), "disassemblyChecklist-0": [{"id": "f-confirmed", "key": "files/confirmed.jpg"}]})
-    assert confirmed.status_code == 200
+    confirmed = _put_order(client, headers, started, disassemblyAction="assess", disassemblyIndex=0,
+                           disassemblyChecklist=[{**started["disassemblyChecklist"][0], "status": "Conforme"}],
+                           photos={**started.get("photos", {}), "disassemblyChecklist-0": [{"id": "f-confirmed", "key": "files/confirmed.jpg"}]})
+    assert confirmed.status_code == 200, confirmed.json
     delete = client.delete("/files/files/confirmed.jpg", headers=headers)
     assert delete.status_code == 409
     assert delete.json["error"] == "confirmed_evidence_locked"
@@ -583,7 +605,7 @@ def test_pcp_cannot_start_or_confirm_disassembly(service_orders_client):
     attempted = _put_order(client, pcp, _prepared(order), disassemblyAction="start")
     assert attempted.status_code == 403
     started = _put_order(client, admin, _prepared(order), disassemblyAction="start").json
-    attempted = _put_order(client, pcp, started, disassemblyAction="confirm", disassemblyIndex=0)
+    attempted = _put_order(client, pcp, started, disassemblyAction="assess", disassemblyIndex=0)
     assert attempted.status_code == 403
 
 
@@ -605,10 +627,9 @@ def test_legacy_in_disassembly_requires_explicit_new_start_without_inventing_ass
     assert started.json["disassemblyStartedAt"].endswith("+00:00")
     assert started.json["disassemblyStartedAt"] != "2025-01-02T10:00"
     assert started.json["disassemblyChecklist"][0].get("firstAssessedAt") is None
-    rejected = _put_order(client, headers, started.json, disassemblyAction="confirm", disassemblyIndex=0)
-    assert rejected.status_code == 409
-    reassessed = _put_order(client, headers, started.json, disassemblyAction="assess", disassemblyIndex=0)
-    assert reassessed.status_code == 200
+    reassessed = _put_order(client, headers, started.json, disassemblyAction="assess", disassemblyIndex=0,
+                            disassemblyChecklist=[{**started.json["disassemblyChecklist"][0], "status": "Conforme"}])
+    assert reassessed.status_code == 200, reassessed.json
     assert reassessed.json["disassemblyChecklist"][0]["firstAssessedAt"].endswith("+00:00")
 
 
@@ -619,10 +640,8 @@ def test_conforming_component_can_be_confirmed_immediately_after_assessment(serv
     started = _put_order(client, headers, _prepared(order), disassemblyAction="start").json
     assessed = _put_order(client, headers, started, disassemblyAction="assess", disassemblyIndex=0,
                           disassemblyChecklist=[{**started["disassemblyChecklist"][0], "status": "Conforme"}]).json
-    confirmed = _put_order(client, headers, assessed, disassemblyAction="confirm", disassemblyIndex=0)
-    assert confirmed.status_code == 200
-    assert confirmed.json["disassemblyChecklist"][0]["confirmedAt"]
-    assert confirmed.json["disassemblyComplete"] is True
+    assert assessed["disassemblyChecklist"][0]["confirmedAt"]
+    assert assessed["disassemblyComplete"] is True
 
 
 def test_mechanic_updates_preserve_receiving_fields_and_photos(service_orders_client):
@@ -640,3 +659,124 @@ def test_mechanic_updates_preserve_receiving_fields_and_photos(service_orders_cl
     reloaded = client.get(f"/service-orders/{order['id']}", headers=admin).json
     assert reloaded["receivedBy"] == "Recebimento RKM"
     assert reloaded["photos"]["arrival"] == [{"id": "arrival-photo"}]
+
+
+def test_repair_assignment_start_and_completion_advance_order(service_orders_client):
+    client = service_orders_client
+    mechanic = login(client)
+    order = _repair_order(client, "31001")
+
+    assigned = _put_order(
+        client,
+        mechanic,
+        order,
+        repairMechanic="Mecânico RKM",
+        repairAction="assign_mechanic",
+    )
+    assert assigned.status_code == 200
+    assert assigned.json["repairMechanicAssignedAt"].endswith("+00:00")
+    assert assigned.json["repairMechanicAssignedBy"]["id"]
+
+    started = _put_order(client, mechanic, assigned.json, repairAction="start")
+    assert started.status_code == 200
+    assert started.json["repairStartedAt"].endswith("+00:00")
+    assert started.json["repairTimingVersion"] == 1
+
+    stale_start = _put_order(client, mechanic, assigned.json, repairAction="start")
+    assert stale_start.status_code == 409
+    assert stale_start.json["error"] == "stale_service_order"
+
+    completed = _put_order(
+        client,
+        mechanic,
+        started.json,
+        repairAction="complete_item",
+        repairComponent="Haste",
+        repairLineIndex=0,
+    )
+    assert completed.status_code == 200
+    assert completed.json["stage"] == "entrega"
+    assert completed.json["status"] == "Em entrega"
+    line = completed.json["disassemblyChecklist"][0]
+    assert line["repairCompletedAt"].endswith("+00:00")
+    assert line["repairCompletedBy"]["id"]
+
+
+def test_repair_locks_server_timestamps_and_budget_after_start(service_orders_client):
+    client = service_orders_client
+    mechanic = login(client)
+    order = _repair_order(client, "31002")
+
+    forged = _put_order(
+        client,
+        mechanic,
+        order,
+        repairMechanicAssignedAt="2026-01-01T12:00:00+00:00",
+    )
+    assert forged.status_code == 409
+    assert forged.json["error"] == "repair_transition_requires_action"
+
+    assigned = _put_order(
+        client,
+        mechanic,
+        order,
+        repairMechanic="Mecânico RKM",
+        repairAction="assign_mechanic",
+    ).json
+    started = _put_order(client, mechanic, assigned, repairAction="start").json
+    changed_budget = [
+        {**started["disassemblyChecklist"][0], "budgetItem": "Outra usinagem"}
+    ]
+    rejected = _put_order(client, mechanic, started, disassemblyChecklist=changed_budget)
+    assert rejected.status_code == 409
+    assert rejected.json["error"] == "repair_budget_locked"
+
+
+def test_seal_repair_advances_after_every_budget_line_is_completed(service_orders_client):
+    client = service_orders_client
+    mechanic = login(client)
+    order = _repair_order(
+        client,
+        "31003",
+        {
+            "component": "Vedação",
+            "status": "Não conforme",
+            "budgetItems": [
+                {"budgetItem": "Vedação da haste", "budgetUnit": "un", "budgetQuantity": "1"},
+                {"budgetItem": "Vedação do pistão", "budgetUnit": "un", "budgetQuantity": "2"},
+            ],
+        },
+    )
+    assigned = _put_order(
+        client,
+        mechanic,
+        order,
+        repairMechanic="Mecânico RKM",
+        repairAction="assign_mechanic",
+    ).json
+    started = _put_order(client, mechanic, assigned, repairAction="start").json
+
+    first_line = _put_order(
+        client,
+        mechanic,
+        started,
+        repairAction="complete_item",
+        repairComponent="Vedação",
+        repairLineIndex=0,
+    )
+    assert first_line.status_code == 200
+    assert first_line.json["stage"] == "reparo"
+    assert first_line.json["disassemblyChecklist"][0]["budgetItems"][0]["repairCompletedAt"]
+    assert first_line.json["disassemblyChecklist"][0]["budgetItems"][1].get("repairCompletedAt") is None
+
+    last_line = _put_order(
+        client,
+        mechanic,
+        first_line.json,
+        repairAction="complete_item",
+        repairComponent="Vedação",
+        repairLineIndex=1,
+    )
+    assert last_line.status_code == 200
+    assert last_line.json["stage"] == "entrega"
+    assert all(line["repairCompletedAt"] for line in last_line.json["disassemblyChecklist"][0]["budgetItems"])

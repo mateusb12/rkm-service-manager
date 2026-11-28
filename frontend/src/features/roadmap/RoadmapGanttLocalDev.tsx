@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Tooltip } from '../../Tooltip';
+import { formatMonthAbbreviationBR } from '../../shared/utils/date';
 import { ROADMAP } from './roadmap-data';
 
 type PhaseKind = 'v0' | 'v1' | 'v2' | 'v3' | 'v4' | 'manutencao';
@@ -24,15 +25,13 @@ const V0_DEADLINE_INSTALLMENT = 2;
 // Referência visual: primeira parcela em outubro de 2026.
 const FIRST_MONTH = new Date(2026, 9, 1);
 
-const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
 const SCHEDULE_MONTHS = INSTALLMENTS.map((installment) => {
   const date = new Date(FIRST_MONTH.getFullYear(), FIRST_MONTH.getMonth() + installment - 1, 1);
 
   return {
     installment,
     year: date.getFullYear(),
-    month: MONTH_NAMES[date.getMonth()],
+    month: formatMonthAbbreviationBR(date),
   };
 });
 

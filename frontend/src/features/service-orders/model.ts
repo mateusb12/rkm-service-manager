@@ -64,6 +64,36 @@ export const createEmptyDisassemblyChecklist = (components = []) =>
     budgetItems: [],
   }));
 
+export const getServiceOrderBudgetLines = (item) => {
+  const emptyLine = {
+    budgetItem: '',
+    budgetItemId: null,
+    budgetUnit: '',
+    budgetUnitPriceCents: 0,
+    budgetQuantity: '',
+    stockReceived: false,
+  };
+
+  if (item.component === 'Vedação') {
+    if (Array.isArray(item.budgetItems) && item.budgetItems.length > 0) return item.budgetItems;
+    return item.budgetItem ? [{ ...emptyLine, ...item }] : [{ ...emptyLine }];
+  }
+
+  return [
+    {
+      ...emptyLine,
+      budgetItem: item.budgetItem || '',
+      budgetItemId: item.budgetItemId || null,
+      budgetUnit: item.budgetUnit || '',
+      budgetUnitPriceCents: item.budgetUnitPriceCents || 0,
+      budgetQuantity: item.budgetQuantity || '',
+      stockReceived: Boolean(item.stockReceived),
+      repairCompletedAt: item.repairCompletedAt || null,
+      repairCompletedBy: item.repairCompletedBy || null,
+    },
+  ];
+};
+
 export const createEmptyServiceEntry = () => ({
   orderType: '',
   orderNumber: generateOrderNumber(),
@@ -107,6 +137,12 @@ export const createEmptyServiceEntry = () => ({
   disassemblyEndedAt: '',
   disassemblyComplete: false,
   disassemblyControlled: false,
+  repairMechanic: '',
+  repairMechanicAssignedAt: '',
+  repairMechanicAssignedBy: null,
+  repairStartedAt: '',
+  repairTimingVersion: 0,
+  repairCompletedAt: '',
   partsSeparated: false,
   oilCollected: false,
   disassemblyNotes: '',

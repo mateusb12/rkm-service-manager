@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Tooltip } from '../../../Tooltip';
-import { formatCommitDate } from '../../../utils/formatCommitDate';
+import { formatCommitDate } from '../../../shared/utils/date';
 
 import { BUILD_COMMIT, BUILD_COMMIT_DATE, BUILD_COMMIT_TITLE, LOGIN_THEME_STORAGE_KEY } from './constants';
 

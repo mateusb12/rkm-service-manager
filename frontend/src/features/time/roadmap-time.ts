@@ -1,5 +1,3 @@
-const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-
 export type RoadmapTimebox = {
   today: Date;
   start: Date;
@@ -12,10 +10,6 @@ export type RoadmapTimebox = {
 
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-export function formatRoadmapDate(date: Date) {
-  return `${date.getDate()}/${MONTHS[date.getMonth()]}`;
 }
 
 // Períodos internos de planejamento.

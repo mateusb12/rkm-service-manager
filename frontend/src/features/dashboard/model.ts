@@ -1,13 +1,7 @@
 // @ts-nocheck
+import { formatDateLabel } from '../../shared/utils/date';
 
-export const formatDashboardDate = (value) => {
-  if (!value) return '—';
-
-  const rawValue = String(value);
-  const date = new Date(rawValue.includes('T') ? rawValue : `${rawValue}T12:00:00`);
-
-  return Number.isNaN(date.getTime()) ? rawValue : date.toLocaleDateString('pt-BR');
-};
+export const formatDashboardDate = formatDateLabel;
 
 export const mapServiceEntryToDashboardService = (entry, stages = []) => {
   const stageIndex = stages.findIndex((stage) => stage.id === entry.stage);

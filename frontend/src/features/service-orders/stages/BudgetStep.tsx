@@ -5,6 +5,7 @@ import { listPriceCatalogItems } from '../../commercial/price-catalog/service';
 import { PRICE_CATALOG_UNITS } from '../../commercial/price-catalog/model';
 import { formatPriceCents, formatPriceInput, parsePriceInput } from '../../../utils/currency';
 import { ServiceOrderBudgetReport } from '../ServiceOrderBudgetReport';
+import { getServiceOrderBudgetLines } from '../model';
 import { ServiceEntrySection } from './common';
 
 export const ServiceOrderBudgetStep = ({ form, set, highlightMissingStock, saving = false, onStockReceivedChange }) => {
@@ -19,35 +20,7 @@ export const ServiceOrderBudgetStep = ({ form, set, highlightMissingStock, savin
     budgetQuantity: '',
     stockReceived: false,
   });
-  const getBudgetLines = (item) => {
-    if (item.component !== 'Vedação') {
-      return [
-        {
-          budgetItem: item.budgetItem || '',
-          budgetItemId: item.budgetItemId || null,
-          budgetUnit: item.budgetUnit || '',
-          budgetUnitPriceCents: item.budgetUnitPriceCents || 0,
-          budgetQuantity: item.budgetQuantity || '',
-          stockReceived: Boolean(item.stockReceived),
-        },
-      ];
-    }
-
-    if (Array.isArray(item.budgetItems) && item.budgetItems.length > 0) return item.budgetItems;
-    if (item.budgetItem) {
-      return [
-        {
-          budgetItem: item.budgetItem,
-          budgetItemId: item.budgetItemId || null,
-          budgetUnit: item.budgetUnit || '',
-          budgetUnitPriceCents: item.budgetUnitPriceCents || 0,
-          budgetQuantity: item.budgetQuantity || '',
-          stockReceived: Boolean(item.stockReceived),
-        },
-      ];
-    }
-    return [emptyBudgetLine()];
-  };
+  const getBudgetLines = getServiceOrderBudgetLines;
   const isManualBudgetLine = (line) => line.budgetItemId == null && Boolean(line.budgetItem || line.budgetUnit);
 
   const getBudgetNotes = (item) => {

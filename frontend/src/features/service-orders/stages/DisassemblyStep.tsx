@@ -4,16 +4,10 @@ import { BulletTextArea, Field, TextInput } from '../../../shared/ui/form-contro
 import { LockableField } from '../../../shared/ui/LockableField';
 import { SearchableSelector } from '../../../shared/ui/SearchableSelector';
 import { listActiveUsers } from '../../auth/security/service';
+import { formatOperationalDateTimeBR } from '../../../shared/utils/date';
 import { createEmptyDisassemblyChecklist, isCylinderOrderType } from '../model';
 import { ServiceEntryChecklistFileField, ServiceEntrySection } from './common';
 
-const localTime = (value) => {
-  if (!value) return '—';
-  const date = new Date(value);
-  const formattedDate = date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const formattedTime = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).replace(':', 'h');
-  return `${formattedDate} às ${formattedTime}`;
-};
 const elapsedTime = (start, end) => {
   if (!start || !end) return '—';
   const elapsedMinutes = Math.floor((new Date(end).getTime() - new Date(start).getTime()) / 60_000);
@@ -162,16 +156,19 @@ export const ServiceOrderDisassemblyStep = ({ form, set, addChecklistPhotos, rem
                 {saving ? 'Salvando...' : 'Começar desmontagem'}
               </button>
             )}
-            {started && <span className="text-sm text-slate-300">Início: {localTime(form.disassemblyStartedAt)}</span>}
+            {started && <span className="text-sm text-slate-300">Início: {formatOperationalDateTimeBR(form.disassemblyStartedAt)}</span>}
             {legacyAdvanced && (
               <div className="flex items-center gap-3 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-amber-100" role="status">
                 <Lock size={18} className="shrink-0 text-amber-300" aria-hidden="true" />
                 <p className="min-w-0 text-sm text-amber-100/80">
-                  <strong className="font-semibold text-amber-100">Início da desmontagem:</strong> {localTime(form.disassemblyStartedAt)}
+                  <strong className="font-semibold text-amber-100">Início da desmontagem:</strong>{' '}
+                  {formatOperationalDateTimeBR(form.disassemblyStartedAt)}
                 </p>
               </div>
             )}
-            {form.disassemblyComplete && <span className="text-sm text-emerald-300">Concluída: {localTime(form.disassemblyEndedAt)}</span>}
+            {form.disassemblyComplete && (
+              <span className="text-sm text-emerald-300">Concluída: {formatOperationalDateTimeBR(form.disassemblyEndedAt)}</span>
+            )}
             {!started && !legacyAdvanced && <span className="text-xs text-slate-500">O checklist será liberado após salvar o início.</span>}
           </div>
           <div className="md:col-span-3 space-y-3">
@@ -203,7 +200,7 @@ export const ServiceOrderDisassemblyStep = ({ form, set, addChecklistPhotos, rem
                     </div>
                     {item.confirmedAt && (
                       <small className="mt-1 text-slate-500">
-                        Registrado em <time className="text-white">{localTime(item.confirmedAt)}</time>
+                        Registrado em <time className="text-white">{formatOperationalDateTimeBR(item.confirmedAt)}</time>
                       </small>
                     )}
                     <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={`Resultado de ${item.component}`}>
@@ -321,11 +318,11 @@ export const ServiceOrderDisassemblyStep = ({ form, set, addChecklistPhotos, rem
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
                   <div className="rounded-md bg-slate-950/25 px-3 py-2">
                     <span className="block text-xs text-slate-400">Início</span>
-                    <time className="mt-0.5 block text-sm text-slate-200">{localTime(form.disassemblyStartedAt)}</time>
+                    <time className="mt-0.5 block text-sm text-slate-200">{formatOperationalDateTimeBR(form.disassemblyStartedAt)}</time>
                   </div>
                   <div className="rounded-md bg-slate-950/25 px-3 py-2">
                     <span className="block text-xs text-slate-400">Fim</span>
-                    <time className="mt-0.5 block text-sm text-slate-200">{localTime(disassemblyFinishedAt)}</time>
+                    <time className="mt-0.5 block text-sm text-slate-200">{formatOperationalDateTimeBR(disassemblyFinishedAt)}</time>
                   </div>
                   <div className="rounded-md bg-slate-950/25 px-3 py-2">
                     <span className="block text-xs text-slate-400">Duração total</span>

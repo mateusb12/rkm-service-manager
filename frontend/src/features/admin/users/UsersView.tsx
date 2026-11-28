@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react';
 
-import { formatLongDateTimeBR } from '../../../utils/formatLongDateTimeBR';
+import { formatLongDateTimeBR } from '../../../shared/utils/date';
 import { createUser, deactivateUser, hardDeleteUser, listUsers, updateUser, type ApiUser } from './service';
 
 type UserStatus = 'active' | 'invited' | 'suspended';

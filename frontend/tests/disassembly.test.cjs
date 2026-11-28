@@ -72,7 +72,7 @@ test('only confirmed selected components complete the checklist', () => {
   form.disassemblyTimingVersion = 1;
   form.disassemblyComplete = true;
   form.disassemblyChecklist[0].status = 'Conforme';
-  assert.ok(getMissingServiceEntryFields(form, 2).includes('Haste: confirmação'));
+  assert.ok(getMissingServiceEntryFields(form, 2).includes('Haste: avaliação'));
   form.disassemblyChecklist[0].confirmedAt = '2026-01-01T12:00:00+00:00';
   assert.equal(getMissingServiceEntryFields(form, 2).length, 0);
 });

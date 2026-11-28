@@ -60,9 +60,6 @@ def apply_disassembly_transition(existing, incoming, user, current_stage, reques
             return "legacy_disassembly_read_only"
         return None
 
-    if active and incoming.get("updatedAt") != old.get("updatedAt"):
-        return "stale_service_order"
-
     if action == "start":
         if current_stage != "desmontagem" or requested_stage != "desmontagem":
             return "disassembly_stage_required"

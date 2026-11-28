@@ -3,25 +3,9 @@
 import React, { useEffect, useState } from 'react';
 
 import { loadServiceEntries } from '../service-orders/service';
+import { formatShortDateTimeBR } from '../../shared/utils/date';
 
 import { deleteLizyServiceEntries, overwriteLizyServiceEntries, planLizyPopulation, populateLizyServiceEntries } from './populate';
-
-const formatStoredDate = (value) => {
-  if (!value) {
-    return '—';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return '—';
-  }
-
-  return date.toLocaleString('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  });
-};
 
 const StatCard = ({ label, value, hint }) => (
   <div className="rkm-card p-4">
@@ -188,7 +172,7 @@ export const PopulatorView = () => {
 
                     <td className="px-4 py-3 text-slate-400">{entry.sourceMetadata?.system === 'lizy' ? 'Lizy' : 'Cadastro local'}</td>
 
-                    <td className="px-4 py-3 text-slate-500">{formatStoredDate(entry.updatedAt || entry.createdAt)}</td>
+                    <td className="px-4 py-3 text-slate-500">{formatShortDateTimeBR(entry.updatedAt || entry.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

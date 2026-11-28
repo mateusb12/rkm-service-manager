@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { Field, Select, TextArea } from '../../../shared/ui/form-controls';
+import { formatDateTimeBR } from '../../../shared/utils/date';
 
 import { AlertBox } from '../../../shared/ui/feedback';
 
@@ -55,7 +56,7 @@ export const CriticalityTag = ({ value }) => {
 /* Utilitários de histórico — Tarefa 2B.3 */
 export const roleLabelFor = (roleKey) => (ROLES.find((r) => r.key === roleKey) || {}).label || roleKey || '—';
 export const roleTagFor = (roleKey) => (ROLES.find((r) => r.key === roleKey) || {}).tagClass || 'tag-slate';
-export const formatDateTimeBR = (value) => (value ? new Date(value).toLocaleString('pt-BR') : '—');
+export { formatDateTimeBR };
 export const normalizeActionLabel = (action) => {
   if (action === 'Decisão registrada') return 'Decisão registrada';
   return action || '—';
@@ -709,7 +710,7 @@ export const AuthRequestCard = ({ req, showApproverHint, activeRole, onDecisionC
       React.createElement('span', { className: 'tag ' + (req._itLabel === 'IT001' ? 'tag-blue' : 'tag-violet') }, req._itLabel),
       React.createElement('span', { className: 'text-xs font-mono text-slate-400' }, req.id),
       React.createElement('span', { className: 'flex-1' }),
-      React.createElement('span', { className: 'text-xs text-slate-500' }, req.requestedAt ? new Date(req.requestedAt).toLocaleString('pt-BR') : '—'),
+      React.createElement('span', { className: 'text-xs text-slate-500' }, formatDateTimeBR(req.requestedAt)),
     ),
     React.createElement(
       'div',
@@ -806,12 +807,7 @@ export const AuthRequestCard = ({ req, showApproverHint, activeRole, onDecisionC
         React.createElement('div', { className: 'font-medium text-slate-200' }, 'Decis\u00E3o j\u00E1 registrada'),
         React.createElement('div', null, 'Status atual: ', React.createElement(AuthStatusTag, { status: req.status })),
         React.createElement('div', null, 'Respons\u00E1vel pela decis\u00E3o: ', React.createElement('b', null, req.decidedByName || '—')),
-        React.createElement(
-          'div',
-          null,
-          'Data/hora da decis\u00E3o: ',
-          React.createElement('b', null, req.decidedAt ? new Date(req.decidedAt).toLocaleString('pt-BR') : '—'),
-        ),
+        React.createElement('div', null, 'Data/hora da decis\u00E3o: ', React.createElement('b', null, formatDateTimeBR(req.decidedAt))),
         req.decisionReason &&
           React.createElement('div', null, 'Justificativa: ', React.createElement('span', { className: 'text-slate-200' }, req.decisionReason)),
       ),
@@ -1029,7 +1025,7 @@ export const AuthDecisionModal = ({ open, onClose, request, decision, activeUser
           React.createElement(
             Field,
             { label: 'Data/hora da solicita\u00E7\u00E3o', className: 'md:col-span-2' },
-            React.createElement('div', { className: 'rkm-input' }, request.requestedAt ? new Date(request.requestedAt).toLocaleString('pt-BR') : '—'),
+            React.createElement('div', { className: 'rkm-input' }, formatDateTimeBR(request.requestedAt)),
           ),
         ),
         request.reason &&
@@ -1150,11 +1146,7 @@ export const StepAuthorizationHistory = ({ requests }) => {
             React.createElement(AuthStatusTag, { status: req.status }),
             React.createElement(CriticalityTag, { value: req.criticality }),
             React.createElement('span', { className: 'text-xs font-mono text-slate-500' }, req.id),
-            React.createElement(
-              'span',
-              { className: 'text-xs text-slate-500 ml-auto' },
-              req.requestedAt ? new Date(req.requestedAt).toLocaleString('pt-BR') : '—',
-            ),
+            React.createElement('span', { className: 'text-xs text-slate-500 ml-auto' }, formatDateTimeBR(req.requestedAt)),
           ),
           React.createElement(
             'div',
@@ -1176,7 +1168,7 @@ export const StepAuthorizationHistory = ({ requests }) => {
                 ' \u00B7 ',
                 (ROLES.find((r) => r.key === req.decidedByRole) || {}).label || req.decidedByRole || '—',
               ),
-              React.createElement('div', null, 'Data: ', req.decidedAt ? new Date(req.decidedAt).toLocaleString('pt-BR') : '—'),
+              React.createElement('div', null, 'Data: ', formatDateTimeBR(req.decidedAt)),
               req.decisionReason && React.createElement('div', { className: 'mt-1' }, 'Justificativa: ', req.decisionReason),
             ),
         ),

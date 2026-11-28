@@ -22,6 +22,7 @@ INITIAL_STAGES = {
 }
 
 MECHANIC_EDITABLE_STAGE = ServiceOrderStage.DESMONTAGEM
+MECHANIC_REPAIR_STAGE = ServiceOrderStage.REPARO
 
 
 def can_view_service_order_details(role: str, stage: ServiceOrderStage) -> bool:
@@ -46,6 +47,8 @@ def can_update_service_order(
     if role == "admin":
         return True
     if role == "mechanic":
+        if current_stage == MECHANIC_REPAIR_STAGE:
+            return target_stage in {MECHANIC_REPAIR_STAGE, ServiceOrderStage.ENTREGA}
         return current_stage == MECHANIC_EDITABLE_STAGE and target_stage == MECHANIC_EDITABLE_STAGE
     if role != "pcp":
         return False

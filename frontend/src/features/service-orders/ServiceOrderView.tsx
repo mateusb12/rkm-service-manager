@@ -19,8 +19,7 @@ import { createDemoServiceEntry } from './demo-fixture';
 import { ServiceOrderStepNavigator } from './ServiceOrderStepNavigator';
 import { LizyReferenceCard } from '../../shared/dev/lizy-reference';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
-import { formatDateLabel } from '../../utils/date';
-import { formatLongDateBR } from '../../utils/formatLongDateTimeBR';
+import { formatDateLabel, formatLongDateBR } from '../../shared/utils/date';
 import { deleteFile, uploadFile } from '../files/service';
 import { ServiceEntrySection } from './stages/common';
 import { SERVICE_ENTRY_ORDER_TYPE_ICONS } from './stages/constants';
@@ -29,7 +28,6 @@ import { ServiceOrderIdentificationStep } from './stages/IdentificationStep';
 import { ServiceOrderDisassemblyStep } from './stages/DisassemblyStep';
 import { ServiceOrderBudgetStep } from './stages/BudgetStep';
 import { ServiceOrderRepairStep } from './stages/RepairStep';
-import { ServiceOrderDispatchStep } from './stages/DispatchStep';
 
 export const ServiceOrderView = () => {
   const showDevGuides = useLocalDevelopment();
@@ -195,12 +193,23 @@ export const ServiceOrderView = () => {
         ...persistedEntry,
         photos: { ...previous.photos, ...(persistedEntry.photos || {}) },
       }));
+      if (form.stage === 'reparo' && persistedEntry.stage === 'entrega') {
+        setStep(getServiceEntryStageIndex(stages, 'entrega'));
+      }
       setSuccessMessage(
         changes.disassemblyAction === 'start'
           ? 'Desmontagem iniciada e salva.'
           : changes.disassemblyAction === 'assess'
             ? 'Resultado registrado e travado.'
-            : 'Alterações salvas com sucesso.',
+            : changes.repairAction === 'assign_mechanic'
+              ? 'Mecânico do reparo salvo e travado.'
+              : changes.repairAction === 'start'
+                ? 'Reparo iniciado e horário registrado.'
+                : changes.repairAction === 'complete_item'
+                  ? persistedEntry.stage === 'entrega'
+                    ? 'Reparo concluído. OS avançada para entrega.'
+                    : 'Execução do item registrada.'
+                  : 'Alterações salvas com sucesso.',
       );
       window.dispatchEvent(new Event('service-orders-changed'));
       return true;
@@ -226,6 +235,18 @@ export const ServiceOrderView = () => {
               evaluation_requires_action: 'Conflito: selecione um resultado antes de editar esta avaliação. Reabra a OS.',
               invalid_assessment: 'Conflito: resultado inválido ou avaliação já confirmada. Reabra a OS.',
               disassembly_stage_required: 'Conflito: abra a etapa Desmontagem antes de iniciar.',
+              repair_stage_required: 'Conflito: abra a etapa Reparo antes de alterar a execução.',
+              repair_mechanic_required: 'Selecione e salve o mecânico responsável pelo reparo antes de iniciar.',
+              repair_transition_requires_action: 'Conflito: os horários e conclusões são registrados pelo servidor. Reabra a OS.',
+              repair_mechanic_already_assigned: 'O mecânico responsável já foi salvo e está bloqueado.',
+              repair_mechanic_locked: 'O mecânico responsável pelo reparo está bloqueado após salvar.',
+              repair_budget_locked: 'O orçamento está bloqueado após o início do reparo.',
+              repair_start_locked: 'O início do reparo já foi registrado e não pode ser alterado.',
+              repair_already_started: 'O reparo já foi iniciado.',
+              repair_not_started: 'Inicie o reparo antes de registrar a execução dos itens.',
+              invalid_repair_item: 'O item de orçamento informado não existe mais. Reabra a OS para carregar os dados atuais.',
+              repair_item_already_completed: 'Este item já foi registrado como concluído.',
+              repair_incomplete: 'Conclua todos os itens do orçamento antes de avançar.',
             }[saveError.message] ||
               (saveError.message === 'service_order_save_failed'
                 ? 'Não foi possível salvar a OS no servidor.'
@@ -245,6 +266,10 @@ export const ServiceOrderView = () => {
     );
     return persistEntry(undefined, step, { disassemblyChecklist: checklist, disassemblyAction: 'assess', disassemblyIndex: index });
   };
+  const saveRepairMechanic = () => persistEntry(undefined, step, { repairAction: 'assign_mechanic' });
+  const startRepair = () => persistEntry(undefined, step, { repairAction: 'start' });
+  const completeRepairBudgetLine = (component, lineIndex) =>
+    persistEntry(undefined, step, { repairAction: 'complete_item', repairComponent: component, repairLineIndex: lineIndex });
   const addPhotos = async (category, files) => {
     try {
       const uploadCategory = category === 'arrival' ? 'recebimento' : category;
@@ -399,7 +424,7 @@ export const ServiceOrderView = () => {
   const currentStep = stages[step] || { label: '', status: '' };
   const canEditCurrentStep = currentStep.canEdit !== false;
   const currentStepMissingFields = getMissingServiceEntryFields(form, step);
-  const canAdvanceCurrentStep = canEditCurrentStep && (currentStepMissingFields.length === 0 || step === 3);
+  const canAdvanceCurrentStep = canEditCurrentStep && step !== 4 && (currentStepMissingFields.length === 0 || step === 3);
   const progressStep = form.id ? getServiceEntryStageIndex(stages, form.stage) : 0;
   const visibleProgressStep = form.id ? getServiceEntryStageIndex(stages, form.availableThroughStage || form.stage) : 0;
 
@@ -651,7 +676,11 @@ export const ServiceOrderView = () => {
           advance();
         }}
       >
-        {!canEditCurrentStep ? (
+        {step === 5 ? (
+          <ServiceEntrySection title="Entrega">
+            <div className="md:col-span-3 py-4 text-lg font-semibold text-slate-100">Hello World</div>
+          </ServiceEntrySection>
+        ) : !canEditCurrentStep ? (
           <ServiceEntrySection
             title="Etapa somente para consulta"
             description="Seu cargo pode acompanhar os dados gerais da OS, mas não pode editar o conteúdo desta etapa."
@@ -692,12 +721,16 @@ export const ServiceOrderView = () => {
           />
         )}
         {canEditCurrentStep && step === 4 && (
-          <ServiceOrderRepairStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} photosLocked={progressStep > 4} />
+          <ServiceOrderRepairStep
+            form={form}
+            set={set}
+            stageLocked={progressStep > 4}
+            saving={saving}
+            onSaveMechanic={saveRepairMechanic}
+            onStartRepair={startRepair}
+            onCompleteBudgetLine={completeRepairBudgetLine}
+          />
         )}
-        {canEditCurrentStep && step === 5 && (
-          <ServiceOrderDispatchStep form={form} set={set} addPhotos={addPhotos} removePhoto={removePhoto} photosLocked={progressStep > 5} />
-        )}
-
         <div className="service-entry-actions service-entry-step-actions">
           <div className="service-entry-action-group">
             {step > 0 && (

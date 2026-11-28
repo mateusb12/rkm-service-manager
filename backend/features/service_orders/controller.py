@@ -16,75 +16,23 @@ except ImportError:
     from features.auth.repository import session
 
 from .model import ArrivalMethod, ServiceOrder
-from .disassembly import apply_disassembly_transition, is_cylinder
+from . import service_order_orchestrator as orchestrator
+from .disassembly import is_cylinder
 try:
     from ..clients.repository import find_client
     from ..file_storage.repository import find_record_by_id
 except ImportError:
     from features.clients.repository import find_client
     from features.file_storage.repository import find_record_by_id
-from .policy import (
-    can_create_service_order,
-    can_update_service_order,
-)
+from .policy import can_create_service_order
 from .repository import find_service_order, list_service_orders, save_service_order
 from .schema import ServiceOrderInputSchema, normalize_order_number
 from .serialization import (
-    get_service_order_stage,
     serialize_service_order,
     serialize_service_order_summary,
     serialize_service_order_stage_catalog,
 )
-from .stages import SERVICE_ORDER_STAGES, STAGE_STATUSES, parse_stage
-
-
-PCP_RECEIVING_FIELDS = {
-    "invoiceNumber",
-    "expectedDeliveryDate",
-    "urgent",
-    "requester",
-    "openingDate",
-    "receivedBy",
-    "deliveredBy",
-    "receivedAccessories",
-    "cylinderOptionalItems",
-    "cylinderOptionalItemsOther",
-}
-
-MECHANIC_DISASSEMBLY_FIELDS = {
-    "orderNumber", "stage", "status", "updatedAt", "disassemblyAction", "disassemblyIndex",
-    "disassemblyOperator", "disassemblyStartedAt", "disassemblyEndedAt", "disassemblyComplete",
-    "disassemblyTimingVersion", "disassemblyControlled", "partsSeparated", "oilCollected",
-    "disassemblyNotes", "partsDisposition", "disassemblyChecklist", "cylinderOptionalItems",
-    "cylinderOptionalItemsOther", "cylinderInternalDiameter", "cylinderExternalDiameter",
-    "cylinderLength", "cylinderStroke", "cylinderRodDiameter",
-}
-
-
-def _merge_mechanic_payload(existing: dict, incoming: dict) -> dict:
-    merged = {**existing, **{key: value for key, value in incoming.items() if key in MECHANIC_DISASSEMBLY_FIELDS}}
-    old_photos = dict(existing.get("photos") or {})
-    for category, files in (incoming.get("photos") or {}).items():
-        if category == "disassembly" or category.startswith("disassemblyChecklist-"):
-            old_photos[category] = files
-    merged["photos"] = old_photos
-    return merged
-
-def _merge_pcp_receiving_payload(existing: dict, incoming: dict) -> dict:
-    """Merge only PCP-owned receiving data into an already advanced order."""
-    merged = dict(existing or {})
-    for field in PCP_RECEIVING_FIELDS:
-        if existing.get("disassemblyTimingVersion") and field in {"cylinderOptionalItems", "cylinderOptionalItemsOther"}:
-            continue
-        if field in incoming:
-            merged[field] = incoming[field]
-    existing_photos = dict(merged.get("photos") or {})
-    incoming_photos = incoming.get("photos") or {}
-    if "arrival" in incoming_photos:
-        existing_photos["arrival"] = incoming_photos["arrival"]
-    if existing_photos:
-        merged["photos"] = existing_photos
-    return merged
+from .stages import parse_stage
 
 
 SERVICE_ORDERS_BLUEPRINT = Blueprint(
@@ -251,48 +199,15 @@ def update_order(order_id: str):
         order = database.query(ServiceOrder).filter_by(id=normalized_id).with_for_update().one_or_none()
         if not order:
             return jsonify({"error": "service_order_not_found"}), 404
-        current_stage = get_service_order_stage(order)
-        requested_stage = parse_stage(payload["stage"])
-        is_stage_downgrade = SERVICE_ORDER_STAGES.index(requested_stage) < SERVICE_ORDER_STAGES.index(current_stage)
-        pcp_receiving_only = (
-            g.current_user.role == "pcp" and current_stage not in {parse_stage("recebimento"), parse_stage("identificacao")}
+        workflow = orchestrator.update_service_order(
+            order.payload, payload, g.current_user, current_status=order.status
         )
-        if is_stage_downgrade:
-            target_stage = current_stage
-        else:
-            target_stage = requested_stage
-        if order.payload.get("disassemblyTimingVersion") and payload.get("updatedAt") != order.payload.get("updatedAt"):
-            return jsonify({"error": "stale_service_order"}), 409
-        if not can_update_service_order(
-            g.current_user.role,
-            current_stage,
-            target_stage,
-        ):
-            return jsonify({"error": "service_order_update_restricted"}), 403
-        if g.current_user.role == "pcp" and payload.get("disassemblyAction"):
-            return jsonify({"error": "service_order_update_restricted"}), 403
-        if order.payload.get("disassemblyTimingVersion") and payload.get("orderType") != order.payload.get("orderType"):
-            return jsonify({"error": "disassembly_preparation_locked"}), 409
-        if pcp_receiving_only:
-            payload = _merge_pcp_receiving_payload(order.payload, payload)
-        elif g.current_user.role == "mechanic":
-            payload = _merge_mechanic_payload(order.payload, payload)
-        transition_error = apply_disassembly_transition(
-            order.payload, payload, g.current_user, current_stage.value, target_stage.value
-        )
-        if transition_error:
-            return jsonify({"error": transition_error}), 409
-        if pcp_receiving_only:
-            payload["stage"] = current_stage.value
-            payload["status"] = order.status
-        else:
-            order.status = payload.get("status", order.status)
-            order.stage = target_stage.value
-        if is_stage_downgrade:
-            payload["stage"] = target_stage.value
-            payload["status"] = STAGE_STATUSES[target_stage]
-            order.status = STAGE_STATUSES[target_stage]
-            order.stage = target_stage.value
+        if workflow.error:
+            status_code = 403 if workflow.error == "service_order_update_restricted" else 409
+            return jsonify({"error": workflow.error}), status_code
+        payload = workflow.payload
+        order.status = payload.get("status", order.status)
+        order.stage = workflow.stage.value
         client = find_client(database, client_id)
         if not client:
             return jsonify({"error": "client_required_or_not_found"}), 400

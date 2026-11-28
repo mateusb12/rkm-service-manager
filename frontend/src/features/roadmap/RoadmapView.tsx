@@ -10,7 +10,8 @@ import {
   type FeatureMetricDraft,
 } from './dev-feature-metrics-service';
 import { useLocalDevelopment } from '../../shared/dev/local-development';
-import { formatRoadmapDate, getRoadmapVersionTimebox } from '../time/roadmap-time';
+import { formatRoadmapDate } from '../../shared/utils/date';
+import { getRoadmapVersionTimebox } from '../time/roadmap-time';
 import { formatDuration } from '../../utils/DurationPicker';
 import type { RoadmapFeature } from './roadmap-model';
 import { RoadmapFeatureCard } from './RoadmapFeatureCard';

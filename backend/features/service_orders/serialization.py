@@ -7,7 +7,7 @@ from datetime import timezone
 
 from .model import ServiceOrder
 from ..file_storage.model import serialize_file
-from .policy import MECHANIC_EDITABLE_STAGE, ServiceOrderSection, visible_sections
+from .policy import MECHANIC_EDITABLE_STAGE, MECHANIC_REPAIR_STAGE, ServiceOrderSection, visible_sections
 from .stages import SERVICE_ORDER_STAGES, STAGE_LABELS, STAGE_STATUSES, ServiceOrderStage
 
 
@@ -30,10 +30,10 @@ def serialize_service_order_stage_catalog(role: str) -> list[dict[str, Any]]:
             or (role == "mechanic" and stage not in initial_stage_ids)
             or (role == "pcp" and stage in initial_stage_ids),
             "canEdit": can_access_all
-            or (role == "mechanic" and stage == MECHANIC_EDITABLE_STAGE)
+            or (role == "mechanic" and stage in {MECHANIC_EDITABLE_STAGE, MECHANIC_REPAIR_STAGE})
             or (role == "pcp" and stage in initial_stage_ids),
             "canComplete": can_access_all
-            or (role == "mechanic" and stage == MECHANIC_EDITABLE_STAGE)
+            or (role == "mechanic" and stage in {MECHANIC_EDITABLE_STAGE, MECHANIC_REPAIR_STAGE})
             or (role == "pcp" and stage in initial_stage_ids),
             "canAdvanceTo": can_create_or_update
             and (
@@ -114,7 +114,13 @@ SECTION_SERIALIZERS: dict[ServiceOrderSection, Callable[[dict[str, Any]], dict[s
         "diagnosis",
     ),
     ServiceOrderSection.REPARO: lambda payload: _section(
-        payload, ("workPerformed", "testResult", "qualityApproved"), "execution"
+        payload,
+        (
+            "repairMechanic", "repairMechanicAssignedAt", "repairMechanicAssignedBy", "repairStartedAt",
+            "repairTimingVersion", "repairCompletedAt", "workPerformed", "testResult", "qualityApproved",
+            "disassemblyChecklist",
+        ),
+        "execution",
     ),
     ServiceOrderSection.ENTREGA: lambda payload: _section(
         payload,
